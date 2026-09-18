@@ -45,5 +45,6 @@ public class Docx4jFopTestCase {
         } catch (UnsupportedOperationException expected) {
             assertFalse(Docx4jFop.has("x"));
         }
+        assertTrue(Docx4jFop.has(Docx4jFop.PAIR_TABLE));
     }
 }

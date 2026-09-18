@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook inline-access, the (Font, int, WritingMode) constructor public, getLineHeight. See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr.inline;
@@ -174,7 +178,17 @@ public class AlignmentContext implements Constants {
      * @param lineHeight the computed value of the lineHeight property
      * @param writingMode the current writing mode
      */
-    AlignmentContext(Font font, int lineHeight, WritingMode writingMode) {
+    /**
+     * Creates a new instance of AlignmentContext for the given font, line-height and writing
+     * mode: the dominant baseline is the font's, the alignment baseline the same.
+     * docx4j-fo-renderer hook {@code inline-access}: public, so that a consumer's line manager
+     * can make one.
+     *
+     * @param font the font
+     * @param lineHeight the line-height in millipoints
+     * @param writingMode the writing mode
+     */
+    public AlignmentContext(Font font, int lineHeight, WritingMode writingMode) {
         this.areaHeight = font.getAscender() - font.getDescender();
         this.lineHeight = lineHeight;
         this.xHeight = font.getXHeight();
@@ -441,9 +455,10 @@ public class AlignmentContext implements Constants {
 
     /**
      * Return the line height of the context.
+     * docx4j-fo-renderer hook {@code inline-access}: public (it was private).
      * @return the height
      */
-    private int getLineHeight() {
+    public int getLineHeight() {
         return lineHeight;
     }
 
@@ -527,5 +542,4 @@ public class AlignmentContext implements Constants {
         sb.append(" baselineShift=").append(baselineShiftValue);
         return sb.toString();
     }
-
 }

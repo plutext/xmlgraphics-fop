@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook pair-table, setLineBreakPairProperty (the generator in src/main/codegen does not
+ * know it; re-add after regenerating). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.text.linebreak;
@@ -751,6 +755,36 @@ public final class LineBreakUtils {
      */
     public static byte getLineBreakPairProperty(int lineBreakPropertyBefore, int lineBreakPropertyAfter) {
         return PAIR_TABLE[lineBreakPropertyBefore - 1][lineBreakPropertyAfter - 1];
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code pair-table}: overrides one cell of the pair table, for a
+     * consumer whose line breaking must follow a later UAX #14 than this table (Unicode 8.0
+     * made HY x NU a direct break, for instance). Process-wide, like the table itself.
+     *
+     * @param lineBreakPropertyBefore the line break property of the first character (1-based, as
+     *        the {@code LINE_BREAK_PROPERTY_*} constants)
+     * @param lineBreakPropertyAfter the line break property of the second character
+     * @param value one of {@link #DIRECT_BREAK}, {@link #INDIRECT_BREAK},
+     *        {@link #COMBINING_INDIRECT_BREAK}, {@link #COMBINING_PROHIBITED_BREAK},
+     *        {@link #PROHIBITED_BREAK}, {@link #EXPLICIT_BREAK}
+     * @return the cell's previous value
+     * @throws IllegalArgumentException for a property or value outside the table
+     */
+    public static synchronized byte setLineBreakPairProperty(int lineBreakPropertyBefore,
+            int lineBreakPropertyAfter, byte value) {
+        int b = lineBreakPropertyBefore - 1;
+        int a = lineBreakPropertyAfter - 1;
+        if (b < 0 || b >= PAIR_TABLE.length || a < 0 || a >= PAIR_TABLE[b].length) {
+            throw new IllegalArgumentException("no pair table cell for " + lineBreakPropertyBefore
+                    + " x " + lineBreakPropertyAfter);
+        }
+        if (value < DIRECT_BREAK || value > EXPLICIT_BREAK) {
+            throw new IllegalArgumentException("not a break class: " + value);
+        }
+        byte was = PAIR_TABLE[b][a];
+        PAIR_TABLE[b][a] = value;
+        return was;
     }
 
 }

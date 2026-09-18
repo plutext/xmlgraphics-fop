@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook inline-access, getMappings, getLetterSpaceIPD, getSpaceCharIPD, getFOText. See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr.inline;
@@ -1521,6 +1525,44 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
             + "\'"
             + ", len = " + foText.length()
             + "}";
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code inline-access}: the glyph mappings the text was broken
+     * into, the live list.
+     *
+     * @return the mappings
+     */
+    public List<GlyphMapping> getMappings() {
+        return mappings;
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code inline-access}: the letter-space of this text.
+     *
+     * @return the letter-space IPD
+     */
+    public MinOptMax getLetterSpaceIPD() {
+        return letterSpaceIPD;
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code inline-access}: the advance of the space character in the
+     * space font.
+     *
+     * @return the width in millipoints
+     */
+    public int getSpaceCharIPD() {
+        return spaceCharIPD;
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code inline-access}: the text node this manager lays out.
+     *
+     * @return the FOText
+     */
+    public FOText getFOText() {
+        return foText;
     }
 
 }

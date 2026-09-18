@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook inline-access, LineBreakPosition public with getters. See README.md, "Changes from
+ * Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr.inline;
@@ -124,7 +128,28 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         private final int spaceAfter;
         private final int baseline;
 
-        LineBreakPosition(LayoutManager lm, int index, int startIndex, int breakIndex,
+        /**
+         * docx4j-fo-renderer hook {@code inline-access}: public, so that a consumer's line
+         * manager can make its own line break positions.
+         *
+         * @param lm the line layout manager
+         * @param index the paragraph index
+         * @param startIndex the first element
+         * @param breakIndex the break element
+         * @param shrink the available shrink
+         * @param stretch the available stretch
+         * @param diff the difference
+         * @param ipdA the ipd adjustment ratio
+         * @param adjust the adjustment ratio
+         * @param si the start indent
+         * @param ei the end indent
+         * @param lh the line height
+         * @param lw the line width
+         * @param sb the space before
+         * @param sa the space after
+         * @param bl the baseline
+         */
+        public LineBreakPosition(LayoutManager lm, int index, int startIndex, int breakIndex,
                 int shrink, int stretch, int diff, double ipdA, double adjust, int si,
                 int ei, int lh, int lw, int sb, int sa, int bl) {
             super(lm, breakIndex);
@@ -142,6 +167,78 @@ public class LineLayoutManager extends InlineStackingLayoutManager
             spaceBefore = sb;
             spaceAfter = sa;
             baseline = bl;
+        }
+
+        // docx4j-fo-renderer hook inline-access: the position's fields, read by a consumer's line manager
+
+        /** @return the paragraph index */
+        public int getParIndex() {
+            return parIndex;
+        }
+
+        /** @return the first element */
+        public int getStartIndex() {
+            return startIndex;
+        }
+
+        /** @return the available shrink */
+        public int getAvailableShrink() {
+            return availableShrink;
+        }
+
+        /** @return the available stretch */
+        public int getAvailableStretch() {
+            return availableStretch;
+        }
+
+        /** @return the difference */
+        public int getDifference() {
+            return difference;
+        }
+
+        /** @return the adjustment ratio */
+        public double getDAdjust() {
+            return dAdjust;
+        }
+
+        /** @return the ipd adjustment ratio */
+        public double getIpdAdjust() {
+            return ipdAdjust;
+        }
+
+        /** @return the start indent */
+        public int getStartIndent() {
+            return startIndent;
+        }
+
+        /** @return the end indent */
+        public int getEndIndent() {
+            return endIndent;
+        }
+
+        /** @return the line height */
+        public int getLineHeight() {
+            return lineHeight;
+        }
+
+        /** @return the line width */
+        public int getLineWidth() {
+            return lineWidth;
+        }
+
+        /** @return the space before */
+        public int getSpaceBefore() {
+            return spaceBefore;
+        }
+
+        /** @return the space after */
+        public int getSpaceAfter() {
+            return spaceAfter;
+        }
+
+        /** @return the baseline */
+        public int getBaseline() {
+            return baseline;
         }
 
     }

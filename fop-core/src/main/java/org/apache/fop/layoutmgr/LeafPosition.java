@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook inline-access, setLeafPos. See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -48,6 +51,16 @@ public class LeafPosition extends Position {
     /** @return leaf position */
     public int getLeafPos() {
         return leafPos;
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code inline-access}: moves the position on to another leaf (a
+     * consumer which splits a glyph mapping must shift every later index).
+     *
+     * @param pos the new leaf position
+     */
+    public void setLeafPos(int pos) {
+        this.leafPos = pos;
     }
 
     /** {@inheritDoc} */

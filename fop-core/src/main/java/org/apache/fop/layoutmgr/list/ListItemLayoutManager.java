@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook inline-access, getBodyList. See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr.list;
@@ -872,5 +875,15 @@ public class ListItemLayoutManager extends SpacedBorderedPaddedBlockLayoutManage
     public boolean isRestartable() {
         return true;
     }
-}
 
+    /**
+     * docx4j-fo-renderer hook {@code inline-access}: the body's element list as last returned,
+     * the live list.
+     *
+     * @return the body's elements, or null before they are made
+     */
+    public List<ListElement> getBodyList() {
+        return bodyList;
+    }
+
+}

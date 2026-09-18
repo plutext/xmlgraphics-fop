@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook leader-placement, getFont. See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr.inline;
@@ -369,6 +372,16 @@ public class LeaderLayoutManager extends LeafNodeLayoutManager {
     public void reset() {
         childLMs.clear();
         super.reset();
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code leader-placement}: the font the leader's pattern is drawn
+     * in.
+     *
+     * @return the font
+     */
+    public Font getFont() {
+        return font;
     }
 
 }

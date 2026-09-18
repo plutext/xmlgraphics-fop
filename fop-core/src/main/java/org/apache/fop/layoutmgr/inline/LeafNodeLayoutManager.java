@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook leader-placement, getCurrentArea, setAreaInfoIPD (setCurrentArea is Apache's own).
+ * See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr.inline;
@@ -395,5 +399,27 @@ public abstract class LeafNodeLayoutManager extends AbstractLayoutManager
         }
     }
 
-}
+    /**
+     * docx4j-fo-renderer hook {@code leader-placement}: the area this manager will add to the
+     * line (or added, once the line's areas exist).
+     *
+     * @return the current area, or null before it is made
+     */
+    public InlineArea getCurrentArea() {
+        return curArea;
+    }
 
+    /**
+     * docx4j-fo-renderer hook {@code leader-placement}: sets the inline-progression dimension
+     * the area is given at {@code addAreas} time, which comes from the stored area info and not
+     * from the Knuth element. Nothing happens before the area info exists.
+     *
+     * @param ipd the width
+     */
+    public void setAreaInfoIPD(MinOptMax ipd) {
+        if (areaInfo != null) {
+            areaInfo.ipdArea = ipd;
+        }
+    }
+
+}

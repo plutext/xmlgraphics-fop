@@ -41,11 +41,37 @@ public final class Docx4jFop {
     /** The Apache FOP line this renderer is based on. */
     public static final String APACHE_FOP_LINE = "2.11";
 
+    /** {@code LineBreakUtils.setLineBreakPairProperty}: one cell of the line-break pair table overridden. */
+    public static final String PAIR_TABLE = "pair-table";
+
+    /**
+     * {@code FilledArea.getUnitAreas}, {@code LeafNodeLayoutManager.getCurrentArea/setAreaInfoIPD}
+     * (its {@code setCurrentArea} is Apache's own), {@code LeaderLayoutManager.getFont}: a placed
+     * leader's unit, and the leaf manager's area and width, for a line manager that grids and
+     * phases leaders.
+     */
+    public static final String LEADER_PLACEMENT = "leader-placement";
+
+    /**
+     * {@code TextLayoutManager.getMappings/getLetterSpaceIPD/getSpaceCharIPD/getFOText},
+     * {@code AlignmentContext(Font,int,WritingMode)} and {@code getLineHeight},
+     * {@code InlineLayoutManager.getFont}, {@code LeafPosition.setLeafPos},
+     * {@code LineLayoutManager.LineBreakPosition} (public constructor and getters),
+     * {@code ListItemLayoutManager.getBodyList}: what a consumer's line and list managers read.
+     */
+    public static final String INLINE_ACCESS = "inline-access";
+
+    /** {@code GlyfTable.isComposite} is false for an empty glyph: a font whose last glyph is empty embeds. */
+    public static final String GLYF_EMPTY_GLYPH = "glyf-empty-glyph";
+
     private static final Set<String> CAPABILITIES;
 
     static {
         Set<String> caps = new LinkedHashSet<String>();
-        // Phase 1 of docx4j's CR-020 adds one name per hook here, e.g. "pair-table".
+        caps.add(PAIR_TABLE);
+        caps.add(LEADER_PLACEMENT);
+        caps.add(INLINE_ACCESS);
+        caps.add(GLYF_EMPTY_GLYPH);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 
@@ -64,7 +90,7 @@ public final class Docx4jFop {
     }
 
     /**
-     * The names of the hooks this renderer carries (empty until the first hook lands).
+     * The names of the hooks this renderer carries.
      * @return an unmodifiable set of capability names
      */
     public static Set<String> capabilities() {

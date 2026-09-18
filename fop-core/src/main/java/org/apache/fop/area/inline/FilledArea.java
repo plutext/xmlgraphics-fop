@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook leader-placement, getUnitAreas. See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.area.inline;
@@ -82,6 +85,16 @@ public class FilledArea extends InlineParent {
      */
     public int getUnitWidth() {
         return this.unitWidth;
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code leader-placement}: the repeating unit itself, unexpanded
+     * ({@link #getChildAreas()} returns it repeated to fill the width, computed on the call).
+     *
+     * @return the unit's areas, the live list
+     */
+    public List<InlineArea> getUnitAreas() {
+        return inlines;
     }
 
     /** {@inheritDoc} */
