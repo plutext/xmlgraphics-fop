@@ -15,6 +15,11 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: FOP-3330: glyph bounding boxes packed as ints; and a CJK ideograph sharing a glyph with
+ * a Kangxi radical is mapped back to the ideograph, not the radical (docx4j Enterprise CR-001 item 26). See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fonts;

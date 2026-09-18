@@ -2,15 +2,15 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.apache.xmlgraphics</groupId>
-  <artifactId>fop-util</artifactId>
-  <name>Apache FOP Utilities</name>
-  <description>XML Graphics Format Object Processor Utilities</description>
+  <groupId>org.docx4j</groupId>
+  <artifactId>docx4j-fo-renderer-util</artifactId>
+  <name>docx4j FO renderer utilities</name>
+  <description>docx4j FO renderer utilities, based on Apache FOP 2.11 (fop-util). This is a modified distribution derived from Apache FOP 2.11. It is maintained by Plutext/docx4j and is not an Apache Software Foundation release. Apache FOP is a trademark of the Apache Software Foundation.</description>
 
   <parent>
-    <groupId>org.apache.xmlgraphics</groupId>
-    <artifactId>fop-parent</artifactId>
-    <version>2.11</version>
+    <groupId>org.docx4j</groupId>
+    <artifactId>docx4j-fo-renderer-parent</artifactId>
+    <version>2.11-docx4j.1-SNAPSHOT</version>
   </parent>
 
   <dependencies>

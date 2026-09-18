@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: tests for FOP-3330 and for the Kangxi radical mapping (item 26). See README.md, "Changes
+ * from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fonts;

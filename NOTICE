@@ -3,3 +3,11 @@ Copyright 1999-2025 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
+
+docx4j FO renderer (docx4j-fo-renderer)
+Copyright 2026 Plutext Pty Ltd
+
+This is a modified distribution derived from Apache FOP 2.11. It is
+maintained by Plutext/docx4j and is not an Apache Software Foundation
+release. Apache FOP is a trademark of the Apache Software Foundation.
+The changes from Apache FOP 2.11 are listed in README.md.

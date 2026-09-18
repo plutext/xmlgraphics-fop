@@ -2,32 +2,32 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.apache.xmlgraphics</groupId>
-  <artifactId>fop</artifactId>
-  <name>Apache FOP All-In-One</name>
-  <description>XML Graphics Format Object Processor All-In-One</description>
+  <groupId>org.docx4j</groupId>
+  <artifactId>docx4j-fo-renderer</artifactId>
+  <name>docx4j FO renderer</name>
+  <description>docx4j FO renderer, based on Apache FOP 2.11 (the all-in-one artifact: core, events and util). This is a modified distribution derived from Apache FOP 2.11. It is maintained by Plutext/docx4j and is not an Apache Software Foundation release. Apache FOP is a trademark of the Apache Software Foundation.</description>
 
   <parent>
-    <groupId>org.apache.xmlgraphics</groupId>
-    <artifactId>fop-parent</artifactId>
-    <version>2.11</version>
+    <groupId>org.docx4j</groupId>
+    <artifactId>docx4j-fo-renderer-parent</artifactId>
+    <version>2.11-docx4j.1-SNAPSHOT</version>
   </parent>
 
   <dependencies>
     <!-- fop deps -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>fop-util</artifactId>
+      <artifactId>docx4j-fo-renderer-util</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>fop-events</artifactId>
+      <artifactId>docx4j-fo-renderer-events</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>fop-core</artifactId>
+      <artifactId>docx4j-fo-renderer-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!-- test deps -->
@@ -71,7 +71,7 @@
             </goals>
             <configuration>
               <outputDirectory>${project.build.directory}</outputDirectory>
-              <includeArtifactIds>fop-core,fop-util,fop-events</includeArtifactIds>
+              <includeArtifactIds>docx4j-fo-renderer-core,docx4j-fo-renderer-util,docx4j-fo-renderer-events</includeArtifactIds>
             </configuration>
           </execution>
         </executions>

@@ -2,22 +2,22 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.apache.xmlgraphics</groupId>
-  <artifactId>fop-events</artifactId>
-  <name>Apache FOP Events</name>
-  <description>XML Graphics Format Object Processor Events</description>
+  <groupId>org.docx4j</groupId>
+  <artifactId>docx4j-fo-renderer-events</artifactId>
+  <name>docx4j FO renderer events</name>
+  <description>docx4j FO renderer events, based on Apache FOP 2.11 (fop-events). This is a modified distribution derived from Apache FOP 2.11. It is maintained by Plutext/docx4j and is not an Apache Software Foundation release. Apache FOP is a trademark of the Apache Software Foundation.</description>
 
   <parent>
-    <groupId>org.apache.xmlgraphics</groupId>
-    <artifactId>fop-parent</artifactId>
-    <version>2.11</version>
+    <groupId>org.docx4j</groupId>
+    <artifactId>docx4j-fo-renderer-parent</artifactId>
+    <version>2.11-docx4j.1-SNAPSHOT</version>
   </parent>
 
   <dependencies>
     <!-- fop deps -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>fop-util</artifactId>
+      <artifactId>docx4j-fo-renderer-util</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!-- external deps -->

@@ -9,4 +9,6 @@
   <suppress files="MergedTableCells.java" checks="AvoidNestedBlocks"/>
   <suppress files="NestedTable.java" checks="AvoidNestedBlocks"/>
   <suppress files="MarkersTestCase.java" checks="LocalVariableName"/>
+  <!-- docx4j-fo-renderer: files authored for the fork carry a Plutext header, not the ASF one -->
+  <suppress files="[/\\]org[/\\]apache[/\\]fop[/\\]docx4j[/\\].*\.java" checks="RegexpHeader"/>
 </suppressions>

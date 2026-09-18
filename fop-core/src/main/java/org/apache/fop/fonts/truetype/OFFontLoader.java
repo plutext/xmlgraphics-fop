@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: FOP-3330: glyph bounding boxes packed as ints. See README.md, "Changes from Apache FOP
+ * 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fonts.truetype;
