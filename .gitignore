@@ -10,3 +10,6 @@ build/
 *.bak
 .idea
 *.iml
+
+# docx4j-fo-renderer: flatten-maven-plugin output, regenerated every build
+.flattened-pom.xml

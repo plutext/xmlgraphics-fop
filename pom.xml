@@ -4,13 +4,21 @@
 
   <groupId>org.docx4j</groupId>
   <artifactId>docx4j-fo-renderer-parent</artifactId>
-  <version>2.11-docx4j.1</version>
+  <version>${revision}</version>
   <name>docx4j FO renderer parent</name>
   <description>docx4j FO renderer, based on Apache FOP 2.11 (parent). This is a modified distribution derived from Apache FOP 2.11. It is maintained by Plutext/docx4j and is not an Apache Software Foundation release. Apache FOP is a trademark of the Apache Software Foundation.</description>
   <packaging>pom</packaging>
   <url>https://github.com/plutext/xmlgraphics-fop/tree/docx4j-2.11</url>
 
   <properties>
+    <!-- The single place the version is written. Every module takes it through
+         <parent><version>${revision}</version>, and none declares a version of its own, so a
+         release changes one line. This is docx4j's arrangement; see docx4j-core/pom.xml.
+         It REQUIRES flatten-maven-plugin below: Maven publishes the original pom, not the
+         effective one, so without flattening consumers would receive a literal ${revision}
+         they cannot resolve, and could not resolve the parent either to find out what it
+         means. -->
+    <revision>2.11-docx4j.1</revision>
     <ant.version>1.10.14</ant.version>
     <antrun.plugin.version>1.8</antrun.plugin.version>
     <batik.version>1.19</batik.version>
@@ -120,6 +128,49 @@
     </pluginManagement>
 
     <plugins>
+      <!-- Publishes a self-contained pom in place of the original: the parent element removed,
+           inherited values inlined, and ${revision} resolved to a literal. Mandatory because of
+           the revision property above. Bound to process-resources so it runs before packaging,
+           and to clean so the generated file does not linger.
+
+           flattenMode ossrh keeps the elements Central requires: name, description, url,
+           licenses, developers, scm. The dependency mode is left at its default, unlike docx4j
+           which needs 'all': this parent declares no dependencies and no dependencyManagement,
+           and all 25 of fop-core's dependencies carry explicit versions, so nothing is
+           inherited that flattening could drop. Do not copy 'all' here - it would hoist every
+           transitive into a direct dependency and stop consumers pruning subtrees they
+           exclude. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.8.0</version>
+        <configuration>
+          <flattenMode>ossrh</flattenMode>
+          <!-- Also flatten the parent, which the plugin skips by default for pom packaging.
+               Without this the parent publishes as the original pom, carrying a literal
+               ${revision} nobody can resolve. Nothing consumes it, because the children come
+               out self-contained, but a permanently broken artifact on Central is worth one
+               line to avoid. docx4j leaves this off; see the note in releasing.md. -->
+          <updatePomFile>true</updatePomFile>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- Publishing to Maven Central. Deliberately the same mechanism docx4j uses, down to
            the plugin version and the `ossrh` server id in ~/.m2/settings.xml, so that a first
            release from this repository fails or succeeds the way docx4j's releases already do.
@@ -182,6 +233,16 @@
          -Dgpg.passphrase=..., which needs the loopback pinentry argument below. -->
     <profile>
       <id>release</id>
+      <properties>
+        <!-- Signing binds to the verify phase, and fop-core binds spotbugs:check there too, so
+             a release dry run would drag the whole static analysis along with it. CI already
+             runs checkstyle and spotbugs on every push, and a release is built from a committed
+             tree that passed them, so re-running here buys nothing and costs minutes. Set as a
+             profile property rather than a command-line flag so it is not something to
+             remember. Checkstyle needs no equivalent: this build never binds it to a phase, CI
+             invokes it as an explicit goal. -->
+        <spotbugs.skip>true</spotbugs.skip>
+      </properties>
       <build>
         <plugins>
           <plugin>

@@ -9,6 +9,36 @@ do, rather than introducing a second mechanism to debug at the same time.
 docx4j's pom carries a TODO to migrate to the Central Publisher Portal plugin. That
 migration is one task across both repositories; do not start it here alone.
 
+## The version is written in one place
+
+The root pom's version is `${revision}`, set by a property of that name, and every module takes
+it through `<parent><version>${revision}</version>` while declaring no version of its own. So a
+release changes one line. Sibling dependencies use `${project.version}` and need no attention.
+This is docx4j's arrangement; compare `../docx4j/docx4j-core/pom.xml`.
+
+**It only works because of `flatten-maven-plugin`.** Maven publishes the original pom, not the
+effective one, so without flattening a consumer would receive a literal `${revision}` it cannot
+resolve, and could not resolve the parent either to discover what it means. The plugin writes a
+`.flattened-pom.xml` with the parent element removed, inherited values inlined and the version
+resolved to a literal, and that is what installs and deploys. Verify after any change to it:
+
+    grep -c revision .flattened-pom.xml */.flattened-pom.xml    # every count must be 0
+
+Two deliberate differences from docx4j. Its `flattenDependencyMode` is `all`, which it needs
+because its parent declares dependencies for every module; ours is left at the default, because
+this parent declares no dependencies and no dependency management and every module dependency
+carries an explicit version. Copying `all` would hoist every transitive into a direct dependency
+and stop consumers pruning subtrees they exclude. And `updatePomFile` is set here, which docx4j
+leaves off: without it the plugin skips pom-packaged projects, so the parent would publish
+carrying the raw property. Nothing consumes the parent, since the children come out
+self-contained, but a permanently broken artifact on Central is worth one line to avoid.
+
+Do not hand-edit a version. Changing only the root, as happened on 2026-09-25, used to leave the
+modules pointing at a parent version that no longer existed in the reactor: they then resolved
+the parent from the local repository instead, silently losing the release profile, so no sources,
+javadoc or signatures were produced and the build still reported success. The single property
+removes that failure mode.
+
 ## What the pom now does
 
 - **`<developers>`** — Central rejects a release without at least one.
@@ -40,7 +70,8 @@ migration is one task across both repositories; do not start it here alone.
 ## The release
 
 1. Phase 2 and the release decision are Jason's; see docx4j CR-020 §4 and §8.
-2. Drop `-SNAPSHOT`: the version is `2.11-docx4j.N` across the five poms.
+2. Set the version by editing the `revision` property in the root pom, and nothing else:
+   `2.11-docx4j.N`, with no `-SNAPSHOT`.
 3. Tag and make sure `<scm><tag>` matches.
 4. Dry run first, which builds and signs but publishes nothing:
 
@@ -48,8 +79,10 @@ migration is one task across both repositories; do not start it here alone.
         mvn -Prelease clean verify -Dgpg.passphrase=…
 
    `verify` is the phase signing binds to, so this is the first step that proves the
-   key works. Check that each of the four modules produced a main, a sources and a
-   javadoc jar, each with a `.asc` beside it.
+   key works. The release profile also skips SpotBugs, which the core module otherwise
+   binds to that same phase; CI runs it on every push, so a release built from a
+   committed tree has already been analysed. Check that each of the four modules
+   produced a main, a sources and a javadoc jar, each with a `.asc` beside it.
 5. Then publish:
 
         mvn -Prelease clean deploy -Dgpg.passphrase=…
@@ -73,7 +106,7 @@ work without a prompt.
 ## Not yet verified
 
 - **Signing has never been run here.** Everything up to it is proven: a clean
-  `-Prelease package` builds all twelve jars with no errors. Step 4 above is the
+  `-Prelease package` builds all twelve jars with no errors. Step 4 of the release is the
   first real test and it needs the passphrase, so it needs Jason.
 - **Whether the `org.docx4j` namespace authorises this artifactId.** Central
   authorises namespaces rather than individual artifacts, so it should, but
