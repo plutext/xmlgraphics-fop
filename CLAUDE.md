@@ -56,6 +56,10 @@ session routed an edit to the wrong peer on that inference, is why.
 
 ## Branches and remotes
 
+- Branches for the fork itself: `docx4j-2.11`, and since the first release a
+  `2.11-docx4j.2` branch carrying the next version's `revision` property. Which of the
+  two is the long-lived one is unsettled as of 2026-09-25; ask before assuming, and fix
+  this entry once it is decided.
 - `docx4j-2.11` is the fork's branch, 8 commits over the `2_11` tag: the four
   upstream-bound font fixes, the coordinate and notice changes, and the phase 1
   hooks. Work on it; release from it. Do not count it against `trunk`, which now
@@ -156,9 +160,42 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-CR-020 phase 2's classification report is done and eight cherry-picks are queued, P2-1
-to P2-8, listed with their sources in CR-020 §8 "Phase 2". Jason reads the report before
-any of them starts; do not begin P2-1 until he says so. The release
-(`docx4j/CR-020.release`) waits on phase 2. Upstream: FOP-3328 and FOP-3330 are filed
-with PRs 106 and 107 open; the `glyf-empty-glyph` and CJK-radical fixes have JIRA text
-drafted (see the README table) and wait on Jason filing them.
+**`2.11-docx4j.1` is released to Maven Central** (2026-09-25, from commit `2f5030172`,
+unreleased and untagged before that). It carries the four font fixes, the phase 1 hooks
+and P2-1. `docs/developer/releasing.md` is the runbook and records what the first
+release proved. There is no git tag for it.
+
+**Phase 2 is much smaller than CR-020 §8 describes.** A reachability pass on 2026-09-25
+asked of each queued item whether docx4j can reach the code at all, and most cannot:
+
+- **P2-1 surrogate pairs** is done, gated at 449 of 449 documents and 148 probes, merged
+  and released. It is inert on the corpus, which holds no astral character.
+- **P2-2** is worked around twice in docx4j already, so the fork change only lets those
+  workarounds go. **P2-3** is a nine-line diagnostic. Both clean, both small.
+- **P2-4's** Arabic half is unobservable across the corpus; its zero-width-space half
+  sits behind accessibility mode, which docx4j never enables. **P2-6** and **P2-7** are
+  inert because docx4j emits no trigger. The structure-tree half of **P2-5** is
+  superseded by FOP-3165 and FOP-3283, already in Apache `main`, and what remains of it
+  would not pass checkstyle here.
+- **P2-8 ligatures** is `fop/CR-001`, design only. Its premise needed correcting: docx4j
+  already handles Word's setting with a font twin in `docx4j-core`, so the common path is
+  right today. What remains is the twin's four gaps.
+
+**Recommended order, both design only: `fop/CR-002` first, then `fop/CR-001`.** CR-002 is
+Enterprise CR-001 §6.6 item 30: a ligature's `ToUnicode` publishes a private-use code
+point instead of its letters, so search, copy and paste and screen readers break wherever
+a ligature is drawn. It affects every FOP user on default settings and the ligature hook
+cannot reach it.
+
+**Be honest about where the fork stands.** Gated against Apache FOP on the corpus, the
+measured fidelity difference today is nil. Its value so far is the font fixes preventing
+failures, and the hooks replacing reflection. That is why Apache FOP stays docx4j's
+default through 17.2.1, with a switch at 17.3.0 at the earliest, waiting on a release
+carrying CR-002 and P2-8.
+
+**Upstream is the bottleneck, and it is not our latency.** Three JIRAs are drafted and
+unfiled; only Jason can file them, and the drafts live in their commit messages and under
+`docs/upstream/` (the README's "Tracking upstream" says which is where). FOP-3328 and
+FOP-3330 are filed with pull requests 106 and 107 open, unreviewed since July. Apache has
+twenty open pull requests, the oldest from 2020, and runs no CI on requests from forks, so
+do not plan around review. A fix the fork needs, the fork carries.
