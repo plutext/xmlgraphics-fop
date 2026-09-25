@@ -1,0 +1,107 @@
+JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
+Branch ready: FOP-surrogate-pair-word-split (rename to FOP-#### once filed)
+
+Project:          FOP
+Issue Type:       Bug
+Affects Version:  2.11
+Component:        layout
+
+CORRECTION NOTE, 2026-09-25: an earlier draft of this text claimed the
+exception came from CharUtilities.containsSurrogatePairAt. That was wrong.
+The stack below is the measured one. containsSurrogatePairAt is not on this
+path. See "Second, unrelated change" for what it actually is.
+
+Summary
+-------
+Layout fails with "ill-formed UTF-16 sequence" when a non-BMP character
+triggers a font change under font-selection-strategy="character-by-character"
+
+Description
+-----------
+With font-selection-strategy="character-by-character", TextLayoutManager ends
+the current word wherever the per-character font selection picks a different
+font. It does not account for a surrogate pair being two chars that encode one
+code point, so when the pair is the point at which the font changes, the word is
+ended between the high surrogate and its low surrogate. The fragment handed on
+for glyph mapping ends in a lone high surrogate, and MultiByteFont rejects it:
+
+  java.lang.IllegalArgumentException: ill-formed UTF-16 sequence, contains
+      isolated high surrogate at end of sequence
+    at org.apache.fop.fonts.MultiByteFont.mapCharsToGlyphs(MultiByteFont.java:695)
+    at org.apache.fop.fonts.MultiByteFont.charSequenceToGlyphSequence(MultiByteFont.java:599)
+    at org.apache.fop.fonts.MultiByteFont.performSubstitution(MultiByteFont.java:580)
+    at org.apache.fop.fonts.Font.performSubstitution(Font.java:471)
+    at org.apache.fop.fonts.GlyphMapping.processWordMapping(GlyphMapping.java:141)
+    at org.apache.fop.fonts.GlyphMapping.doGlyphMapping(GlyphMapping.java:92)
+    at org.apache.fop.layoutmgr.inline.TextLayoutManager.processWord(TextLayoutManager.java:982)
+    at org.apache.fop.layoutmgr.inline.TextLayoutManager.getNextKnuthElements(TextLayoutManager.java:841)
+
+MultiByteFont's own guard is correct: a lone high surrogate at the end of the
+sequence it is given is genuinely ill-formed. The defect is upstream of it, in
+the word splitting.
+
+No PDF is produced. The document fails to render rather than rendering wrongly.
+
+Affected input: any code point outside the BMP where the chosen font list makes
+the selected font change at that code point, under per-character font selection.
+Emoji and CJK Extension B ideographs are the common cases.
+
+To reproduce
+------------
+See the new test below. In short, a block with font-family="Helvetica,
+Aegean600" and font-selection-strategy="character-by-character" containing
+U+10300, using the Aegean600 font FOP already ships in its test resources.
+
+Fix
+---
+Track the previous char in TextLayoutManager's scan loop and do not end the word
+when it is a high surrogate. The same guard is applied to the bidi-level-change
+branch, which is the other place the word is ended for a reason that can fall
+between the two halves of a pair.
+
+Honest scope note for reviewers: only the font-selection branch is demonstrated
+by a test. I could not construct a case where the bidi-level-change branch
+splits a pair, because the two halves of a pair receive the same bidi level in
+every case tried, including an emoji beside Arabic inside fo:inline with
+unicode-bidi="embed" direction="rtl". That guard is therefore defensive. Say the
+word and it can be dropped from the patch, leaving only the demonstrated fix.
+
+Second, unrelated change in the same patch
+------------------------------------------
+CharUtilities.containsSurrogatePairAt guards its end-of-sequence case with
+
+    if ((index + 1) > chars.length()) {
+
+which is never true at the last index, so that branch is unreachable and
+chars.charAt(index + 1) reads one past the end. Callers get
+StringIndexOutOfBoundsException where the javadoc promises
+IllegalArgumentException. Corrected to >=.
+
+This is a latent bug on a different path: its callers are GlyphMapping line 165,
+PDFPainter and PSPainter, none of which is reached in the failure above. It is
+included here because it is the same class of mistake, but it is separable and
+can go in its own issue if you prefer.
+
+Tests
+-----
+1. PDFEncodingTestCase.testPDFEncodingWithNonBMPFontCharacterByCharacter, a new
+   case rendering test-non-bmp-character-by-character.fo. Covers the reported
+   failure end to end. Verified to fail before the fix with the exact
+   IllegalArgumentException above, and to pass after. Uses only fonts already
+   present in FOP's test resources, so it ships no new binary.
+2. CharUtilitiesTestCase.testContainsSurrogatePairAtWithIsolatedHighSurrogateAtEndOfSequence,
+   covering the second change by direct call. Verified to fail before with
+   StringIndexOutOfBoundsException. The pre-existing malformed-sequence test puts
+   the high surrogate mid-string and so passes either way.
+
+Provenance
+----------
+The TextLayoutManager change originates in the Metanorma fork of FOP, commits
+70a1e75d5 and ba2ec2ea4, authored by Alexander Dyuzhev, their issue #39.
+Cherry-picked with authorship preserved. One line was reflowed because it ran to
+157 columns against checkstyle's limit of 120, and the cheap surrogate test was
+moved ahead of the font-selection-strategy lookup; both operands are pure, so
+the result is unchanged. The tests and this analysis are new.
+
+Verified against Apache main at 2a8efc165: 3656 tests green, checkstyle and
+spotbugs clean.

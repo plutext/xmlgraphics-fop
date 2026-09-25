@@ -70,6 +70,11 @@ setter; none changes what FOP does on its own.
 
 ## Tracking upstream
 
+Text drafted for a JIRA that is not yet filed lives with the change: in the commit
+message for the `GlyfTable` empty-glyph fix and the Kangxi radical fix, and under
+`docs/upstream/` for the surrogate-pair word split. `git log --grep` finds the first
+two; each carries the stack, a reproducer and what was measured.
+
 `upstream` is `apache/xmlgraphics-fop`; the branch merges upstream at least at
 every Apache release and whenever a fix sent from here lands. A change without
 a JIRA is sent upstream first unless it is docx4j-specific.
