@@ -103,16 +103,40 @@ Three secret keys are on this machine; only one is ultimately trusted:
 loopback` argument is already configured, which is what lets `-Dgpg.passphrase=`
 work without a prompt.
 
-## Not yet verified
+## Proven by the first release, 2.11-docx4j.1 on 2026-09-25
 
-- **Signing has never been run here.** Everything up to it is proven: a clean
-  `-Prelease package` builds all twelve jars with no errors. Step 4 of the release is the
-  first real test and it needs the passphrase, so it needs Jason.
-- **Whether the `org.docx4j` namespace authorises this artifactId.** Central
-  authorises namespaces rather than individual artifacts, so it should, but
-  `docx4j-fo-renderer*` has never been published and only a real deploy proves it.
-- **Whether the `ossrh` credentials in `settings.xml` are a Portal token.** The same
-  entry works for docx4j today, which is the best evidence available short of trying.
+Everything in this document worked end to end. What had been unknown is now answered:
+
+- **Signing works.** The loopback pinentry configuration lets `-Dgpg.passphrase=` sign
+  without a prompt, across all five modules.
+- **The namespace authorises these artifacts.** Nexus reported `Using staging profile
+  ID "org.docx4j" (matched by Nexus)`, so authorisation is by namespace as expected and
+  the new artifact names needed no separate registration.
+- **The `ossrh` credentials work** against `ossrh-staging-api.central.sonatype.com`.
+- **`autoReleaseAfterClose` closed and released without a visit to the web interface**,
+  and the artifacts were resolvable from Central within minutes.
+- **Flattening produced the right poms.** Verified against what Central serves, not
+  just what was generated: every published pom carries a literal `2.11-docx4j.1`, no
+  property reference and no parent element, and the parent is the 2422-byte flattened
+  form rather than the original.
+
+The staging repository was `org.docx4j--a01c8c30-1e51-4bf1-9cfd-f587bc11ce8a`. Note
+that the URLs differ from pre-migration releases, which named `oss.sonatype.org` and
+numbered staging repositories like `orgdocx4j-1095`.
+
+## Two things that look wrong and are not
+
+**The published pom lists fewer dependencies than the module's own pom.** For the core
+module it is 19 against 25. Five of the six are test-scoped, which a published pom has
+no reason to carry. The sixth is `net.sf.saxon:saxon`, which is not a project dependency
+at all: it sits inside a build plugin, supplying Saxon to the stylesheet code generation.
+Apache's own published pom has it in exactly the same place. Nothing consumer-facing is
+missing. Do not "fix" this.
+
+**Never write the upstream part as `2.11.0`.** Maven normalises the trailing zero, so
+`2.11-docx4j.1` and `2.11.0-docx4j.1` compare as exactly equal. Writing it the other way
+would produce a version Maven considers identical to one already published, which cannot
+be undone. Keep quoting `2.11` as Apache tagged it.
 
 ## The name
 
