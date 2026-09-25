@@ -66,6 +66,9 @@ session routed an edit to the wrong peer on that inference, is why.
 - The name will stop matching once `2.11-docx4j.2` ships and the `revision` moves on. It
   is still the long-lived branch at that point (Jason, 2026-09-25), so do not cut a new
   one per version; rename this entry rather than the branch if it becomes confusing.
+- If the branch is ever renamed, `.github/workflows/maven.yml` names it twice and must move
+  with it. A stale list there fails silently: no runs at all looks exactly like no
+  failures. It was missed in the 2026-09-26 rename for that reason.
 - `trunk` tracks Apache's `main`. Remotes: `origin` = plutext/xmlgraphics-fop,
   `upstream` = apache/xmlgraphics-fop, `metanorma` and `chunlin` = the two forks whose
   commits CR-020 §9 classified.
