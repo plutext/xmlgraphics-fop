@@ -16,8 +16,9 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: hook inline-access, getMappings, getLetterSpaceIPD, getSpaceCharIPD, getFOText. See
- * README.md, "Changes from Apache FOP 2.11". */
+ * from Apache FOP 2.11: hook inline-access, getMappings, getLetterSpaceIPD, getSpaceCharIPD, getFOText; a
+ * word is not split between a high surrogate and its low surrogate. See README.md, "Changes from Apache
+ * FOP 2.11". */
 
 /* $Id$ */
 
