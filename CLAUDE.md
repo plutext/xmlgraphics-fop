@@ -56,14 +56,16 @@ session routed an edit to the wrong peer on that inference, is why.
 
 ## Branches and remotes
 
-- Branches for the fork itself: `docx4j-2.11`, and since the first release a
-  `2.11-docx4j.2` branch carrying the next version's `revision` property. Which of the
-  two is the long-lived one is unsettled as of 2026-09-25; ask before assuming, and fix
-  this entry once it is decided.
-- `docx4j-2.11` is the fork's branch, 8 commits over the `2_11` tag: the four
-  upstream-bound font fixes, the coordinate and notice changes, and the phase 1
-  hooks. Work on it; release from it. Do not count it against `trunk`, which now
-  tracks Apache's post-2.11 `main` and so diverges from the fork's base.
+- **`2.11-docx4j.2` is the fork's branch. Work on it; release from it.** It carries the
+  `revision` property that sets the version, so a release changes one line there; see
+  `docs/developer/releasing.md`. Do not count it against `trunk`, which tracks Apache's
+  post-2.11 `main` and so diverges from the fork's base.
+- `docx4j-2.11` is the previous long-lived branch, and since nothing was tagged it is
+  what identifies the `2.11-docx4j.1` release: that shipped from `2f5030172` on it. Leave
+  it alone.
+- The name will stop matching once `2.11-docx4j.2` ships and the `revision` moves on. It
+  is still the long-lived branch at that point (Jason, 2026-09-25), so do not cut a new
+  one per version; rename this entry rather than the branch if it becomes confusing.
 - `trunk` tracks Apache's `main`. Remotes: `origin` = plutext/xmlgraphics-fop,
   `upstream` = apache/xmlgraphics-fop, `metanorma` and `chunlin` = the two forks whose
   commits CR-020 §9 classified.
@@ -71,9 +73,9 @@ session routed an edit to the wrong peer on that inference, is why.
   `FOP-packed-glyph-bboxes` are the upstream-facing branches: one fix each, cut
   against `trunk`, for a JIRA and a PR on Apache's GitHub.
 - An upstream-bound fix is done twice: on its own `FOP-####` branch against `trunk`
-  for the PR, and on `docx4j-2.11` for the fork. A docx4j-only hook goes on
-  `docx4j-2.11` only.
-- Merge `upstream/main` into `docx4j-2.11` at least at every Apache release and
+  for the PR, and on `2.11-docx4j.2` for the fork. A docx4j-only hook goes on
+  `2.11-docx4j.2` only.
+- Merge `upstream/main` into `2.11-docx4j.2` at least at every Apache release and
   whenever a fix sent from here lands upstream.
 
 ## Build and test commands
@@ -118,7 +120,7 @@ helped. So one round trip per item:
 3. Message it: branch, commit, what changed in one paragraph, the §6.6 item or JIRA it
    serves, and what a pass would look like. It runs the gate and replies pass or fail with
    the measurement; a fail comes back with the scoreboard reading, not a guess.
-4. On a pass, merge to `docx4j-2.11`; it records the item in CR-020 §8. Where the change
+4. On a pass, merge to `2.11-docx4j.2`; it records the item in CR-020 §8. Where the change
    closes or narrows a §6.6 item, update that item here too, with the fork commit and the
    mechanism, and tell the Enterprise session. On a fail, the change stays on its branch,
    and if the fail taught something about FOP, that goes in §6.6 as well.

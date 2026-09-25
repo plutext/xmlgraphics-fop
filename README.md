@@ -4,7 +4,7 @@
 > maintained by Plutext/docx4j and is not an Apache Software Foundation
 > release. Apache FOP is a trademark of the Apache Software Foundation.
 
-This branch (`docx4j-2.11`) is an upstream-tracking fork of
+This branch (`2.11-docx4j.2`) is an upstream-tracking fork of
 [Apache FOP](https://xmlgraphics.apache.org/fop/) 2.11, the XSL-FO formatter
 [docx4j](https://www.docx4java.org/) uses for docx to PDF. It exists so that
 docx4j's Word-layout-fidelity work can change FOP where reflection or
