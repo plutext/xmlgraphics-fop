@@ -17,7 +17,42 @@ The design is docx4j's CR-020, `../docx4j/docs/developer/change-requests/CR-020-
 the product name; packages kept; graceful degradation), §3 the design, §4 the phases,
 §8 progress, §9 the classification of the Metanorma and Chunlin commits. That CR stays
 in docx4j; this repository holds the code, and any fork-side CR of its own under
-`docs/developer/change-requests/` (none yet).
+`docs/developer/change-requests/` (`CR-001` the gsub-features hook, `CR-002` the
+ligature ToUnicode defect).
+
+## Read §6.6 before proposing any work
+
+`../Plutext-Enterprise-Java-11/docs/developer/change-requests/CR-001-word-layout-fidelity.md`
+is the measured record of what FOP cannot do and what docx4j does about it. §6.6 is
+the numbered running list of FOP limitations, each with its docx4j-side workaround.
+The README's hooks table and CR-020 both cite its item numbers.
+
+**Read §6.6 before proposing, planning, ordering or estimating any work here, and
+cite the item number in what you propose.** Read the section, not the README's
+second-hand summary of it. Three things went wrong on 2026-09-25 for want of this:
+the ligature ToUnicode defect was reported to Jason as a new finding when it was
+already item 30; P2-8 was recommended as the only queue item visible in rendered
+output when item 30 records the workaround that had already made it invisible; and
+item 15 shows the font twin P2-8 would replace is load-bearing for kerning too, so
+the change is wider than proposed.
+
+Keep it current, and only with what is confirmed:
+
+- a finding measured here and agreed with the docx4j session - the mechanism, not
+  just the symptom, since the symptom is usually already there;
+- something implemented here: the item's status, the fork commit, the fork CR key;
+- a retraction. A claim that turned out wrong is recorded as wrong rather than
+  quietly deleted. The existing entries do this, and it is what makes the list
+  worth trusting.
+
+Nothing goes in on inference. If it was not measured here or agreed with the docx4j
+session, it is not an item yet; where the evidence is partial, say so in the entry.
+
+That file is Jason's and other sessions edit it. Check `git status` on it first.
+Clean: edit it and commit that edit alone, naming the item number. Dirty: send the
+exact text to the session holding it instead. A dirty file says a file is contended
+and nothing about who holds it - the `tasks.yaml` episode of 2026-09-25, where this
+session routed an edit to the wrong peer on that inference, is why.
 
 ## Branches and remotes
 
@@ -65,7 +100,7 @@ as `docx4j-<n>`). Messages go between them with `SendMessage`.
 | the cherry-picks (CR-020 §8, P2-1 to P2-8), one branch each, FOP's own tests green | which items go to the fork, and in what order (Jason decides; the CR records it) |
 | the phase 3 structural items in the layout engine | the consumer side: `docx4j-export-fo`'s `FopCapabilities`, the gating of each rule on a hook, the `-Pfo-renderer-fork` profile |
 | upstream tracking, JIRA text drafted for Jason to file, PRs titled `FOP-####: ...` | the fidelity gate: `docx4j-export-fo` tests, then the corpus scored against Word (Enterprise CR-001, run from `../Plutext-Enterprise-Java-11`) |
-| the first release `2.11-docx4j.1` to Maven Central (signed, sources, javadoc; the `org.docx4j` credentials) | Enterprise CR-001 §6.6 (the running list of FOP limitations, with the docx4j-side workaround per item) and CR-020 itself |
+| the first release `2.11-docx4j.1` to Maven Central (signed, sources, javadoc; the `org.docx4j` credentials) | the docx4j-side workaround recorded against each Enterprise CR-001 §6.6 item, and CR-020 itself. §6.6 itself is shared: this session reads it before proposing work and records what it confirms or retracts (see "Read §6.6 before proposing any work") |
 
 The gate lives in docx4j because only the Word-scored corpus says whether a FOP change
 helped. So one round trip per item:
@@ -79,9 +114,10 @@ helped. So one round trip per item:
 3. Message it: branch, commit, what changed in one paragraph, the §6.6 item or JIRA it
    serves, and what a pass would look like. It runs the gate and replies pass or fail with
    the measurement; a fail comes back with the scoreboard reading, not a guess.
-4. On a pass, merge to `docx4j-2.11`; it records the item in CR-020 §8 and, where the
-   change closes a §6.6 item, tells the Enterprise session. On a fail, the change stays
-   on its branch.
+4. On a pass, merge to `docx4j-2.11`; it records the item in CR-020 §8. Where the change
+   closes or narrows a §6.6 item, update that item here too, with the fork commit and the
+   mechanism, and tell the Enterprise session. On a fail, the change stays on its branch,
+   and if the fail taught something about FOP, that goes in §6.6 as well.
 
 Never run a Maven build inside `../docx4j` or `../Plutext-Enterprise-Java-11` from here:
 each has one session, and a concurrent build races their `target/classes`.
