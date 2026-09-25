@@ -72,7 +72,8 @@ removes that failure mode.
 1. Phase 2 and the release decision are Jason's; see docx4j CR-020 §4 and §8.
 2. Set the version by editing the `revision` property in the root pom, and nothing else:
    `2.11-docx4j.N`, with no `-SNAPSHOT`.
-3. Tag and make sure `<scm><tag>` matches.
+3. Tag it: `git tag -a v2.11-docx4j.N`, and make sure `<scm><tag>` names the branch. See
+   Tagging below; the `v` prefix avoids a collision with the branch name.
 4. Dry run first, which builds and signs but publishes nothing:
 
         export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
@@ -91,6 +92,29 @@ removes that failure mode.
    visit to the web interface. Drop that flag if you would rather inspect first.
 6. Confirm the five artifacts appear, then tell the docx4j session so it can move
    `docx4j-export-fo` off the snapshot.
+
+## Tagging
+
+Release tags are the Maven version with a `v` prefix: **`v2.11-docx4j.1`**. Annotated, not
+lightweight, with the artifact list and what the release contains; see that tag for the
+shape.
+
+**The prefix is not decoration.** The long-lived branch is named for a version, so a tag
+named exactly `2.11-docx4j.2` would collide with the branch of that name, and git does not
+silently prefer one: it refuses, with `error: refname ... is ambiguous`. Every later
+command naming that ref breaks. The prefix keeps the two namespaces apart by construction.
+
+**Never push with `--tags`.** This repository holds tags from the other forks, fetched
+with their remotes, including Metanorma's own `v2.11.1` through `v2.11.5` release tags.
+Pushing all tags would publish those to plutext's repository. Push the one tag by name:
+
+    git push origin v2.11-docx4j.N
+
+Tags here are unsigned. Signing one needs the key passphrase; the published artifacts are
+signed regardless, which is what a consumer verifies.
+
+`2.11-docx4j.1` was tagged after the fact, on 2026-09-26. Tag before deploying next time,
+so the tag is what you build from rather than what you reconstruct afterwards.
 
 ## Signing
 
