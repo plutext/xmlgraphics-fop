@@ -139,19 +139,46 @@ This item is unlike the rest of the queue: **it moves the corpus by design.** A
 no-movers expectation would be the wrong gate and would read as a fail when the
 change is working.
 
-- **Corpus.** Movement is expected on documents whose fonts carry a `liga` table
-  and whose runs do not ask for ligatures. Pass is that every moved document
-  scores the same or better against Word, and none scores worse. A document that
-  worsens is a fail and wants its scoreboard reading, not an interpretation.
-- **Probe pairs.** The same text rendered with and without `w14:ligatures`, in a
-  font with a `liga` table, checked for the ligature glyph and the run advance.
-  Measurement is visual: ligature substitution changes the glyph and the
-  advance, and `ToUnicode` still maps it back, so text extraction would not see
-  it.
-- **An Arabic probe**, confirming a document with Arabic text is byte identical,
-  since no delta should be emitted for it.
-- **FOP side.** A test that an absent property leaves output unchanged, and one
-  that a delta is applied. Both must fail before the change.
+That is not a reason to suspend the gate. A gate switched off for one change is a
+gate somebody forgets to switch back on. Instead the corpus is partitioned in
+advance and the gate checks a prediction, so the pass condition stays positive.
+
+**Predict first, from the documents rather than from the output.** Before
+rendering, compute two sets. A document belongs to the **expected-mover** set
+when it has at least one run that resolves to no ligatures and whose font carries
+a `liga` table with coverage for a sequence the run contains. Every other
+document belongs to the **expected-still** set, which includes any document whose
+runs all ask for ligatures, any whose fonts have no `liga` coverage, and every
+Arabic or Indic document, since no delta is emitted for those.
+
+**Then the pass condition is four statements, all of which must hold.**
+
+- Every document in the expected-still set is byte identical. A mover here is a
+  fail, and the most likely cause is a delta emitted for a run that should not
+  have had one.
+- Every document in the expected-mover set that moved scores the same or better
+  against Word. One that scores worse is a fail and wants its scoreboard
+  reading, not an interpretation.
+- The movement has the expected shape where it is inspected: the affected run
+  draws more glyphs than before, because `fi` is drawn as two glyphs rather than
+  one, and its total advance changes accordingly. Fewer glyphs, or an unchanged
+  advance on a run that moved, means something other than ligature suppression
+  happened.
+- A document in the expected-mover set that did **not** move is not a fail, but
+  it is recorded. It means the font had no `liga` coverage for the sequences
+  actually present, and it narrows the prediction for next time.
+
+**Probe pairs** carry the direct evidence: the same text rendered with and
+without `w14:ligatures`, in a font with a `liga` table, checked for the ligature
+glyph and the run advance. Measurement is visual. Ligature substitution changes
+the glyph and the advance while `ToUnicode` still maps it back, so text
+extraction would not see it.
+
+**An Arabic probe** confirms a document with Arabic text is byte identical, for
+the reason in §4.
+
+**FOP side.** A test that an absent property leaves output unchanged, and one
+that a delta is applied. Both must fail before the change.
 
 ## 9. Upstream
 
