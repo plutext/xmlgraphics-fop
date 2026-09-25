@@ -79,4 +79,49 @@
     </plugins>
   </build>
 
+  <profiles>
+    <!-- This module is a launcher: its manifest carries Main-Class and the classpath, and it
+         has no Java sources at all, so maven-source-plugin and maven-javadoc-plugin both
+         correctly produce nothing. Apache's own `fop` artifact is the same shape and ships to
+         Central with neither. Rather than rely on that precedent surviving the Central Portal's
+         stricter validation, attach empty jars under both classifiers: the artifact then has
+         every file Central asks for, and an empty sources jar is honest for a module that has
+         no sources. -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>empty-sources-jar</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <configuration>
+                  <classifier>sources</classifier>
+                  <forceCreation>true</forceCreation>
+                </configuration>
+              </execution>
+              <execution>
+                <id>empty-javadoc-jar</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <configuration>
+                  <classifier>javadoc</classifier>
+                  <forceCreation>true</forceCreation>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>

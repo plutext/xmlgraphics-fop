@@ -48,6 +48,16 @@
     <url>https://www.docx4java.org/</url>
   </organization>
 
+  <!-- Maven Central requires at least one developer. Mirrors docx4j's own pom. -->
+  <developers>
+    <developer>
+      <name>Jason Harrop</name>
+      <email>jason@plutext.org</email>
+      <organization>Plutext</organization>
+      <organizationUrl>http://www.plutext.com</organizationUrl>
+    </developer>
+  </developers>
+
   <modules>
     <!-- docx4j-fo-renderer: only the modules docx4j consumes are built; fop-sandbox,
          fop-servlet and the transcoders stay in the tree, unmodified and unbuilt, so that
@@ -108,6 +118,26 @@
         </plugin>        
       </plugins>
     </pluginManagement>
+
+    <plugins>
+      <!-- Publishing to Maven Central. Deliberately the same mechanism docx4j uses, down to
+           the plugin version and the `ossrh` server id in ~/.m2/settings.xml, so that a first
+           release from this repository fails or succeeds the way docx4j's releases already do.
+           docx4j's pom carries a TODO to migrate to the Central Publisher Portal plugin
+           (https://central.sonatype.org/publish/publish-portal-maven/); that migration is one
+           task across both repositories, not a divergence to start here. -->
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.7.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://ossrh-staging-api.central.sonatype.com</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
   <profiles>
@@ -144,6 +174,71 @@
       <properties>
         <maven.compiler.release>${java.version}</maven.compiler.release>
       </properties>
+    </profile>
+
+    <!-- Maven Central requires a sources jar, a javadoc jar and a detached PGP signature for
+         every artifact. Plugin versions match docx4j's for the reason in the build section.
+         Signing key: -Dgpg.keyname=<key>, or gpg's default key if unset. Passphrase:
+         -Dgpg.passphrase=..., which needs the loopback pinentry argument below. -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.1.0</version>
+            <configuration>
+              <!-- FOP's javadoc does not pass doclint. The event.severity tag this build
+                   declares comes from pluginManagement above and must not be overridden. -->
+              <additionalJOption>-Xdoclint:none</additionalJOption>
+              <maxmemory>512m</maxmemory>
+              <source>${java.version}</source>
+              <detectJavaApiLink>false</detectJavaApiLink>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.5</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <gpgArguments>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 
