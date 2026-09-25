@@ -21,15 +21,16 @@ in docx4j; this repository holds the code, and any fork-side CR of its own under
 
 ## Branches and remotes
 
-- `docx4j-2.11` is the fork's branch (from the `fop-2_11` tag; 206 commits over
-  `trunk` at 2026-09-18, most of them the coordinate and notice changes plus the
-  phase 1 hooks). Work on it; release from it.
+- `docx4j-2.11` is the fork's branch, 8 commits over the `2_11` tag: the four
+  upstream-bound font fixes, the coordinate and notice changes, and the phase 1
+  hooks. Work on it; release from it. Do not count it against `trunk`, which now
+  tracks Apache's post-2.11 `main` and so diverges from the fork's base.
 - `trunk` tracks Apache's `main`. Remotes: `origin` = plutext/xmlgraphics-fop,
   `upstream` = apache/xmlgraphics-fop, `metanorma` and `chunlin` = the two forks whose
   commits CR-020 §9 classified.
-- `FOP-3328`, `FOP-3328-on-trunk`, `FOP-cjk-radical-tounicode`,
-  `FOP-empty-glyph-not-composite`, `FOP-packed-glyph-bboxes` are the upstream-facing
-  branches: one fix each, cut against `trunk`, for a JIRA and a PR on Apache's GitHub.
+- `FOP-3328`, `FOP-cjk-radical-tounicode`, `FOP-empty-glyph-not-composite`,
+  `FOP-packed-glyph-bboxes` are the upstream-facing branches: one fix each, cut
+  against `trunk`, for a JIRA and a PR on Apache's GitHub.
 - An upstream-bound fix is done twice: on its own `FOP-####` branch against `trunk`
   for the PR, and on `docx4j-2.11` for the fork. A docx4j-only hook goes on
   `docx4j-2.11` only.
