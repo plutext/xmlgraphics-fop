@@ -1,50 +1,75 @@
-# CR-001: a `gsub-features` hook, so Word's ligature setting reaches FOP
+# CR-001: a `gsub-features` hook, replacing docx4j's no-ligature font twin
 
 Status: DRAFT (design only, no code). Raised 2026-09-25 for docx4j CR-020 phase 2
-item P2-8, which the classification named as docx4j's own finding rather than a
-Metanorma cherry-pick. Registry key `fop/CR-001`.
+item P2-8. Registry key `fop/CR-001`. Revised the same day after the docx4j
+session reviewed it; §1 corrects the premise the first draft was built on.
 
-## 1. The defect, measured
+## 1. Correction to the first draft
 
-FOP applies OpenType's common-ligature feature unconditionally on the default
-script path. `DefaultScriptProcessor.GSUB_FEATURES` is
+The first draft of this CR claimed docx4j has no handling of `w14:ligatures` and
+that FOP is therefore applying ligatures Word would not apply, across the corpus,
+today. **That was wrong.** The claim came from a grep scoped to
+`docx4j-export-fo`, and the handling lives in `docx4j-core`, in
+`RunFontSelector.noLigatures`, since 17.0.5.
 
-    ccmp   glyph composition/decomposition
-    liga   common ligatures
-    locl   localized forms
+What docx4j already does. `RunFontSelector` reads the run's effective `rPr`
+through `PropertyResolver`, which is direct properties, then the style chain,
+then `docDefaults`. When a run asks for no ligatures and no kerning and its span
+is Latin-only, it rewrites the span's `font-family` to `<family>+noliga`.
+`FopConfigUtil.noLigaTwin` declares every TrueType-flavoured font a second time
+under that triplet with `encoding-mode="single-byte"`, and a simple TrueType font
+in FOP implements neither `Substitutable` nor `Positionable`, so it gets no GSUB
+and no GPOS at all. Suffixes stack, `PhysicalFonts` strips them.
 
-and `FopFactoryBuilder` initialises `isComplexScript = true`, which docx4j passes
-straight through rather than overriding. So every run rendered through a font
-carrying a `liga` table gets ligatures applied.
+So on the common path, a TrueType font with Latin text and no kerning asked,
+Word's no-ligature setting is **already honoured today, on Apache FOP**. The
+corpus is not getting spurious ligatures there, and this item is not the live
+fidelity defect the first draft advertised. My recommendation to Jason that P2-8
+was the one item visible in rendered output rested on that error.
 
-Word does not work that way. Standard ligatures are off unless `w14:ligatures`
-asks for them, on the run's `rPr`, on its style chain, or on `docDefaults`.
-`docx4j-export-fo` has no handling of that element anywhere: a grep for
-`ligature` over its sources returns nothing.
+## 2. What the twin does not reach: the actual case for the hook
 
-The error runs in both directions, which is worth stating because it is easy to
-assume it is only one.
+Four gaps, all measured by the docx4j session.
 
-- **Too many.** A document that does not ask for ligatures gets them anyway, so
-  `fi`, `fl`, `ff` and `ffi` are drawn as single glyphs with a different total
-  advance than Word produces.
-- **Too few.** `clig`, contextual ligatures, is absent from FOP's default list
-  altogether. When Word asks for `standardContextual`, which newer theme
-  defaults commonly do, FOP cannot honour the contextual half at all.
+- **CFF and OpenType-flavoured fonts get no twin at all**, because FOP would
+  write an OTTO file as `/Subtype /TrueType` inside `/FontFile2`, which is
+  invalid PDF. So the substitutes for Arial Narrow and Segoe UI Light still
+  receive common ligatures. docx4j's own font jars are all TrueType, so this is
+  the substitute set only.
+- **Runs that ask for kerning but not ligatures** go to the `+kern` twin, which
+  stays advanced, so they receive ligatures.
+- **Spans containing any non-Latin character** keep substitution by design,
+  because a single-byte font would lose text extraction for a whole non-Latin
+  alphabet.
+- **The twin can only ever subtract.** Word 365's Normal template sets
+  `standardContextual` in `docDefaults`, so every new Word 365 document asks for
+  contextual ligatures, and FOP's default list is `ccmp liga locl` with no
+  `clig`. Those documents get common ligatures only and can never get contextual
+  ones. The twin cannot express an addition; the hook can.
 
-Unlike every other item in the phase 2 queue, this one is visible in rendered
-output today. It is the only one that changes what a consumer sees.
+The costs §5 of the first draft held against the twin approach, doubled font
+registration, a typographic concern pushed into font naming, and lost FO
+inheritance, are real, and they go away on the fork. But they are a
+simplification argument, not a fidelity one. The fidelity argument is the four
+gaps above, and chiefly the fourth.
 
-## 2. Why the Metanorma approach is not the way
+## 3. The design is a replacement, with the twin kept as fallback
+
+On the fork, docx4j emits the property instead of the `+noliga` suffix. On Apache
+FOP the capability probe fails and docx4j keeps the twin exactly as it ships
+today. That is what makes this a hook rather than a fix: it changes nothing until
+something asks, and there is a working path when nothing does.
+
+## 4. Why the Metanorma approach is not the way
 
 CR-020 §9.2 item M10e gates substitution on the language being `ar` or `dflt`,
 having first mapped `xml:lang="ar"` to `dflt`. That is wrong twice over. A
 BCP-47 language tag is not an OpenType language-system tag, and the gate would
 silence substitution for every tagged language the moment docx4j emits
 `language`. It also reaches for language when the property being modelled is a
-run property, not a language property.
+run property.
 
-## 3. The call chain, and where a decision can be made
+## 5. The call chain, and where a decision can be made
 
     GlyphMapping.doGlyphMapping(TextFragment text, ..., Font font, ...)   public static
       -> GlyphMapping.processWordMapping(text, ..., font, ...)            script and language come from text
@@ -57,146 +82,166 @@ run property, not a language property.
                   -> assembleLookups(gsub, getSubstitutionFeatures(), lookups)
 
 The feature list enters at exactly one point, `getSubstitutionFeatures()`, and
-the only place with any knowledge of the run is the `TextFragment` at the top.
+the only place with knowledge of the run is the `TextFragment` at the top.
 
-## 4. Designs rejected, and why
+## 6. Designs rejected, and why
 
 - **A setter on the font.** Rejected. `ScriptProcessor` instances are cached per
   script in a map owned by `GlyphSubstitutionTable`, which belongs to the font,
-  and fonts are themselves cached and shared across renders. Per-document state
-  on a font leaks between documents in a server process.
-- **A thread-local.** Rejected for the same leak, plus hidden state. The
-  classification already flagged a static mutable field in the Metanorma message
-  work as a hazard; this would be the same mistake.
-- **Registering each physical font twice under two triplets**, one with
-  ligatures and one without, selecting by `font-family` in the generated FO.
-  This needs no FOP change at all and is the fallback if §5 is rejected
-  upstream. Set aside because it doubles font registration, loses FO
-  inheritance, and pushes a typographic concern into font naming.
+  and fonts are themselves cached across renders. Per-document state on a font
+  leaks between documents in a server process.
+- **A thread-local.** Rejected for the same leak, plus hidden state.
 - **Replacing the feature list wholesale.** Rejected on a measured hazard.
   `ArabicScriptProcessor.GSUB_FEATURES` is `calt ccmp fina init isol liga medi
-  rlig`: the Arabic shaping features and required ligatures live in the same
-  list. A list authored for Latin and applied to an Arabic run would destroy
-  Arabic rendering. The value must therefore be a delta, never an absolute list.
+  rlig`: the Arabic shaping features and required ligatures sit in the same list.
+  A list authored for Latin and applied to an Arabic run would destroy Arabic
+  rendering. The value must be a delta, never an absolute list.
 
-## 5. The design, FOP side
+## 7. The design, FOP side
 
 A new inherited extension property, `fox:gsub-features`, whose value is a delta
 over whatever the script's own processor would use.
 
     fox:gsub-features="-liga"           do not apply common ligatures
     fox:gsub-features="-liga +clig"     contextual instead of common
-    fox:gsub-features="+clig +dlig"     add to the script's own list
+    fox:gsub-features="+clig"           add to the script's own list
 
 1. Register `gsub-features` in `ExtensionElementMapping.PROPERTY_ATTRIBUTES`,
-   alongside `alt-text` and the rest, and add the property to
-   `FOPropertyMapping` as inherited so FO inheritance gives per-run scope for
-   free.
-2. `TextFragment` gains `default String[] getGsubFeatures() { return null; }`.
-   A default method keeps all four implementors compiling, and Java 8 is the
-   floor here so it is available.
+   alongside `alt-text`, and add the property to `FOPropertyMapping` as inherited
+   so FO inheritance gives per-span scope for free.
+2. `TextFragment` gains `default String[] getGsubFeatures() { return null; }`. A
+   default method keeps all four implementors compiling, and Java 8 is the floor.
 3. `FOText` overrides it from the resolved property.
-4. `processWordMapping` reads `text.getGsubFeatures()` and threads it through new
-   overloads on `Font`, `LazyFont`, `MultiByteFont`,
-   `GlyphSubstitutionTable.substitute` and
+4. `processWordMapping` reads it and threads it through new overloads on `Font`,
+   `LazyFont`, `MultiByteFont`, `GlyphSubstitutionTable.substitute` and
    `ScriptProcessor.substitute`. Every existing signature is kept and delegates
-   with `null`, so nothing that exists today changes shape.
-5. `ScriptProcessor.substitute` applies the delta to
-   `getSubstitutionFeatures()` before calling `assembleLookups`.
+   with `null`.
+5. `ScriptProcessor.substitute` applies the delta to `getSubstitutionFeatures()`
+   before calling `assembleLookups`.
 
-Note for step 4: `LazyFont.realFontDescriptor` is private with no accessor, so
-the overload must be added to `LazyFont` itself. A consumer cannot reach past it.
+`LazyFont.realFontDescriptor` is private with no accessor, so step 4's overload
+must be added to `LazyFont` itself; a consumer cannot reach past it.
 
-## 6. Inertness, and the capability
+With the property absent the delta is `null`, every overload delegates as before,
+and output is bit identical. Capability name `gsub-features`, exposed through
+`Docx4jFop`.
 
-With the property absent the delta is `null`, every overload delegates as
-before, and `getSubstitutionFeatures()` is used unchanged. Output is bit
-identical. That satisfies the hook definition in the README: a change that does
-nothing FOP does not already do until something asks.
+## 8. The design, docx4j side
 
-Capability name `gsub-features`, exposed through `Docx4jFop` so
-`FopCapabilities` can probe it and docx4j can gate its rule and degrade on
-Apache FOP.
+Owned by the docx4j session; recorded here so the halves match. Corrections in
+this section are its review, not mine.
 
-## 7. The design, docx4j side
+1. The effective `w14:ligatures` is already resolved by `PropertyResolver` and
+   already feeds `RunFontSelector`. Absent **after** resolution means none.
+   Absent on the run alone means nothing, because Word 365 documents inherit
+   `standardContextual` from `docDefaults`.
+2. Map the 16 values of `ST_Ligatures` to a delta. Because FOP applies `liga` by
+   default, **any value without `standard` in it must subtract it**:
 
-Owned by the docx4j session, recorded here so the two halves match.
+        none, absent after resolution     -liga
+        standard                          (nothing)
+        contextual                        -liga +clig
+        historical                        -liga +hlig
+        discretional                      -liga +dlig
+        contextualHistorical              -liga +clig +hlig
+        standardContextual                +clig
+        all                               +clig +hlig +dlig
 
-1. Resolve the effective `w14:ligatures` per run: direct `rPr`, then the style
-   chain, then `docDefaults/rPrDefault`.
-2. Map it to a delta. Absent or `none` gives `-liga`. `standard` gives nothing,
-   since `liga` is already in FOP's list. `contextual` adds `+clig`,
-   `historical` adds `+hlig`, `discretional` adds `+dlig`, combinations
-   accordingly, and `all` adds all three.
-3. Emit `fox:gsub-features` on the run's `fo:inline` only when the delta is
-   non-empty, and only for runs whose script is Latin, leaving Arabic and Indic
-   runs alone for the reason in §4.
-4. Gate the rule on the capability.
+   and so on for the remaining combinations. `ccmp` and `locl` stay in every
+   case, since Word always applies them.
+3. Emit on the run's `fo:inline`, the same element that carries the `+noliga`
+   suffix today, per span rather than per block. `RunFontSelector` already emits
+   one inline per stretch of the same font and script and already decides
+   Latin-only per span.
+4. Do not let `w:pPr/w:rPr` reach the runs: it formats the paragraph mark only.
+5. Gate on the capability; keep the twin for Apache FOP.
 
-## 8. Pass criteria
+Two further Word switches have the same shape and the property could carry them:
+`w14:cntxtAlts`, which maps to `calt` and is an addition because FOP's default
+list omits it, and `w14:stylisticSets`, which maps to `ss01` through `ss20`.
+Word's theme carries no ligature setting, so no path is missing there.
 
-This item is unlike the rest of the queue: **it moves the corpus by design.** A
-no-movers expectation would be the wrong gate and would read as a fail when the
-change is working.
+## 9. Pass criteria
 
-That is not a reason to suspend the gate. A gate switched off for one change is a
-gate somebody forgets to switch back on. Instead the corpus is partitioned in
-advance and the gate checks a prediction, so the pass condition stays positive.
+This item moves the corpus by design, but that is not a reason to suspend the
+gate: a gate switched off for one change is a gate somebody forgets to switch
+back on. Instead the corpus is partitioned in advance and the gate checks a
+prediction, so the pass condition stays positive.
 
-**Predict first, from the documents rather than from the output.** Before
-rendering, compute two sets. A document belongs to the **expected-mover** set
-when it has at least one run that resolves to no ligatures and whose font carries
-a `liga` table with coverage for a sequence the run contains. Every other
-document belongs to the **expected-still** set, which includes any document whose
-runs all ask for ligatures, any whose fonts have no `liga` coverage, and every
-Arabic or Indic document, since no delta is emitted for those.
+**The partition must be twin-aware.** The baseline is the fork as it stands with
+docx4j using the twin; the candidate is the fork with the hook and docx4j
+emitting the delta. So a document whose no-ligature runs are Latin-only, in a
+TrueType-flavoured font, with no kerning asked, is **expected still**: the twin
+already produces no ligatures there and the hook must reproduce that byte for
+byte. A predicate of "asks for no ligatures and the font has `liga` coverage"
+would wrongly predict movers the twin has already made still.
 
-**Then the pass condition is four statements, all of which must hold.**
+**Expected movers** are only the four gaps in §2: no-ligature runs in a CFF
+substitute, no-ligature runs that also ask for kerning, no-ligature spans holding
+a non-Latin character, and documents resolving to a value with `clig`, `hlig` or
+`dlig` in a font carrying that feature, the Word 365 `docDefaults` case being the
+common one.
 
-- Every document in the expected-still set is byte identical. A mover here is a
-  fail, and the most likely cause is a delta emitted for a run that should not
-  have had one.
-- Every document in the expected-mover set that moved scores the same or better
-  against Word. One that scores worse is a fail and wants its scoreboard
-  reading, not an interpretation.
-- The movement has the expected shape where it is inspected: the affected run
-  draws more glyphs than before, because `fi` is drawn as two glyphs rather than
-  one, and its total advance changes accordingly. Fewer glyphs, or an unchanged
-  advance on a run that moved, means something other than ligature suppression
-  happened.
-- A document in the expected-mover set that did **not** move is not a fail, but
-  it is recorded. It means the font had no `liga` coverage for the sequences
-  actually present, and it narrows the prediction for next time.
+The partition needs the effective `rPr` per run, the font each span resolves to,
+its flavour and its GSUB feature coverage. All four are docx4j-side facts, so the
+docx4j session computes the partition when the item starts and supplies the list
+with a reason per document. This side holds the pass statements over it.
 
-**Probe pairs** carry the direct evidence: the same text rendered with and
-without `w14:ligatures`, in a font with a `liga` table, checked for the ligature
-glyph and the run advance. Measurement is visual. Ligature substitution changes
-the glyph and the advance while `ToUnicode` still maps it back, so text
-extraction would not see it.
+**Pass is all five of these.**
 
-**An Arabic probe** confirms a document with Arabic text is byte identical, for
-the reason in §4.
+- Every expected-still document is byte identical. A mover here is the
+  interesting failure: a delta reached a run that should not have had one.
+- Every expected-mover that moved scores the same or better against Word. One
+  that scores worse is a fail and wants its scoreboard reading.
+- An expected mover that did not move is recorded, not failed. It means the font
+  lacked coverage for the sequences present, and it sharpens the next prediction.
+- An Arabic probe is byte identical, for the reason in §6.
+- The global override `docx4j.convert.out.fo.ligatures=true`, which lets FOP
+  ligate everywhere, still wins.
 
 **FOP side.** A test that an absent property leaves output unchanged, and one
 that a delta is applied. Both must fail before the change.
 
-## 9. Upstream
+Measurement is by text extraction, not only visually, for the reason in §10.
 
-`fox:gsub-features` is a real gap in FOP rather than a docx4j peculiarity: any FO
-producer wanting typographic control over substitution needs it, and there is no
-configuration surface for it today. It is worth offering upstream as a property,
-not kept fork-only. It is larger than the fixes sent so far, so it wants a JIRA
-carrying this design before any patch, and it should not block the fork.
+## 10. A larger defect found on the way: ligature text extraction
 
-## 10. Open questions
+The first draft asserted that a ligature's `ToUnicode` maps back to its component
+characters, so extraction would not see the change. **That is false**, and the
+consequence is a worse bug than the one this CR addresses. Verified here from the
+code after the docx4j session measured it in output.
 
-- Whether the delta syntax should be the space-separated `-liga +clig` form
-  above or a pair of properties. The single-property form is proposed because it
-  keeps one registry entry and one getter.
-- Whether GPOS deserves the same treatment. Word's kerning setting, `w:kern`,
-  has the same shape as the ligature setting, and `kern` sits in every
-  processor's GPOS list. Out of scope here; worth its own item if the corpus
-  shows kerning movers.
-- Whether docx4j should emit the delta per run or hoist it to the block when a
-  whole block agrees, which would cut FO size on documents that set it in
-  `docDefaults`.
+`MultiByteFont.mapGlyphsToChars` takes each glyph's character from
+`findUnsubstitutedCharacter` and, when substitution did produce the glyph, falls
+through to `findCharacterFromGlyphIndex`, which for a glyph with no cmap entry
+mints a private-use code point through `createPrivateUseMapping`.
+`nextPrivateUse` is initialised to `0xE000`. That code point is what the painter
+hands to `CIDSubset.mapChar`, which records it as the glyph's unicode, and
+`CIDSubset.getChars` is exactly what `PDFToUnicodeCMap` is built from.
+
+So a ligature glyph's `ToUnicode` entry is U+E000 and upward, not `fi`. Search,
+copy and paste, and screen readers all get private-use characters. The docx4j
+session found it as a third of the lines of a French corpus document extracting
+`ti` as U+E000, which is how their corpus line-parity score noticed at all.
+
+This affects every FOP user with ligatures enabled, which is the default, and it
+is invisible until someone selects text, so it goes unreported. It is a PDF/UA
+and searchability defect rather than a fidelity one.
+
+It is not fixable by the same mechanism. `mapGlyphsToChars` returns one character
+per glyph and cannot express "this glyph is two characters", whereas the PDF
+`ToUnicode` format can: a `bfchar` destination may be a string. The information
+needed already exists in the `CharAssociation` of the `GlyphSequence`, which is
+the same mechanism the Kangxi radical fix used. The fix therefore belongs in how
+the `ToUnicode` CMap is built, not in the glyph-to-character mapping.
+
+Recorded as its own item rather than folded in here, because it is independent of
+the feature switch, it is worth more to more people, and it wants its own JIRA.
+See `CR-002`.
+
+## 11. Open questions
+
+- Whether the delta syntax should be the space-separated form above or a pair of
+  properties. One property keeps one registry entry and one getter.
+- Whether GPOS deserves the same treatment. Word's `w:kern` has the same shape
+  and `kern` sits in every processor's GPOS list. Out of scope here.
