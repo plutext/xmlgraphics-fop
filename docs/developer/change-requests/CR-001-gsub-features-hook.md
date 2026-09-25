@@ -237,7 +237,12 @@ the `ToUnicode` CMap is built, not in the glyph-to-character mapping.
 
 Recorded as its own item rather than folded in here, because it is independent of
 the feature switch, it is worth more to more people, and it wants its own JIRA.
-See `CR-002`.
+See `CR-002`, and Enterprise CR-001 §6.6 item 30, which is the canonical entry.
+
+Item 30 also settles the division between the two. This CR decides *whether* a
+ligature is drawn; item 30 is about what the PDF *says* it is. And item 30 notes
+the limit that matters here: a run that does ask for ligatures still gets the
+private-use text layer, which no amount of feature switching fixes.
 
 ## 11. Open questions
 

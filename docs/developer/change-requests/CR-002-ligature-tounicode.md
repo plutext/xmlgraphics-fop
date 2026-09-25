@@ -1,8 +1,14 @@
 # CR-002: a ligature's `ToUnicode` entry is a private-use code point, not its letters
 
-Status: DRAFT (analysis only, no code). Raised 2026-09-25, found while designing
+Status: DRAFT (analysis only, no code). Raised 2026-09-25 while designing
 `CR-001`. Registry key `fop/CR-002`. Upstream-bound: this is a defect in Apache
 FOP with no docx4j specificity, so it goes upstream first.
+
+This is **Enterprise CR-001 §6.6 item 30**, which is the canonical entry and
+records the docx4j-side workaround. The defect was already known there: it was
+found on the corpus in docx4j 17.0.5, and the `+noliga` font twin was built partly
+for it. What this CR added on 2026-09-25 was the mechanism in §2, traced from
+FOP's code. The symptom was not new; the cause was.
 
 ## 1. The defect
 
@@ -101,7 +107,13 @@ The gate is text extraction, not geometry, which is the reverse of most FOP work
 - A font with genuinely meaningless glyphs, to show the private-use fallback
   still applies where there is no character to publish.
 
-## 7. Relation to CR-001 and to the corpus
+## 7. Relation to CR-001, to the twin, and to the corpus
+
+The twin does not make this go away even where it applies. Item 30 records the
+limit plainly: **a run that does ask for ligatures still gets the private-use text
+layer.** Since Word 365's default template asks for contextual ligatures in every
+new document, that is the common case rather than the exception, and it is
+unaffected by anything `CR-001` does.
 
 `CR-001` switches ligatures off where Word asks for none. On the corpus that
 hides this defect rather than fixing it, because a suppressed ligature has no
