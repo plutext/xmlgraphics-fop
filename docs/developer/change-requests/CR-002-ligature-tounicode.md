@@ -115,6 +115,33 @@ of that writer.
 in the font's own encoding, and still the right answer for a glyph with no character
 behind it at all. Only its use as the glyph's *published meaning* is wrong.
 
+## 5a. The writer change, designed
+
+Read the writer on 2026-09-27. It is 412 lines whose every helper, `partOfRange`,
+`sameRangeEntryAsNext`, `startOfRange` and `endOfRange`, indexes a `char[]` positionally,
+with a surrogate pair occupying two slots.
+
+**The representation becomes `String[]`, one entry per glyph selector.** A surrogate pair
+stops being two slots and becomes one entry of length two, which removes the positional
+hack rather than adding to it. A ligature is likewise one entry, of length two or more.
+
+**Rangeable means "a single code point".** An entry may join a `bfrange` only when it is
+one code point: length one, or length two forming a valid surrogate pair. A ligature is
+two code points and can never range, so it is forced into `bfchar`. That single rule
+replaces the surrogate special-casing scattered through the four helpers.
+
+**The safety net comes first, and now exists.**
+`ToUnicodeCharacterisationTestCase` pins the writer's current output: contiguous runs
+packing into one range, scattered points becoming chars, a surrogate pair staying one code
+point, the single-byte code space, and the mixed hex case, destinations lower-case while
+the code space is upper-case, which is a byte-level property of every PDF FOP writes and
+is easy to lose by accident. It also pins the defect itself: three consecutive private-use
+ligature glyphs currently pack into one `bfrange`, so the text layer reads U+E000 upward.
+
+Those tests were written against the real output, not from the specification: three of the
+six expectations were wrong first time, all on hex case. That is the point of a
+characterisation test, and it is why the refactor gets one before it starts.
+
 ## 6. Measurement
 
 The gate is text extraction, not geometry, which is the reverse of most FOP work.
