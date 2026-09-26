@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, a performSubstitution overload taking the delta. See README.md,
+ * "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fonts;
@@ -421,10 +425,16 @@ public class LazyFont extends Typeface implements FontDescriptor, Substitutable,
      */
     public CharSequence performSubstitution(CharSequence cs, String script, String language, List associations,
                                             boolean retainControls) {
+        return performSubstitution(cs, script, language, associations, retainControls, null);
+    }
+
+    /** {@inheritDoc} */
+    public CharSequence performSubstitution(CharSequence cs, String script, String language, List associations,
+                                            boolean retainControls, String[] gsubFeatures) {
         load(true);
         if (realFontDescriptor instanceof Substitutable) {
             return ((Substitutable)realFontDescriptor).performSubstitution(cs,
-                script, language, associations, retainControls);
+                script, language, associations, retainControls, gsubFeatures);
         } else {
             return cs;
         }

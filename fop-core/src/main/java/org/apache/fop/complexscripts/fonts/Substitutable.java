@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, a default performSubstitution overload taking the delta. See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.complexscripts.fonts;
@@ -51,6 +55,26 @@ public interface Substitutable {
      * denotes "font characters", i.e., character codes that map directly (1-1) to their associated glyphs
      */
     CharSequence performSubstitution(CharSequence cs, String script, String language, List associations, boolean retainControls);
+
+    /**
+     * As above, with a delta over the GSUB features the script's processor would apply.
+     * An implementor that cannot honour it should ignore it and substitute as before.
+     *
+     * <p>Declared abstract rather than as a Java 8 default method because the checkstyle
+     * this build pins, 2.14, cannot parse a default method and fails the whole file.
+     * Upstream raised its checkstyle in FOP-3281, so this can become a default method at
+     * the merge of Apache's main.</p>
+     *
+     * @param cs character sequence
+     * @param script a script identifier
+     * @param language a language identifier
+     * @param associations optional list to be populated with association objects
+     * @param retainControls if true, retain control characters
+     * @param gsubFeatures delta tokens like -liga and +clig, or null
+     * @return the substituted sequence
+     */
+    CharSequence performSubstitution(CharSequence cs, String script, String language, List associations,
+                                     boolean retainControls, String[] gsubFeatures);
 
     /**
      * Reorder combining marks in character sequence so that they precede (within the sequence) the base

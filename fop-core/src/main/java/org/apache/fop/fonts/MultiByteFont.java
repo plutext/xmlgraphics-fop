@@ -16,9 +16,10 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: FOP-3330: glyph bounding boxes packed as ints; and a CJK ideograph sharing a glyph with
- * a Kangxi radical is mapped back to the ideograph, not the radical (docx4j Enterprise CR-001 item 26). See
- * README.md, "Changes from Apache FOP 2.11". */
+ * from Apache FOP 2.11: FOP-3330: glyph bounding boxes packed as ints; and a CJK ideograph sharing a glyph
+ * with a Kangxi radical is mapped back to the ideograph, not the radical (docx4j Enterprise CR-001 item 26).
+ * See README.md, "Changes from Apache FOP 2.11".; hook gsub-features, a performSubstitution overload taking
+ * the delta. */
 
 /* $Id$ */
 
@@ -575,10 +576,20 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
     /** {@inheritDoc} */
     public CharSequence performSubstitution(CharSequence charSequence, String script, String language,
                                             List associations, boolean retainControls) {
+        return performSubstitution(charSequence, script, language, associations, retainControls, null);
+    }
+
+    /** {@inheritDoc} */
+    public CharSequence performSubstitution(CharSequence charSequence, String script, String language,
+                                            List associations, boolean retainControls, String[] gsubFeatures) {
         if (gsub != null) {
             charSequence = gsub.preProcess(charSequence, script, this, associations);
             GlyphSequence glyphSequence = charSequenceToGlyphSequence(charSequence, associations);
-            GlyphSequence glyphSequenceSubstituted = gsub.substitute(glyphSequence, script, language);
+            // With no delta call exactly the method this always called: "inert" has to mean
+            // inert for a caller that has stubbed or overridden the three-argument form too.
+            GlyphSequence glyphSequenceSubstituted = (gsubFeatures == null || gsubFeatures.length == 0)
+                    ? gsub.substitute(glyphSequence, script, language)
+                    : gsub.substitute(glyphSequence, script, language, gsubFeatures);
             if (associations != null) {
                 associations.clear();
                 associations.addAll(glyphSequenceSubstituted.getAssociations());

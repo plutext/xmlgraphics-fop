@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, implementing the interface method that carries the delta. See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.svg.font;
@@ -158,7 +162,12 @@ public class FOPGVTGlyphVector implements GVTGlyphVector {
             return sb.toString();
         }
 
-        public String getScript() {
+        public String[] getGsubFeatures() {
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    public String getScript() {
             if (script != null) {
                 return script;
             } else {

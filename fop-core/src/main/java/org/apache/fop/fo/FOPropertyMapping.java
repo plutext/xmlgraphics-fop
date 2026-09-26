@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, the fox:gsub-features property, inherited. See README.md, "Changes
+ * from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo;
@@ -2666,6 +2670,14 @@ public final class FOPropertyMapping implements Constants {
         m.setInherited(false);
         m.setDefault("");
         addPropertyMaker("fox:abbreviation", m);
+
+        // fox:gsub-features, a delta over the GSUB features the script's processor would
+        // apply: "-liga" drops one, "+clig" adds one, space separated. Inherited, so it can
+        // be set on an ancestor and reaches the text below it.
+        m = new StringProperty.Maker(PR_X_GSUB_FEATURES);
+        m.setInherited(true);
+        m.setDefault("");
+        addPropertyMaker("fox:gsub-features", m);
 
         // fox:auto-toggle, used only in fo:multi-switch
         m = new EnumProperty.Maker(PR_X_AUTO_TOGGLE);

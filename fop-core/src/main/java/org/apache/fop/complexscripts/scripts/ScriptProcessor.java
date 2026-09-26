@@ -15,10 +15,15 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, a substitute overload and applyGsubDelta. See README.md, "Changes
+ * from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.complexscripts.scripts;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -96,7 +101,58 @@ public abstract class ScriptProcessor {
      */
     public final GlyphSequence substitute(GlyphSubstitutionTable gsub, GlyphSequence gs, String script, String language,
                                           Map<GlyphTable.LookupSpec, List<GlyphTable.LookupTable>> lookups) {
-        return substitute(gs, script, language, assembleLookups(gsub, getSubstitutionFeatures(), lookups), getSubstitutionContextTester());
+        return substitute(gsub, gs, script, language, lookups, null);
+    }
+
+    /**
+     * As above, with a delta applied to this processor's substitution features.
+     * @param gsub the glyph substitution table that applies
+     * @param gs an input glyph sequence
+     * @param script a script identifier
+     * @param language a language identifier
+     * @param lookups a mapping from lookup specifications to glyph subtables
+     * @param gsubFeatures delta tokens like -liga and +clig, or null for no change
+     * @return the substituted (output) glyph sequence
+     */
+    public final GlyphSequence substitute(GlyphSubstitutionTable gsub, GlyphSequence gs, String script, String language,
+                                          Map<GlyphTable.LookupSpec, List<GlyphTable.LookupTable>> lookups,
+                                          String[] gsubFeatures) {
+        String[] features = applyGsubDelta(getSubstitutionFeatures(), gsubFeatures);
+        return substitute(gs, script, language, assembleLookups(gsub, features, lookups), getSubstitutionContextTester());
+    }
+
+    /**
+     * Applies a delta to a script processor's feature list. A token of {@code -tag} removes
+     * that feature and {@code +tag} adds it; anything else is ignored. Removals leave the
+     * remaining features in their original order, so a delta of removals only can never
+     * reorder them, and additions are inserted in sorted position because every processor's
+     * list here is alphabetical and order decides the order substitutions are applied in.
+     *
+     * @param base the features the processor would apply
+     * @param delta the delta tokens, or null
+     * @return the resulting features, or base itself when there is nothing to do
+     */
+    static String[] applyGsubDelta(String[] base, String[] delta) {
+        if (delta == null || delta.length == 0) {
+            return base;
+        }
+        List<String> features = new ArrayList<String>(Arrays.asList(base));
+        for (String token : delta) {
+            if (token == null || token.length() < 2) {
+                continue;
+            }
+            String tag = token.substring(1);
+            if (token.charAt(0) == '-') {
+                features.remove(tag);
+            } else if (token.charAt(0) == '+' && !features.contains(tag)) {
+                int at = 0;
+                while (at < features.size() && features.get(at).compareTo(tag) < 0) {
+                    at++;
+                }
+                features.add(at, tag);
+            }
+        }
+        return features.toArray(new String[features.size()]);
     }
 
     /**

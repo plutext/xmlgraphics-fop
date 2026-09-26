@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, implementing the interface method that carries the delta. See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.render.java2d;
@@ -289,6 +293,12 @@ public class CustomFontMetricsMapper extends Typeface implements FontMetricsMapp
     /**
      * {@inheritDoc}
      */
+    public CharSequence performSubstitution(CharSequence cs, String script, String language, List associations,
+            boolean retainControls, String[] gsubFeatures) {
+        return performSubstitution(cs, script, language, associations, retainControls);
+    }
+
+    /** {@inheritDoc} */
     public CharSequence performSubstitution(CharSequence cs, String script, String language, List associations,
                                             boolean retainControls) {
         if (getRealFont() instanceof Substitutable) {

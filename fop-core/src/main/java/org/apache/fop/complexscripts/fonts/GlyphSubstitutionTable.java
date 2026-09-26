@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, a substitute overload taking the delta. See README.md, "Changes
+ * from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.complexscripts.fonts;
@@ -95,11 +99,23 @@ public class GlyphSubstitutionTable extends GlyphTable {
      * @return the substituted (output) glyph sequence
      */
     public GlyphSequence substitute(GlyphSequence gs, String script, String language) {
+        return substitute(gs, script, language, null);
+    }
+
+    /**
+     * As above, with a delta over the features the script's processor would apply.
+     * @param gs an input glyph sequence
+     * @param script a script identifier
+     * @param language a language identifier
+     * @param gsubFeatures delta tokens like -liga and +clig, or null for no change
+     * @return the substituted (output) glyph sequence
+     */
+    public GlyphSequence substitute(GlyphSequence gs, String script, String language, String[] gsubFeatures) {
         GlyphSequence ogs;
         Map<LookupSpec, List<LookupTable>> lookups = matchLookups(script, language, "*");
         if ((lookups != null) && (lookups.size() > 0)) {
             ScriptProcessor sp = ScriptProcessor.getInstance(script, processors);
-            ogs = sp.substitute(this, gs, script, language, lookups);
+            ogs = sp.substitute(this, gs, script, language, lookups, gsubFeatures);
         } else {
             ogs = gs;
         }

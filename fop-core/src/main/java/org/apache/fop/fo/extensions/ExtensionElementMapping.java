@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, registering the attribute. See README.md, "Changes from Apache FOP
+ * 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo.extensions;
@@ -54,6 +58,7 @@ public class ExtensionElementMapping extends ElementMapping {
         PROPERTY_ATTRIBUTES.add("alt-text");
         PROPERTY_ATTRIBUTES.add("header");
         PROPERTY_ATTRIBUTES.add("abbreviation");
+        PROPERTY_ATTRIBUTES.add("gsub-features");
         //fox:border-*-radius-*
         PROPERTY_ATTRIBUTES.add("border-before-radius-start");
         PROPERTY_ATTRIBUTES.add("border-before-radius-end");

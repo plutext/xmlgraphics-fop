@@ -64,6 +64,14 @@ public final class Docx4jFop {
     /** {@code GlyfTable.isComposite} is false for an empty glyph: a font whose last glyph is empty embeds. */
     public static final String GLYF_EMPTY_GLYPH = "glyf-empty-glyph";
 
+    /**
+     * {@code fox:gsub-features}, an inherited property carrying a delta over the GSUB features
+     * the script's processor would apply: {@code -liga} drops one, {@code +clig} adds one,
+     * space separated. Lets a producer express Word's {@code w14:ligatures} per run. Absent,
+     * FOP applies exactly what it applies today.
+     */
+    public static final String GSUB_FEATURES = "gsub-features";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -72,6 +80,7 @@ public final class Docx4jFop {
         caps.add(LEADER_PLACEMENT);
         caps.add(INLINE_ACCESS);
         caps.add(GLYF_EMPTY_GLYPH);
+        caps.add(GSUB_FEATURES);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

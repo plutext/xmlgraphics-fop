@@ -88,9 +88,13 @@ Apache FOP's own Maven build, Java 8 and later (Java 11 or 21 here):
 ```bash
 mvn -B package checkstyle:check spotbugs:check     # what CI runs on every push (.github/workflows/maven.yml)
 mvn install -DskipTests                            # the snapshot docx4j consumes (2.11-docx4j.1-SNAPSHOT)
-mvn -pl fop-core test -Dtest=SomeTestCase           # one test class
+mvn -pl fop-core -am test -Dtest=SomeTestCase       # one test class; -am is needed, see below
 mvn -pl fop-core test -Dtest=LayoutEngineTestSuite  # FOP's layout tests (fop-core/test/layoutengine/standard-testcases) - slow
 ```
+
+`-am` is not optional on a single-module command: the version comes from the `revision`
+property and no artifact at that version is installed, so `-pl fop-core` alone cannot
+resolve its siblings and fails before compiling.
 
 `fop-sandbox`, `fop-servlet` and the transcoders are in the tree but not built.
 Every modified file carries a change notice under its licence header (the form in the

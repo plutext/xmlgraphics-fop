@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, a performSubstitution overload taking the delta. See README.md,
+ * "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fonts;
@@ -466,9 +470,24 @@ public class Font implements Substitutable, Positionable {
     /** {@inheritDoc} */
     public CharSequence performSubstitution(CharSequence cs,
         String script, String language, List associations, boolean retainControls) {
+        return performSubstitution(cs, script, language, associations, retainControls, null);
+    }
+
+    /**
+     * As above, with a delta over the GSUB features the script's processor would apply.
+     * @param cs character sequence
+     * @param script a script identifier
+     * @param language a language identifier
+     * @param associations optional list to be populated with association objects
+     * @param retainControls if true, retain control characters
+     * @param gsubFeatures delta tokens like -liga and +clig, or null for no change
+     * @return the substituted sequence
+     */
+    public CharSequence performSubstitution(CharSequence cs,
+        String script, String language, List associations, boolean retainControls, String[] gsubFeatures) {
         if (metric instanceof Substitutable) {
             Substitutable s = (Substitutable) metric;
-            return s.performSubstitution(cs, script, language, associations, retainControls);
+            return s.performSubstitution(cs, script, language, associations, retainControls, gsubFeatures);
         } else {
             throw new UnsupportedOperationException();
         }

@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, the PR_X_GSUB_FEATURES property id. See README.md, "Changes from
+ * Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo;
@@ -827,8 +831,11 @@ public interface Constants {
     /**For specifying extended text for abbreviation */
     int PR_X_ABBREVIATION = 294;
 
+    /** For adding to or removing from the OpenType GSUB features applied to text */
+    int PR_X_GSUB_FEATURES = 295;
+
     /** Number of property constants defined */
-    int PROPERTY_COUNT = 294;
+    int PROPERTY_COUNT = 295;
 
     // compound property constants
 

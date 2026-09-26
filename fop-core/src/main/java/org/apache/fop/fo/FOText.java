@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, getGsubFeatures from the resolved property. See README.md,
+ * "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo;
@@ -201,6 +205,7 @@ public class FOText extends FONode implements CharSequence, TextFragment {
         this.textDecoration = pList.getTextDecorationProps();
         this.baselineShift = pList.get(Constants.PR_BASELINE_SHIFT).getLength();
         this.country = pList.get(Constants.PR_COUNTRY).getString();
+        this.gsubFeatures = parseGsubFeatures(pList.get(Constants.PR_X_GSUB_FEATURES).getString());
         this.language = pList.get(Constants.PR_LANGUAGE).getString();
         this.script = pList.get(Constants.PR_SCRIPT).getString();
     }
@@ -686,6 +691,27 @@ public class FOText extends FONode implements CharSequence, TextFragment {
     @Override
     public String getLanguage() {
         return language;
+    }
+
+    /** A delta over the script's GSUB features, from fox:gsub-features; null when unset. */
+    private String[] gsubFeatures;
+
+    /**
+     * Splits a fox:gsub-features value into its tokens.
+     * @param value the property value
+     * @return the tokens, or null when there are none
+     */
+    private static String[] parseGsubFeatures(String value) {
+        if (value == null || value.trim().length() == 0) {
+            return null;
+        }
+        return value.trim().split("\\s+");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String[] getGsubFeatures() {
+        return gsubFeatures;
     }
 
     @Override

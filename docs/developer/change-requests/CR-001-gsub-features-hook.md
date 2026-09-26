@@ -109,8 +109,14 @@ over whatever the script's own processor would use.
 1. Register `gsub-features` in `ExtensionElementMapping.PROPERTY_ATTRIBUTES`,
    alongside `alt-text`, and add the property to `FOPropertyMapping` as inherited
    so FO inheritance gives per-span scope for free.
-2. `TextFragment` gains `default String[] getGsubFeatures() { return null; }`. A
-   default method keeps all four implementors compiling, and Java 8 is the floor.
+2. `TextFragment` gains `String[] getGsubFeatures()`, **abstract, not a default method**.
+   The design said default, so that implementors need not care. It cannot be: the
+   checkstyle this build pins, 2.14 from 2014, cannot parse a default method and fails the
+   whole file with a parse error. Upstream raised its checkstyle in FOP-3281, so this can
+   become a default method at the merge of Apache's `main`. Until then the method is
+   abstract and the two implementors in the tree, `FOText` and `FOPGVTGlyphVector`,
+   implement it. The same applies to `Substitutable`, whose four implementors do likewise.
+   The cost is that an implementor outside FOP must add the method.
 3. `FOText` overrides it from the resolved property.
 4. `processWordMapping` reads it and threads it through new overloads on `Font`,
    `LazyFont`, `MultiByteFont`, `GlyphSubstitutionTable.substitute` and
@@ -123,7 +129,12 @@ over whatever the script's own processor would use.
 must be added to `LazyFont` itself; a consumer cannot reach past it.
 
 With the property absent the delta is `null`, every overload delegates as before,
-and output is bit identical. Capability name `gsub-features`, exposed through
+and output is bit identical. **`MultiByteFont` calls the original three-argument
+`substitute` when there is no delta**, rather than the new four-argument one with a null.
+That is not cosmetic: FOP's own tests stub the three-argument method, and routing through
+the new one returned null from the mock and broke four tests. Inert has to mean inert for
+a caller that has stubbed or overridden the old signature, not only for one that reads the
+output. Capability name `gsub-features`, exposed through
 `Docx4jFop`.
 
 ## 8. The design, docx4j side

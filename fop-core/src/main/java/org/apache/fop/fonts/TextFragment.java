@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, getGsubFeatures as a default method. See README.md, "Changes from
+ * Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fonts;
@@ -68,4 +72,17 @@ public interface TextFragment {
     char charAt(int subSequenceIndex);
 
     CharSequence subSequence(int startIndex, int endIndex);
+
+    /**
+     * A delta over the GSUB features the script's processor would apply, as tokens like
+     * {@code -liga} and {@code +clig}, or null for no change.
+     *
+     * <p>Declared abstract rather than as a Java 8 default method because the checkstyle
+     * this build pins, 2.14, cannot parse a default method and fails the whole file.
+     * Upstream raised its checkstyle in FOP-3281, so this can become a default method at
+     * the merge of Apache's main.</p>
+     *
+     * @return the delta tokens, or null
+     */
+    String[] getGsubFeatures();
 }

@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook gsub-features, passing the fragment's delta to the substitution. See README.md,
+ * "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fonts;
@@ -138,7 +142,8 @@ public class GlyphMapping {
             script = "*";
         }
 
-        CharSequence mcs = font.performSubstitution(ics, script, language, associations, retainControls);
+        CharSequence mcs = font.performSubstitution(ics, script, language, associations, retainControls,
+                text.getGsubFeatures());
 
         // 4. compute glyph position adjustments on (substituted) characters.
         int[][] gpa = null;
