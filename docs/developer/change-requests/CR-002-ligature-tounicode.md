@@ -73,24 +73,47 @@ the same mechanism the Kangxi radical fix used to prefer the originating
 character. What is missing is a path for a multi-character association to reach
 the CMap.
 
-## 5. Shape of the fix
+## 5. The fix, read against the code
 
-Three steps, in the order they would be reviewed.
+Verified against the source on 2026-09-27, which changed two things the first draft said.
 
-1. `CIDSubset` records, per glyph, the character *sequence* the glyph came from
-   rather than a single code point. The existing single-code-point path stays for
-   every glyph whose association covers one character, which is nearly all of
-   them.
-2. `PDFToUnicodeCMap` accepts that and emits a `bfchar` whose destination is a
-   string where the sequence is longer than one character. The PDF format allows
-   this: a `bfchar` destination may be a string of UTF-16BE code units.
-3. `MultiByteFont` passes the association through instead of discarding it at the
-   private-use mint. The mint stays as the fallback for a glyph that genuinely has
-   no character behind it.
+**The information is there and my own earlier fix already reads it.**
+`findUnsubstitutedCharacter` takes `gs.getAssociation(i)` and returns early when
+`a.getCount() != 1`. That early return is exactly the ligature case: a glyph produced from
+two or more characters. Those characters are `ca[a.getStart()]` through
+`ca[a.getStart() + a.getCount() - 1]`. So the Kangxi radical fix already stands at the
+right place holding the right data, and simply discards it.
 
-The private-use mapping itself should not be removed. It is still needed for the
-glyph identity in the font's own encoding; only its use as the published meaning
-is wrong.
+**The steps.**
+
+1. `MultiByteFont.mapGlyphsToChars` records, per glyph index, the character sequence the
+   association names, whenever the count exceeds one. The returned `CharSequence` keeps
+   one char per glyph, because that is its contract; the sequence goes into a side map.
+2. `CIDSet` gains a way to read a per-glyph sequence, and `CIDSubset` stores it alongside
+   `usedCharsIndex`. `CIDFull` returns single characters as today. The interface has two
+   implementors, so this is small; it must be an abstract method rather than a Java 8
+   default, for the checkstyle reason recorded in `CR-001` §7.
+3. `PDFFactory` passes the sequences to `PDFToUnicodeCMap` instead of `getChars()`.
+4. `PDFToUnicodeCMap` emits a `bfchar` whose destination is a string where the sequence is
+   longer than one character.
+
+**The obstacle the first draft missed, and it is the real work.**
+`PDFToUnicodeCMap` does not take a per-glyph list. It takes a flat `char[]` and derives
+the glyph selector from array *position*, with a surrogate pair consuming two slots.
+Variable-length entries destroy that scheme. And `partOfRange` groups consecutive entries
+whose code points are contiguous into a `bfrange`, which has no meaning for a
+multi-character destination, so such entries must be forced out of ranging and into
+`bfchar`.
+
+So step 4 is not "emit a string": it is changing the CMap writer's input from a positional
+`char[]` to a per-glyph structure, keeping the existing range optimisation for the
+single-character majority and excluding multi-character entries from it. That is the bulk
+of the change and where the risk sits, because every existing PDF's `ToUnicode` comes out
+of that writer.
+
+**What must not change.** The private-use mapping stays: it is still the glyph's identity
+in the font's own encoding, and still the right answer for a glyph with no character
+behind it at all. Only its use as the glyph's *published meaning* is wrong.
 
 ## 6. Measurement
 
