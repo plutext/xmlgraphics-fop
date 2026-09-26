@@ -40,6 +40,41 @@ installed `2.11-docx4j.1-SNAPSHOT` (`mvn install -DskipTests` here, then
 The marker class `org.apache.fop.docx4j.Docx4jFop` carries the version and the
 names of the hooks the fork has (`capabilities()`); docx4j reads it reflectively.
 
+## Going back to Apache FOP
+
+From docx4j 17.3.0 `docx4j-export-fo` depends on this fork by default. The supported way
+back is docx4j's own `apache-fop` profile; prefer it to hand-written exclusions.
+
+For a build that cannot use that profile, exclude the fork and declare Apache FOP. All
+four artifacts are named deliberately. The published `docx4j-fo-renderer` pom is flattened,
+so it declares `-core`, `-events` and `-util` as direct dependencies rather than inheriting
+them, and `docx4j-export-fo` declares `-events` itself as well as the aggregator. Excluding
+only the aggregator therefore leaves the others behind. Naming an artifact that is not
+present is harmless, so list all four and stay correct if docx4j changes which it declares.
+
+```xml
+<dependency>
+  <groupId>org.docx4j</groupId>
+  <artifactId>docx4j-export-fo</artifactId>
+  <version>…</version>
+  <exclusions>
+    <exclusion><groupId>org.docx4j</groupId><artifactId>docx4j-fo-renderer</artifactId></exclusion>
+    <exclusion><groupId>org.docx4j</groupId><artifactId>docx4j-fo-renderer-core</artifactId></exclusion>
+    <exclusion><groupId>org.docx4j</groupId><artifactId>docx4j-fo-renderer-events</artifactId></exclusion>
+    <exclusion><groupId>org.docx4j</groupId><artifactId>docx4j-fo-renderer-util</artifactId></exclusion>
+  </exclusions>
+</dependency>
+<dependency>
+  <groupId>org.apache.xmlgraphics</groupId>
+  <artifactId>fop</artifactId>
+  <version>2.11</version>
+</dependency>
+```
+
+Check the result with `mvn dependency:tree`: no `org.docx4j:docx4j-fo-renderer*` should
+remain. Leaving one alongside Apache FOP is the hazard above, and which of the two wins is
+then decided by classpath order.
+
 ## Changes from Apache FOP 2.11
 
 Every modified file carries a change notice under its licence header. Each
