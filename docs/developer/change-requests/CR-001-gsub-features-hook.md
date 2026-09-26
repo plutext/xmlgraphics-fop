@@ -41,6 +41,12 @@ Four gaps, all measured by the docx4j session.
 - **Spans containing any non-Latin character** keep substitution by design,
   because a single-byte font would lose text extraction for a whole non-Latin
   alphabet.
+- **A run that asks for ligatures but not the standard ones.** `contextual`,
+  `historical`, `discretional` and their combinations without `standard` all mean Word
+  applies no standard ligature, but docx4j's `hasLigatures` treats any non-`none` value as
+  ligatures on, so FOP applies `liga` where Word would not. Found by the docx4j session
+  while implementing §8, and not in the first draft's list. The mapping table in §8 already
+  handles it: any value without `standard` subtracts `liga`.
 - **The twin can only ever subtract.** Word 365's Normal template sets
   `standardContextual` in `docDefaults`, so every new Word 365 document asks for
   contextual ligatures, and FOP's default list is `ccmp liga locl` with no
@@ -96,6 +102,31 @@ the only place with knowledge of the run is the `TextFragment` at the top.
   rlig`: the Arabic shaping features and required ligatures sit in the same list.
   A list authored for Latin and applied to an Arabic run would destroy Arabic
   rendering. The value must be a delta, never an absolute list.
+
+## 6a. What Word does with Arabic, measured
+
+The first draft left this open. The docx4j session settled it against a Word 365 golden,
+reading glyph ids from Word's own subset of Calibri, whose Arabic `liga` forms U+FDF2.
+
+**Word applies the standard Arabic ligatures under every `w14:ligatures` value, including
+absent and `none`.** Only `discretional` and `all` change an Arabic row. The Latin control
+in the same document followed the setting as expected.
+
+So the rule is not "Latin only", as the first draft inherited from the font twin. It is:
+
+- **Subtractions are never emitted on Arabic**, because Word ligates there regardless.
+- **Additions do apply to Arabic**, so `+dlig` is meaningful and correct there.
+- Other shaping scripts, Hebrew, Indic and Khmer, stay out of the subtraction for now.
+  That is caution rather than measurement, and it should be measured before it is relied on.
+
+Note for whoever adds the additions. Inserting `+dlig` into the Arabic list puts it in
+sorted position, between `ccmp` and `fina`. That preserves FOP's own convention, which is
+strict alphabetical order in all three processors, but FOP's convention is not the order
+the OpenType script development guide recommends for Arabic, which is roughly `ccmp isol
+fina medi init rlig calt liga dlig`. FOP already applies Arabic features alphabetically, so
+this changes nothing about that; it is recorded so nobody reads the sorted insert as a
+typographic decision. Whether FOP's ordering is itself a defect is a separate question,
+unmeasured, and a candidate upstream issue rather than part of this change.
 
 ## 7. The design, FOP side
 
