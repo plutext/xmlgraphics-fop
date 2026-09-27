@@ -1,5 +1,6 @@
 JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
-Not yet filed. Measured 2026-09-27; no branch or patch yet.
+Not yet filed. Measured 2026-09-27; fixed the same day on the fork's branch CR-003-script-fallback
+(fop/CR-003), to be cut against trunk as FOP-#### once filed.
 
 Project:          FOP
 Issue Type:       Bug
@@ -49,6 +50,12 @@ command line, one fo:block, only the language attribute changing, read back with
   script=latn, no language      ffi ffl fi fl ft ti ligated    ffi ffl fi fl ligated
   script=latn language="en"     nothing ligated               nothing ligated
 
+And the language never matches in the first place. The FO language property carries an ISO
+639 code ("en", "tr"); the font's language systems are OpenType tags ("ENG", "TRK"); FOP
+passes the code through untranslated. So a language the font does distinguish is treated
+like one it does not: DejaVuLGCSerif's TRK system omits liga, and performSubstitution("fi",
+"latn", "tr") ligates while ("fi", "latn", "TRK") does not.
+
 Neither font has an ENG langsys under latn. DejaVu Sans does have DFLT, but its DFLT
 langsys carries case, ccmp, dlig and kern and no liga, so the fallback lands on a script
 table that lacks the feature. DejaVu Serif's DFLT langsys does carry liga, and the docx4j
@@ -91,10 +98,12 @@ Proposed fix
 ------------
 At least one of:
 
-1. Fall back in the order OpenType layout engines use: (script, language), then
-   (script, dflt), then (DFLT, dflt), and only then the font's own available scripts as
-   the wildcard already does. Today the second step is missing and the last is taken only
-   for the wildcard.
+1. Map the language to its OpenType tag first (a table of ISO 639 codes against the tags
+   OTFLanguage already names), then fall back in the order OpenType layout engines use:
+   (script, language), then (script, dflt), then (DFLT, dflt). Today the language never
+   matches, the second step is missing, and DFLT is the only fallback.
+   Also OTFScript.isWildCard compares with DEFAULT rather than WILDCARD; harmless today,
+   corrected alongside.
 2. Failing that, report it. An event when a font with GSUB or GPOS present yields no
    lookups for the requested script would turn a silent miss into a diagnosable one.
 

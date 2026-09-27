@@ -72,6 +72,14 @@ public final class Docx4jFop {
      */
     public static final String GSUB_FEATURES = "gsub-features";
 
+    /**
+     * {@code GlyphTable.matchLookups} falls back from (script, language) to (script, dflt) before
+     * (DFLT, dflt), as OpenType layout engines do. A producer may write a language on every block
+     * without losing the font's substitution and kerning where the font has no language system for
+     * it, and a font with no DFLT script table shapes and kerns under its own script.
+     */
+    public static final String LOOKUP_FALLBACK = "lookup-fallback";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -81,6 +89,7 @@ public final class Docx4jFop {
         caps.add(INLINE_ACCESS);
         caps.add(GLYF_EMPTY_GLYPH);
         caps.add(GSUB_FEATURES);
+        caps.add(LOOKUP_FALLBACK);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 
