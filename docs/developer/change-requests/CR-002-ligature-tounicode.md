@@ -1,7 +1,7 @@
 # CR-002: a ligature's `ToUnicode` entry is a private-use code point, not its letters
 
-Status: IMPLEMENTED 2026-09-27 on branch `CR-002-ligature-tounicode` (§10), awaiting the docx4j gate;
-not merged, not released.
+Status: MERGED to `2.11-docx4j.2` 2026-09-27 at 7289e1726 after the docx4j gate passed twice (§10.6);
+unreleased. JIRAs drafted under `docs/upstream/`, not yet filed.
 Raised 2026-09-25 while designing `CR-001`. Registry key `fop/CR-002`. Upstream-bound: this is a defect in Apache
 FOP with no docx4j specificity, so it goes upstream first.
 
@@ -435,3 +435,14 @@ pins it. After the guard the sample extracts `a#b # c` again and the other sampl
 unchanged. For the gate this means the six documents return to `#` and the two score
 improvements revert; they were the text layer masking a drawn `#`, which is a docx4j font
 substitution matter, not a FOP one, and the docx4j session has been told.
+
+### 10.7 The re-check, and the merge
+
+Re-check on 7289e1726, all four corpora against the hook-only baseline: 598 of 598
+documents glyph-identical; 0 changed documents on every scoreboard, the two earlier
+improvements back at baseline; the six documents back to `#` with no private-use
+character; presentation forms 480 to 18; private-use 129 to 81, all of it the cluster
+followers of the two probes (ligatures-arabic 105 to 63, fonts-hebrew-no-cs 24 to 18).
+Merged to `2.11-docx4j.2` by fast-forward. The bullets drawn as `#` are now a docx4j
+layout-fidelity item: the document holds U+F0A7 in a plain Times New Roman run, Word draws
+a bullet, docx4j's substitute Tinos has no glyph.

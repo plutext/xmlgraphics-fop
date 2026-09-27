@@ -169,7 +169,7 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-09-27, at the end of a long session. Read Enterprise CR-001 §6.6 before
+Last updated 2026-09-27, evening, after CR-002 merged. Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
 **Released.** `2.11-docx4j.1` is on Maven Central, tagged `v2.11-docx4j.1` at `2f5030172`.
@@ -180,24 +180,26 @@ proposing anything, as the section above says.
 improved, 0 regressed, and both still tiers were identical. It is inert until docx4j emits
 the attribute. `2.11-docx4j.2-SNAPSHOT` is installed locally and carries it.
 
-**Next, and the critical path: `fop/CR-002`**, the ligature `ToUnicode` defect, Enterprise
-CR-001 §6.6 item 30. Jason approved the fork carrying it rather than waiting for Apache.
-Design is done and read against the code; `ToUnicodeCharacterisationTestCase` pins the
-writer's current output as the safety net. **The refactor itself has not started.** It
-turns `PDFToUnicodeCMap`'s positional `char[]` into one string per glyph; every PDF FOP
-writes gets its text layer from that class, so the characterisation tests come first.
+**Done on 2026-09-27, unreleased: `fop/CR-002`**, the ligature `ToUnicode` defect, Enterprise
+CR-001 §6.6 item 30, merged at 7289e1726 after the docx4j gate passed twice. It is wider
+than ligatures: any substituted glyph without a cmap entry of its own publishes its
+association's characters now, and the same rewrite fixed the selector drift after a
+supplementary-plane character (item 31). What it does not do, and why, is CR-002 §10.2:
+the second glyph of a one-character cluster keeps its private-use code point, because an
+empty destination reads as a control character in PDFium; ActualText per cluster is the
+follow-up. Lesson from the gate, §10.6: check what is drawn before believing a text-layer
+"improvement". Two JIRA drafts under `docs/upstream/`, not yet filed. Not yet done twice:
+the `FOP-####` branch against `trunk` waits on the JIRA numbers.
 
-CR-002 now gates three separate things, which is why it is first: the `+clig` additions on
-the hook, a capability for the Kangxi radical fix so docx4j can retire a workaround, and
-the script fix below.
-
-**Found on 2026-09-27, not yet acted on.** A font whose GSUB or GPOS has no `DFLT` script
+**Found on 2026-09-27, measured, not yet acted on.** A font whose GSUB or GPOS has no `DFLT` script
 table silently gets no substitution and no kerning under a default script, because the
 fallback in `GlyphTable.matchLookups` targets `DFLT` too. Carlito has no `DFLT`; DejaVu
 has one. That is why Carlito never shapes or kerns in docx4j's pipeline while DejaVu does.
-Drafted at `docs/upstream/no-default-script-table.txt`, with the measurements. Fixing the
-docx4j side is a kerning change across nearly all Carlito text with a ligature change
-alongside, so it wants its own CR, partition and gate, after CR-002.
+Drafted at `docs/upstream/no-default-script-table.txt`, with the measurements. docx4j writes
+`language="en"` on every block, and that alone drops shaping for both fonts (the draft has the
+measurement and the fallback order to fix it). A shaping and kerning change across nearly all
+Carlito text, so it wants its own branch, capability and gate; Jason decides; docx4j's script
+CR is ordered after it.
 
 **Waiting on Jason.** Filing the three drafted JIRAs, two in commit messages and one under
 `docs/upstream/`, plus this fourth one. Whether to give the radical fix a capability.
