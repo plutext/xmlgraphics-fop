@@ -49,10 +49,19 @@ command line, one fo:block, only the language attribute changing, read back with
   script=latn, no language      ffi ffl fi fl ft ti ligated    ffi ffl fi fl ligated
   script=latn language="en"     nothing ligated               nothing ligated
 
-Neither font has an ENG langsys under latn. DejaVu does have DFLT, but its DFLT langsys
-carries case, ccmp, dlig and kern and no liga, so the fallback lands on a script table
-that lacks the feature. Option 1 below should therefore try (script, dflt) before
-(DFLT, dflt); that would have found liga in both fonts here.
+Neither font has an ENG langsys under latn. DejaVu Sans does have DFLT, but its DFLT
+langsys carries case, ccmp, dlig and kern and no liga, so the fallback lands on a script
+table that lacks the feature. DejaVu Serif's DFLT langsys does carry liga, and the docx4j
+session measured that it ligates under the same attributes. So whether a run ligates today
+is font-accidental: it depends on which features the font's author happened to put in
+DFLT, not on what the font offers for the script.
+
+This is not a corner case for a consumer. docx4j writes language="en" country="US" on
+every block and inline it produces (all 191 files of its real corpus), from w:lang and the
+document defaults, and it cannot drop the attribute because FOP selects hyphenation
+patterns by it. The fix belongs in the fallback order, as OpenType layout engines do it:
+(script, language), then (script, dflt), then (DFLT, dflt). GlyphTable.matchLookups goes
+straight from the first to the third.
 
 It is not only substitution. The same script matching governs GPOS, so kerning disappears
 too, and that is the wider harm because it reaches every letter pair rather than a handful
@@ -82,9 +91,10 @@ Proposed fix
 ------------
 At least one of:
 
-1. Fall back to the font's own available scripts, not only to DFLT, when the requested
-   script finds no lookups. The wildcard already does this correctly, so the machinery
-   exists.
+1. Fall back in the order OpenType layout engines use: (script, language), then
+   (script, dflt), then (DFLT, dflt), and only then the font's own available scripts as
+   the wildcard already does. Today the second step is missing and the last is taken only
+   for the wildcard.
 2. Failing that, report it. An event when a font with GSUB or GPOS present yields no
    lookups for the requested script would turn a silent miss into a diagnosable one.
 

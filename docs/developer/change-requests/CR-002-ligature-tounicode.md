@@ -196,7 +196,7 @@ the same day; its answers are in §9.6. Nothing here is inferred from the code a
 ### 9.1 The defect is wider than ligatures
 
 Carlito, `script="latn"`, the text `office affluent fifty flow ti fi`, extracts as
-`oﬃce aﬄuent ﬁy ﬂow  ﬁ`. Two things in that line:
+`oﬃce aﬄuent ﬁ\uE000y ﬂow \uE001 ﬁ`. Two things in that line:
 
 - `ft` and `ti` are the private-use case of §2: glyph 91 and glyph 2210 were minted
   U+E000 and U+E001. This is item 30's `ti`, reproduced outside docx4j.
@@ -325,7 +325,7 @@ recorded in `docs/upstream/no-default-script-table.txt`.
 
 ### 9.8 The measurement in §6, brought up to date
 
-- Carlito `office affluent fifty flow ti fi`: today `ﬁy` and ``; after,
+- Carlito `office affluent fifty flow ti fi`: today `ﬁ\uE000y` and `\uE001`; after,
   `fifty` and `ti`, and `fi` rather than U+FB01 if §9.2's first decision stands.
 - Noto Sans Arabic `السلام عليكم`: today two private-use characters; after, none, and the
   yeh cluster reads per §9.3's decision. Read with `pdftotext` and `mutool` both, since
