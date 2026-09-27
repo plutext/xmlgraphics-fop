@@ -67,6 +67,23 @@ public class LanguageSystemTestCase {
         assertEquals("fi", fi("TRK"));
     }
 
+    /**
+     * The configuration's kerning flag is recorded on the loaded font (it was not: the loader only
+     * skipped the legacy kern table), so that it can gate GPOS kerning as well.
+     */
+    @Test
+    public void testKerningFlagIsRecordedOnTheFont() throws Exception {
+        InternalResourceResolver resolver =
+                ResourceResolverFactory.createDefaultInternalResourceResolver(new File(".").toURI());
+        File file = new File("test/resources/fonts/ttf/DejaVuLGCSerif.ttf");
+        CustomFont kerned = FontLoader.loadFont(new FontUris(file.toURI(), null), "", true,
+                EmbeddingMode.AUTO, EncodingMode.AUTO, true, true, resolver, false, false, true);
+        CustomFont unkerned = FontLoader.loadFont(new FontUris(file.toURI(), null), "", true,
+                EmbeddingMode.AUTO, EncodingMode.AUTO, false, true, resolver, false, false, true);
+        assertTrue(kerned.isKerningEnabled());
+        assertTrue(!unkerned.isKerningEnabled());
+    }
+
     @Test
     public void testLanguageWithoutASystemUsesTheScriptsDefault() {
         assertEquals("\uFB01", fi("en"));

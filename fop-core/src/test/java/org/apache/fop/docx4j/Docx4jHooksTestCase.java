@@ -46,7 +46,8 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.GLYF_EMPTY_GLYPH));
         assertTrue(Docx4jFop.has(Docx4jFop.GSUB_FEATURES));
         assertTrue(Docx4jFop.has(Docx4jFop.LOOKUP_FALLBACK));
-        assertEquals(6, Docx4jFop.capabilities().size());
+        assertTrue(Docx4jFop.has(Docx4jFop.KERNING_FLAG));
+        assertEquals(7, Docx4jFop.capabilities().size());
     }
 
     @Test

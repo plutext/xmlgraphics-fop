@@ -32,11 +32,16 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.fop.complexscripts.fonts.GlyphPositioningTable;
 import org.apache.fop.complexscripts.fonts.GlyphSubstitutionTable;
 import org.apache.fop.complexscripts.util.CharAssociation;
 import org.apache.fop.complexscripts.util.GlyphSequence;
@@ -278,6 +283,26 @@ public class MultiByteFontTestCase {
         font.setGSUB(mockGSUB(new IdentityAnswer()));
         assertEquals("#", substitute(font, "\uF0A7").toString());
         assertEquals(null, font.getGlyphMeaning(GI_NOT_FOUND));
+    }
+
+    /**
+     * CR-003: a font declared with kerning off is positioned with the kern feature removed, and one
+     * with kerning on (the default) is positioned with no delta at all.
+     */
+    @Test
+    public void testKerningOffRemovesKernFromPositioning() {
+        MultiByteFont font = createFont();
+        font.setWidthArray(new int[GI_SUPPLEMENTARY + 1]);
+        GlyphPositioningTable gpos = mock(GlyphPositioningTable.class);
+        font.setGPOS(gpos);
+        font.setKerningEnabled(false);
+        font.performPositioning("\u4EBA\u65B9", "hani", "dflt", 12000);
+        verify(gpos).position(any(GlyphSequence.class), eq("hani"), eq("dflt"), eq(12000), any(int[].class),
+                any(int[][].class), aryEq(new String[] {"-kern"}));
+        font.setKerningEnabled(true);
+        font.performPositioning("\u4EBA\u65B9", "hani", "dflt", 12000);
+        verify(gpos).position(any(GlyphSequence.class), eq("hani"), eq("dflt"), eq(12000), any(int[].class),
+                any(int[][].class), (String[]) isNull());
     }
 
     /** The subset publishes the recorded characters for the glyph's selector, and the code point otherwise. */

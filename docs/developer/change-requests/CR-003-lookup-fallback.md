@@ -1,6 +1,6 @@
 # CR-003: the lookup fallback skips a font's own script table whenever a language is set
 
-Status: IN PROGRESS 2026-09-27 on branch `CR-003-script-fallback`, off `2.11-docx4j.2`; not gated,
+Status: IN PROGRESS 2026-09-27 on branch `CR-003-script-fallback`, off `2.11-docx4j.2`, with the kerning flag (§8); not gated,
 not merged. Registry key `fop/CR-003`. Upstream-bound: a defect in Apache FOP with no docx4j
 specificity; the JIRA draft is `docs/upstream/no-default-script-table.txt`. Capability
 `lookup-fallback` (`Docx4jFop.LOOKUP_FALLBACK`), so docx4j can tell whether its language
@@ -115,3 +115,99 @@ The docx4j session had ordered a change to write `script` on its FO after CR-002
 the missing script was the cause. It is not: `GlyphMapping` derives `latn` from Latin text
 already. The cause is the language, and with this change docx4j need write nothing new; the
 capability lets it confirm the fork it runs on has the fallback before it relies on it.
+
+## 8. The kerning flag, found by the gate's design before the gate ran
+
+The docx4j session asked, before running anything, whether a font entry's `kerning="false"`
+stops GPOS kerning, because docx4j declares every font twice: plain with `kerning="false"`
+for the runs Word does not kern, and a `+kern` twin with `kerning="true"` for the runs
+`w:kern` applies to. Measured: it does not. Carlito under `language="en"` with the §3
+change gave `AVATAR` 43.19 pt wide under both settings. The flag gated only the legacy
+`kern` table (`useKerningAdjustments` reads `hasKerning`, which is that table); GPOS ran
+whenever the font had a GPOS table, with `kern` in every script processor's positioning
+list. So §3 alone would have kerned every plain Carlito run, which Word does not, and the
+gate's own assertion, kerning only where docx4j asked, would have failed it. And for any
+font whose `DFLT/dflt` already carried `kern` (DejaVu Serif), plain runs had been kerned all
+along; that was a standing discrepancy the flag fix also removes.
+
+Two smaller findings under it: the loader never copied the flag onto the font object, so
+`CustomFont.isKerningEnabled()` was true for every TrueType font whatever the
+configuration said; and the flag's documentation ("enables or disables kerning for the
+font") already promised what it did not do.
+
+The change, on the same branch since without it §3 is a regression on Calibri:
+
+- `OFFontLoader` records the flag on the font (`setKerningEnabled`).
+- `MultiByteFont.performPositioning` passes a feature delta of `-kern` when kerning is off.
+  Marks are still positioned (`mark`, `mkmk` stay); only kerning goes.
+- `GlyphPositioningTable.position` and `ScriptProcessor.position` gain overloads taking the
+  delta, applied by the same helper CR-001 built for GSUB, now named `applyFeatureDelta`
+  with the old name kept.
+- Capability `kerning-flag` (`Docx4jFop.KERNING_FLAG`), distinct from `lookup-fallback`,
+  because it is a distinct promise a producer relies on.
+
+No per-run `fox:gpos-features` is needed: docx4j's plain and kerned declarations now mean
+what they say. Agreed with the docx4j session 2026-09-27, which had first proposed the
+per-run form and withdrew it for this. JIRA draft: `docs/upstream/kerning-flag-gpos.txt`.
+
+Measured with the flag honoured, Carlito, `language="en"`, `AVATAR Toffee fifty office`:
+
+| declaration | `AVATAR` width | glyphs | ligatures |
+|---|---|---|---|
+| `kerning="true"` | 43.19 pt | 21 | form |
+| `kerning="false"` | 46.62 pt | 21 | form |
+
+Ligatures are GSUB and follow §3 either way; only kerning follows the flag, which is the
+separation docx4j's twins were built on.
+
+## 9. Gate plan, agreed 2026-09-27
+
+Partition by font before rendering, done docx4j-side over each document's FO: a span can
+move only if its font has no `DFLT`, or a `DFLT/dflt` feature set different from its
+script's, or a language system matching a document language under `OTFLanguage`'s table;
+twin declarations, fonts the baseline PDF embeds as anything but a CID font, and the CJK
+fonts docx4j declares `advanced="false"` excluded since they never shape. First pass on §3
+alone: 477 still, 121 movers of 598. Remodelled for §8 (a plain declaration keeps `kern`
+before and drops it after, a `+kern` declaration keeps it on both sides, `mark` and `mkmk`
+count only where the span holds a combining mark, `cpsp` only with a capital): 501 still, 97
+movers, at `/home/jharrop/fidelity-gsub-partition/cr003/partition3.tsv`, local only. Classes:
+kern-gained, about 38, `+kern` runs in Arimo, Tinos and Carlito; kern-lost, about 13, plain
+runs in DejaVu Serif, DejaVu Serif Condensed and DejaVu Sans; `ccmp`/`cpsp`/`locl` only,
+about 45, mostly expected to be recorded rather than to move; script shaping, 3, DejaVu with
+Arabic or Indic spans. The three assertions read per class: the still set byte
+identical; kerning appears or disappears only as the class predicts; ligatures only where
+CR-001's hook resolves to them; no mover worse against Word; a predicted mover that did not
+move recorded, not failed. The still set is far smaller than CR-001's 602, and the record
+will say so rather than borrow that gate's signal.
+
+**The kern-lost class will not move (measured after the partition, §10).** FOP applies no
+kerning to DejaVu Sans or Serif under any setting, so those plain runs were never kerned and
+have nothing to lose; the docx4j session was told before the gate ran and reclassed: 510
+still, 88 movers (kern-gained 37, `ccmp`-led 46, `case` 3, `abvm` 1, `blwf` 1).
+
+## 10. Found on the way: FOP never kerns DejaVu
+
+One line, `AVATAR To Ye` at 14pt, `language="en"`, line width from `pdftotext -bbox`, every
+combination of the font entry's `kerning` and `advanced`:
+
+| font | kerning on | kerning off |
+|---|---|---|
+| Carlito | 75.26 pt (advanced on or off) | 80.92 pt |
+| Arimo | 92.90 pt (advanced on or off) | 99.19 pt |
+| DejaVu Sans | 99.68 pt | 99.68 pt |
+| DejaVu Serif | 99.01 pt | 99.01 pt |
+
+Carlito and Arimo kern under the flag, and identically with `advanced="false"`, which
+neither has a legacy `kern` table to explain: the per-font `advanced` attribute is ignored.
+`LazyFont` takes the user agent's complex-scripts flag whenever a resource resolver is
+present, which is always in normal use, and reads `EmbedFontInfo.getAdvanced()` only when it
+is not. That is a further upstream defect, and it bears on docx4j, whose CJK workaround
+(`FopConfigUtil.mustNotUseOpenTypeLayout`, `advanced=false` per font) therefore does nothing
+in FOP; the docx4j session has been told to check its CJK baselines. DejaVu kerns under no
+route: FOP
+reads its GPOS `kern`, two class-based pair-positioning subtables (format 2, logged at FINE),
+and applies nothing; and `GlyphMapping.useKerningAdjustments` then skips the legacy table
+because the GPOS `kern` feature exists. So the font is unkerned with `kerning="true"` too.
+Why format 2 yields nothing is not traced. Not yet a §6.6 item; proposed to the docx4j
+session with the measurement, and it touches item 15's record, which closed per-run
+kerning on measurements that may not have included a DejaVu run.

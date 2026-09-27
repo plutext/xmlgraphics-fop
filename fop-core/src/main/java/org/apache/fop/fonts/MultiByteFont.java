@@ -20,7 +20,8 @@
  * with a Kangxi radical is mapped back to the ideograph, not the radical (docx4j Enterprise CR-001 item 26).
  * See README.md, "Changes from Apache FOP 2.11".; hook gsub-features, a performSubstitution overload taking
  * the delta; and a substituted glyph records the characters it stands for, so the ToUnicode CMap can publish
- * them rather than a private-use code point (fop/CR-002, Enterprise CR-001 item 30). */
+ * them rather than a private-use code point (fop/CR-002, Enterprise CR-001 item 30); and a font declared with
+ * kerning off is positioned without the kern feature (fop/CR-003). */
 
 /* $Id$ */
 
@@ -76,6 +77,9 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
     private GlyphDefinitionTable gdef;
     private GlyphSubstitutionTable gsub;
     private GlyphPositioningTable gpos;
+
+    /** The GPOS feature delta for a font declared with kerning off: the marks are still positioned. */
+    private static final String[] NO_KERNING = {"-kern"};
 
     /**
      * The text a substituted glyph stands for, by glyph index, recorded by mapGlyphsToChars for
@@ -660,7 +664,8 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
         if (gpos != null) {
             GlyphSequence gs = mapCharsToGlyphs(cs, null);
             int[][] adjustments = new int [ gs.getGlyphCount() ] [ 4 ];
-            if (gpos.position(gs, script, language, fontSize, this.width, adjustments)) {
+            if (gpos.position(gs, script, language, fontSize, this.width, adjustments,
+                    isKerningEnabled() ? null : NO_KERNING)) {
                 return scaleAdjustments(adjustments, fontSize);
             } else {
                 return null;
