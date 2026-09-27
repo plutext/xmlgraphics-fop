@@ -211,3 +211,46 @@ because the GPOS `kern` feature exists. So the font is unkerned with `kerning="t
 Why format 2 yields nothing is not traced. Not yet a §6.6 item; proposed to the docx4j
 session with the measurement, and it touches item 15's record, which closed per-run
 kerning on measurements that may not have included a DejaVu run.
+
+## 11. First gate, 2026-09-27: FAIL on "no mover worse", under investigation
+
+Baseline the CR-002 branch, candidate ca8cf0115, four corpora. Text layer unchanged, as
+expected. Geometry moved in 49 documents (partition, corrected during the reading, 447
+still, 151 movers). Scoreboards: 11 improvements (for instance 15_de-DE_2299 0.7174 to
+0.8913, 14_es-MX_tbl_14140 0.8788 to 0.9848) and 5 regressions: four in `+kern` runs of
+Tinos or Arimo (15_ru-RU_tbl_475, 12_pt-BR_fields23_num_tbl_14776, 12_en-US_tbl_13872,
+12_en-US_num_tbl_9832), where the space after a comma or full stop closes so far that
+`pdftotext` loses it ("repair, if" to "repair,if"), and one in Carlito Greek
+(14_en-GB_sdt_num_8371, 70 to 71 pages against Word's 68). Four predicted-still documents
+moved, in one of them a space after a bold CID span while the glyph before it did not.
+
+The docx4j session also settled §10's `advanced` question for its own pipeline: its
+`WordWidthsFontCollection` passes `useComplexScripts && getAdvanced()` where FOP's stock
+collection passes the global flag alone, so `advanced=false` is honoured there and the CJK
+exclusion stands (0 radicals in the text layer with it, 156 without, on one document).
+DejaVu's kerning is §6.6 item 32.
+
+None of the three symptoms reproduces on the fork's command line, old (the 2.11-docx4j.1
+core) against the branch, per-glyph positions from `mutool draw -F stext`:
+
+- `cpsp` is not applied: `DefaultScriptProcessor`'s positioning list is `kern`, `mark`,
+  `mkmk`, and no processor names `cpsp`. Carlito Greek under `language="el"`: a
+  `kerning="true"` line 265.44 pt to 261.30 (narrower), a `kerning="false"` line unchanged
+  with no glyph moving, so `ccmp` and `locl` did nothing to that text either.
+- Kerned spaces: Arimo `kerning="true"`, "repair, if however, you repair. Further", gaps
+  after comma and full stop 3.05 pt old and new; with docx4j's form of the space,
+  `<fo:inline word-spacing="-0.7pt"> </fo:inline>`, 2.35 pt old and new; Tinos Cyrillic
+  2.75 both; justified paragraphs open the gaps by up to 0.1 pt as the kerned words free
+  space, never close them. In FOP's complex mapping path, used for any font with GSUB or
+  GPOS before and after this change, GPOS applies within a word only; a space is its own
+  mapping and is never kerned with a neighbour; the neighbour kerning of the simple path
+  comes from the legacy `kern` table, which Arimo, Tinos and Carlito lack.
+- Single-byte regular Carlito with a bold CID span: the bold word kerns internally (the
+  colon moves 0.33 pt with it) and what follows moves by the same; the gap after the colon
+  is unchanged. Not the reported pattern, where the glyph before the space stayed put.
+
+docx4j's `kernSpaces` (`RunFontSelector`) wraps a space in a `word-spacing` inline only when
+the font's legacy kern table has a pair for it; Arimo and Carlito have no such table, so
+those spaces are plain glue in the FO. The exact FO around "During repair, if however,
+you" and around the Greek overflow, with the font declarations, has been asked for; the
+mechanism is not established, and the branch stays unmerged.
