@@ -794,6 +794,8 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
      * replicates the association onto each output) gets no meaning, since a ToUnicode entry
      * cannot say that several glyphs share one character; a glyph seen with two different
      * meanings gets none, since one entry cannot carry both. Either is final for the glyph.
+     * The stand-in glyph drawn for a character the font lacks (Typeface.NOT_FOUND) never
+     * gets one: it is not the character, and the text layer must go on saying so.
      * @param gs a GlyphSequence containing glyph indices
      * @param i index of glyph in glyph sequence
      * @param ca character array underlying glyph sequence
@@ -801,7 +803,8 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
      * @param gi glyph index of the glyph at index I
      */
     private void recordGlyphMeaning(GlyphSequence gs, int i, int[] ca, int nc, int gi) {
-        if (gi == SingleByteEncoding.NOT_FOUND_CODE_POINT) {
+        if ((gi == SingleByteEncoding.NOT_FOUND_CODE_POINT) || (gi == findGlyphIndex(Typeface.NOT_FOUND))) {
+            // the stand-in drawn for a character the font lacks is not that character
             return;
         }
         CharAssociation a = gs.getAssociation(i);

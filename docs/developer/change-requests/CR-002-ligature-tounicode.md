@@ -412,3 +412,26 @@ letter because in this sample it is only ever a yeh, and the dots glyph is a fol
 
 Tests: the three classes above, 32 tests; the full `fop-core` suite, 3581 tests, green
 before the commit; checkstyle clean.
+
+### 10.6 The gate's "#" finding, and the guard it forced
+
+The docx4j gate (pass, 2026-09-27: 598 of 598 documents glyph-identical, 0 regressions,
+presentation forms 480 to 18, private-use 129 to 112) also reported six documents going
+from no private-use character to between 1 and 21, all symbol-font bullets (U+F0A7, F0A8,
+F0B7, F0E0) that had extracted as `#` before, and two line-parity improvements on those
+lines. That was not a correction; it was the first commit mislabelling a glyph.
+
+The only source of `#` in the text layer is `Typeface.NOT_FOUND`: when a character has no
+glyph in the font, `mapCharsToGlyphs` draws the `#` glyph in its place, and the text layer
+honestly said `#`. Those bullets are missing from the font docx4j declared, and a `#` is
+drawn on the page for each. The first commit's `recordGlyphMeaning` saw that glyph with an
+association to U+F0A7 and recorded U+F0A7 as its meaning, so the CMap then published
+U+F0A7 for every use of the `#` glyph in that subset, a real `#` included. Reproduced on the
+command line with DejaVu Sans and `ab # c`: the released 2.11-docx4j.1 extracts
+`a#b # c`, the first CR-002 commit `ab  c`.
+
+The guard: the stand-in glyph never records a meaning. `testStandInForMissingCharacterRecordsNothing`
+pins it. After the guard the sample extracts `a#b # c` again and the other samples are
+unchanged. For the gate this means the six documents return to `#` and the two score
+improvements revert; they were the text layer masking a drawn `#`, which is a docx4j font
+substitution matter, not a FOP one, and the docx4j session has been told.

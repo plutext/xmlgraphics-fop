@@ -106,7 +106,8 @@ public class MultiByteFontTestCase {
             new CMapSegment(0x65B9, 0x65B9, GI_FANG),
             new CMapSegment(0x724B, 0x724B, GI_JIAN),
             new CMapSegment(0x751F, 0x751F, GI_SHENG),
-            new CMapSegment(0x2000B, 0x2000B, GI_SUPPLEMENTARY)
+            new CMapSegment(0x2000B, 0x2000B, GI_SUPPLEMENTARY),
+            new CMapSegment(Typeface.NOT_FOUND, Typeface.NOT_FOUND, GI_NOT_FOUND)
         });
         return font;
     }
@@ -168,6 +169,9 @@ public class MultiByteFontTestCase {
         }));
         assertEquals("牋", substitute(font, "生方").toString());
     }
+
+    /** the glyph of Typeface.NOT_FOUND, '#', drawn for a character the font lacks */
+    private static final int GI_NOT_FOUND = 3;
 
     /** a glyph no character maps to, as a ligature glyph usually is */
     private static final int GI_LIGATURE = 50000;
@@ -261,6 +265,19 @@ public class MultiByteFontTestCase {
         substitute(font, "生牋方");
         assertEquals("生方", font.getGlyphMeaning(GI_LIGATURE));
         assertEquals(null, font.getGlyphMeaning(GI_JIAN));
+    }
+
+    /**
+     * A character the font lacks is drawn with the stand-in glyph of Typeface.NOT_FOUND. That
+     * glyph must not record the missing character as its meaning: it is not that character,
+     * and a real '#' in the same document uses the same glyph.
+     */
+    @Test
+    public void testStandInForMissingCharacterRecordsNothing() {
+        MultiByteFont font = createFont();
+        font.setGSUB(mockGSUB(new IdentityAnswer()));
+        assertEquals("#", substitute(font, "\uF0A7").toString());
+        assertEquals(null, font.getGlyphMeaning(GI_NOT_FOUND));
     }
 
     /** The subset publishes the recorded characters for the glyph's selector, and the code point otherwise. */
