@@ -40,6 +40,20 @@ Measured, on the same font objects with only the script argument changing:
   zyyy      'fi' -> 'f','i'    'fi' -> U+FB01
   auto      'fi' -> 'f','i'    'fi' -> U+FB01
 
+The language argument opens the same hole. A language with no langsys entry under the
+script makes the (script, language) match come up empty, and the fallback then goes to
+(DFLT, dflt), skipping the script's own default langsys. Measured 2026-09-27 through the
+command line, one fo:block, only the language attribute changing, read back with pdftotext:
+
+  attributes                    Carlito                       DejaVu Sans
+  script=latn, no language      ffi ffl fi fl ft ti ligated    ffi ffl fi fl ligated
+  script=latn language="en"     nothing ligated               nothing ligated
+
+Neither font has an ENG langsys under latn. DejaVu does have DFLT, but its DFLT langsys
+carries case, ccmp, dlig and kern and no liga, so the fallback lands on a script table
+that lacks the feature. Option 1 below should therefore try (script, dflt) before
+(DFLT, dflt); that would have found liga in both fonts here.
+
 It is not only substitution. The same script matching governs GPOS, so kerning disappears
 too, and that is the wider harm because it reaches every letter pair rather than a handful
 of ligature sequences:

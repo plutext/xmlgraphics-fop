@@ -1,7 +1,7 @@
 # CR-002: a ligature's `ToUnicode` entry is a private-use code point, not its letters
 
-Status: DRAFT (analysis only, no code). Raised 2026-09-25 while designing
-`CR-001`. Registry key `fop/CR-002`. Upstream-bound: this is a defect in Apache
+Status: DRAFT, reviewed against the code and measured 2026-09-27 (§9); no code yet.
+Raised 2026-09-25 while designing `CR-001`. Registry key `fop/CR-002`. Upstream-bound: this is a defect in Apache
 FOP with no docx4j specificity, so it goes upstream first.
 
 This is **Enterprise CR-001 §6.6 item 30**, which is the canonical entry and
@@ -74,6 +74,9 @@ character. What is missing is a path for a multi-character association to reach
 the CMap.
 
 ## 5. The fix, read against the code
+
+*Read with §9, the review of 2026-09-27, which corrects the key in step 1, the CIDFull
+claim in step 2, and widens the scope beyond ligatures.*
 
 Verified against the source on 2026-09-27, which changed two things the first draft said.
 
@@ -181,3 +184,153 @@ docx4j.
 Filed as a JIRA with §2 as the description and §5 as the proposal, before any
 patch. There is no docx4j specificity, so there is no reason for the fork to
 carry it ahead of Apache, beyond the fork getting it sooner if review is slow.
+
+## 9. Review of 2026-09-27: measured, and what it changes
+
+Measured with the fork's command line (`org.apache.fop.cli.Main` on the
+`2.11-docx4j.2-SNAPSHOT` jars, no docx4j in the path), fonts from `/usr/share/fonts`,
+the text layer read back with `pdftotext` and `mutool draw -F txt`, and the `ToUnicode`
+streams read from `mutool clean -d` output. The docx4j session measured its own pipeline
+the same day; its answers are in §9.6. Nothing here is inferred from the code alone.
+
+### 9.1 The defect is wider than ligatures
+
+Carlito, `script="latn"`, the text `office affluent fifty flow ti fi`, extracts as
+`oﬃce aﬄuent ﬁy ﬂow  ﬁ`. Two things in that line:
+
+- `ft` and `ti` are the private-use case of §2: glyph 91 and glyph 2210 were minted
+  U+E000 and U+E001. This is item 30's `ti`, reproduced outside docx4j.
+- `fi`, `fl`, `ffi`, `ffl` come out as U+FB01 to U+FB04, because Carlito's cmap maps those
+  presentation forms, so `findCharacterFromGlyphIndex` finds a real code point and nothing
+  is minted. Tolerable for extractors that normalise compatibility characters, but not
+  what the document says.
+
+Noto Sans Arabic, `script="arab"`, the text `السلام عليكم`, extracts the medial yeh as
+U+E001 U+E000. The two glyphs are 18 `uni066E.medi.wide` and 318
+`twodotshorizontalbelowar`: a `ccmp` decomposition into dotless base plus dots, then a
+contextual form. Each is a single substitution with an association of count one, and each
+has no cmap entry, so each was minted. The rest of the word came out as presentation forms
+(U+FE8E and so on) for the same cmap reason as Carlito's `fi`.
+
+So the key the design in §5 uses, `a.getCount() != 1`, is the wrong key. The condition
+that matters is that `findUnsubstitutedCharacter` returned nothing, which is "this glyph
+was substituted", whatever the count. Ligatures are the count-greater-than-one case of
+it; Arabic contextual forms and decompositions are the count-one case, and they are the
+common case in Arabic text. The docx4j session's own render of its Arabic probe through
+Apache FOP 2.11 counted 105 private-use characters against 308 base letters and 441
+presentation forms.
+
+### 9.2 What a substituted glyph publishes
+
+The rule that replaces §5 step 1: in `mapGlyphsToChars`, whenever
+`findUnsubstitutedCharacter` returns zero and the association is non-null with a count
+above zero, record the association's characters as the glyph's published meaning, keyed
+by glyph index. The character put into the returned `CharSequence` does not change: it is
+still the cmap's code point or the minted private-use one, because that is the identity
+`findGlyphIndex` maps back to the glyph at render time. Meaning and identity separate;
+only the meaning reaches the CMap.
+
+Two consequences to decide, both recommended:
+
+- A cmap-mapped ligature (`fi` at U+FB01) is substituted too, so under this rule it
+  publishes `fi` rather than U+FB01. That changes text layers that were already tolerable,
+  so the measurement must show it, but it is what the document says and what Word writes.
+- A disjoint association, which `CharAssociation.join` produces when a ligature's
+  components had ignored mark glyphs between them, must be read through
+  `getSubIntervals()`, not `ca[start .. start + count)`. The skipped marks stay in the
+  glyph sequence as glyphs of their own and publish themselves; reading the flat interval
+  would publish them twice.
+
+### 9.3 One character, several glyphs: the open decision
+
+A multiple substitution replicates one association onto every output glyph
+(`GlyphSubstitutionTable` line 407, `CharAssociation.replicate`). Under §9.2 both glyphs
+of the yeh above publish U+064A. `ToUnicode` cannot express many glyphs to one character;
+the mechanism the spec gives for that is `ActualText`, which FOP writes only around
+hyphenated words in accessibility mode (`PDFPainter`, `beginTextObject`). Measured by
+hand-editing the Arabic sample's CMap:
+
+| second glyph's destination | `pdftotext` | `mutool` |
+|---|---|---|
+| U+064A again | `عل يكم`: one letter, and a spurious space | the same |
+| empty string `<>` | `عليكم`, correct | `علي�كم`, U+FFFD |
+| today's U+E000 | private-use | private-use |
+
+Neither option is right in both readers. The choice, to be made in the measurement step
+after also checking pdf.js and Acrobat, and recorded here:
+
+- (a) the first glyph of a shared association publishes the characters and the rest
+  publish an empty string: right in poppler, a replacement character in mupdf;
+- (b) the rest keep their private-use code point: no reader gets it right, nothing gets
+  worse than today;
+- (c) `ActualText` per cluster, a content-stream change, out of this CR's scope and noted
+  for the JIRA.
+
+"First" is in glyph-sequence order, and since the meaning map is per glyph index, a
+glyph that is only ever a follower (the dots glyph) is recorded as one; a glyph seen first
+in one place and second in another keeps its first recording.
+
+### 9.4 Where the meaning lives, and who writes it
+
+- The map is on the `MultiByteFont`, keyed by glyph index, filled at layout in
+  `mapGlyphsToChars`.
+- It reaches the subset at render, in `MultiByteFont.mapCodePoint(cp)`, at the call to
+  `cidSet.mapCodePoint(glyphIndex, cp)`: the font hands the meaning across at the same
+  moment. That is the one new `CIDSet` method, abstract, two implementors.
+- `CIDFull` is not "single characters as today" as §5 step 2 says: its `getChars()` comes
+  from `font.getChars()` by glyph index, so full embedding must consult the same map by
+  glyph index or the fix is subset-only.
+- Lifetime: the font instance must be shared between layout and render. It is, in FOP's
+  own single-run pipelines and in docx4j's main pass (§9.6). The two-process
+  intermediate-format and area-tree paths already lose the private-use mints, since the
+  rendering JVM never minted them, so nothing worsens there; the JIRA should state the
+  boundary.
+
+### 9.5 The writer
+
+- Keep the `char[]` constructor as an adapter that joins a surrogate pair into one entry,
+  so the single-byte call site in `PDFFactory` and both existing test classes stay as
+  they are. Upstream's `PDFToUnicodeCMapTestCase` is the second safety net that §5a
+  did not name: it pins the 100-entry section split, surrogate pairs at a section
+  boundary, and the 256-entry single-byte rejection.
+- Rangeable means one code point, as §5a says. Everything else is a `bfchar` with a
+  string destination, including the empty destination if §9.3 chooses (a).
+
+### 9.6 What the docx4j session confirmed, 2026-09-27
+
+- The `+noliga` twin stays after this CR: it exists for fidelity (Word draws no standard
+  ligature unless `w14:ligatures` asks), and this CR only fixes what the PDF says about a
+  glyph that is correctly drawn. Nothing in `FopCapabilities` will gate the twin on a
+  CR-002 capability.
+- Through docx4j today the visible Latin effect is near zero, because Carlito gets no GSUB
+  at all there (the missing-`DFLT` finding, `docs/upstream/no-default-script-table.txt`).
+  Arabic and other complex-script documents move now; Latin moves once docx4j's script fix
+  lands, which is ordered after this CR for that reason.
+- The gate: the line-parity score pairs lines by their text, so a line carrying U+E000
+  against Word's `ti` is unmatched today and recovers when fixed. Pair it with a
+  per-document private-use count from `pdftotext` before and after; the docx4j session
+  has a script to adapt.
+- Pipeline: docx4j lays out and renders in one FOP run (`FORendererApacheFOP`,
+  `IFRenderer` plus `ConfiguredPDFDocumentHandler`). Its other FOP runs produce area-tree
+  XML that docx4j reads with its own SAX handlers and never feeds back to FOP.
+- API: nothing in docx4j-export-fo, docx4j-core or the fidelity harness extends or uses
+  `CIDSet`, `CIDSubset`, `CIDFull` or `PDFToUnicodeCMap`; the `org.docx4j.fonts.fop`
+  copies are docx4j's own namespace.
+
+### 9.7 A separate finding, recorded with the `DFLT` draft
+
+The same samples with `language="en"` added ligated nothing, in Carlito and in DejaVu
+alike. That is the language face of the `DFLT` fallback, not this defect, and it is
+recorded in `docs/upstream/no-default-script-table.txt`.
+
+### 9.8 The measurement in §6, brought up to date
+
+- Carlito `office affluent fifty flow ti fi`: today `ﬁy` and ``; after,
+  `fifty` and `ti`, and `fi` rather than U+FB01 if §9.2's first decision stands.
+- Noto Sans Arabic `السلام عليكم`: today two private-use characters; after, none, and the
+  yeh cluster reads per §9.3's decision. Read with `pdftotext` and `mutool` both, since
+  they disagree.
+- The CJK radical, and a glyph with no character behind it, as §6 already says.
+- The drawn content byte for byte unchanged, as §6 already says.
+
+The JIRA in §8 should be drafted from §9.1, not §2: the wider statement is the true one.
