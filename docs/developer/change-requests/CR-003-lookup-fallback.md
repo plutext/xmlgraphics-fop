@@ -285,3 +285,15 @@ The docx4j session split the three with its Word layout on and off, on the relea
 
 CR-003 stands as coded. The gate is re-run once docx4j's line manager is fixed and the
 partition's Type 1C exclusion is replaced.
+
+### 11.2 Re-read with the exclusion by declaration, same runs
+
+Partition excluding by declaration only (`+noliga` single-byte twins; CJK `advanced="false"`,
+which docx4j's collection honours): 408 still, 190 movers (kern-lost 68, Nimbus Sans Narrow
+among them; kern-gained 45; `ccmp`-led 72; script 5). Still tier 408 of 408 glyph-identical.
+All 49 documents that moved are predicted movers; none moved outside the partition. The
+five scoreboard regressions are the two docx4j line-manager cases of §11.1 and occur only
+with that manager on. CR-003 stands as coded; the branch waits for docx4j's fix and a
+re-gate of both together. It also explains a puzzle from CR-001's gate: Nimbus's `DFLT`
+carries `kern` but not `liga`, which is why its "Nr." never ligated while its kerning
+happened.
