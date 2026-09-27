@@ -169,7 +169,7 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-09-27, evening, after CR-002 merged. Read Enterprise CR-001 §6.6 before
+Last updated 2026-09-27, late, with CR-003 awaiting its re-gate. Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
 **Released.** `2.11-docx4j.1` is on Maven Central, tagged `v2.11-docx4j.1` at `2f5030172`.
@@ -191,7 +191,19 @@ follow-up. Lesson from the gate, §10.6: check what is drawn before believing a 
 "improvement". Two JIRA drafts under `docs/upstream/`, not yet filed. Not yet done twice:
 the `FOP-####` branch against `trunk` waits on the JIRA numbers.
 
-**Found on 2026-09-27, measured, not yet acted on.** A font whose GSUB or GPOS has no `DFLT` script
+**In progress, on branch `CR-003-script-fallback`: `fop/CR-003`**, the lookup fallback and the
+kerning flag (`docs/developer/change-requests/CR-003-lookup-fallback.md`). `matchLookups`
+maps the FO language to its OpenType tag and falls back `(script, dflt)` before `(DFLT,
+dflt)`; a font declared `kerning="false"` is positioned without `kern`. Capabilities
+`lookup-fallback` and `kerning-flag`. Snapshot installed 20:18 from ca8cf0115. First gate
+failed on five scoreboard regressions; all explained (§11.1): two are docx4j's own line
+manager, one is the flag working on Nimbus Sans Narrow, which the partition had wrongly
+excluded. Re-read with the corrected partition: still tier 408 of 408 identical, every
+mover predicted. Merge waits on docx4j's line-manager fix and a joint re-gate. Findings on
+the way, not acted on: FOP never kerns DejaVu (§6.6 item 32); per-font `advanced="false"`
+is ignored by FOP's stock font collection (§10).
+
+**Superseded by CR-003.** A font whose GSUB or GPOS has no `DFLT` script
 table silently gets no substitution and no kerning under a default script, because the
 fallback in `GlyphTable.matchLookups` targets `DFLT` too. Carlito has no `DFLT`; DejaVu
 has one. That is why Carlito never shapes or kerns in docx4j's pipeline while DejaVu does.
