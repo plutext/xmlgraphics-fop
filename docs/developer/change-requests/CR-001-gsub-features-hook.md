@@ -1,6 +1,7 @@
 # CR-001: a `gsub-features` hook, replacing docx4j's no-ligature font twin
 
-Status: DRAFT (design only, no code). Raised 2026-09-25 for docx4j CR-020 phase 2
+Status: DONE 2026-09-27: on `2.11-docx4j.2` at 56bbae710, capability `gsub-features`, gate clean
+(603 documents, 1 moved and improved, 0 regressed); unreleased. Raised 2026-09-25 for docx4j CR-020 phase 2
 item P2-8. Registry key `fop/CR-001`. Revised the same day after the docx4j
 session reviewed it; §1 corrects the premise the first draft was built on.
 
