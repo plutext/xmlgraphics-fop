@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: getUnicodeSequences reads the per-glyph meaning the font recorded at substitution
+ * (fop/CR-002). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fonts;
@@ -142,6 +146,16 @@ public class CIDSubset implements CIDSet {
         }
 
         return buf.toString().toCharArray();
+    }
+
+    /** {@inheritDoc} */
+    public String[] getUnicodeSequences() {
+        String[] sequences = new String[usedGlyphsCount];
+        for (int i = 0; i < usedGlyphsCount; i++) {
+            String meaning = (font == null) ? null : font.getGlyphMeaning(getOriginalGlyphIndex(i));
+            sequences[i] = (meaning != null) ? meaning : new String(Character.toChars(getUnicode(i)));
+        }
+        return sequences;
     }
 
     /** {@inheritDoc} */

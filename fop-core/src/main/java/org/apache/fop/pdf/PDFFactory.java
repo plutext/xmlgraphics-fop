@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: the ToUnicode CMap of a CID font is built from the subset's per-selector text
+ * (fop/CR-002). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.pdf;
@@ -1006,7 +1010,7 @@ public class PDFFactory {
                         throw new RuntimeException(e);
                     }
                 } else {
-                    cmap = new PDFToUnicodeCMap(cidMetrics.getCIDSet().getChars(), "fop-ucs-H",
+                    cmap = new PDFToUnicodeCMap(cidMetrics.getCIDSet().getUnicodeSequences(), "fop-ucs-H",
                         new PDFCIDSystemInfo("Adobe", "Identity", 0), false, eventBroadcaster);
                 }
                 getDocument().registerObject(cmap);

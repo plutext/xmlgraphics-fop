@@ -1,0 +1,44 @@
+JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
+Not yet filed. Fixed on the fork's branch CR-002-ligature-tounicode as a by-product of the
+ToUnicode rewrite there (tounicode-substituted-glyphs.txt); separable if wanted, since the
+fix for this alone is to number selectors per entry.
+
+Project:          FOP
+Issue Type:       Bug
+Affects Version:  2.11 (since surrogate-pair support in PDFToUnicodeCMap)
+Component:        pdf
+
+Summary
+-------
+ToUnicode selectors are off by one after every supplementary-plane character, so the text
+after an emoji or a mathematical letter extracts wrongly
+
+Description
+-----------
+CIDSubset.getChars builds a char[] with StringBuilder.appendCodePoint, so a
+supplementary-plane character occupies two slots. PDFToUnicodeCMap then derives the
+character selector from the array position. Every selector after the pair is therefore
+written one too high.
+
+Measured with the 2.11 command line, DejaVu Math TeX Gyre, the text "A𝐀BZ": the content
+stream uses selectors 3 4 5 6, and the CMap says
+
+  <0003> <0041>  <0004> <d835dc00>  <0006> <0042>  <0007> <005a>
+
+Selector 5, the B, has no entry, and selector 6, the Z, is published as B. pdftotext
+extracts "A𝐀 B"; pdf.js and PDFium give the missing selector as U+0005.
+
+PDFToUnicodeCMapTestCase.surrogatePairTest pins the drift: it expects the entry after the
+pair at 0x63 to be 0x65.
+
+Fix
+---
+Build the CMap from one destination per selector (a String, so a surrogate pair is one
+entry of length two) rather than from a positional char[]. The range logic then needs no
+surrogate special cases: an entry may join a bfrange when it is one code point, and two
+entries are consecutive when their code points are and their selectors share a 256 block.
+Expectations in surrogatePairTest, surrogatePairRangeTest, surrogatePairsRangeTest and
+rangeSizeSurrogateTest change accordingly; the last also used low surrogates that ran past
+U+DFFF and now starts at U+DC00.
+
+After the fix the same file extracts as "A𝐀BZ" in pdftotext, mupdf, pdf.js and PDFium.

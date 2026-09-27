@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: getUnicodeSequences, so a fully embedded font's ToUnicode carries the per-glyph
+ * meaning too (fop/CR-002). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fonts;
@@ -105,6 +109,18 @@ public class CIDFull implements CIDSet {
     /** {@inheritDoc} */
     public char[] getChars() {
         return font.getChars();
+    }
+
+    /** {@inheritDoc} */
+    public String[] getUnicodeSequences() {
+        String[] sequences = org.apache.fop.pdf.PDFToUnicodeCMap.toDestinations(font.getChars());
+        for (int gi = 0; gi < sequences.length; gi++) {
+            String meaning = font.getGlyphMeaning(gi);
+            if (meaning != null) {
+                sequences[gi] = meaning;
+            }
+        }
+        return sequences;
     }
 
     /** {@inheritDoc} */

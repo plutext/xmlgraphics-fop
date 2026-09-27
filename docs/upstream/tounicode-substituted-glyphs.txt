@@ -1,0 +1,88 @@
+JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
+Not yet filed. Implemented on the fork's branch CR-002-ligature-tounicode; the same change
+is to be cut against trunk as FOP-#### once filed.
+
+Project:          FOP
+Issue Type:       Bug
+Affects Version:  2.11 (and every version with complex-script support)
+Component:        pdf / fonts
+
+Summary
+-------
+ToUnicode publishes a private-use code point for any glyph substitution produced, so
+ligatures and Arabic contextual forms are not searchable, copyable or readable aloud
+
+Description
+-----------
+MultiByteFont.mapGlyphsToChars maps the substituted glyph sequence back to characters one
+character per glyph. For a glyph substitution left alone it finds the originating character.
+For a glyph substitution produced, whose glyph index no character maps to, it falls through
+to createPrivateUseMapping, which mints a code point from U+E000 upward. The painter later
+hands that code point to CIDSubset.mapCodePoint, and CIDSubset.getChars is what
+PDFToUnicodeCMap is built from. So the private-use code point minted to give the glyph an
+identity becomes its published meaning.
+
+That is every ligature (fi, fl, ffi, ft, ti and so on wherever the font has no cmap entry
+for the ligature glyph), and every single substitution whose output glyph has no cmap entry
+of its own: Arabic initial, medial and final forms in a font without presentation-form
+cmap entries, small capitals, old-style figures, contextual alternates, and each glyph of
+a ccmp decomposition.
+
+Measured with the 2.11 command line, read back with pdftotext:
+
+  Carlito, script="latn", "office affluent fifty flow ti fi"
+      -> "oﬃce aﬄuent ﬁy ﬂow  ﬁ"
+         (ft and ti minted; fi, fl, ffi, ffl publish U+FB01..FB04 because Carlito's
+         cmap happens to map those forms)
+  Noto Sans Arabic, script="arab", "السلام عليكم"
+      -> the medial yeh extracts as U+E001 U+E000 (ccmp split it into uni066E.medi.wide
+         and twodotshorizontalbelowar), the other letters as presentation forms
+
+A docx4j corpus render of an Arabic probe through 2.11 counted 105 private-use characters
+against 308 base letters and 441 presentation forms.
+
+The page looks right, since the glyph and its advance are correct; the defect shows only
+when someone selects, searches or reads the text.
+
+Fix
+---
+The information is already there: the GlyphSequence carries a CharAssociation per glyph
+naming the characters that produced it, and findUnsubstitutedCharacter reads it and
+discards it for exactly the substituted case.
+
+1. MultiByteFont.mapGlyphsToChars records, per glyph index, the characters of the
+   association whenever the glyph was substituted (findUnsubstitutedCharacter returned
+   nothing). A disjoint association (a ligature with ignored marks between its components)
+   contributes its sub-intervals only. The character returned for layout does not change:
+   it is still the glyph's identity, which findGlyphIndex maps back to the glyph.
+2. CIDSet gains getUnicodeSequences(): one String per selector, the recorded characters
+   where there are any and the code point otherwise. CIDSubset and CIDFull implement it.
+3. PDFFactory builds the ToUnicode CMap from that instead of getChars().
+4. PDFToUnicodeCMap takes one destination String per selector. Only a destination of one
+   code point may join a bfrange; a multi-character destination is written as a bfchar
+   with a string, which the spec allows.
+
+Two cases a ToUnicode entry cannot express, and how the fix leaves them:
+
+- Several glyphs for one character (a ccmp decomposition replicates the association onto
+  each output glyph). The first glyph publishes the character; the second and later keep
+  the private-use code point. An empty destination was tried and rejected: poppler reads it
+  correctly, but mupdf prints U+FFFD, pdf.js a space, and PDFium the raw selector as a
+  control character. Publishing the character twice makes poppler and mupdf insert a space.
+  ActualText per cluster is the mechanism for this case and is a content-stream change
+  outside this issue.
+- One glyph seen with two different meanings (a shared dotless base in a decomposing
+  Arabic font). It publishes neither, keeping the private-use code point, rather than the
+  wrong letter.
+
+After the fix, with the drawn content byte for byte unchanged:
+
+  Carlito         -> "office affluent fifty flow ti fi"   (pdftotext, mupdf, pdf.js, PDFium)
+  Noto Sans Arabic -> "السلام عليكم"                 (the dots glyph is the one left)
+
+Tests: PDFToUnicodeCMapTestCase and MultiByteFontTestCase extended; the writer's existing
+output is pinned by ToUnicodeCharacterisationTestCase before the change.
+
+Related: the same rewrite of PDFToUnicodeCMap fixes the selector drift after a surrogate
+pair, reported separately (tounicode-selector-drift.txt), because the positional char[]
+that caused it is what had to go.

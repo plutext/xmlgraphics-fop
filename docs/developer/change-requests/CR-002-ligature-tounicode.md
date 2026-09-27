@@ -1,6 +1,7 @@
 # CR-002: a ligature's `ToUnicode` entry is a private-use code point, not its letters
 
-Status: DRAFT, reviewed against the code and measured 2026-09-27 (§9); no code yet.
+Status: IMPLEMENTED 2026-09-27 on branch `CR-002-ligature-tounicode` (§10), awaiting the docx4j gate;
+not merged, not released.
 Raised 2026-09-25 while designing `CR-001`. Registry key `fop/CR-002`. Upstream-bound: this is a defect in Apache
 FOP with no docx4j specificity, so it goes upstream first.
 
@@ -334,3 +335,78 @@ recorded in `docs/upstream/no-default-script-table.txt`.
 - The drawn content byte for byte unchanged, as §6 already says.
 
 The JIRA in §8 should be drafted from §9.1, not §2: the wider statement is the true one.
+
+## 10. Implemented, 2026-09-27
+
+On branch `CR-002-ligature-tounicode` off `2.11-docx4j.2`. Files: `MultiByteFont`,
+`CIDSet`, `CIDSubset`, `CIDFull`, `PDFToUnicodeCMap`, `PDFFactory`; tests
+`ToUnicodeCharacterisationTestCase`, `PDFToUnicodeCMapTestCase`, `MultiByteFontTestCase`.
+
+### 10.1 What was built, against §9
+
+- §9.2 as written: `mapGlyphsToChars` records the association's characters for every
+  glyph `findUnsubstitutedCharacter` rejects, disjoint associations through their
+  sub-intervals, keyed by glyph index, first recording wins. A glyph later seen with a
+  different meaning is marked as having none (a null value in the map) and publishes its
+  code point as before, so a shared dotless base in a decomposing Arabic font never
+  publishes the wrong letter.
+- §9.4, simplified: the subset does not receive the meaning at `mapCodePoint`. The CMap is
+  written at the end of the document, after all layout, so `CIDSubset.getUnicodeSequences`
+  asks the font for each selector's glyph meaning at that moment. `CIDFull` does the same
+  by glyph index. One abstract method on `CIDSet`, no change to `mapCodePoint`.
+- §9.5 as written: `PDFToUnicodeCMap` takes `String[]`, keeps the `char[]` constructor as
+  an adapter that joins a pair into one entry, ranges only single code points, and writes
+  everything else as a `bfchar` with a string destination.
+
+### 10.2 The §9.3 decision: the follower keeps its private-use code point
+
+Measured with four readers on hand-edited CMaps of the Arabic sample:
+
+| second glyph's destination | poppler | mupdf | pdf.js | PDFium |
+|---|---|---|---|---|
+| the letter again | spurious space | spurious space | letter twice | letter twice |
+| empty string | correct | U+FFFD | a space | the raw selector, U+000B |
+| private-use (kept) | private-use | private-use | private-use | private-use |
+
+PDFium is Chrome's viewer and turns the empty destination into a control character, which
+is worse than what the document has today. So option (b): a glyph that is the second or
+later output of one character records no meaning and keeps its private-use identity, and a
+glyph seen as a follower anywhere is treated so everywhere. `ActualText` per cluster
+remains the correct mechanism for that case and is named in the JIRA as the follow-up.
+
+### 10.3 Found while implementing: the selectors drifted after a surrogate pair
+
+The positional `char[]` gave a supplementary-plane character two slots and derived the
+selector from the slot, so every entry after one was a selector too high. Measured with
+DejaVu Math TeX Gyre and `A𝐀BZ`: the content stream used selectors 3 to 6, the CMap said
+`<0006> <0042>` and `<0007> <005a>`, and `B` extracted as a space and `Z` as `B` in
+pdftotext, as U+0005 in pdf.js and PDFium. Upstream's `surrogatePairTest` pinned the drift.
+The per-selector representation removes it; four upstream test expectations changed with
+the reason in their Javadoc, and `rangeSizeSurrogateTest` now uses low surrogates that stay
+valid. Drafted for Jason as `docs/upstream/tounicode-selector-drift.txt`; not yet a §6.6
+item, pending the docx4j session's agreement.
+
+### 10.4 Measured after, drawn content byte for byte unchanged
+
+Every stream of each PDF other than the CMap and the XMP metadata (timestamps and the
+producer string) is identical before and after: fonts, content, widths.
+
+| sample | before (pdftotext) | after (pdftotext, mupdf, pdf.js, PDFium agree) |
+|---|---|---|
+| Carlito `office affluent fifty flow ti fi` | `oﬃce aﬄuent ﬁy ﬂow  ﬁ` | `office affluent fifty flow ti fi` |
+| Noto Sans Arabic `السلام عليكم` | presentation forms, yeh as U+E001 U+E000 | `السلام عليكم`: base letters, the dots glyph the one left |
+| DejaVu Math TeX Gyre `A𝐀BZ` | `A𝐀 B` | `A𝐀BZ` |
+
+The Arabic row shows the two limits of §10.2 together: the dotless base publishes its
+letter because in this sample it is only ever a yeh, and the dots glyph is a follower.
+
+### 10.5 What a gate pass looks like
+
+- Geometry: no document moves. The change touches no glyph, advance or position.
+- Text: the per-document private-use count from `pdftotext` falls, to zero for Latin
+  documents that ligate and for Arabic documents in fonts with precomposed forms, and
+  falls without reaching zero for fonts that decompose dots.
+- The line-parity score improves on the lines that carried U+E000 and regresses nowhere.
+
+Tests: the three classes above, 32 tests; the full `fop-core` suite, 3581 tests, green
+before the commit; checkstyle clean.

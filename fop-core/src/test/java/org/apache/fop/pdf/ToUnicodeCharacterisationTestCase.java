@@ -98,6 +98,51 @@ public class ToUnicodeCharacterisationTestCase {
         assertEquals(true, cmap.contains("<0000> <FFFF>"));
     }
 
+    private String cmapOf(String[] destinations) throws IOException {
+        PDFToUnicodeCMap cmap = new PDFToUnicodeCMap(destinations, PDFCMap.ENC_IDENTITY_H,
+                new PDFCIDSystemInfo("Adobe", "Identity", 0), false, null);
+        CharArrayWriter writer = new CharArrayWriter();
+        cmap.createCMapBuilder(writer).writeCMap();
+        return writer.toString();
+    }
+
+    /**
+     * CR-002: a glyph standing for several characters publishes them as a string, in a bfchar,
+     * never in a range; its single-character neighbours still range.
+     */
+    @Test
+    public void testLigaturePublishesItsLetters() throws IOException {
+        assertEquals("1 beginbfchar\n<0002> <00660069>\nendbfchar\n"
+                + "1 beginbfrange\n<0000> <0001> <0066>\nendbfrange\n",
+                body(cmapOf(new String[] {"f", "g", "fi"})));
+    }
+
+    /**
+     * A surrogate pair is one selector, so the selectors after it do not drift by one as they
+     * did when the pair occupied two slots of a positional array; the positional constructor
+     * now gives the same CMap as the per-selector one.
+     */
+    @Test
+    public void testSelectorsDoNotDriftAfterASurrogatePair() throws IOException {
+        String expected = "3 beginbfchar\n<0000> <0041>\n<0001> <d835dc00>\n<0002> <0042>\nendbfchar\n";
+        assertEquals(expected, body(cmapOf(new String[] {"A", "\uD835\uDC00", "B"})));
+        assertEquals(expected, body(cmapOf(new char[] {'A', '\uD835', '\uDC00', 'B'}, false)));
+    }
+
+    /** Consecutive supplementary-plane code points still pack into a range. */
+    @Test
+    public void testSurrogatePairsStillRange() throws IOException {
+        assertEquals("1 beginbfrange\n<0000> <0001> <d835dc00>\nendbfrange\n",
+                body(cmapOf(new String[] {"\uD835\uDC00", "\uD835\uDC01"})));
+    }
+
+    /** An empty destination is written as an empty string. */
+    @Test
+    public void testEmptyDestination() throws IOException {
+        assertEquals("2 beginbfchar\n<0000> <0041>\n<0001> <>\nendbfchar\n",
+                body(cmapOf(new String[] {"A", ""})));
+    }
+
     /** Single-byte code space, for the simple-font path. */
     @Test
     public void testSingleByteCodeSpace() throws IOException {
