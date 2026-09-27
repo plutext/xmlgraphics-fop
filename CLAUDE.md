@@ -201,9 +201,11 @@ measurement and the fallback order to fix it). A shaping and kerning change acro
 Carlito text, so it wants its own branch, capability and gate; Jason decides; docx4j's script
 CR is ordered after it.
 
-**Waiting on Jason.** Filing the three drafted JIRAs, two in commit messages and one under
-`docs/upstream/`, plus this fourth one. Whether to give the radical fix a capability.
-Whether `2.11-docx4j.2` releases after CR-002.
+**Waiting on Jason.** Filing the six drafted JIRAs: two in commit messages (the empty-glyph
+and radical fixes) and four under `docs/upstream/` (surrogate word split, no-`DFLT` script
+table, and CR-002's two). Whether to give the radical fix a capability. Whether
+`2.11-docx4j.2` releases now that CR-002 is in. Pushing: nine commits on `2.11-docx4j.2`
+are local only.
 
 **Be honest about the fork.** Gated against Apache FOP, the measured fidelity difference is
 still nil, and that is why Apache FOP stays docx4j's default through 17.2.1. The value so
