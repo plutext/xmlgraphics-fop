@@ -254,3 +254,34 @@ the font's legacy kern table has a pair for it; Arimo and Carlito have no such t
 those spaces are plain glue in the FO. The exact FO around "During repair, if however,
 you" and around the Greek overflow, with the font declarations, has been asked for; the
 mechanism is not established, and the branch stays unmerged.
+
+### 11.1 Resolved the same evening: two are docx4j's, the third is the flag working
+
+The docx4j session split the three with its Word layout on and off, on the released
+`2.11-docx4j.1` and on the branch:
+
+- The kerned-space collapse is intact with Word layout off on both, and closes only with
+  it on and the branch installed: docx4j's `WordLineLayoutManager` consuming something the
+  mappings now carry. docx4j's.
+- The Greek extra page: 70 to 71 with Word layout on, 69 to 69 with it off, the glyphs
+  moving in both (narrower, the kerning measured in §11). docx4j's.
+- The predicted-still document 14_en-AU_num_tbl_6541 moves with Word layout off too, so it
+  is FOP's. Read glyph by glyph from the docx4j session's own PDFs: the first mover on 96 of
+  the moved lines is a Nimbus Sans Narrow pair (`r s`, `N u`, `t c`, `T e` by 0.76 pt), all in
+  plain runs (the document has no `+kern` family at all), and the Carlito space and the DejaVu
+  Serif bullets that move sit on lines whose Nimbus text moved first. Reproduced on the
+  command line: Nimbus Sans Narrow, `Te Number Outcomes: Whole`, `kerning="true"` identical
+  old and new; `kerning="false"` 150.98 pt old and 151.84 new, the glyphs after `T` moving
+  1.06 pt. So the old code kerned that font with kerning off, through its `DFLT` table, and
+  the branch honours the flag; plain runs lose a kerning Word never applied, which is the
+  kern-lost class the partition first predicted for DejaVu, and the document's score
+  improved. The partition had excluded Nimbus Sans Narrow, P052 and URW Gothic as unable to
+  shape because the baseline embeds them as Type 1C. That inference is wrong: a CFF OpenType
+  font declared without `encoding-mode="single-byte"` is loaded as a `MultiByteFont` with
+  GSUB and GPOS (a `CFFToType1Font` when embedded as Type 1) and shapes and kerns like any
+  other; only the embedding differs. The exclusion has to come from the declaration
+  (`encoding-mode="single-byte"`, or `advanced="false"` where the collection honours it),
+  not from `pdffonts`.
+
+CR-003 stands as coded. The gate is re-run once docx4j's line manager is fixed and the
+partition's Type 1C exclusion is replaced.
