@@ -383,8 +383,10 @@ DejaVu Math TeX Gyre and `A𝐀BZ`: the content stream used selectors 3 to 6, th
 pdftotext, as U+0005 in pdf.js and PDFium. Upstream's `surrogatePairTest` pinned the drift.
 The per-selector representation removes it; four upstream test expectations changed with
 the reason in their Javadoc, and `rangeSizeSurrogateTest` now uses low surrogates that stay
-valid. Drafted for Jason as `docs/upstream/tounicode-selector-drift.txt`; not yet a §6.6
-item, pending the docx4j session's agreement.
+valid. Drafted for Jason as `docs/upstream/tounicode-selector-drift.txt`. Enterprise CR-001 §6.6
+item 31 (agreed with the docx4j session 2026-09-27, which wrote it): reach from docx4j is
+small, since no corpus document carries a non-BMP character and equations reach the PDF as
+paths; workaround none.
 
 ### 10.4 Measured after, drawn content byte for byte unchanged
 
