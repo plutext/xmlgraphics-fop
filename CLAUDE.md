@@ -169,42 +169,54 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-**`2.11-docx4j.1` is released to Maven Central** (2026-09-25, from commit `2f5030172`,
-unreleased and untagged before that). It carries the four font fixes, the phase 1 hooks
-and P2-1. `docs/developer/releasing.md` is the runbook and records what the first
-release proved. There is no git tag for it.
+Last updated 2026-09-27, at the end of a long session. Read Enterprise CR-001 §6.6 before
+proposing anything, as the section above says.
 
-**Phase 2 is much smaller than CR-020 §8 describes.** A reachability pass on 2026-09-25
-asked of each queued item whether docx4j can reach the code at all, and most cannot:
+**Released.** `2.11-docx4j.1` is on Maven Central, tagged `v2.11-docx4j.1` at `2f5030172`.
+`docs/developer/releasing.md` is the runbook and records what that release proved.
 
-- **P2-1 surrogate pairs** is done, gated at 449 of 449 documents and 148 probes, merged
-  and released. It is inert on the corpus, which holds no astral character.
-- **P2-2** is worked around twice in docx4j already, so the fork change only lets those
-  workarounds go. **P2-3** is a nine-line diagnostic. Both clean, both small.
-- **P2-4's** Arabic half is unobservable across the corpus; its zero-width-space half
-  sits behind accessibility mode, which docx4j never enables. **P2-6** and **P2-7** are
-  inert because docx4j emits no trigger. The structure-tree half of **P2-5** is
-  superseded by FOP-3165 and FOP-3283, already in Apache `main`, and what remains of it
-  would not pass checkstyle here.
-- **P2-8 ligatures** is `fop/CR-001`, design only. Its premise needed correcting: docx4j
-  already handles Word's setting with a font twin in `docx4j-core`, so the common path is
-  right today. What remains is the twin's four gaps.
+**On the branch, unreleased.** `fop/CR-001`, the `fox:gsub-features` hook, capability
+`gsub-features`. It gated clean on 2026-09-27: of 603 corpus documents, 1 moved and
+improved, 0 regressed, and both still tiers were identical. It is inert until docx4j emits
+the attribute. `2.11-docx4j.2-SNAPSHOT` is installed locally and carries it.
 
-**Recommended order, both design only: `fop/CR-002` first, then `fop/CR-001`.** CR-002 is
-Enterprise CR-001 §6.6 item 30: a ligature's `ToUnicode` publishes a private-use code
-point instead of its letters, so search, copy and paste and screen readers break wherever
-a ligature is drawn. It affects every FOP user on default settings and the ligature hook
-cannot reach it.
+**Next, and the critical path: `fop/CR-002`**, the ligature `ToUnicode` defect, Enterprise
+CR-001 §6.6 item 30. Jason approved the fork carrying it rather than waiting for Apache.
+Design is done and read against the code; `ToUnicodeCharacterisationTestCase` pins the
+writer's current output as the safety net. **The refactor itself has not started.** It
+turns `PDFToUnicodeCMap`'s positional `char[]` into one string per glyph; every PDF FOP
+writes gets its text layer from that class, so the characterisation tests come first.
 
-**Be honest about where the fork stands.** Gated against Apache FOP on the corpus, the
-measured fidelity difference today is nil. Its value so far is the font fixes preventing
-failures, and the hooks replacing reflection. That is why Apache FOP stays docx4j's
-default through 17.2.1, with a switch at 17.3.0 at the earliest, waiting on a release
-carrying CR-002 and P2-8.
+CR-002 now gates three separate things, which is why it is first: the `+clig` additions on
+the hook, a capability for the Kangxi radical fix so docx4j can retire a workaround, and
+the script fix below.
 
-**Upstream is the bottleneck, and it is not our latency.** Three JIRAs are drafted and
-unfiled; only Jason can file them, and the drafts live in their commit messages and under
-`docs/upstream/` (the README's "Tracking upstream" says which is where). FOP-3328 and
-FOP-3330 are filed with pull requests 106 and 107 open, unreviewed since July. Apache has
-twenty open pull requests, the oldest from 2020, and runs no CI on requests from forks, so
-do not plan around review. A fix the fork needs, the fork carries.
+**Found on 2026-09-27, not yet acted on.** A font whose GSUB or GPOS has no `DFLT` script
+table silently gets no substitution and no kerning under a default script, because the
+fallback in `GlyphTable.matchLookups` targets `DFLT` too. Carlito has no `DFLT`; DejaVu
+has one. That is why Carlito never shapes or kerns in docx4j's pipeline while DejaVu does.
+Drafted at `docs/upstream/no-default-script-table.txt`, with the measurements. Fixing the
+docx4j side is a kerning change across nearly all Carlito text with a ligature change
+alongside, so it wants its own CR, partition and gate, after CR-002.
+
+**Waiting on Jason.** Filing the three drafted JIRAs, two in commit messages and one under
+`docs/upstream/`, plus this fourth one. Whether to give the radical fix a capability.
+Whether `2.11-docx4j.2` releases after CR-002.
+
+**Be honest about the fork.** Gated against Apache FOP, the measured fidelity difference is
+still nil, and that is why Apache FOP stays docx4j's default through 17.2.1. The value so
+far is the font fixes preventing failures and the hooks replacing reflection. Do not
+oversell it; I did, twice, about P2-8.
+
+**Phase 2 is much smaller than CR-020 §8 describes.** P2-1 done and released. P2-8 done,
+above. P2-2 is worked around twice in docx4j already, P2-3 is a nine-line diagnostic; both
+clean and small. P2-4, P2-6 and P2-7 are inert, and the structure-tree half of P2-5 is
+superseded by FOP-3165 and FOP-3283, already in Apache `main`.
+
+**Upstream is not something to plan around.** Apache has twenty open pull requests, the
+oldest from 2020, and runs no CI on requests from forks. A fix the fork needs, the fork
+carries.
+
+**The peers.** docx4j has more than one session; `ListAgents` shows them. The partition for
+the hook's gate is at `/home/jharrop/fidelity-gsub-partition/`, local only, not
+redistributable. Tell the docx4j session before any `mvn install`.

@@ -1,0 +1,85 @@
+JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
+Not yet filed. Measured 2026-09-27; no branch or patch yet.
+
+Project:          FOP
+Issue Type:       Bug
+Affects Version:  2.11
+Component:        fonts / complex scripts
+
+Summary
+-------
+A font whose GSUB or GPOS has no DFLT script table silently gets no substitution and no
+kerning under a default script, with no warning
+
+Description
+-----------
+GlyphTable.matchLookups falls back to the default script when a lookup match comes up
+empty:
+
+    if (lm.isEmpty() && !OTFScript.isDefault(script) && !OTFScript.isWildCard(script)) {
+        return matchLookups(OTFScript.DEFAULT, OTFLanguage.DEFAULT, feature);
+    }
+
+The fallback targets DFLT. So for a font that has no DFLT entry in its script list, a
+script of DFLT finds nothing, and the fallback looks for DFLT again and finds nothing
+again. Nothing is applied and nothing is reported. The font is loaded, its tables are
+read, performsSubstitution and performsPositioning both return true, and every lookup
+silently misses.
+
+Fonts without a DFLT script table are not unusual. Carlito, the metric-compatible Calibri
+substitute packaged by most Linux distributions, declares cyrl, grek and latn and no DFLT.
+DejaVu declares DFLT alongside them, which is why the two behave differently on the same
+code path and why this is easy to mistake for a font-file or a loader problem.
+
+Measured, on the same font objects with only the script argument changing:
+
+  script    Carlito 1.104      DejaVuLGCSerif
+  latn      'fi' -> U+FB01     'fi' -> U+FB01
+  *         'fi' -> U+FB01     'fi' -> U+FB01
+  DFLT      'fi' -> 'f','i'    'fi' -> U+FB01
+  zyyy      'fi' -> 'f','i'    'fi' -> U+FB01
+  auto      'fi' -> 'f','i'    'fi' -> U+FB01
+
+It is not only substitution. The same script matching governs GPOS, so kerning disappears
+too, and that is the wider harm because it reaches every letter pair rather than a handful
+of ligature sequences:
+
+  Carlito    legacy kern table: absent, 0 entries
+             GPOS 'AV'  latn kerned   * kerned   DFLT null
+  DejaVu     legacy kern table: present, 101 entries
+             GPOS 'AV'  latn kerned   * kerned   DFLT kerned
+
+Carlito has no legacy kern table at all, so under a default script it gets no kerning from
+either mechanism. A consumer that sets kerning="true" on such a font gets nothing and is
+told nothing.
+
+Note that the wildcard script "*" works, because the wildcard matches the font's real
+script tables. GlyphMapping maps "auto" and "zyyy" to "*", so the common FO path is safe;
+it is a caller that passes DFLT, or "auto"/"zyyy" unnormalised, that loses everything.
+
+Why it matters
+--------------
+The failure is silent and invisible in rendering: the text is drawn, just unshaped and
+unkerned. Nobody notices until they compare advance widths against another renderer. It
+also produces exactly the misleading symptom this was first mistaken for: "FOP reads this
+font's tables but not that one's".
+
+Proposed fix
+------------
+At least one of:
+
+1. Fall back to the font's own available scripts, not only to DFLT, when the requested
+   script finds no lookups. The wildcard already does this correctly, so the machinery
+   exists.
+2. Failing that, report it. An event when a font with GSUB or GPOS present yields no
+   lookups for the requested script would turn a silent miss into a diagnosable one.
+
+Option 1 changes shaping for existing documents and wants measurement. Option 2 is safe
+and could go first.
+
+Provenance
+----------
+Found while implementing the docx4j FO renderer's gsub-features hook, tracing why one font
+shaped and another did not through the same pipeline. All the numbers above are from
+loading each font directly with FontLoader and calling performSubstitution and
+performPositioning, so no renderer or consumer pipeline is involved.
