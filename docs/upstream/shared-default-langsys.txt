@@ -1,0 +1,79 @@
+JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
+Not yet filed. Measured 2026-09-30; fixed the same day on the fork's branch
+CR-004-shared-default-langsys (fop/CR-004), to be cut against trunk as FOP-#### once filed.
+Present in main: OTFAdvancedTypographicTableReader.readScriptTable has the same lines.
+
+Project:          FOP
+Issue Type:       Bug
+Affects Version:  2.11 (every version with the advanced typographic table reader)
+Component:        fonts / complex scripts
+
+Summary
+-------
+A script's default language system is dropped when its table is shared with a named
+language system, so DejaVu Sans is never kerned under a default language
+
+Description
+-----------
+OTFAdvancedTypographicTableReader.readScriptTable reads a script's LangSys records and, for
+each one, compares its offset with the default LangSys offset:
+
+    if (dl == lo) {
+        dl = 0;
+        dt = lt;
+    }
+
+When they are equal the default is not read; the script's default-language tag is set to
+that named language instead. constructLookups then registers the features under
+(script, that language) only, and nothing under (script, "dflt").
+
+Font builders share the table on purpose. FontForge writes one LangSys table for the
+default and for every language whose feature list equals the default's, and it is the
+default LangSys offset that points at it. On this machine 252 of 1356 installed OpenType
+fonts have the shape (every DejaVu face, Cousine, Inconsolata, Adwaita Sans among them),
+the GPOS table more often than GSUB because kerning is rarely language-specific.
+
+What is lost depends on the font's DFLT script, where the request lands after the fallback:
+
+  DejaVu Sans, GPOS      latn default = latn/ROM = the eight Sami systems: kern lookups 14 and 15
+                         DFLT/dflt:                                        kern lookup 15 only
+                         Lookup 14 is the Latin class kerning (97 first glyphs); lookup 15
+                         covers 20 glyphs and no Latin letter. So under any default language
+                         DejaVu Sans has no Latin kerning at all.
+  DejaVu Serif, GPOS     latn default shared likewise, but DFLT/dflt lists the same lookup
+                         as latn, so nothing is lost.
+  DejaVuLGCSerif, GPOS   (the font in FOP's own test tree) latn default = latn/AZE, and GPOS
+                         has no DFLT script at all: no kerning under a default language.
+
+Measured on the 2.11 command line, DejaVu Sans, kerning="true", 14pt "AVATAR To Ye", line
+width from mutool stext:
+
+  language="en"      99.68 pt   (falls to DFLT)
+  no language        99.68 pt   (script default, not found; falls to DFLT)
+  language="ro"      91.55 pt   (latn/ROM, which is the shared table: kerned)
+  language="se"      91.55 pt   (latn/NSM, likewise)
+
+and on the same font loaded through FontLoader, matchLookupSpecs("latn", "dflt", "kern") is
+empty while ("latn", "ROM", "kern") is not. The pair-positioning subtables themselves work:
+performPositioning("AV", "latn", "ROM") gives -63/1000 em.
+
+This is the mechanism behind "FOP does not kern DejaVu Sans", which is easy to misread as a
+PairPos format 2 problem, since the two subtables involved are class-based.
+
+Fix
+---
+Read the default LangSys table and register it under "dflt" whether or not a named record
+points at the same table: delete the three lines above. Nothing else changes; a named
+language sharing the table is still read under its own tag.
+
+Test: SharedDefaultLanguageSystemTestCase, on the DejaVuLGCSerif already in the tree:
+matchLookupSpecs("latn", "dflt", "kern") must match, hasFeature(GPOS, "latn", "dflt",
+"kern") must be true, and performPositioning("AV", "latn", "dflt") must return a negative
+x-advance. The first assertion fails on the current code.
+
+Related
+-------
+The lookup fallback report (no-default-script-table.txt): with the language code never
+translated and (script, dflt) never tried, a run with language="en" reaches DFLT/dflt
+whatever this report's fix does; both are needed before DejaVu Sans kerns through a
+producer that sets the language, as docx4j does.
