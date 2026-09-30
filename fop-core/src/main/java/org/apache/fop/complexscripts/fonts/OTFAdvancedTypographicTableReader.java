@@ -16,8 +16,9 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: FOP-3328: format 3 anchor tables read their device tables from the anchor table offset.
- * See README.md, "Changes from Apache FOP 2.11". */
+ * from Apache FOP 2.11: FOP-3328: format 3 anchor tables read their device tables from the anchor table offset;
+ * a script's default language system is kept under "dflt" when its table is shared with a named language
+ * system (fop/CR-004). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -200,10 +201,12 @@ public final class OTFAdvancedTypographicTableReader {
                 }
                 lta[i] = lt;
                 loa[i] = lo;
-                if (dl == lo) {
-                    dl = 0;
-                    dt = lt;
-                }
+                // The default language system is read under "dflt" even when its table is the one a
+                // named language system record points at. A font builder shares the table whenever a
+                // language's features equal the default's (FontForge does, for DejaVu, Cousine and
+                // others), and aliasing the default to that language left the script with no default
+                // language system at all, so a caller asking for (script, dflt) fell through to DFLT
+                // and lost the script's features (fop/CR-004).
                 ll.add(lt);
             }
             // read non-default language system tables
