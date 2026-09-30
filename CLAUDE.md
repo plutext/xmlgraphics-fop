@@ -169,7 +169,7 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-09-30, afternoon. CR-003 and CR-005 merged after the re-gate passed; CR-004 and CR-006 wait on Jason. Read Enterprise CR-001 §6.6 before
+Last updated 2026-10-01. CR-003, CR-005 and CR-007 merged after their gates passed; CR-004 and CR-006 wait on Jason. Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
 **Released.** `2.11-docx4j.1` is on Maven Central, tagged `v2.11-docx4j.1` at `2f5030172`.
@@ -190,6 +190,13 @@ empty destination reads as a control character in PDFium; ActualText per cluster
 follow-up. Lesson from the gate, §10.6: check what is drawn before believing a text-layer
 "improvement". Two JIRA drafts under `docs/upstream/`, not yet filed. Not yet done twice:
 the `FOP-####` branch against `trunk` waits on the JIRA numbers.
+
+**Done 2026-10-01, unreleased: `fop/CR-007`** (`docs/developer/change-requests/CR-007-format-chars-tounicode.md`),
+merged after its gate: a format character with a real zero-width glyph is kept through the CID path
+so the text layer has it (U+206A in two corpus documents, matching Word), while the bidi controls stay
+elided because the text layer is in visual order already and Word drops them; the first cut kept them
+and the gate showed pdftotext re-applying them. Enterprise item 34. The docx4j session retired its
+`+noliga` twin under the fork the same day (every face now subset; corpora 106 MB from 590, Word 190).
 
 **Done 2026-09-30, unreleased, on branches.** `fop/CR-005` (`CR-005-letter-spacing-dp`, merged into
 the CR-003 branch): `PDFPainter.drawTextWithDP` never added the letter spacing to a glyph's advance, so a
