@@ -353,3 +353,20 @@ and no language alike. §10's "DejaVu Serif 99.01 kerning off" is not reproduced
 item 32's claim for DejaVu Serif with it. Fixed on `CR-004-shared-default-langsys` (bb2be94e1), held
 out of this gate because with this branch it makes every `+kern` DejaVu Sans run kern under `en`, a
 mover class of its own. 252 of the 1356 OpenType fonts installed here share a default this way.
+
+## 13. Re-gate 2026-09-30: PASS, merged
+
+Run by the docx4j session on tip 4a3e36b7c (CR-003 with CR-005 merged in), installed by Jason at 13:13;
+`cr003b-cand` against `cr002b-cand`, 598 documents including 148 probes; recorded in docx4j CR-020 §8
+(db40d71de). Control first: today's docx4j build on the CR-003-only jars against the 27th's `cr003-cand`,
+557 of 570 word-box identical, the 13 being DATE fields printing the render day, so the 27th's baseline
+stands. Still set 408: 396 identical, 10 date-only, 2 paint-only (letter-spaced Caladea `+kern` titles
+on the DP path through the legacy kern table: CR-005 now paints advance + spacing + kern and the
+following words sit where the layout put them; parity and pages identical; both predicted). Movers 190:
+79 moved, 5 paint-only, 1 date-only, 104 did not move, recorded. Scoreboards on the real corpora: 22
+improved (+0.8112), 4 worse (-0.1002), each a fallback font's metrics rather than a wrong lookup: 8371
+(Cambria to P052, §12), 11559 (Tinos `ccmp` under `latn/SRB`), 3229 and 7235 (Nimbus Sans Narrow
+kern-lost with no `w:kern`, right by Word's rule). The 27th's four Arimo and Tinos regressions are gone;
+13872's text layer and geometry are back to baseline within its kern. Probes: 146 identical, two
+kern-lost as predicted. Verdict from the docx4j session: the still set holds and every movement is the
+predicted one. Merged at 1c1a43651. CR-004 gates next, on its own partition, when Jason says.
