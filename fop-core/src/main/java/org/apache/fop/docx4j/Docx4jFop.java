@@ -87,6 +87,15 @@ public final class Docx4jFop {
      */
     public static final String KERNING_FLAG = "kerning-flag";
 
+    /**
+     * A glyph that two code points share (a Kangxi radical and its ideograph; U+2009 and U+202F in
+     * Tinos) publishes to ToUnicode the character the document wrote, not the lowest code point the
+     * character map gives the glyph. docx4j may leave a CJK font's layout tables on where it had to
+     * declare {@code advanced="false"} to keep radicals out of the text layer (Enterprise CR-001 item
+     * 26, fop/CR-006).
+     */
+    public static final String SHARED_GLYPH_TOUNICODE = "shared-glyph-tounicode";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -98,6 +107,7 @@ public final class Docx4jFop {
         caps.add(GSUB_FEATURES);
         caps.add(LOOKUP_FALLBACK);
         caps.add(KERNING_FLAG);
+        caps.add(SHARED_GLYPH_TOUNICODE);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 
