@@ -331,24 +331,27 @@ public class MultiByteFontTestCase {
 
     private static final int GI_A = 10;
     private static final int GI_RLM = 11;
-    private static final int GI_WIDE_FORMAT = 12;
+    private static final int GI_INHIBIT_SWAPPING = 12;
+    private static final int GI_WIDE_FORMAT = 13;
 
     /**
-     * A Latin font of the corpus's shape: a zero-width glyph for the right-to-left mark, a glyph
-     * of nonzero width for U+206A (Tinos has one for U+2060), and no glyph for the left-to-right
-     * mark.
+     * A Latin font of the corpus's shape: zero-width glyphs for the right-to-left mark and for
+     * U+206A, a glyph of nonzero width for U+206B (Tinos has one for U+2060), and no glyph for
+     * the zero-width non-joiner.
      */
     private MultiByteFont createFontWithFormatGlyphs() {
         MultiByteFont font = new MultiByteFont(null, null);
         font.setCMap(new CMapSegment[] {
             new CMapSegment('a', 'a', GI_A),
             new CMapSegment(0x200F, 0x200F, GI_RLM),
-            new CMapSegment(0x206A, 0x206A, GI_WIDE_FORMAT),
+            new CMapSegment(0x206A, 0x206A, GI_INHIBIT_SWAPPING),
+            new CMapSegment(0x206B, 0x206B, GI_WIDE_FORMAT),
             new CMapSegment(Typeface.NOT_FOUND, Typeface.NOT_FOUND, GI_NOT_FOUND)
         });
         int[] widths = new int[GI_WIDE_FORMAT + 1];
         widths[GI_A] = 500;
         widths[GI_RLM] = 0;
+        widths[GI_INHIBIT_SWAPPING] = 0;
         widths[GI_WIDE_FORMAT] = 750;
         widths[GI_NOT_FOUND] = 600;
         font.setWidthArray(widths);
@@ -362,19 +365,28 @@ public class MultiByteFontTestCase {
      */
     @Test
     public void testFormatCharacterWithZeroWidthGlyphIsKept() {
-        assertEquals("a‏a", substitute(createFontWithFormatGlyphs(), "a‏a").toString());
+        assertEquals("a⁪a", substitute(createFontWithFormatGlyphs(), "a⁪a").toString());
+    }
+
+    /**
+     * A bidi control is elided even with a zero-width glyph: the text layer is in visual order
+     * already, and a reader would apply the control a second time. Word drops them too.
+     */
+    @Test
+    public void testBidiControlIsElided() {
+        assertEquals("aa", substitute(createFontWithFormatGlyphs(), "a‏a").toString());
     }
 
     /** One the font has no glyph for is elided as before, rather than drawn as the missing glyph. */
     @Test
     public void testFormatCharacterWithoutGlyphIsElided() {
-        assertEquals("aa", substitute(createFontWithFormatGlyphs(), "a‎a").toString());
+        assertEquals("aa", substitute(createFontWithFormatGlyphs(), "a‌a").toString());
     }
 
     /** One whose glyph has an advance is elided as before: keeping it would move the text. */
     @Test
     public void testFormatCharacterWithWideGlyphIsElided() {
-        assertEquals("aa", substitute(createFontWithFormatGlyphs(), "a⁪a").toString());
+        assertEquals("aa", substitute(createFontWithFormatGlyphs(), "a⁫a").toString());
     }
 
     /** A C0 control is never kept, glyph or no glyph. */
