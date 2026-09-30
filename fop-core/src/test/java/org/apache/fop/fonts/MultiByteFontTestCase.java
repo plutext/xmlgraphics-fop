@@ -328,4 +328,58 @@ public class MultiByteFontTestCase {
         font.setGSUB(mockGSUB(new IdentityAnswer()));
         assertEquals("𠀋", substitute(font, "𠀋").toString());
     }
+
+    private static final int GI_A = 10;
+    private static final int GI_RLM = 11;
+    private static final int GI_WIDE_FORMAT = 12;
+
+    /**
+     * A Latin font of the corpus's shape: a zero-width glyph for the right-to-left mark, a glyph
+     * of nonzero width for U+206A (Tinos has one for U+2060), and no glyph for the left-to-right
+     * mark.
+     */
+    private MultiByteFont createFontWithFormatGlyphs() {
+        MultiByteFont font = new MultiByteFont(null, null);
+        font.setCMap(new CMapSegment[] {
+            new CMapSegment('a', 'a', GI_A),
+            new CMapSegment(0x200F, 0x200F, GI_RLM),
+            new CMapSegment(0x206A, 0x206A, GI_WIDE_FORMAT),
+            new CMapSegment(Typeface.NOT_FOUND, Typeface.NOT_FOUND, GI_NOT_FOUND)
+        });
+        int[] widths = new int[GI_WIDE_FORMAT + 1];
+        widths[GI_A] = 500;
+        widths[GI_RLM] = 0;
+        widths[GI_WIDE_FORMAT] = 750;
+        widths[GI_NOT_FOUND] = 600;
+        font.setWidthArray(widths);
+        font.setGSUB(mockGSUB(new IdentityAnswer()));
+        return font;
+    }
+
+    /**
+     * A format character the font has a zero-width glyph for stays in the mapped sequence, so
+     * that it reaches the subset and the ToUnicode CMap (fop/CR-007, Enterprise CR-001 item 34).
+     */
+    @Test
+    public void testFormatCharacterWithZeroWidthGlyphIsKept() {
+        assertEquals("a‏a", substitute(createFontWithFormatGlyphs(), "a‏a").toString());
+    }
+
+    /** One the font has no glyph for is elided as before, rather than drawn as the missing glyph. */
+    @Test
+    public void testFormatCharacterWithoutGlyphIsElided() {
+        assertEquals("aa", substitute(createFontWithFormatGlyphs(), "a‎a").toString());
+    }
+
+    /** One whose glyph has an advance is elided as before: keeping it would move the text. */
+    @Test
+    public void testFormatCharacterWithWideGlyphIsElided() {
+        assertEquals("aa", substitute(createFontWithFormatGlyphs(), "a⁪a").toString());
+    }
+
+    /** A C0 control is never kept, glyph or no glyph. */
+    @Test
+    public void testControlCharacterIsElided() {
+        assertEquals("aa", substitute(createFontWithFormatGlyphs(), "a\ra").toString());
+    }
 }

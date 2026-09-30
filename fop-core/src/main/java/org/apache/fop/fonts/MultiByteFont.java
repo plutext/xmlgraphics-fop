@@ -21,7 +21,8 @@
  * See README.md, "Changes from Apache FOP 2.11".; hook gsub-features, a performSubstitution overload taking
  * the delta; and a substituted glyph records the characters it stands for, so the ToUnicode CMap can publish
  * them rather than a private-use code point (fop/CR-002, Enterprise CR-001 item 30); and a font declared with
- * kerning off is positioned without the kern feature (fop/CR-003). */
+ * kerning off is positioned without the kern feature (fop/CR-003); and a format character the font has a
+ * zero-width glyph for is kept, so the text layer keeps it (fop/CR-007, Enterprise CR-001 item 34). */
 
 /* $Id$ */
 
@@ -957,11 +958,19 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
      * Removes the glyphs associated with elidable control characters.
      * All the characters in an association must be elidable in order
      * to remove the corresponding glyph.
+     * <p>
+     * A format character (U+2000 to U+206F: the directional marks, joiners and the like) whose
+     * glyph in this font is real and zero-width is kept instead (fop/CR-007): it costs no space,
+     * it draws nothing, and keeping it gives it a selector of its own in the subset and so an
+     * entry of its own in the ToUnicode CMap, where a producer's text layer expects it. The
+     * elision exists for the other case, a font with no glyph for the character, which would
+     * otherwise draw its missing-character glyph; that case, a glyph of nonzero width (a font
+     * defect), and the C0 and C1 controls are elided as before.
      *
      * @param gs GlyphSequence that may contains the elidable glyphs
      * @return GlyphSequence without the elidable glyphs
      */
-    private static GlyphSequence elideControls(GlyphSequence gs) {
+    private GlyphSequence elideControls(GlyphSequence gs) {
         if (hasElidableControl(gs)) {
             int[] ca = gs.getCharacterArray(false);
             IntBuffer ngb = IntBuffer.allocate(gs.getGlyphCount());
@@ -980,7 +989,7 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
                 }
                 // If there is at least one non-elidable character in the char
                 // sequence then the glyph/association is kept.
-                if (s != e) {
+                if (s != e || isKeptFormatCharacter(a, ca, gs.getGlyph(i))) {
                     ngb.put(gs.getGlyph(i));
                     nal.add(a);
                 }
@@ -991,6 +1000,25 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
         } else {
             return gs;
         }
+    }
+
+    /**
+     * Whether an association of one elidable format character, mapped to the glyph the
+     * character map gives it, may stay: the glyph is real and its advance is zero.
+     */
+    private boolean isKeptFormatCharacter(CharAssociation a, int[] ca, int glyph) {
+        if ((a.getEnd() - a.getStart()) != 1) {
+            return false;
+        }
+        int ch = ca [ a.getStart() ];
+        if ((ch < 0x2000) || (ch > 0x206F)) {
+            return false;
+        }
+        int gi = findGlyphIndex(ch);
+        if ((gi == SingleByteEncoding.NOT_FOUND_CODE_POINT) || (gi != glyph)) {
+            return false;
+        }
+        return (width != null) && (gi < width.length) && (width [ gi ] == 0);
     }
 
     private static boolean hasElidableControl(GlyphSequence gs) {
