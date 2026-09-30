@@ -169,7 +169,7 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-01. CR-003, CR-005 and CR-007 merged after their gates passed; CR-004 and CR-006 wait on Jason. Read Enterprise CR-001 §6.6 before
+Last updated 2026-10-01, later. CR-003, CR-004, CR-005 and CR-007 merged after their gates passed; CR-006 waits on Jason. Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
 **Released.** `2.11-docx4j.1` is on Maven Central, tagged `v2.11-docx4j.1` at `2f5030172`.
@@ -190,6 +190,12 @@ empty destination reads as a control character in PDFium; ActualText per cluster
 follow-up. Lesson from the gate, §10.6: check what is drawn before believing a text-layer
 "improvement". Two JIRA drafts under `docs/upstream/`, not yet filed. Not yet done twice:
 the `FOP-####` branch against `trunk` waits on the JIRA numbers.
+
+**Done 2026-10-01, unreleased: `fop/CR-004`** (`CR-004-shared-default-langsys.md`), merged after its
+gate: the OTF reader kept no `(script, dflt)` for a font whose default language system shares its table
+with a named one. The gate showed the reach is wider than DejaVu's kerning: Arabic in DejaVu Sans had
+never been shaped, and a Devanagari fallback font lost a `dist` lookup, which moved one justified Tinos
+line the partition had not predicted (§6; scan glyph-fallback faces too). Item 32.
 
 **Done 2026-10-01, unreleased: `fop/CR-007`** (`docs/developer/change-requests/CR-007-format-chars-tounicode.md`),
 merged after its gate: a format character with a real zero-width glyph is kept through the CID path

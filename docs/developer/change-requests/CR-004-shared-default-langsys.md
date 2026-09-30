@@ -63,3 +63,40 @@ own gate after CR-003's, so the branch is not merged into `CR-003-script-fallbac
 The same aliasing affects GSUB where a font shares its default there: DejaVu Sans Bold and
 Condensed share `arab` with `KUR` in both tables. On this machine GSUB sharing is rarer than GPOS
 sharing (kerning is seldom language-specific; ligatures often are); not measured further.
+
+## 6. Gate 2026-10-01: PASS, merged
+
+Run by the docx4j session on 322a12e20 (the fix on the merged tip, installed by Jason 07:20),
+`cr004-cand` against `cr007-cand`, 597 documents, `mutool trace`. Still set 586 glyph-identical; the
+five other stills are three documents losing their bidi marks (CR-007's narrowing, the baseline being
+the first-cut jar) and two TIME fields crossing the hour. Movers, all predicted by content:
+
+- **12_en-US_num_tbl_11334, Arabic in DejaVu Sans Regular.** On the tip every lam was glyph 4 and every
+  alef glyph 11 whatever its position, drawn isolated and unjoined; with the fix lam is 4, 21 or 38 and
+  alef 11 or 27 by position, joined, the shapes Word's Arial has. 83 glyphs differ, 30 moved, the two
+  Arabic lines re-break because the joined forms are narrower. Toward Word; scoreboard unchanged. The
+  mechanism is §1's for `arab`: DejaVu Sans shares its `arab` default with `KUR` in both tables, and its
+  `DFLT` script lists no contextual form, no required ligature and no mark lookup, so Arabic in that face
+  had never been shaped on the tip. A probe (`fonts-hebrew-no-cs`) holding Arabic in the same face moved
+  the same way; its Hebrew did not, since `hebr` is not shared.
+- **Kerning.** 11782 moved its 11 `+kern` glyphs; 5936's six Greek characters had no pair and stayed,
+  recorded.
+- **14_en-US_tbl_394, the one the partition missed.** One justified Tinos line with a wider word-space
+  adjustment (-3.7778 to -8.6667 per gap at 9pt). Not Tinos, which shares nothing and has no `DFLT`
+  script: the line holds "क्या हाल है", which docx4j's glyph fallback sets in Noto Sans Devanagari
+  because the document asks for Mangal. That font (as installed here, md5 f4ae6809bd8c) shares its
+  `deva` and `dev2` defaults with Marathi in GPOS, and its `DFLT` script lists `dist` lookups 3, 4 and 5
+  where the script default lists 2, 3, 4 and 5. On the tip the word was one TJ string at bare advances;
+  with the fix it takes the per-glyph path with a `dist` adjustment of -0.666 pt between ka and ya, the
+  word narrows, and the justified line spreads the difference over its spaces. Same glyph ids, so
+  positioning only; toward Word, which shapes Devanagari fully. Droid Sans Devanagari, also installed,
+  shares the same way and has no `DFLT` script at all, so on the tip it got no Devanagari shaping.
+
+Scoreboards: none worse, three better (the bidi-mark documents, CR-007's). Merged at the commit that
+follows this section.
+
+**For the partition method** (the docx4j session's, recorded here because the miss was a reader
+finding): the fonts to scan for a shared default are not only the declared faces but every face the
+FO's `font-family` names, glyph-fallback faces included (Noto Sans Devanagari, Noto Sans, Droid Sans,
+P052 for Greek). What decides movement is the difference between the script's default and the `DFLT`
+script, feature by feature, not the sharing alone.
