@@ -1,6 +1,7 @@
 # CR-003: the lookup fallback skips a font's own script table whenever a language is set
 
-Status: IN PROGRESS 2026-09-27 on branch `CR-003-script-fallback`, off `2.11-docx4j.2`, with the kerning flag (§8); not gated,
+Status: IN PROGRESS 2026-09-30 on branch `CR-003-script-fallback`, off `2.11-docx4j.2`, with the kerning flag (§8) and,
+since 8e116d5d0, `fop/CR-005` merged in (the paint defect the first gate exposed, §12); awaiting the joint re-gate,
 not merged. Registry key `fop/CR-003`. Upstream-bound: a defect in Apache FOP with no docx4j
 specificity; the JIRA draft is `docs/upstream/no-default-script-table.txt`. Capability
 `lookup-fallback` (`Docx4jFop.LOOKUP_FALLBACK`), so docx4j can tell whether its language
@@ -297,3 +298,58 @@ with that manager on. CR-003 stands as coded; the branch waits for docx4j's fix 
 re-gate of both together. It also explains a puzzle from CR-001's gate: Nimbus's `DFLT`
 carries `kern` but not `liga`, which is why its "Nr." never ligated while its kerning
 happened.
+
+## 12. 2026-09-30: the space question answered, the paint defect found, DejaVu's mechanism traced
+
+**Does FOP kern across a space?** Asked by the docx4j session, whose `kernSpaces` adds the
+comma/space pair itself as `word-spacing` on an inline and would double count if GPOS positioned the
+space too. Measured at both levels on the branch tip (33dc82b45, same code as the installed snapshot):
+
+- Font level (`FontLoader`, `performSubstitution` then `performPositioning`, `latn`/`en`, 1/1000 em).
+  Arimo's GPOS does carry pairs with the space glyph: `A␠` -55, `L␠` -37, `P␠ T␠ Y␠` -18, `␠A` -55,
+  `␠T ␠Y` -18 (every printable ASCII against the space, both orders); nothing for comma+space or
+  space+letter. Carlito has no pair with the space in either order. "repair, if" gets one adjustment
+  in each font, inside the word (`r,` -55 Arimo; `re` -13 and `r,` -85 Carlito).
+- Layout level: never, in any font, before or after CR-003. `getNextKnuthElements` ends a word
+  mapping at every space (`processWord` when `GlyphMapping.isSpace(ch)`), the whitespace is its own
+  mapping (`processWhitespace`, no positioning call), and the next word starts after it. FOP's own
+  FINE log for "During repair, if however, you repair. Further": PW [0,6], PS [6,7], PW [7,14]
+  "repair,", PS [14,15], PW [15,17] "if", and so on; each PW is a separate `performPositioning`. The
+  only cross-mapping kern in FOP, `precedingChar` in `processWordNoMapping`, is the legacy kern-table
+  path and is zero after a space mapping.
+- Rendered: comma-to-i gap 3.32 pt Arimo and 2.71 Carlito, identical with kerning on and off; in
+  "A V", where Arimo does have `A␠`, 3.32 on and off, while `AV` inside a word goes 7.99 to 7.10.
+
+So no double count, and `kernSpaces`' assumption holds. The corollary is docx4j's: `kernSpaces` takes
+its pairs from the legacy kern table only, so Arimo's GPOS space pairs (the ones item 15 measured
+Word applying) are applied by nobody. Recorded by the docx4j session as a docx4j fidelity item.
+
+**The "repair, if" collapse is a paint defect, `fop/CR-005`.** With the space ruled out, the docx4j
+session read the line with `mutool trace`: bold Arimo 11pt with Word character spacing on every run,
+`letter-spacing="-0.417pt"`. On the released core every glyph step is the advance less 0.417; on this
+branch every step is the bare advance, the kern applied, and the gap after the comma 0.139 pt because
+the layout box still holds the letter spaces. `PDFPainter.drawTextWithDP` places each glyph by its own
+`Td` and never adds the letter spacing to the advance; the `Tc` it sets acts only inside a TJ array,
+which is the other path. Before CR-003 Arimo and Carlito under `en` had no `gpa` and took the TJ
+path; now they position, and every letter-spaced run in a font that positions loses its letter
+spacing in paint. Pre-existing for fonts that kerned before (P052 in the Greek document, on the
+released core). Fixed on `CR-005-letter-spacing-dp` (7a433fa1d, one line, tested) and merged here,
+since the two gate together. Enterprise item 33 is the docx4j session's.
+
+**The Greek extra page is the flag working.** Cambria maps to Caladea, which has no Greek; 13,042
+spans fall back to P052, whose `DFLT` kern applied before the flag was honoured; no run has `w:kern`.
+The docx4j session read it as correct by Word's rule and recorded the substitution as a docx4j
+fidelity item (a Greek-capable Cambria-metric fallback). Nothing to change here.
+
+**DejaVu's mechanism, correcting §10.** Not PairPos format 2. `OTFAdvancedTypographicTableReader.
+readScriptTable` drops a script's default language system when its table is shared with a named
+language system's record, and FontForge shares it for every language whose features equal the
+default's. DejaVu Sans's GPOS `latn` default lists kern lookups 14 and 15; FOP keeps it only as
+`latn/ROM` and the Sami systems, and `DFLT/dflt` lists lookup 15 alone, a 20-glyph subtable with no
+Latin letter. So DejaVu Sans is unkerned under every default language and kerned under
+`language="ro"` (99.68 to 91.55 pt at 14pt). DejaVu Serif's `DFLT/dflt` lists the same lookup as its
+`latn`, and it kerns on this branch: 99.01 with `kerning="true"`, 104.43 with it off, under `en`, `ro`
+and no language alike. §10's "DejaVu Serif 99.01 kerning off" is not reproduced and is retracted;
+item 32's claim for DejaVu Serif with it. Fixed on `CR-004-shared-default-langsys` (bb2be94e1), held
+out of this gate because with this branch it makes every `+kern` DejaVu Sans run kern under `en`, a
+mover class of its own. 252 of the 1356 OpenType fonts installed here share a default this way.
