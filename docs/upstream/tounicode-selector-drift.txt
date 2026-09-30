@@ -1,7 +1,9 @@
 JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
 Not yet filed. Fixed on the fork's branch CR-002-ligature-tounicode as a by-product of the
-ToUnicode rewrite there (tounicode-substituted-glyphs.txt); separable if wanted, since the
-fix for this alone is to number selectors per entry.
+ToUnicode rewrite there (tounicode-substituted-glyphs.txt), commit de8ca1cf9, merged to
+2.11-docx4j.2 at 7289e1726, unreleased; separable if wanted, since the fix for this alone is
+to number selectors per entry. Present in main: PDFToUnicodeCMap is still built from the
+positional char[] there. To be cut against trunk as FOP-#### once filed.
 
 Project:          FOP
 Issue Type:       Bug

@@ -169,7 +169,7 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-09-27, late, with CR-003 awaiting its re-gate. Read Enterprise CR-001 §6.6 before
+Last updated 2026-09-30. CR-003 awaits its re-gate together with CR-005; CR-004 and CR-006 wait on Jason. Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
 **Released.** `2.11-docx4j.1` is on Maven Central, tagged `v2.11-docx4j.1` at `2f5030172`.
@@ -190,6 +190,18 @@ empty destination reads as a control character in PDFium; ActualText per cluster
 follow-up. Lesson from the gate, §10.6: check what is drawn before believing a text-layer
 "improvement". Two JIRA drafts under `docs/upstream/`, not yet filed. Not yet done twice:
 the `FOP-####` branch against `trunk` waits on the JIRA numbers.
+
+**Done 2026-09-30, unreleased, on branches.** `fop/CR-005` (`CR-005-letter-spacing-dp`, merged into
+the CR-003 branch): `PDFPainter.drawTextWithDP` never added the letter spacing to a glyph's advance, so a
+letter-spaced word in a font that kerns through GPOS was painted at bare advances; CR-003 exposed it
+on every font it made kern ("repair, if" to "repair,if", Enterprise item 33, the docx4j session's).
+`fop/CR-004` (`CR-004-shared-default-langsys`, not merged anywhere): the OTF reader dropped a script's
+default language system when a named language shared its table, which is why DejaVu Sans never kerned
+(item 32, mechanism corrected; DejaVu Serif does kern, retracted). Held out of CR-003's gate as its own
+mover class. `fop/CR-006` is a design for the CJK radical capability, no code. Release notes drafted at
+`docs/release-notes/2.11-docx4j.2.md`. Measured 2026-09-30 and worth remembering: FOP never applies a
+GPOS pair across a space at the layout level (each space is its own mapping), so docx4j's `kernSpaces`
+cannot double count; CR-003 §12 has the numbers.
 
 **In progress, on branch `CR-003-script-fallback`: `fop/CR-003`**, the lookup fallback and the
 kerning flag (`docs/developer/change-requests/CR-003-lookup-fallback.md`). `matchLookups`
