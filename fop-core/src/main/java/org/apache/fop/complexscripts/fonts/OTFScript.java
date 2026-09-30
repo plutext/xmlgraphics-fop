@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: isWildCard compares with the wildcard, not the default script (fop/CR-003).
+ * See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.complexscripts.fonts;
@@ -146,7 +150,7 @@ public final class OTFScript {
     }
 
     public static boolean isWildCard(String script) {
-        return (script != null) && script.equals(DEFAULT);
+        return (script != null) && script.equals(WILDCARD);
     }
 
     private OTFScript() {

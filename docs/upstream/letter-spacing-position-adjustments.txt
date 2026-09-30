@@ -1,0 +1,70 @@
+JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
+Not yet filed. Found 2026-09-30 by the docx4j session on its corpus (Enterprise CR-001 §6.6 item
+33), reproduced and fixed the same day on the fork's branch CR-005-letter-spacing-dp
+(fop/CR-005), to be cut against trunk as FOP-#### once filed. Present in main:
+PDFPainter.drawTextWithDP is unchanged there.
+
+Project:          FOP
+Issue Type:       Bug
+Affects Version:  2.11 (every version with the position-adjustments text path)
+Component:        pdf
+
+Summary
+-------
+letter-spacing is not painted on text that carries glyph position adjustments (GPOS
+kerning): the word is drawn at its bare advances inside an area that keeps the letter spaces
+
+Description
+-----------
+PDFPainter.drawText takes one of two paths. With no position adjustments, or adjustments
+that are DX-only, drawTextWithDX writes the word as one TJ array and sets Tc to the letter
+spacing, which the PDF viewer adds after every glyph. With general adjustments (a GPOS
+kern produces an x-advance adjustment, so IFUtil.isDPOnlyDX is false), drawTextWithDP
+writes each glyph with its own Td and Tj and advances by
+
+    xc += xa + pa[2];
+
+that is, the glyph width plus the advance adjustment. It sets Tc too, but Tc acts only
+between glyphs inside a TJ array; with one glyph per Tj and an explicit Td before each, the
+letter spacing never reaches the next glyph.
+
+The layout side is consistent with the first path. TextLayoutManager puts the letter spaces
+into the word's Knuth elements and the TextArea, and addMappingAreas computes the
+word-space adjustment on the assumption that the renderer "adds the character spacing even
+to the last character of a word and to space characters" (its own comment). So a
+letter-spaced word in a font that positions is measured with its letter spaces and painted
+without them, and the gap to the next word absorbs the difference: negative letter spacing
+opens the gap, positive closes it, to the point of overprinting.
+
+Reproducer: Arimo (or any font whose GPOS kern applies; Liberation, DejaVu Serif, Noto),
+kerning="true", 11pt,
+
+    <fo:block font-family="Arimo">During <fo:inline
+        letter-spacing="-0.417pt">repair,</fo:inline> if however</fo:block>
+
+Per-glyph steps read back with mutool draw -F stext, 2.11:
+
+    r>e 3.663  e>p 6.116  p>a 6.116  a>i 6.116  i>r 2.442  r>, 3.058   comma>space 3.047
+
+Every step is the bare advance (r>, carries the kern), and the space after the comma is
+2.5 pt narrower than the same text without kerning, where the steps are 3.246 5.699 5.699
+5.699 2.025 3.246 and the gap 5.549. On the docx4j corpus the collapsed gap made pdftotext
+read "repair, if" as "repair,if"; with positive letter spacing the words overprint.
+
+Fix
+---
+PDFPainter.drawTextWithDP: add the letter spacing to the advance of every glyph, spaces and
+the last glyph included, which is what Tc does on the other path and what the layout's
+word-space adjustment assumes:
+
+    xc += xa + pa[2] + letterSpacing;
+
+Java2DPainter and PCLPainter already add letterSpacing per glyph in their dp loops;
+PSPainter applies it through ATJ; AFPPainter converts dp to dx. Only the PDF painter was
+missing it.
+
+After the fix, same sample: 3.246 5.699 5.699 5.699 2.025 2.641, gap 5.549; the last step
+is the advance less the letter spacing less the kern.
+
+Test: PDFPainterTestCase.testDrawDpTextKeepsLetterSpacing, two zero-width glyphs with a
+kern of -100 and a letter spacing of 500; the second glyph's Td must be 0.4, not -0.1.

@@ -16,8 +16,9 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: FOP-3330: glyph bounding boxes packed as ints. See README.md, "Changes from Apache FOP
- * 2.11". */
+ * from Apache FOP 2.11: FOP-3330: glyph bounding boxes packed as ints; and the configuration's kerning flag is
+ * recorded on the font, so that it can gate GPOS kerning too (fop/CR-003). See README.md, "Changes from
+ * Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -211,6 +212,7 @@ public class OFFontLoader extends FontLoader {
             returnFont.setSVG(otf.svgs);
         }
 
+        returnFont.setKerningEnabled(useKerning);
         if (otf.getKerning() != null && useKerning) {
             copyKerning(otf, isCid);
         }

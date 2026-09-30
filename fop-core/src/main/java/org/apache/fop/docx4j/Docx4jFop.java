@@ -72,6 +72,21 @@ public final class Docx4jFop {
      */
     public static final String GSUB_FEATURES = "gsub-features";
 
+    /**
+     * {@code GlyphTable.matchLookups} falls back from (script, language) to (script, dflt) before
+     * (DFLT, dflt), as OpenType layout engines do. A producer may write a language on every block
+     * without losing the font's substitution and kerning where the font has no language system for
+     * it, and a font with no DFLT script table shapes and kerns under its own script.
+     */
+    public static final String LOOKUP_FALLBACK = "lookup-fallback";
+
+    /**
+     * A font declared with {@code kerning="false"} is positioned without the GPOS {@code kern}
+     * feature, as it already was without the legacy kern table; marks are still positioned. A
+     * producer that declares a font twice, plain and kerned, gets kerning only where it asked.
+     */
+    public static final String KERNING_FLAG = "kerning-flag";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -81,6 +96,8 @@ public final class Docx4jFop {
         caps.add(INLINE_ACCESS);
         caps.add(GLYF_EMPTY_GLYPH);
         caps.add(GSUB_FEATURES);
+        caps.add(LOOKUP_FALLBACK);
+        caps.add(KERNING_FLAG);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

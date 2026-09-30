@@ -1,5 +1,7 @@
 JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
-Not yet filed. Measured 2026-09-27; no branch or patch yet.
+Not yet filed. Measured 2026-09-27; fixed the same day on the fork's branch CR-003-script-fallback
+(fop/CR-003), to be cut against trunk as FOP-#### once filed. Present in main: GlyphTable.matchLookups
+has the same fallback there.
 
 Project:          FOP
 Issue Type:       Bug
@@ -49,6 +51,12 @@ command line, one fo:block, only the language attribute changing, read back with
   script=latn, no language      ffi ffl fi fl ft ti ligated    ffi ffl fi fl ligated
   script=latn language="en"     nothing ligated               nothing ligated
 
+And the language never matches in the first place. The FO language property carries an ISO
+639 code ("en", "tr"); the font's language systems are OpenType tags ("ENG", "TRK"); FOP
+passes the code through untranslated. So a language the font does distinguish is treated
+like one it does not: DejaVuLGCSerif's TRK system omits liga, and performSubstitution("fi",
+"latn", "tr") ligates while ("fi", "latn", "TRK") does not.
+
 Neither font has an ENG langsys under latn. DejaVu Sans does have DFLT, but its DFLT
 langsys carries case, ccmp, dlig and kern and no liga, so the fallback lands on a script
 table that lacks the feature. DejaVu Serif's DFLT langsys does carry liga, and the docx4j
@@ -89,17 +97,32 @@ font's tables but not that one's".
 
 Proposed fix
 ------------
-At least one of:
+Done on the fork, branch CR-003-script-fallback (GlyphTable, OTFLanguage, OTFScript; tests
+GlyphTableFallbackTestCase on synthetic tables shaped like Carlito and DejaVu Sans, and
+LanguageSystemTestCase on the DejaVuLGCSerif in the test tree, whose TRK system omits liga):
 
-1. Fall back in the order OpenType layout engines use: (script, language), then
-   (script, dflt), then (DFLT, dflt), and only then the font's own available scripts as
-   the wildcard already does. Today the second step is missing and the last is taken only
-   for the wildcard.
-2. Failing that, report it. An event when a font with GSUB or GPOS present yields no
-   lookups for the requested script would turn a silent miss into a diagnosable one.
+1. Map the language to its OpenType tag first (a table of ISO 639 codes against the tags
+   OTFLanguage already names: "tr" to TRK, "en-US" to ENG, "zh-TW" to ZHT; a tag is accepted
+   as given; unknown codes match nothing and take the next step), then fall back in the
+   order OpenType layout engines use: (script, language), then (script, dflt), then
+   (DFLT, dflt). Each step is taken only when the one before found nothing.
+2. OTFScript.isWildCard compares with the wildcard rather than DEFAULT (harmless today,
+   corrected alongside).
 
-Option 1 changes shaping for existing documents and wants measurement. Option 2 is safe
-and could go first.
+Measured after the change, same command line: Carlito under language="en" ligates
+(ffi fi fl ft ti, 26 glyphs to 21) and kerns (AVATAR 43.19 pt, was 46.62); DejaVu Sans under
+"en" ligates; DejaVuLGCSerif performSubstitution("fi", "latn", "tr") no longer ligates,
+which is what its TRK system says; Noto Sans Arabic under "ar" unchanged.
+
+This changes shaping and kerning for existing documents wherever a language was set and the
+font had no system for it, so it wants the release note. A safer first step, if preferred:
+an event when a font with GSUB or GPOS present yields no lookups for the requested script,
+turning the silent miss into a diagnosable one.
+
+Note that the kerning half is also gated by the font configuration's kerning flag, which
+did not reach GPOS at all (a separate report, kerning-flag-gpos.txt), and by a reader defect
+that drops a script's default language system when a named language shares its table
+(shared-default-langsys.txt): DejaVu Sans needs all three before it kerns under "en".
 
 Provenance
 ----------

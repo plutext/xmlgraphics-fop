@@ -15,6 +15,11 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: matchLookups maps the language to its language system tag and falls back to the
+ * script's default language system before the default script (fop/CR-003). See README.md, "Changes from
+ * Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.complexscripts.fonts;
@@ -216,6 +221,7 @@ public class GlyphTable {
      * @return a (possibly empty) map from matching lookup specifications to lists of corresponding lookup tables
      */
     public Map<LookupSpec, List<LookupTable>> matchLookups(String script, String language, String feature) {
+        language = languageSystemTag(language);
         LookupSpec lsm = new LookupSpec(script, language, feature, true, true);
         Map<LookupSpec, List<LookupTable>> lm = matchedLookups.get(lsm);
         if (lm == null) {
@@ -227,11 +233,35 @@ public class GlyphTable {
             }
             matchedLookups.put(lsm, lm);
         }
-        if (lm.isEmpty() && !OTFScript.isDefault(script) && !OTFScript.isWildCard(script)) {
-            return matchLookups(OTFScript.DEFAULT, OTFLanguage.DEFAULT, feature);
-        } else {
-            return lm;
+        if (lm.isEmpty()) {
+            // Fall back the way OpenType layout engines do: a language with no language system
+            // under this script takes the script's default language system, and a script the font
+            // lacks takes the default script. Going straight from the first to the third skipped a
+            // font's own script table whenever the language was not "dflt", and found nothing at all
+            // in a font with no DFLT table (fop/CR-003).
+            if (!OTFLanguage.isDefault(language) && !OTFLanguage.isWildCard(language)) {
+                return matchLookups(script, OTFLanguage.DEFAULT, feature);
+            } else if (!OTFScript.isDefault(script) && !OTFScript.isWildCard(script)) {
+                return matchLookups(OTFScript.DEFAULT, OTFLanguage.DEFAULT, feature);
+            }
         }
+        return lm;
+    }
+
+    /**
+     * The language system tag to match for a caller's language: an ISO 639 code as the FO
+     * {@code language} property carries it becomes its OpenType tag, a tag is accepted as given,
+     * and {@code dflt} and the wildcard pass through. A code unknown to {@link OTFLanguage}
+     * matches nothing and so takes the script's default language system.
+     * @param language a language code or tag, possibly null
+     * @return the tag to match
+     */
+    static String languageSystemTag(String language) {
+        if ((language == null) || OTFLanguage.isDefault(language) || OTFLanguage.isWildCard(language)) {
+            return language;
+        }
+        String tag = OTFLanguage.fromLanguageCode(language);
+        return (tag != null) ? tag : language.trim();
     }
 
     /**
