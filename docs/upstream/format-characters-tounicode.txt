@@ -1,0 +1,68 @@
+JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
+Not yet filed. Found 2026-09-30 by the docx4j session on its corpus (Enterprise CR-001 §6.6 item
+34), fixed the same day on the fork's branch CR-007-format-chars-tounicode (fop/CR-007), to be
+cut against trunk as FOP-#### once filed. Present in main: MultiByteFont.elideControls is
+unchanged there.
+
+Project:          FOP
+Issue Type:       Bug
+Affects Version:  2.11 (every version with the complex-scripts glyph mapping)
+Component:        fonts / pdf
+
+Summary
+-------
+Directional marks and other format characters are dropped from the PDF text layer for any
+font that goes through the complex-scripts mapping, even when the font has a zero-width
+glyph for them
+
+Description
+-----------
+MultiByteFont.performSubstitution maps characters to glyphs, runs GSUB, and then, unless
+retainControls (which TextLayoutManager never sets), calls elideControls, which removes every
+glyph whose characters are all "elidable controls": C0 and C1 controls, U+200B to U+200F,
+U+2028 to U+202E, U+2060, U+2066 to U+206F. The glyph and its association are gone, so the
+character never reaches the CID subset or the ToUnicode CMap. Text extraction, search and
+screen readers lose it.
+
+The elision is right for a font with no glyph for the character, which would otherwise be
+drawn as the missing-character glyph. But common fonts carry a real, zero-width glyph for
+exactly these characters: Arimo, Tinos and DejaVu Sans map U+200E, U+200F and U+206A to
+glyphs of advance 0; Carlito maps U+200E and U+200F. For those the character can simply stay.
+The single-byte path keeps it already (it maps the character and draws its zero-width
+glyph), so the same document extracts differently depending on which encoding mode the
+font was declared with. Word's PDF export keeps the marks.
+
+Reproducer, 2.11 command line, Arimo with the default (CID) declaration:
+
+    <fo:block font-family="Arimo">abc&#x206A;def ghi</fo:block>
+
+with U+206A in place of the mark, pdftotext gives "abcdef" and the ToUnicode CMap has no
+entry for it. On a corpus of 598 documents converted from Word, 19 U+206A disappeared this
+way where Word's own PDFs keep them (and 67 bidi marks, which Word drops too; see the fix).
+
+Fix
+---
+In elideControls, keep an association of exactly one format character (U+2000 to U+206F)
+whose glyph is the one the character map gives it and whose advance in this font is zero,
+unless it is a bidi control (U+200E, U+200F, U+202A-202E, U+2066-2069). It costs no space,
+draws nothing, and gets its own subset selector and ToUnicode entry. A character the font
+has no glyph for, a glyph with an advance (a font defect: Tinos maps U+2060 to a 799-unit
+glyph), a bidi control and the C0 and C1 controls are elided as before.
+
+The bidi controls stay out on purpose. The text layer is written in visual order, after
+FOP's own bidi resolution, so a control there has done its work and a reader applies it a
+second time: a first cut that kept them had pdftotext wrap every kept mark in U+202B and
+U+202C. Word's PDF export drops them too (measured on 597 documents: its text layer holds
+the U+206A of two documents and none of the 66 right-to-left marks of another).
+
+After the fix, "abc<U+206A>def" extracts with the U+206A and every word box is identical
+(56.69-92.70, 96.03-112.04 pt at 12pt); the U+200F reproducer is unchanged, by design.
+
+One consequence to know: a kept format glyph is in the sequence during GSUB and GPOS, so a
+ZWNJ between f and i now blocks the ligature (its purpose), and a format character between
+two kerned letters blocks the pair, where a shaper that treats default-ignorables as
+invisible would not. Marks at word edges, the common case, touch nothing.
+
+Test: MultiByteFontTestCase, five cases on a hand-built character map and width array: a
+zero-width U+206A kept, a zero-width U+200F elided as a bidi control, one with no glyph
+elided, one with an advance elided, a C0 control elided.

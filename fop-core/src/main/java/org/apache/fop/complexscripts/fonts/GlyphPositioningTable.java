@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: a position overload taking a feature delta, so a font with kerning off is positioned
+ * without kern (fop/CR-003). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.complexscripts.fonts;
@@ -233,10 +237,29 @@ public class GlyphPositioningTable extends GlyphTable {
      * @return true if some adjustment is not zero; otherwise, false
      */
     public boolean position(GlyphSequence gs, String script, String language, int fontSize, int[] widths, int[][] adjustments) {
+        return position(gs, script, language, fontSize, widths, adjustments, null);
+    }
+
+    /**
+     * As above, with a delta applied to the script processor's positioning features: a token of
+     * {@code -kern} removes kerning while the marks are still positioned, which is what a font
+     * declared with kerning off asks for.
+     * @param gs an input glyph sequence
+     * @param script a script identifier
+     * @param language a language identifier
+     * @param fontSize size in device units
+     * @param widths array of default advancements for each glyph
+     * @param adjustments accumulated adjustments array (sequence) of 4-tuples of placement [PX,PY] and advance [AX,AY]
+     * adjustments, in that order, with one 4-tuple for each element of glyph sequence
+     * @param gposFeatures delta tokens like -kern, or null for no change
+     * @return true if some adjustment is not zero; otherwise, false
+     */
+    public boolean position(GlyphSequence gs, String script, String language, int fontSize, int[] widths,
+                            int[][] adjustments, String[] gposFeatures) {
         Map<LookupSpec, List<LookupTable>> lookups = matchLookups(script, language, "*");
         if ((lookups != null) && (lookups.size() > 0)) {
             ScriptProcessor sp = ScriptProcessor.getInstance(script, processors);
-            return sp.position(this, gs, script, language, fontSize, lookups, widths, adjustments);
+            return sp.position(this, gs, script, language, fontSize, lookups, widths, adjustments, gposFeatures);
         } else {
             return false;
         }

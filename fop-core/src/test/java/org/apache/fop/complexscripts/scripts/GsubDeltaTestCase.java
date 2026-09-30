@@ -39,6 +39,8 @@ public class GsubDeltaTestCase {
 
     @Test
     public void testNoDeltaReturnsTheListItself() {
+        assertArrayEquals(new String[] {"mark", "mkmk"},
+                ScriptProcessor.applyFeatureDelta(new String[] {"kern", "mark", "mkmk"}, new String[] {"-kern"}));
         assertSame(BASE, ScriptProcessor.applyGsubDelta(BASE, null));
         assertSame(BASE, ScriptProcessor.applyGsubDelta(BASE, new String[0]));
     }

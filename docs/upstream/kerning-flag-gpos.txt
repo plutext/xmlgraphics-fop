@@ -1,0 +1,50 @@
+JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
+Not yet filed. Fixed 2026-09-27 on the fork's branch CR-003-script-fallback (fop/CR-003 §8),
+to be cut against trunk as FOP-#### once filed.
+
+Project:          FOP
+Issue Type:       Bug
+Affects Version:  2.11 (every version with GPOS support)
+Component:        fonts / complex scripts
+
+Summary
+-------
+A font configured with kerning="false" is still kerned through GPOS; the flag disables
+only the legacy kern table
+
+Description
+-----------
+The font configuration's kerning attribute is documented as enabling or disabling kerning
+for the font (default true). It does so only for the legacy kern table: OFFontLoader skips
+copyKerning when it is false, and GlyphMapping.useKerningAdjustments then finds no kerning
+info. GPOS positioning is independent of it: MultiByteFont.performPositioning runs whenever
+the font has a GPOS table, and every script processor's positioning feature list carries
+kern. So an OpenType font with a GPOS kern feature, which is nearly every modern font, is
+kerned regardless of the flag.
+
+Two things underneath: the loader never records the flag on the font object, so
+CustomFont.isKerningEnabled() is true for every TrueType font whatever the configuration
+says (only the XML-metrics path sets it); and a producer that declares a font twice, once
+with kerning off and once on, to kern only where its source document kerns, gets kerning in
+both.
+
+Measured, 2.11 command line, Carlito, "AVATAR" at 14pt, language="en" (with the lookup
+fallback fixed so that GPOS applies to this font at all; see the DFLT report):
+
+  kerning="true"    AVATAR 43.19 pt wide
+  kerning="false"   AVATAR 43.19 pt wide
+
+Fix
+---
+1. OFFontLoader.buildFont: returnFont.setKerningEnabled(useKerning).
+2. MultiByteFont.performPositioning: when kerning is disabled, position with the kern
+   feature removed from the script processor's positioning list; mark and mkmk still
+   apply, since they are not kerning. Done as a feature delta ("-kern") through new
+   overloads of GlyphPositioningTable.position and ScriptProcessor.position, the same
+   mechanism as the gsub-features delta.
+
+After the fix, same sample: kerning="true" 43.19 pt, kerning="false" 46.62 pt; ligatures
+(GSUB) unaffected either way.
+
+Tests: LanguageSystemTestCase (the flag reaches the font), MultiByteFontTestCase (the delta
+reaches positioning), GsubDeltaTestCase (the delta on a positioning list).

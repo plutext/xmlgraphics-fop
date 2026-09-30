@@ -16,7 +16,8 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: hook gsub-features, a substitute overload and applyGsubDelta. See README.md, "Changes
+ * from Apache FOP 2.11: hook gsub-features, a substitute overload and applyGsubDelta; a position overload taking
+ * the same kind of delta, for a font with kerning off (fop/CR-003). See README.md, "Changes
  * from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -133,6 +134,16 @@ public abstract class ScriptProcessor {
      * @return the resulting features, or base itself when there is nothing to do
      */
     static String[] applyGsubDelta(String[] base, String[] delta) {
+        return applyFeatureDelta(base, delta);
+    }
+
+    /**
+     * The same delta, for either table's feature list.
+     * @param base the features the processor would apply
+     * @param delta the delta tokens, or null
+     * @return the resulting features, or base itself when there is nothing to do
+     */
+    static String[] applyFeatureDelta(String[] base, String[] delta) {
         if (delta == null || delta.length == 0) {
             return base;
         }
@@ -224,7 +235,28 @@ public abstract class ScriptProcessor {
      */
     public final boolean position(GlyphPositioningTable gpos, GlyphSequence gs, String script, String language, int fontSize,
                                   Map<GlyphTable.LookupSpec, List<GlyphTable.LookupTable>> lookups, int[] widths, int[][] adjustments) {
-        return position(gs, script, language, fontSize, assembleLookups(gpos, getPositioningFeatures(), lookups), widths, adjustments, getPositioningContextTester());
+        return position(gpos, gs, script, language, fontSize, lookups, widths, adjustments, null);
+    }
+
+    /**
+     * As above, with a delta applied to this processor's positioning features.
+     * @param gpos the glyph positioning table that applies
+     * @param gs an input glyph sequence
+     * @param script a script identifier
+     * @param language a language identifier
+     * @param fontSize size in device units
+     * @param lookups a mapping from lookup specifications to glyph subtables to use for positioning processing
+     * @param widths array of default advancements for each glyph
+     * @param adjustments accumulated adjustments array (sequence) of 4-tuples of placement [PX,PY] and advance [AX,AY]
+     * adjustments, in that order, with one 4-tuple for each element of glyph sequence
+     * @param gposFeatures delta tokens like -kern, or null for no change
+     * @return true if some adjustment is not zero; otherwise, false
+     */
+    public final boolean position(GlyphPositioningTable gpos, GlyphSequence gs, String script, String language, int fontSize,
+                                  Map<GlyphTable.LookupSpec, List<GlyphTable.LookupTable>> lookups, int[] widths, int[][] adjustments,
+                                  String[] gposFeatures) {
+        String[] features = applyFeatureDelta(getPositioningFeatures(), gposFeatures);
+        return position(gs, script, language, fontSize, assembleLookups(gpos, features, lookups), widths, adjustments, getPositioningContextTester());
     }
 
     /**

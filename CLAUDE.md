@@ -169,7 +169,7 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-09-27, late, with CR-003 awaiting its re-gate. Read Enterprise CR-001 §6.6 before
+Last updated 2026-10-01. CR-003, CR-005 and CR-007 merged after their gates passed; CR-004 and CR-006 wait on Jason. Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
 **Released.** `2.11-docx4j.1` is on Maven Central, tagged `v2.11-docx4j.1` at `2f5030172`.
@@ -191,17 +191,33 @@ follow-up. Lesson from the gate, §10.6: check what is drawn before believing a 
 "improvement". Two JIRA drafts under `docs/upstream/`, not yet filed. Not yet done twice:
 the `FOP-####` branch against `trunk` waits on the JIRA numbers.
 
-**In progress, on branch `CR-003-script-fallback`: `fop/CR-003`**, the lookup fallback and the
-kerning flag (`docs/developer/change-requests/CR-003-lookup-fallback.md`). `matchLookups`
-maps the FO language to its OpenType tag and falls back `(script, dflt)` before `(DFLT,
-dflt)`; a font declared `kerning="false"` is positioned without `kern`. Capabilities
-`lookup-fallback` and `kerning-flag`. Snapshot installed 20:18 from ca8cf0115. First gate
-failed on five scoreboard regressions; all explained (§11.1): two are docx4j's own line
-manager, one is the flag working on Nimbus Sans Narrow, which the partition had wrongly
-excluded. Re-read with the corrected partition: still tier 408 of 408 identical, every
-mover predicted. Merge waits on docx4j's line-manager fix and a joint re-gate. Findings on
-the way, not acted on: FOP never kerns DejaVu (§6.6 item 32); per-font `advanced="false"`
-is ignored by FOP's stock font collection (§10).
+**Done 2026-10-01, unreleased: `fop/CR-007`** (`docs/developer/change-requests/CR-007-format-chars-tounicode.md`),
+merged after its gate: a format character with a real zero-width glyph is kept through the CID path
+so the text layer has it (U+206A in two corpus documents, matching Word), while the bidi controls stay
+elided because the text layer is in visual order already and Word drops them; the first cut kept them
+and the gate showed pdftotext re-applying them. Enterprise item 34. The docx4j session retired its
+`+noliga` twin under the fork the same day (every face now subset; corpora 106 MB from 590, Word 190).
+
+**Done 2026-09-30, unreleased, on branches.** `fop/CR-005` (`CR-005-letter-spacing-dp`, merged into
+the CR-003 branch): `PDFPainter.drawTextWithDP` never added the letter spacing to a glyph's advance, so a
+letter-spaced word in a font that kerns through GPOS was painted at bare advances; CR-003 exposed it
+on every font it made kern ("repair, if" to "repair,if", Enterprise item 33, the docx4j session's).
+`fop/CR-004` (`CR-004-shared-default-langsys`, not merged anywhere): the OTF reader dropped a script's
+default language system when a named language shared its table, which is why DejaVu Sans never kerned
+(item 32, mechanism corrected; DejaVu Serif does kern, retracted). Held out of CR-003's gate as its own
+mover class. `fop/CR-006` is a design for the CJK radical capability, no code. Release notes drafted at
+`docs/release-notes/2.11-docx4j.2.md`. Measured 2026-09-30 and worth remembering: FOP never applies a
+GPOS pair across a space at the layout level (each space is its own mapping), so docx4j's `kernSpaces`
+cannot double count; CR-003 §12 has the numbers.
+
+**Done 2026-09-30, unreleased: `fop/CR-003`**, the lookup fallback and the kerning flag
+(`docs/developer/change-requests/CR-003-lookup-fallback.md`), merged to `2.11-docx4j.2` at 1c1a43651
+with `fop/CR-005` after the joint re-gate passed (§13: still set 408 held, every mover predicted, 22
+scoreboards up and 4 down by fallback-font metrics). Capabilities `lookup-fallback` and `kerning-flag`.
+Findings on the way, not acted on: FOP never kerns DejaVu Sans (item 32, now `fop/CR-004` on its
+branch); per-font `advanced="false"` is ignored by FOP's stock font collection (§10; docx4j's own
+collection honours it). Whether `2.11-docx4j.2` releases now is Jason's call; the docx4j session then
+bumps `docx4j-export-fo` and rewrites its Getting Started renderer section.
 
 **Superseded by CR-003.** A font whose GSUB or GPOS has no `DFLT` script
 table silently gets no substitution and no kerning under a default script, because the
