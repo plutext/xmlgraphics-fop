@@ -169,7 +169,7 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-01, later. CR-003, CR-004, CR-005 and CR-007 merged after their gates passed; CR-006 waits on Jason. Read Enterprise CR-001 §6.6 before
+Last updated 2026-10-01, later. CR-003 to CR-007 all merged; nothing on a branch. Release is Jason's call. Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
 **Released.** `2.11-docx4j.1` is on Maven Central, tagged `v2.11-docx4j.1` at `2f5030172`.
@@ -211,7 +211,7 @@ on every font it made kern ("repair, if" to "repair,if", Enterprise item 33, the
 `fop/CR-004` (`CR-004-shared-default-langsys`, not merged anywhere): the OTF reader dropped a script's
 default language system when a named language shared its table, which is why DejaVu Sans never kerned
 (item 32, mechanism corrected; DejaVu Serif does kern, retracted). Held out of CR-003's gate as its own
-mover class. `fop/CR-006` is a design for the CJK radical capability, no code. Release notes drafted at
+mover class. `fop/CR-006`, the `shared-glyph-tounicode` capability, is merged too (a constant and a README row; docx4j names it in `FopCapabilities` and gates its own CJK default flip after the release). Release notes drafted at
 `docs/release-notes/2.11-docx4j.2.md`. Measured 2026-09-30 and worth remembering: FOP never applies a
 GPOS pair across a space at the layout level (each space is its own mapping), so docx4j's `kernSpaces`
 cannot double count; CR-003 §12 has the numbers.

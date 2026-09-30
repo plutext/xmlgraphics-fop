@@ -1,8 +1,9 @@
 # CR-006: a capability for the shared-glyph ToUnicode fix, so docx4j can lift its CJK exclusion
 
-Status: DONE 2026-10-01 on branch `CR-006-shared-glyph-capability` off `2.11-docx4j.2`, at Jason's yes;
-the constant, the test line and the README rows of §3. No FOP behaviour changes, so no fork gate;
-merged once the docx4j session confirms the name is what its probe will read. Registry key `fop/CR-006`. Not upstream-bound: the fix it names is
+Status: DONE 2026-10-01, merged to `2.11-docx4j.2` after the docx4j session confirmed the name is what its
+`FopCapabilities` probe reads; unreleased. The constant, the test line and the README rows of §3. No FOP
+behaviour changes, so no fork gate; docx4j's own gate for flipping its default follows the release (§4).
+Registry key `fop/CR-006`. Not upstream-bound: the fix it names is
 (`FOP-cjk-radical-tounicode`, JIRA drafted in its commit message); the capability is the fork's.
 
 Enterprise CR-001 §6.6 item 26.
