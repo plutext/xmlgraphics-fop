@@ -99,7 +99,8 @@ Apache FOP's own Maven build, Java 8 and later (Java 11 or 21 here):
 mvn -B package checkstyle:check spotbugs:check     # what CI runs on every push (.github/workflows/maven.yml)
 mvn install -DskipTests                            # the snapshot docx4j consumes (2.11-docx4j.3-SNAPSHOT)
 mvn -pl fop-core -am test -Dtest=SomeTestCase       # one test class; -am is needed, see below
-mvn -pl fop-core test -Dtest=LayoutEngineTestSuite  # FOP's layout tests (fop-core/test/layoutengine/standard-testcases) - slow
+mvn -pl fop-core test -Dtest=LayoutEngineTestSuite  # FOP's layout tests (fop/test/layoutengine/standard-testcases) - slow;
+                                                    # one file: -Dfop.layoutengine.single=name.xml
 ```
 
 `-am` is not optional on a single-module command: the version comes from the `revision`
@@ -186,7 +187,8 @@ section above says.
 docx4j 17.3.0 depends on it by default. It carries `fop/CR-001` to `CR-007`; what each does is in
 `docs/release-notes/2.11-docx4j.2.md`, and the detail, measurements and gate readings are in the CR
 documents under `docs/developer/change-requests/`. Work continues on branch `2.11-docx4j.3`, snapshot
-`2.11-docx4j.3-SNAPSHOT`; nothing unreleased is on it yet except documentation. `2.11-docx4j.1` was the
+`2.11-docx4j.3-SNAPSHOT`; unreleased on it: `fop/CR-008` (2026-10-03, ungated; draft notes in
+`docs/release-notes/2.11-docx4j.3.md`). `2.11-docx4j.1` was the
 first release, tagged at `2f5030172`. `docs/developer/releasing.md` is the runbook and records what each
 release proved.
 
@@ -201,12 +203,12 @@ If a reviewer asks for changes, work in the worktree at `../fop-upstream-wt`; wh
 rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits past `2_11`.
 
 **Open, in the order I would take them.**
-1. *The fork lacks FOP-2918's root-cause fix.* It has the word-splitting guards only.
-   `UnicodeBidiAlgorithm.resolveLevels` gives the two units of a right-to-left surrogate pair different
-   levels, though its javadoc promises one; branch `FOP-2918` fixes it and adds
-   `SurrogatePairLevelsTestCase` and FOP-2918's own layout test. Port as the next fork change request
-   (`fop/CR-008`), with a docx4j gate if any corpus or probe document sets right-to-left text outside
-   the BMP.
+1. *`fop/CR-008` (FOP-2918's bidi levels) is on `2.11-docx4j.3`, ungated.* It found that #115 is half
+   the fix: the low surrogate's placeholder must also take its character's bidi class (CR-008 §2), or a
+   neutral outside the BMP inside right-to-left text still cuts the run. Open: the docx4j gate on the
+   `surrogate-pairs` and `fonts-symbol-and-emoji` probes (§6), after Jason's install; adding part 2 and
+   the neutral tests to branch `FOP-2918` and #115, which is Jason's word to push; and FOP's bidi class
+   table predating Unicode 6.1 (§5), put to the docx4j session as a candidate §6.6 item.
 2. *Merging Apache `main` into the fork* is due and is not routine. FOP-2722 (2a8efc165) gives
    `GlyphMapping.processWordMapping` a letter-space count, the measuring half of what CR-005 fixed in
    paint, and docx4j carries a workaround for its absence (`LetterSpacingWidthTest`); FOP-3337
