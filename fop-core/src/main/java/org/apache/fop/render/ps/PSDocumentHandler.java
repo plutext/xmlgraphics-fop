@@ -165,7 +165,6 @@ public class PSDocumentHandler extends AbstractBinaryWritingIFDocumentHandler {
             this.gen.setPSLevel(psUtil.getLanguageLevel());
             this.gen.setAcrobatDownsample(psUtil.isAcrobatDownsample());
             this.gen.setJPEGCompressionRatio(psUtil.getJPEGCompressionRatio());
-            gen.setCompressStreams(psUtil.isCompressStreams());
             this.currentPageNumber = 0;
             this.documentBoundingBox = new Rectangle2D.Double();
 

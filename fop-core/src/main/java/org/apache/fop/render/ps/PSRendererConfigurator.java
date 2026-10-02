@@ -64,9 +64,6 @@ public class PSRendererConfigurator extends DefaultRendererConfigurator {
         if (psConfig.getJPEGCompressionRatio() != null) {
             psUtil.setJPEGCompressionRatio(psConfig.getJPEGCompressionRatio());
         }
-        if (psConfig.isCompressStreams() != null) {
-            psUtil.setCompressStreams(psConfig.isCompressStreams());
-        }
     }
 
     @Override

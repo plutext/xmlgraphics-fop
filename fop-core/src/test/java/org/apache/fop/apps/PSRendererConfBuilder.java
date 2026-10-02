@@ -21,7 +21,6 @@ package org.apache.fop.apps;
 
 import org.apache.fop.apps.FopConfBuilder.RendererConfBuilder;
 import static org.apache.fop.render.ps.PSRendererOption.AUTO_ROTATE_LANDSCAPE;
-import static org.apache.fop.render.ps.PSRendererOption.COMPRESS_STREAMS;
 import static org.apache.fop.render.ps.PSRendererOption.DSC_COMPLIANT;
 import static org.apache.fop.render.ps.PSRendererOption.JPEG_COMPRESSION;
 import static org.apache.fop.render.ps.PSRendererOption.LANGUAGE_LEVEL;
@@ -64,11 +63,6 @@ public final class PSRendererConfBuilder extends RendererConfBuilder {
 
     public PSRendererConfBuilder setJPEGCompression(String jpegCompression) {
         createTextElement(JPEG_COMPRESSION, jpegCompression);
-        return this;
-    }
-
-    public PSRendererConfBuilder setCompressStream(boolean value) {
-        createTextElement(COMPRESS_STREAMS, String.valueOf(value));
         return this;
     }
 }

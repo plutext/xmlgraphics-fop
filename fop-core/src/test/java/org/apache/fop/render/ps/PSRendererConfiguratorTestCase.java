@@ -118,16 +118,4 @@ public class PSRendererConfiguratorTestCase extends
         parseConfig(createBuilder());
         assertNull(psUtil.getJPEGCompressionRatio());
     }
-
-    @Test
-    public void testCompressStreams() throws Exception {
-        parseConfig(createBuilder());
-        assertFalse(psUtil.isCompressStreams());
-
-        parseConfig(createBuilder().setOptimizeResources(true).setCompressStream(true));
-        assertTrue(psUtil.isCompressStreams());
-
-        parseConfig(createBuilder().setCompressStream(false));
-        assertFalse(psUtil.isCompressStreams());
-    }
 }
