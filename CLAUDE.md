@@ -172,7 +172,8 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 Last updated 2026-10-02. `2.11-docx4j.2` released; nothing on a branch; the next snapshot is `2.11-docx4j.3-SNAPSHOT`. Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
-**Released.** `2.11-docx4j.2` is on Maven Central (2026-10-02), tagged `v2.11-docx4j.2` at `3a68b4c57`,
+**Released.** `2.11-docx4j.2` is on Maven Central (2026-10-02), tagged `v2.11-docx4j.2` at `ae4d4bc59` (the
+version commit; 3a68b4c57 after it is test-only),
 carrying fop/CR-001 to CR-007; `docs/release-notes/2.11-docx4j.2.md` is the record. `2.11-docx4j.1` before
 it, tagged at `2f5030172`. `docs/developer/releasing.md` is the runbook and records what each release proved.
 Jason built and deployed from the pushed branch on another host; the full suite there caught a test this

@@ -157,7 +157,9 @@ numbered staging repositories like `orgdocx4j-1095`.
   what shipped is exactly what the branch said. The full suite there failed once, on a test this
   session had not run after adding a capability; one commit fixed it (3a68b4c57) and the deploy
   went from that. Run the full `fop-core` suite before every merge.
-- **Tagged after the fact again** (`v2.11-docx4j.2` at 3a68b4c57). Tag before deploying next time.
+- **Tagged before deploying this time**, as this document asked: Jason's annotated `v2.11-docx4j.2`
+  at ae4d4bc59, the version commit, 09:43 local, deploy after. The test fix that followed changed no
+  shipped class. The tag is local until pushed by name (`git push origin v2.11-docx4j.2`).
 - **Verified from Central after publication**: five artifacts, each with sources, javadoc, `.asc`,
   `.md5`, `.sha1`; the core manifest's `Implementation-Version` is `2.11-docx4j.2`, so
   `Docx4jFop.version()` reports it.
