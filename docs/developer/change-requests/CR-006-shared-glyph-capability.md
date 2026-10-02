@@ -59,3 +59,24 @@ on one document: 0 radicals with the tables on under the fork, 156 on Apache FOP
 
 After CR-003's re-gate, since the movers above depend on CR-003's language fallback and kerning
 flag; and after Jason's yes. Two commits then: the constant and test here, the docx4j default there.
+
+## 6. docx4j's gate, 2026-10-02: PASS, the workaround lifted by default
+
+Run by the docx4j session on the released `2.11-docx4j.2` from Central. First a release check: the
+Central jars with the property unset reproduce the 2026-09-30 snapshot scoreboards exactly (real, real2,
+real3 and probes all 0 changed). Then `cjkAdvancedFeatures=true`: the flag reaches only the fonts
+`GlyphCheck.reverseLookupTakesACjkRadical` names, here Source Han Sans CN, JP and KR (Droid Sans
+Fallback has radical glyphs of its own). Three corpus documents and two probes name such a face; all
+identical with the tables on: same PDF sizes, same glyph sequences and positions, same text, Kangxi
+count 0 both sides. None of them sets a Latin letter in Source Han Sans, and the tables do nothing to
+horizontal CJK text of the font's own region. A kern probe proved the flag in force: "AVATAR To Ye
+WAVE" in Source Han Sans CN with `w:kern` closes its pairs with the tables on (26 of 27 positions move)
+and not off, the unkerned line and the ideographs unmoved either way: §4's mover class exactly, absent
+from the corpora.
+
+Landed in docx4j (uncommitted there at the time of writing): `FopConfigUtil.cjkAdvancedFeatures()` is
+the property if set, else a reflection probe of `Docx4jFop.capabilities()` for
+`shared-glyph-tounicode`; `keepsCjkLayoutTables()` exposes it; `CjkLayoutDefaultTest` holds that it
+agrees with `FopCapabilities` and that the property overrides either way. Enterprise item 26: the
+workaround is lifted by default on the docx4j renderer and kept on Apache FOP. Registry entry
+`fop/CR-006` sent to the docx4j session, which holds `tasks.yaml`.
