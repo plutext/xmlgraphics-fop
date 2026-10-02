@@ -1,8 +1,7 @@
 # CR-008: both units of a surrogate pair resolve to one bidi level
 
-Status: IMPLEMENTED 2026-10-03 on `2.11-docx4j.3`, committed there directly at Jason's request (no CR
-branch); UNGATED until the docx4j session's gate (§6) reports on the snapshot; unreleased. The registry
-has it `in_progress` until then. Registry key `fop/CR-008`. Upstream-bound:
+Status: DONE 2026-10-03 on `2.11-docx4j.3`, committed there directly at Jason's request (no CR branch);
+gated the same day by the docx4j session, PASS (§6); unreleased. Registry key `fop/CR-008`. Upstream-bound:
 [FOP-2918](https://issues.apache.org/jira/browse/FOP-2918), pull request
 [#115](https://github.com/apache/xmlgraphics-fop/pull/115), which carries the first half of §2 and not
 the second (§5). No capability: docx4j has no workaround to drop.
@@ -120,14 +119,39 @@ for a range that holds R, AL, AN, RLE or RLO, or for a right-to-left paragraph
 (`convertToScalar`'s trigger). So the movers are text that holds a character outside the BMP within
 such a range, and Enterprise CR-001 item 31 says the corpus has none.
 
-What the docx4j session would run: the `surrogate-pairs` probe (CR-020's P2-1 gate, whose cases
-include an emoji and an Extension B ideograph "inside an RTL run") and `fonts-symbol-and-emoji`, on
-the snapshot against the released `2.11-docx4j.2`. Expected: movement only in a right-to-left run
-holding such a character, toward the order FOP gives the same text with a BMP neutral or letter in
-its place; no exception either way. The corpora would be identical by construction, if item 31 still
-holds. CR-020's P2-1 record says the bidi-level guard was "undemonstrated: no case was found in
-which the two halves of a pair take different levels"; U+10826 is such a case (§1), and the
-docx4j session is told so, since CR-020 is its document.
+CR-020's P2-1 record said the bidi-level guard was "undemonstrated: no case was found in which the
+two halves of a pair take different levels". U+10826 is such a case (§1). The docx4j session has
+corrected that record in CR-020, which is its document.
+
+### The gate, 2026-10-03: PASS
+
+Run by the docx4j session through docx4j 17.3.0. The candidate was `2.11-docx4j.3-SNAPSHOT` as Jason
+installed it from 9fab0a7c9 (the installed core's `getClasses` has three `iaload`, the released one
+two); the baseline was the released `2.11-docx4j.2`. Three probes: `surrogate-pairs` (P2-1's),
+`fonts-symbol-and-emoji`, and `surrogate-pairs-bidi`, new for this gate, built from the cases
+proposed here in plain runs (no `w:rtl`), each paragraph labelled `P0n`. The record is in
+`~/fidelity-cr008/` (`BASELINE.txt`, `GATE.txt`, `order.py`), local only.
+
+The baseline shows that docx4j documents reach the defect. With `-ea`, `surrogate-pairs-bidi` aborts
+with "heterogeneous inlines not yet supported!!", from `InlineRun.split` by way of
+`BidiResolver.reorder` and docx4j's `WordLineLayoutManager.addInlineArea`. The other two probes render.
+Visual order, read from `mutool draw -F stext`; Hebrew appears letter-reversed, as drawn:
+
+| line | text | baseline (no `-ea`) | candidate (`-ea`) |
+|---|---|---|---|
+| P01 | `ab𐠦cd` | correct: docx4j splits the run at the font change | identical |
+| P02 | `שלום 𐠦 עולם` | `𐠦 םולשםלוע`: the Cypriot letter at the left edge, the Hebrew words run together | `םלוע 𐠦 םולש` |
+| P03 | `שלום👍 עולם` | `םולש👍םלוע`: the run cut, logical order kept | `םלוע 👍םולש`, P04's shape |
+| P04 | `שלום☺ עולם` (reference) | `םלוע ☺םולש` | identical |
+| P05 | `שלום😀 עולם` (control, item 35) | logical order kept; 😀 drawn as `#` | identical |
+| P06, P07 | P03 in a `w:bidi` paragraph, and the rest | right-to-left order already | identical |
+
+`surrogate-pairs` (6 lines) and `fonts-symbol-and-emoji` (6 lines) were identical to the glyph
+position. No exception on any probe with `-ea`. The corpora are identical by construction: the
+docx4j session's scan the same day found no character outside the BMP in any of the 454 corpus
+documents (Enterprise CR-001 item 31 holds), and CR-008 changes nothing else. The two moving lines
+are the two halves of §2: P02 is part 1 (an R character's pair), P03 part 2 (an ON character's
+placeholder class).
 
 ## 7. Record
 
