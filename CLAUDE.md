@@ -213,12 +213,13 @@ rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits p
    showed docx4j documents reach the defect (an assertion under `-ea`, wrong order without). Part 2 is
    on #115 since 2026-10-03 (b401de0d9, green on `main`; body item 7 and a comment).
    FOP's bidi class table predating Unicode 6.1 is now Enterprise CR-001 item 35 (no corpus reach).
-2. *Merging Apache `main` into the fork*: triaged 2026-10-03, read-only, in `fop/CR-009` (all 91 commits;
-   75 take as they are). Before it can merge: Jason names the branch and version (CR-009 §6 recommends
-   `2.11-docx4j.4`); the fork keeps released xmlgraphics-commons and Batik, so FOP-3311 stays out
-   (§3.1); a `setRuleStyle(int)` compatibility member for docx4j (§3.2); FOP-2722 needs item 16's width
-   fix or a docx4j change (§3.3); docx4j decides on FOP-3293's image cache (§3.4); the property id 295
-   collides (§3.5). The merge goes on `2.11-docx4j.4` (Jason, 2026-10-03).
+2. *Apache `main` is merged* into `2.11-docx4j.4` (2026-10-03, `fop/CR-009`, merge 4d6c9d981): full build
+   green, not gated. FOP-3311 and FOP-3326 are reverted (unreleased xmlgraphics-commons API); hook
+   `rule-style-int` added; `gsub-features` is property id 296. Next: `fop/CR-010`, item 16's width fix on
+   the complex-script path, capability `letter-space-width`, with a JIRA against `main`; its §6.6 text
+   goes to the docx4j session to enter. Then the docx4j session compiles against the snapshot (Jason's
+   install), writes its path-aware `fixLetterSpaces`, and gates (CR-009 §5, §8). The per-file change
+   notices still say "derived from Apache FOP 2.11"; a mechanical pass is open.
 3. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
    private-use code point in ToUnicode (CR-002 §10.2; ActualText per cluster is the follow-up); a format
    character the font has no glyph for is still lost (CR-007 §4); the position-adjustments paint path

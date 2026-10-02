@@ -1,7 +1,9 @@
 # CR-009: merging Apache `main` into the fork, and the triage that comes first
 
-Status: PROPOSED 2026-10-03. The triage (§2 to §5, §9) is done, read-only; §8 records what the docx4j session agreed. Nothing is merged. The merge
-goes on a new branch (Jason, 2026-10-03), whose name is his decision (§6). Registry key `fop/CR-009`.
+Status: MERGED 2026-10-03 on branch `2.11-docx4j.4` (Jason named it, and ruled that `2.11-docx4j.3` does not
+ship). The merge is 4d6c9d981; the follow-ups (§10) end at fa5f8bb1d. The full build is green. Not yet
+gated: the docx4j session compiles against the snapshot and gates per §5 and §8. `fop/CR-010` (§3.3) is
+still to do. Unreleased. Registry key `fop/CR-009`.
 
 After the merge the fork is Apache `main` plus fixes, not Apache FOP 2.11 plus fixes. Apache has
 released nothing after 2.11, and its `main` still declares `2.11.0-SNAPSHOT`.
@@ -306,13 +308,13 @@ It checked §3.2 to §3.4 against the code and agreed.
 | 0b9b52aad | 2026-03-25 | FOP-2758 | error path | TAKE |  |
 | 58b4c79f7 | 2026-05-18 | FOP-3317 | build | TAKE | qdox scope |
 | 32930c75a | 2026-05-15 | FOP-3316 | tagging (opt-in) | TAKE |  |
-| 7c028337d | 2026-05-19 | FOP-3304 | test | TAKE (check) | PDFAMetadataTestCase expectation may need XGC snapshot (unverified) |
+| 7c028337d | 2026-05-19 | FOP-3304 | test | TAKE (check) | PDFAMetadataTestCase expectation may need XGC snapshot (unverified) **Confirmed by the build; expectation kept at 2.11 (§10).** |
 | 631200f5c | 2026-05-22 | - | build | RESOLVE | maven.yml: take actions v6, keep fork branches |
 | 32c8c7176 | 2026-05-22 | - | build | RESOLVE | maven.yml: setup-java v5 |
 | 6361eaf65 | 2026-05-28 | FOP-3306 | PDF (paint) | TAKE | dotted rule leaders; docx4j sets no rule-style |
 | ece9fa285 | 2026-06-03 | FOP-3321 | other format | TAKE | PostScript |
 | 73ebfb18d | 2026-06-05 | FOP-3306 | tagging | TAKE + tagged check | rule as Artifact whenever accessibility is on |
-| 1b7d4bae8 | 2026-06-19 | FOP-3326 | other format | TAKE | PostScript |
+| 1b7d4bae8 | 2026-06-19 | FOP-3326 | other format | TAKE | PostScript **Wrong in the triage: needs unreleased xmlgraphics-commons too; reverted (§10).** |
 | 8e4a19cf2 | 2026-06-18 | FOP-3323 | error path | TAKE | fo:title id NPE |
 | 5cae49dee | 2026-05-29 | FOP-3322 | tagging | TAKE + tagged check | link /Contents from /Alt |
 | 3791b9253 | 2026-06-04 | FOP-3325 | API, PDF | DOCX4J + RESOLVE | removes Leader.setRuleStyle(int), called by docx4j LBP.java:535 |
@@ -323,5 +325,48 @@ It checked §3.2 to §3.4 against the code and agreed.
 | f84f61fe5 | 2026-08-19 | FOP-3333 | memory, API | TAKE | area traits deduplicated; getTraits() may be unmodifiable; docx4j never reads it |
 | 0fcf99423 | 2026-08-19 | FOP-3333 | memory | TAKE |  |
 | 2a8efc165 | 2026-07-08 | FOP-2722 | LAYOUT | DOCX4J + GATE | letter-space count on the complex-script path, width unchanged: item 16 touched, docx4j fixLetterSpaces under-measures |
-| feb2323ca | 2026-09-25 | FOP-3337 | other format | TAKE | AFP; adds MultiByteFont.hasPrivateUseSubstitutions beside CR-002 |
+| feb2323ca | 2026-09-25 | FOP-3337 | other format | TAKE | AFP; adds MultiByteFont.hasPrivateUseSubstitutions beside CR-002 **Missed in the triage: its AFP font did not compile against the fork Substitutable (§10).** |
 | ab5d6eba6 | 2026-09-29 | FOP-3275 | runtime, build | RESOLVE | maven.yml JDK 25; SAX parsing of event models |
+
+## 10. The merge as done, 2026-10-03
+
+On branch `2.11-docx4j.4`, cut from `2.11-docx4j.3`, with the `revision` moved to `2.11-docx4j.4-SNAPSHOT`
+(61588256d).
+
+| commit | what |
+|---|---|
+| 4d6c9d981 | The merge of `main` at ab5d6eba6, with the five conflicts resolved as §7 says. Two other resolutions: `Substitutable`'s `gsub-features` overload becomes a default method that ignores the delta; `publish-snapshot.yml` is dropped. |
+| 3819745cf | FOP-3326 reverted. |
+| afe6d0dfd | FOP-3311 reverted. |
+| dba4a8dc8 | Change notices on the 14 files the two reverts leave different from `main`. |
+| d9f000cdc | FOP-3304's test expectation kept at 2.11's. |
+| 055cfe04d | Hook `rule-style-int`: `Leader.setRuleStyle(int)`, the ninth capability, with a test. |
+| 449e0d789 | The blank line before static imports removed from the fork's own test files (nine, with 055cfe04d). |
+| fa5f8bb1d | README: the new base, the omissions, the hook. |
+
+Full build (`mvn -B package checkstyle:check spotbugs:check`) at fa5f8bb1d: fop-core 3738 tests, 0
+failures, 0 errors, 4 skipped; checkstyle 0 in every module; spotbugs 0.
+
+What the triage got wrong or left open, and what the compiler or the tests said:
+- **FOP-3326 (1b7d4bae8) was passed as inert.** It also calls API only the unreleased
+  `xmlgraphics-commons` has (`PSGenerator.setCompressStreams`, `PSGraphics2D.startContent` and
+  `endContent`). It is PostScript only, so it is reverted beside FOP-3311. §3.1 named one such commit;
+  there were two.
+- **FOP-3337 (feb2323ca) was passed as inert.** Its new `AFPFontConfig.AFPTrueTypeFont` implements
+  `Substitutable` and did not compile against the fork's abstract `gsub-features` overload. The fork's
+  javadoc had planned to make that overload a default method at this merge, once checkstyle could parse
+  one. FOP-3281 made that possible, so the merge does it: a default that ignores the delta, which is
+  what the overload's contract already asked of an implementor that cannot honour it.
+- **FOP-3304 (7c028337d)** was flagged by one reader as possibly depending on the snapshot. The build
+  confirmed it: the expected `pdfaExtension` prefix is written only by `xmlgraphics-commons`
+  2.11.0-SNAPSHOT, so the expectation stays at 2.11's.
+- **The checkstyle prediction (§3.6) was right:** exactly the nine fork test files named.
+- **Spotbugs found nothing** at 4.8.6.7 with the removed exclusions. The reader's scan had said it
+  would not.
+
+Not yet done: `fop/CR-010` (§3.3), which this merge needs before the letter-spacing gate; the docx4j
+session's compile of `docx4j-export-fo` against the snapshot, its path-aware `fixLetterSpaces`, and the
+gates of §5 and §8. And the per-file change notices still say "derived from Apache FOP 2.11", in the
+form every notice shares; the README states the new base, and the notices are left for a mechanical
+pass of their own.
+
