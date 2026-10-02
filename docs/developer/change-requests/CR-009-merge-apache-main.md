@@ -1,6 +1,6 @@
 # CR-009: merging Apache `main` into the fork, and the triage that comes first
 
-Status: PROPOSED 2026-10-03. The triage (§2 to §5, §8) is done, read-only. Nothing is merged. The merge
+Status: PROPOSED 2026-10-03. The triage (§2 to §5, §9) is done, read-only; §8 records what the docx4j session agreed. Nothing is merged. The merge
 goes on a new branch (Jason, 2026-10-03), whose name is his decision (§6). Registry key `fop/CR-009`.
 
 After the merge the fork is Apache `main` plus fixes, not Apache FOP 2.11 plus fixes. Apache has
@@ -196,7 +196,37 @@ wanted.
    §5.
 8. The README's base wording, the hooks table (`setRuleStyle(int)`), and the release notes.
 
-## 8. Commit by commit (oldest first)
+## 8. Agreed with the docx4j session, 2026-10-03
+
+It checked §3.2 to §3.4 against the code and agreed.
+
+- **§3.3, letter spacing:** option (a), the width fix in the fork, as its own change request with a
+  JIRA, published under a capability. Proposed name: `letter-space-width`, meaning a word's counted
+  letter spaces are in its width on the complex-script path as on the plain one.
+  - (a) alone does not cover an Apache release that carries FOP-2722 without the width half, and
+    docx4j runs on Apache FOP too. So docx4j makes `fixLetterSpaces` path-aware: the spaces in the
+    width are 0 on the mapping path without the capability, otherwise the count. It adds
+    `wordLength` minus those, and skips a word only when they equal its length.
+  - That is a no-op on today's renderers, so it lands first and is shown identical on `spacing-char`,
+    `kern-title` and the corpus's `w:spacing` runs. The merge gate runs those again.
+  - The docx4j change is the docx4j session's to write, on Jason's word.
+- **§3.2, `setRuleStyle(int)`:** kept in the fork as a listed compatibility member, so docx4j 17.3.0
+  runs unchanged. Proposed capability: `rule-style-int`.
+  - No single call compiles against both lines: 2.11 has `setRuleStyle(int)` and `(String)`; `main`
+    has `(BorderStyle)` and `(String, int)`.
+  - So docx4j also needs a version-neutral call at `LBP.java:535`, reflective or chosen by the
+    capability, before any Apache release carries FOP-3325. That is a docx4j follow-up.
+- **§3.4, image cache:** gated on the merge candidate by the docx4j session. The test is a NUMPAGES
+  document with an RGBA PNG and a JPEG, two-pass, cache on and off, with `qpdf --check`, a page
+  compare, and two documents through one reused factory.
+  - Upstream's default stays only if the output is identical and valid.
+  - Otherwise docx4j turns the cache off through its `FopFactoryCustomizer`, calling
+    `setImageCache(false)` reflectively, since 2.11's builder lacks it.
+  - If the merge ships before that gate has run, docx4j's default is off.
+- **Registry and CR-020:** registered `fop/CR-009`, proposed. CR-020 §9.4 notes it is superseded by
+  this document.
+
+## 9. Commit by commit (oldest first)
 
 "Kind" is the class of change; "tagged check" means a PDF/UA validator run, not a corpus gate.
 
