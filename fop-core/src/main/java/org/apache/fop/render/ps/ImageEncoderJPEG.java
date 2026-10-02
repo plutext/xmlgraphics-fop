@@ -48,8 +48,4 @@ public class ImageEncoderJPEG implements ImageEncoder {
     public String getImplicitFilter() {
         return "<< >> /DCTDecode";
     }
-
-    public String getAdditionalFilter() {
-        return "";
-    }
 }

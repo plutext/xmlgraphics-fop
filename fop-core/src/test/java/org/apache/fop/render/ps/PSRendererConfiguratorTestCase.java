@@ -20,7 +20,6 @@ package org.apache.fop.render.ps;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -109,13 +108,5 @@ public class PSRendererConfiguratorTestCase extends
 
         parseConfig(createBuilder());
         assertTrue(psUtil.isDSCComplianceEnabled());
-    }
-
-    @Test
-    public void testJPEGCompressionRatio() throws Exception {
-        parseConfig(createBuilder().setJPEGCompression("0.9"));
-        assertEquals("0.9", psUtil.getJPEGCompressionRatio());
-        parseConfig(createBuilder());
-        assertNull(psUtil.getJPEGCompressionRatio());
     }
 }
