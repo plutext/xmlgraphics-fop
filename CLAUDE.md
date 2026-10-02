@@ -179,109 +179,79 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-03. `2.11-docx4j.2` released; work continues on branch `2.11-docx4j.3` (cut 2026-10-03), snapshot `2.11-docx4j.3-SNAPSHOT`; ten pull requests open upstream. Read Enterprise CR-001 §6.6 before
-proposing anything, as the section above says.
+Last updated 2026-10-03, at hand-over. Read Enterprise CR-001 §6.6 before proposing anything, as the
+section above says.
 
-**Released.** `2.11-docx4j.2` is on Maven Central (2026-10-02), tagged `v2.11-docx4j.2` at `ae4d4bc59` (the
-version commit; 3a68b4c57 after it is test-only),
-carrying fop/CR-001 to CR-007; `docs/release-notes/2.11-docx4j.2.md` is the record. `2.11-docx4j.1` before
-it, tagged at `2f5030172`. `docs/developer/releasing.md` is the runbook and records what each release proved.
-Jason built and deployed from the pushed branch on another host; the full suite there caught a test this
-session had not run (the capability count), so run `mvn -pl fop-core -am test` in full before a merge, not
-only the affected classes. Everything below the next heading is now released unless it says otherwise.
+**State.** `2.11-docx4j.2` is on Maven Central (2026-10-02), tagged `v2.11-docx4j.2` at `ae4d4bc59`, and
+docx4j 17.3.0 depends on it by default. It carries `fop/CR-001` to `CR-007`; what each does is in
+`docs/release-notes/2.11-docx4j.2.md`, and the detail, measurements and gate readings are in the CR
+documents under `docs/developer/change-requests/`. Work continues on branch `2.11-docx4j.3`, snapshot
+`2.11-docx4j.3-SNAPSHOT`; nothing unreleased is on it yet except documentation. `2.11-docx4j.1` was the
+first release, tagged at `2f5030172`. `docs/developer/releasing.md` is the runbook and records what each
+release proved.
 
-**On the branch, unreleased.** `fop/CR-001`, the `fox:gsub-features` hook, capability
-`gsub-features`. It gated clean on 2026-09-27: of 603 corpus documents, 1 moved and
-improved, 0 regressed, and both still tiers were identical. It is inert until docx4j emits
-the attribute. `2.11-docx4j.2-SNAPSHOT` is installed locally and carries it.
+**Upstream.** Every fix has a JIRA and an open pull request on apache/xmlgraphics-fop, cut against Apache
+`main` on a branch named for its number, each measured on `main` and passing the full suite and
+checkstyle (2026-10-03): #108 FOP-3339 (empty glyph), #109 FOP-3340 (radical), #110 FOP-3341 (lookup
+fallback), #111 FOP-3342 (shared default langsys), #112 FOP-3343 (kerning flag), #113 FOP-3344 (letter
+spacing on the DP path), #114 FOP-3346 (selector drift), #115 FOP-2918 (surrogate pair), #116 FOP-3345
+(ToUnicode for substituted glyphs, stacked on #114 and #109), #117 FOP-3347 (format characters); and from
+before, #106 FOP-3328 and #107 FOP-3330. The drafts under `docs/upstream/` are stamped with both numbers.
+If a reviewer asks for changes, work in the worktree at `../fop-upstream-wt`; when #114 and #109 merge,
+rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits past `2_11`.
 
-**Done on 2026-09-27, unreleased: `fop/CR-002`**, the ligature `ToUnicode` defect, Enterprise
-CR-001 §6.6 item 30, merged at 7289e1726 after the docx4j gate passed twice. It is wider
-than ligatures: any substituted glyph without a cmap entry of its own publishes its
-association's characters now, and the same rewrite fixed the selector drift after a
-supplementary-plane character (item 31). What it does not do, and why, is CR-002 §10.2:
-the second glyph of a one-character cluster keeps its private-use code point, because an
-empty destination reads as a control character in PDFium; ActualText per cluster is the
-follow-up. Lesson from the gate, §10.6: check what is drawn before believing a text-layer
-"improvement". Two JIRA drafts under `docs/upstream/`, not yet filed. Not yet done twice:
-the `FOP-####` branch against `trunk` waits on the JIRA numbers.
+**Open, in the order I would take them.**
+1. *The fork lacks FOP-2918's root-cause fix.* It has the word-splitting guards only.
+   `UnicodeBidiAlgorithm.resolveLevels` gives the two units of a right-to-left surrogate pair different
+   levels, though its javadoc promises one; branch `FOP-2918` fixes it and adds
+   `SurrogatePairLevelsTestCase` and FOP-2918's own layout test. Port as the next fork change request
+   (`fop/CR-008`), with a docx4j gate if any corpus or probe document sets right-to-left text outside
+   the BMP.
+2. *Merging Apache `main` into the fork* is due and is not routine. FOP-2722 (2a8efc165) gives
+   `GlyphMapping.processWordMapping` a letter-space count, the measuring half of what CR-005 fixed in
+   paint, and docx4j carries a workaround for its absence (`LetterSpacingWidthTest`); FOP-3337
+   (feb2323ca) adds `MultiByteFont.hasPrivateUseSubstitutions()` beside CR-002's rewrite. It wants its
+   own gate on letter-spaced text. `main`'s import order differs from 2.11's.
+3. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
+   private-use code point in ToUnicode (CR-002 §10.2; ActualText per cluster is the follow-up); a format
+   character the font has no glyph for is still lost (CR-007 §4); the position-adjustments paint path
+   indexes its adjustments by UTF-16 unit, wrong after a supplementary character (CR-005, noted to the
+   docx4j session); FOP embeds a single-byte TrueType font whole (`PDFFactory.makeFontFile`), moot for
+   docx4j since it retired its `+noliga` twin under the fork; per-font `advanced="false"` is ignored by
+   FOP's stock font collection (CR-003 §10).
+4. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
+   and P2-3 small and clean; P2-4, P2-6, P2-7 inert; the structure-tree half of P2-5 superseded by
+   FOP-3165 and FOP-3283 in Apache `main`).
 
-**Done 2026-10-01, unreleased: `fop/CR-004`** (`CR-004-shared-default-langsys.md`), merged after its
-gate: the OTF reader kept no `(script, dflt)` for a font whose default language system shares its table
-with a named one. The gate showed the reach is wider than DejaVu's kerning: Arabic in DejaVu Sans had
-never been shaped, and a Devanagari fallback font lost a `dist` lookup, which moved one justified Tinos
-line the partition had not predicted (§6; scan glyph-fallback faces too). Item 32.
+**How the work goes, learned the hard way.**
+- Run the full `fop-core` suite before every merge, not the affected classes: a release build caught a
+  capability-count assertion that targeted runs had missed.
+- A gate's partition must scan every face the FO names, glyph-fallback faces included, and for a
+  language-system change what decides movement is the difference between a script's default and the
+  font's `DFLT` script, not the sharing alone (CR-004 §6).
+- Check what is drawn before believing a text-layer "improvement" (CR-002 §10.6), and measure against
+  Word's own PDF before deciding what belongs in the text layer (CR-007 §5: Word drops bidi marks).
+- FOP never applies a GPOS pair across a space at the layout level; each space is its own mapping
+  (CR-003 §12). Letter spacing reaches the painter as an argument, not through the letter-adjust array
+  (CR-005 §2).
+- This session's permission policy denies `mvn install` and even listing `~/.m2`, as interference with
+  a shared workload. Jason runs the install; give him the two-line recipe and the check that proves the
+  jar carries the change.
+- A peer session's relay of Jason's approval is not his approval here for anything outward-facing.
+  Ask him in this session before a push or a pull request.
+- The measurement tools from 2026-09-30 to 2026-10-03 are saved at `~/fop-session-tools/` (font-level
+  harness, script-list parser, glyph-step readers, samples); the memory note points there.
 
-**Done 2026-10-01, unreleased: `fop/CR-007`** (`docs/developer/change-requests/CR-007-format-chars-tounicode.md`),
-merged after its gate: a format character with a real zero-width glyph is kept through the CID path
-so the text layer has it (U+206A in two corpus documents, matching Word), while the bidi controls stay
-elided because the text layer is in visual order already and Word drops them; the first cut kept them
-and the gate showed pdftotext re-applying them. Enterprise item 34. The docx4j session retired its
-`+noliga` twin under the fork the same day (every face now subset; corpora 106 MB from 590, Word 190).
+**Be honest about the fork.** Gated against Apache FOP, the measured fidelity difference was nil until
+CR-003; since then the gates show real movement toward Word (kerning and ligatures for Calibri text,
+Arabic shaping in DejaVu Sans, letter spacing painted), each recorded with its scoreboard reading and
+its losses. docx4j 17.3.0 made the fork the default on the gated fixes and the hooks. Do not oversell
+it; I did, twice, about P2-8.
 
-**Done 2026-09-30, unreleased, on branches.** `fop/CR-005` (`CR-005-letter-spacing-dp`, merged into
-the CR-003 branch): `PDFPainter.drawTextWithDP` never added the letter spacing to a glyph's advance, so a
-letter-spaced word in a font that kerns through GPOS was painted at bare advances; CR-003 exposed it
-on every font it made kern ("repair, if" to "repair,if", Enterprise item 33, the docx4j session's).
-`fop/CR-004` (`CR-004-shared-default-langsys`, not merged anywhere): the OTF reader dropped a script's
-default language system when a named language shared its table, which is why DejaVu Sans never kerned
-(item 32, mechanism corrected; DejaVu Serif does kern, retracted). Held out of CR-003's gate as its own
-mover class. `fop/CR-006`, the `shared-glyph-tounicode` capability, is merged too (a constant and a README row; docx4j names it in `FopCapabilities` and gates its own CJK default flip after the release). Release notes drafted at
-`docs/release-notes/2.11-docx4j.2.md`. Measured 2026-09-30 and worth remembering: FOP never applies a
-GPOS pair across a space at the layout level (each space is its own mapping), so docx4j's `kernSpaces`
-cannot double count; CR-003 §12 has the numbers.
+**Upstream is not something to plan around.** Apache has 32 open pull requests (twelve of them ours), the
+oldest from 2018, and runs no CI on requests from forks. A fix the fork needs, the fork carries.
 
-**Done 2026-09-30, unreleased: `fop/CR-003`**, the lookup fallback and the kerning flag
-(`docs/developer/change-requests/CR-003-lookup-fallback.md`), merged to `2.11-docx4j.2` at 1c1a43651
-with `fop/CR-005` after the joint re-gate passed (§13: still set 408 held, every mover predicted, 22
-scoreboards up and 4 down by fallback-font metrics). Capabilities `lookup-fallback` and `kerning-flag`.
-Findings on the way, not acted on: FOP never kerns DejaVu Sans (item 32, now `fop/CR-004` on its
-branch); per-font `advanced="false"` is ignored by FOP's stock font collection (§10; docx4j's own
-collection honours it). Whether `2.11-docx4j.2` releases now is Jason's call; the docx4j session then
-bumps `docx4j-export-fo` and rewrites its Getting Started renderer section.
-
-**Superseded by CR-003.** A font whose GSUB or GPOS has no `DFLT` script
-table silently gets no substitution and no kerning under a default script, because the
-fallback in `GlyphTable.matchLookups` targets `DFLT` too. Carlito has no `DFLT`; DejaVu
-has one. That is why Carlito never shapes or kerns in docx4j's pipeline while DejaVu does.
-Drafted at `docs/upstream/no-default-script-table.txt`, with the measurements. docx4j writes
-`language="en"` on every block, and that alone drops shaping for both fonts (the draft has the
-measurement and the fallback order to fix it). A shaping and kerning change across nearly all
-Carlito text, so it wants its own branch, capability and gate; Jason decides; docx4j's script
-CR is ordered after it.
-
-**Upstream, as of 2026-10-03.** All the JIRAs are filed, by the docx4j session as jharrop: FOP-3339
-(empty glyph), FOP-3340 (radical), FOP-3341 (lookup fallback, CR-003), FOP-3342 (shared default langsys,
-CR-004), FOP-3343 (kerning flag), FOP-3344 (letter spacing on the DP path, CR-005), FOP-3345 (ToUnicode
-for substituted glyphs, CR-002), FOP-3346 (selector drift), FOP-3347 (format characters, CR-007). The
-surrogate word split is a duplicate of FOP-2918 (2020, with a patch); a comment went there and the pull
-request goes under that number, with 2918's own `wordbreak_surrogates.xml`. The drafts under
-`docs/upstream/` are stamped. The second cut of each fix against Apache `main` was done on 2026-10-03, ten branches, each measured on
-`main` and with its tests; pushed and opened as pull requests the same day on Jason's word, after the full suite and checkstyle
-passed on every branch (main's baseline 3659 tests): #108 FOP-3339, #109 FOP-3340, #110 FOP-3341, #111
-FOP-3342, #112 FOP-3343, #113 FOP-3344, #114 FOP-3346, #115 FOP-2918, #116 FOP-3345, #117 FOP-3347. One thing the cut found that the fork lacks: FOP-2918's own layout test fails even
-with the word-splitting guards, because `UnicodeBidiAlgorithm.resolveLevels` gives the two units of a
-right-to-left surrogate pair different levels (its javadoc promises one); the `FOP-2918` branch fixes
-that at the root, and the fork should take the same fix as its next change request. `trunk` is at `upstream/main`, 92 commits past `2_11`. Two commits there to read first: FOP-2722 (2a8efc165)
-gives `GlyphMapping.processWordMapping` a letter-space count, the measuring half of what FOP-3344 fixes
-in paint, and docx4j carries a workaround for its absence; FOP-3337 (feb2323ca) adds
-`MultiByteFont.hasPrivateUseSubstitutions()` for AFP, which FOP-3345's rewrite must be checked against.
-
-**Be honest about the fork.** Gated against Apache FOP, the measured fidelity difference is
-still nil, and that is why Apache FOP stayed docx4j's default through 17.2.1; docx4j 17.3.0
-(2026-10-02) made the fork the default on the gated fixes and the hooks, not on fidelity. The value so
-far is the font fixes preventing failures and the hooks replacing reflection. Do not
-oversell it; I did, twice, about P2-8.
-
-**Phase 2 is much smaller than CR-020 §8 describes.** P2-1 done and released. P2-8 done,
-above. P2-2 is worked around twice in docx4j already, P2-3 is a nine-line diagnostic; both
-clean and small. P2-4, P2-6 and P2-7 are inert, and the structure-tree half of P2-5 is
-superseded by FOP-3165 and FOP-3283, already in Apache `main`.
-
-**Upstream is not something to plan around.** Apache has twenty open pull requests, the
-oldest from 2020, and runs no CI on requests from forks. A fix the fork needs, the fork
-carries.
-
-**The peers.** docx4j has more than one session; `ListAgents` shows them. The partition for
-the hook's gate is at `/home/jharrop/fidelity-gsub-partition/`, local only, not
-redistributable. Tell the docx4j session before any `mvn install`.
+**The peers.** docx4j has more than one session; `ListAgents` shows them. The one that runs the
+fidelity gate holds Enterprise CR-001 and usually `tasks.yaml`; send it text rather than editing either
+when the tree is dirty. Its partitions and gate readers are under `/home/jharrop/fidelity-gsub-partition/`,
+local only, not redistributable. Tell it before asking Jason for any `mvn install`.
