@@ -1,11 +1,13 @@
 # docx4j FO renderer (`docx4j-fo-renderer`)
 
-> This is a modified distribution derived from Apache FOP 2.11. It is
-> maintained by Plutext/docx4j and is not an Apache Software Foundation
-> release. Apache FOP is a trademark of the Apache Software Foundation.
+> This is a modified distribution derived from Apache FOP: from its `main`
+> branch after the 2.11 release (Apache's own version there is still
+> 2.11.0-SNAPSHOT). It is maintained by Plutext/docx4j and is not an Apache
+> Software Foundation release. Apache FOP is a trademark of the Apache Software
+> Foundation.
 
 This branch (`2.11-docx4j.4`) is an upstream-tracking fork of
-[Apache FOP](https://xmlgraphics.apache.org/fop/) 2.11, the XSL-FO formatter
+[Apache FOP](https://xmlgraphics.apache.org/fop/), the XSL-FO formatter
 [docx4j](https://www.docx4java.org/) uses for docx to PDF. It exists so that
 docx4j's Word-layout-fidelity work can change FOP where reflection or
 subclassing cannot reach, with every general fix sent upstream and the fork
@@ -29,7 +31,11 @@ when they are.
 | `org.apache.xmlgraphics:fop-util`      | `docx4j-fo-renderer-util`       |
 
 Versions are `2.11-docx4j.N`: the Apache FOP line first, the fork's release
-after. The automatic module names are Apache's (`org.apache.xmlgraphics.fop.core`
+after. Up to `2.11-docx4j.2` the base was the 2.11 release. From `2.11-docx4j.4` it is Apache's `main`
+after 2.11, merged at ab5d6eba6 (2026-09-29), which Apache itself still versions `2.11.0-SNAPSHOT`. So
+the line stays `2.11`, and docx4j's line check (`FopCapabilities.BUILT_FOR_LINE`) still holds: docx4j
+17.3.0 runs on it, through the `rule-style-int` member below. `fop/CR-009` records the merge and the
+reasons for the name. The automatic module names are Apache's (`org.apache.xmlgraphics.fop.core`
 and so on), for the same reason the packages are. `fop-sandbox`, `fop-servlet`
 and the transcoders are in the tree but not built.
 
@@ -80,9 +86,10 @@ then decided by classpath order.
 
 ## Changes from Apache FOP 2.11
 
-Every modified file carries a change notice under its licence header. Each
-change is either an upstream fix waiting to be released, or a docx4j hook that
-FOP would not want; the table says which.
+Since `2.11-docx4j.4` the comparison is with Apache's `main` at ab5d6eba6, not with the 2.11 release; the
+heading keeps its name because every change notice cites it. Every modified file carries a change notice
+under its licence header. Each change is either an upstream fix waiting to be released, a docx4j hook
+that FOP would not want, or an upstream commit left out; the table says which.
 
 | Change | Files | Upstream status |
 |--------|-------|-----------------|
@@ -98,6 +105,7 @@ FOP would not want; the table says which.
 | Text drawn with glyph position adjustments keeps its letter spacing: `PDFPainter.drawTextWithDP` places each glyph by its own `Td`, so the `Tc` it set never reached the next glyph and a letter-spaced word in a font that kerns through GPOS was painted at its bare advances inside an area that kept the letter spaces (`fop/CR-005`, Enterprise CR-001 item 33) | `PDFPainter` | [FOP-3344](https://issues.apache.org/jira/browse/FOP-3344) filed (`docs/upstream/letter-spacing-position-adjustments.txt`); [apache/xmlgraphics-fop#113](https://github.com/apache/xmlgraphics-fop/pull/113) open |
 | A format character (a joiner, the deprecated controls U+206A to U+206F) the font has a real zero-width glyph for stays in the glyph sequence, so it reaches the subset and the `ToUnicode` CMap and the text layer keeps it, as Word's does; before, every such character was elided on the CID path whether or not the font could draw it at no width. The bidi controls stay elided: the text layer is in visual order already, and Word drops them too (`fop/CR-007`, Enterprise CR-001 item 34) | `MultiByteFont` | [FOP-3347](https://issues.apache.org/jira/browse/FOP-3347) filed (`docs/upstream/format-characters-tounicode.txt`); [apache/xmlgraphics-fop#117](https://github.com/apache/xmlgraphics-fop/pull/117) open |
 | A script's default language system is registered under `dflt` even when its table is the one a named language system shares (FontForge does this for every language whose features equal the default's): the reader aliased the default to that language and left the script with no default, so DejaVu Sans, whose `DFLT` script lists a 20-glyph kern subtable only, was never kerned under a default language (`fop/CR-004`, Enterprise CR-001 item 32) | `OTFAdvancedTypographicTableReader` | [FOP-3342](https://issues.apache.org/jira/browse/FOP-3342) filed (`docs/upstream/shared-default-langsys.txt`); [apache/xmlgraphics-fop#111](https://github.com/apache/xmlgraphics-fop/pull/111) open |
+| Apache `main`'s FOP-3311 (a JPEG compression ratio for PostScript `RenderedImage`s) and FOP-3326 (compressed PostScript graphics) are left out: both call `xmlgraphics-commons` API that only its unreleased 2.11.0-SNAPSHOT has, and a Maven Central release cannot depend on a snapshot. PostScript output only; docx4j never writes it (`fop/CR-009` §3.1) | `render/ps/*` (12 files) | Upstream's own; they come back when an `xmlgraphics-commons` release carries the API |
 
 ### Hooks
 
@@ -115,7 +123,8 @@ setter; none changes what FOP does on its own.
 | `lookup-fallback` | (the `GlyphTable.matchLookups` fix above) | docx4j may write `language` on every block, as it does, and rely on the font's own script table being used; without it, it should expect no shaping or kerning from a font with no `DFLT` table. |
 | `kerning-flag` | (the `kerning="false"` fix above) | docx4j's plain and `+kern` declarations of one font kern only where the run asked; without it, a font with a GPOS `kern` feature kerns under both. |
 | `shared-glyph-tounicode` | (the Kangxi radical fix above) | docx4j may leave a CJK font's layout tables on (`cjkAdvancedFeatures` defaults to true) and drop `mustNotUseOpenTypeLayout`; without it, a font whose cmap shares a glyph between a radical and an ideograph must be declared `advanced="false"` or its text layer reads as radicals (Enterprise CR-001 item 26). Not promised: a substituted glyph's entry (`fop/CR-002`), or the second glyph of a one-character cluster. |
-| `gsub-features` | `fox:gsub-features`, an inherited property carrying a space-separated delta such as `-liga` or `-liga +clig`; `TextFragment.getGsubFeatures()`; overloads of `Font`/`LazyFont`/`MultiByteFont.performSubstitution`, `Substitutable.performSubstitution`, `GlyphSubstitutionTable.substitute` and `ScriptProcessor.substitute` that take it, each existing signature delegating with `null` | Word applies standard ligatures only when `w14:ligatures` asks, while FOP's default feature list applies `liga` unconditionally and omits `clig` entirely, so the error runs both ways. Lets docx4j express the run's setting. Absent, FOP substitutes exactly as before. See `docs/developer/change-requests/CR-001-gsub-features-hook.md`. |
+| `rule-style-int` | `area.inline.Leader.setRuleStyle(int)`, kept beside `main`'s `setRuleStyle(BorderStyle)` and `setRuleStyle(String, int)` | FOP-3325 (in Apache `main`) replaced the rule style's `int` with `BorderStyle`. docx4j builds rule leaders with `setRuleStyle(int)`, so docx4j 17.3.0 runs on this renderer unchanged; a later docx4j picks its call by this capability (`fop/CR-009` §3.2). |
+| `gsub-features` | `fox:gsub-features`, an inherited property carrying a space-separated delta such as `-liga` or `-liga +clig`; `TextFragment.getGsubFeatures()`; overloads of `Font`/`LazyFont`/`MultiByteFont.performSubstitution`, `Substitutable.performSubstitution`, `GlyphSubstitutionTable.substitute` and `ScriptProcessor.substitute` that take it, each existing signature delegating with `null` (`Substitutable`'s is a default method that ignores the delta, so an implementor that knows nothing of it, such as `main`'s AFP TrueType font, needs no change; the property id is 296 since the merge of `main`, whose `fox:rule-style` took 295) | Word applies standard ligatures only when `w14:ligatures` asks, while FOP's default feature list applies `liga` unconditionally and omits `clig` entirely, so the error runs both ways. Lets docx4j express the run's setting. Absent, FOP substitutes exactly as before. See `docs/developer/change-requests/CR-001-gsub-features-hook.md`. |
 
 ## Tracking upstream
 
