@@ -206,8 +206,9 @@ rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits p
 1. *`fop/CR-008` (FOP-2918's bidi levels) is on `2.11-docx4j.3`, gated PASS 2026-10-03.* It found that
    #115 is half the fix: the low surrogate's placeholder must also take its character's bidi class
    (CR-008 §2), or a neutral outside the BMP inside right-to-left text still cuts the run. The gate
-   showed docx4j documents reach the defect (an assertion under `-ea`, wrong order without). Open:
-   adding part 2 and the neutral tests to branch `FOP-2918` and #115, which is Jason's word to push.
+   showed docx4j documents reach the defect (an assertion under `-ea`, wrong order without). Part 2 is
+   committed on branch `FOP-2918` (b401de0d9, green on `main`), not pushed: pushing it to #115, with the
+   comment drafted in `../fop-upstream-prs/FOP-2918.md`, is Jason's word.
    FOP's bidi class table predating Unicode 6.1 is now Enterprise CR-001 item 35 (no corpus reach).
 2. *Merging Apache `main` into the fork* is due and is not routine. FOP-2722 (2a8efc165) gives
    `GlyphMapping.processWordMapping` a letter-space count, the measuring half of what CR-005 fixed in

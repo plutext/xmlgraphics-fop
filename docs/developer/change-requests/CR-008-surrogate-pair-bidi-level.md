@@ -106,8 +106,11 @@ under `-ea` before.
   is the same on Apache `main`. Not fixed and not filed. The same kind of defect as Enterprise CR-001
   §6.6 item 29's line-break pair table, which predates Unicode 8.0. The docx4j session agreed it as
   an item, numbered 35, which it keeps.
-- Pull request #115 has part 1 only. Part 2 should be added to branch `FOP-2918` in the worktree at
-  `../fop-upstream-wt`, with the two neutral tests; pushing it is Jason's call.
+- Pull request #115 has part 1 only. Part 2 and the two neutral tests are committed on branch
+  `FOP-2918` as b401de0d9 (2026-10-03, local, one commit ahead of origin): on Apache `main` the neutral
+  test fails on part 1 alone, and the full build passes (3669 tests, 0 failures, 4 skipped; checkstyle
+  and spotbugs clean). The pull request text and a comment for the push are in
+  `../fop-upstream-prs/FOP-2918.md`. Pushing is Jason's call.
 - Unrelated, already recorded: the position-adjustments paint path indexes its adjustments by UTF-16
   unit (Enterprise CR-001 item 33's note).
 
