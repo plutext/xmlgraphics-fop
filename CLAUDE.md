@@ -74,9 +74,14 @@ session routed an edit to the wrong peer on that inference, is why.
 - `trunk` tracks Apache's `main`. Remotes: `origin` = plutext/xmlgraphics-fop,
   `upstream` = apache/xmlgraphics-fop, `metanorma` and `chunlin` = the two forks whose
   commits CR-020 §9 classified.
-- `FOP-3328`, `FOP-cjk-radical-tounicode`, `FOP-empty-glyph-not-composite`,
-  `FOP-packed-glyph-bboxes` are the upstream-facing branches: one fix each, cut
-  against `trunk`, for a JIRA and a PR on Apache's GitHub.
+- The upstream-facing branches are one fix each, cut against Apache `main`, named for their JIRA:
+  `FOP-3328` and `FOP-packed-glyph-bboxes` (FOP-3330), whose pull requests #106 and #107 are open, and,
+  cut 2026-10-03, `FOP-2918` and `FOP-3339` to `FOP-3347`. `FOP-3345` is stacked on `FOP-3346` and
+  `FOP-3340`. The older `FOP-cjk-radical-tounicode`, `FOP-empty-glyph-not-composite` and
+  `FOP-surrogate-pair-word-split` are superseded by their numbered branches. They are worked on in a
+  worktree at `../fop-upstream-wt`; the pull request texts are in `../fop-upstream-prs/`. On Apache
+  `main` the import order differs from 2.11's (static imports directly under the others, no blank
+  line) and no file carries the fork's change notice.
 - An upstream-bound fix is done twice: on its own `FOP-####` branch against `trunk`
   for the PR, and on `2.11-docx4j.2` for the fork. A docx4j-only hook goes on
   `2.11-docx4j.2` only.
@@ -248,9 +253,12 @@ CR-004), FOP-3343 (kerning flag), FOP-3344 (letter spacing on the DP path, CR-00
 for substituted glyphs, CR-002), FOP-3346 (selector drift), FOP-3347 (format characters, CR-007). The
 surrogate word split is a duplicate of FOP-2918 (2020, with a patch); a comment went there and the pull
 request goes under that number, with 2918's own `wordbreak_surrogates.xml`. The drafts under
-`docs/upstream/` are stamped. Not done: the second cut of each fix against `trunk` on a branch named
-for its number, and the pull requests, which publish as Jason and need his word. `trunk` is two commits
-behind `upstream/main`; main is 92 past `2_11`. Two commits there to read first: FOP-2722 (2a8efc165)
+`docs/upstream/` are stamped. The second cut of each fix against Apache `main` was done on 2026-10-03, ten branches, each measured on
+`main` and with its tests; pushing them and opening the pull requests publishes as Jason and waits on his
+word in this session. One thing the cut found that the fork lacks: FOP-2918's own layout test fails even
+with the word-splitting guards, because `UnicodeBidiAlgorithm.resolveLevels` gives the two units of a
+right-to-left surrogate pair different levels (its javadoc promises one); the `FOP-2918` branch fixes
+that at the root, and the fork should take the same fix as its next change request. `trunk` is at `upstream/main`, 92 commits past `2_11`. Two commits there to read first: FOP-2722 (2a8efc165)
 gives `GlyphMapping.processWordMapping` a letter-space count, the measuring half of what FOP-3344 fixes
 in paint, and docx4j carries a workaround for its absence; FOP-3337 (feb2323ca) adds
 `MultiByteFont.hasPrivateUseSubstitutions()` for AFP, which FOP-3345's rewrite must be checked against.
