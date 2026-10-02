@@ -56,20 +56,22 @@ session routed an edit to the wrong peer on that inference, is why.
 
 ## Branches and remotes
 
-- **`2.11-docx4j.2` is the fork's branch. Work on it; release from it.** It carries the
-  `revision` property that sets the version, so a release changes one line there; see
-  `docs/developer/releasing.md`. Do not count it against `trunk`, which tracks Apache's
-  post-2.11 `main` and so diverges from the fork's base.
-- `docx4j-2.11` is the previous long-lived branch, and since nothing was tagged it is
-  what identifies the `2.11-docx4j.1` release: that shipped from `2f5030172` on it. Leave
-  it alone.
-- The branch name no longer matches the version: `2.11-docx4j.2` shipped on 2026-10-02 and the
-  `revision` is now `2.11-docx4j.3-SNAPSHOT`. It is still the long-lived branch (Jason,
-  2026-09-25); do not cut a new one per version.
-- If the branch is ever renamed, `.github/workflows/maven.yml` names it twice and must move
-  with it. A stale list there fails silently: no runs at all looks exactly like no
+- **`2.11-docx4j.3` is the fork's branch. Work on it; release from it.** It carries the
+  `revision` property that sets the version (`2.11-docx4j.3-SNAPSHOT`), so a release changes one
+  line there; see `docs/developer/releasing.md`. Do not count it against `trunk`, which tracks
+  Apache's `main` and so diverges from the fork's base.
+- **One branch per release line, named for the version it will ship** (Jason, 2026-10-03, replacing
+  his 2026-09-25 rule of one long-lived branch whatever the version). When `2.11-docx4j.N` ships,
+  cut `2.11-docx4j.N+1` from it, move the `revision` there, and add the new name to
+  `.github/workflows/maven.yml`. The branch is not the tag: the release is `v2.11-docx4j.N`.
+- `2.11-docx4j.2` is the previous branch; `2.11-docx4j.2` the release was tagged `v2.11-docx4j.2` on
+  it at ae4d4bc59. On origin it runs three commits past the release, ending at f7a1bdcd9, the first
+  of which already moved the `revision` to `.3-SNAPSHOT`; those three are on `2.11-docx4j.3` as well.
+  Leave it alone. `docx4j-2.11` is the branch before that, and what identifies the `2.11-docx4j.1`
+  release: that shipped from `2f5030172` on it, tagged `v2.11-docx4j.1`.
+- `.github/workflows/maven.yml` names the branches twice and must gain each new one. A stale list there fails silently: no runs at all looks exactly like no
   failures. It was missed in the 2026-09-26 rename for that reason. To read the runs, name the
-  repository: `gh run list -R plutext/xmlgraphics-fop --branch 2.11-docx4j.2`; a bare `gh run list`
+  repository: `gh run list -R plutext/xmlgraphics-fop --branch 2.11-docx4j.3`; a bare `gh run list`
   here resolves to Apache's repository through the `upstream` remote and shows Apache's runs.
 - `trunk` tracks Apache's `main`. Remotes: `origin` = plutext/xmlgraphics-fop,
   `upstream` = apache/xmlgraphics-fop, `metanorma` and `chunlin` = the two forks whose
@@ -84,9 +86,9 @@ session routed an edit to the wrong peer on that inference, is why.
   `main` the import order differs from 2.11's (static imports directly under the others, no blank
   line) and no file carries the fork's change notice.
 - An upstream-bound fix is done twice: on its own `FOP-####` branch against `trunk`
-  for the PR, and on `2.11-docx4j.2` for the fork. A docx4j-only hook goes on
-  `2.11-docx4j.2` only.
-- Merge `upstream/main` into `2.11-docx4j.2` at least at every Apache release and
+  for the PR, and on `2.11-docx4j.3` for the fork. A docx4j-only hook goes on
+  `2.11-docx4j.3` only.
+- Merge `upstream/main` into `2.11-docx4j.3` at least at every Apache release and
   whenever a fix sent from here lands upstream.
 
 ## Build and test commands
@@ -135,7 +137,7 @@ helped. So one round trip per item:
 3. Message it: branch, commit, what changed in one paragraph, the §6.6 item or JIRA it
    serves, and what a pass would look like. It runs the gate and replies pass or fail with
    the measurement; a fail comes back with the scoreboard reading, not a guess.
-4. On a pass, merge to `2.11-docx4j.2`; it records the item in CR-020 §8. Where the change
+4. On a pass, merge to `2.11-docx4j.3`; it records the item in CR-020 §8. Where the change
    closes or narrows a §6.6 item, update that item here too, with the fork commit and the
    mechanism, and tell the Enterprise session. On a fail, the change stays on its branch,
    and if the fail taught something about FOP, that goes in §6.6 as well.
@@ -177,7 +179,7 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-02. `2.11-docx4j.2` released; nothing on a branch; the next snapshot is `2.11-docx4j.3-SNAPSHOT`. Read Enterprise CR-001 §6.6 before
+Last updated 2026-10-03. `2.11-docx4j.2` released; work continues on branch `2.11-docx4j.3` (cut 2026-10-03), snapshot `2.11-docx4j.3-SNAPSHOT`; ten pull requests open upstream. Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
 **Released.** `2.11-docx4j.2` is on Maven Central (2026-10-02), tagged `v2.11-docx4j.2` at `ae4d4bc59` (the

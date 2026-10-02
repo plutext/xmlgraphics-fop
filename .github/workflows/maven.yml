@@ -10,9 +10,9 @@ name: Java CI with Maven
 on:
   workflow_dispatch:
   push:
-    branches: [ "2.11-docx4j.2", "docx4j-2.11" ]
+    branches: [ "2.11-docx4j.3", "2.11-docx4j.2", "docx4j-2.11" ]
   pull_request:
-    branches: [ "2.11-docx4j.2", "docx4j-2.11" ]
+    branches: [ "2.11-docx4j.3", "2.11-docx4j.2", "docx4j-2.11" ]
 
 jobs:
   build:
