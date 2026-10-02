@@ -33,9 +33,10 @@ after. The automatic module names are Apache's (`org.apache.xmlgraphics.fop.core
 and so on), for the same reason the packages are. `fop-sandbox`, `fop-servlet`
 and the transcoders are in the tree but not built.
 
-Not yet released: until the first release the fork is consumed as a locally
-installed `2.11-docx4j.1-SNAPSHOT` (`mvn install -DskipTests` here, then
-`-Pfo-renderer-fork` in docx4j).
+Released: `2.11-docx4j.1` (2026-09-25) and `2.11-docx4j.2` (2026-10-02), both on Maven Central,
+tagged `v2.11-docx4j.N` here; `docs/release-notes/` says what each contains. Between releases the
+fork is consumed as a locally installed snapshot (`mvn install -DskipTests` here, then
+`-Pfo-renderer-fork` in docx4j), currently `2.11-docx4j.3-SNAPSHOT`.
 
 The marker class `org.apache.fop.docx4j.Docx4jFop` carries the version and the
 names of the hooks the fork has (`capabilities()`); docx4j reads it reflectively.

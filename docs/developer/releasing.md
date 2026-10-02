@@ -148,6 +148,22 @@ The staging repository was `org.docx4j--a01c8c30-1e51-4bf1-9cfd-f587bc11ce8a`. N
 that the URLs differ from pre-migration releases, which named `oss.sonatype.org` and
 numbered staging repositories like `orgdocx4j-1095`.
 
+## Proven by the second release, 2.11-docx4j.2 on 2026-10-02
+
+- **The one-line version change works.** `revision` went to `2.11-docx4j.2` in one commit
+  (ae4d4bc59) and every module followed; the published poms carry the literal, no property, no
+  parent, as Central serves them.
+- **The release built on another host from the pushed branch**, not from this working tree, so
+  what shipped is exactly what the branch said. The full suite there failed once, on a test this
+  session had not run after adding a capability; one commit fixed it (3a68b4c57) and the deploy
+  went from that. Run the full `fop-core` suite before every merge.
+- **Tagged after the fact again** (`v2.11-docx4j.2` at 3a68b4c57). Tag before deploying next time.
+- **Verified from Central after publication**: five artifacts, each with sources, javadoc, `.asc`,
+  `.md5`, `.sha1`; the core manifest's `Implementation-Version` is `2.11-docx4j.2`, so
+  `Docx4jFop.version()` reports it.
+- The next development version is `2.11-docx4j.3-SNAPSHOT`, set right after the release so a local
+  `mvn install` cannot shadow the published `2.11-docx4j.2` in `~/.m2`.
+
 ## Two things that look wrong and are not
 
 **The published pom lists fewer dependencies than the module's own pom.** For the core

@@ -63,9 +63,9 @@ session routed an edit to the wrong peer on that inference, is why.
 - `docx4j-2.11` is the previous long-lived branch, and since nothing was tagged it is
   what identifies the `2.11-docx4j.1` release: that shipped from `2f5030172` on it. Leave
   it alone.
-- The name will stop matching once `2.11-docx4j.2` ships and the `revision` moves on. It
-  is still the long-lived branch at that point (Jason, 2026-09-25), so do not cut a new
-  one per version; rename this entry rather than the branch if it becomes confusing.
+- The branch name no longer matches the version: `2.11-docx4j.2` shipped on 2026-10-02 and the
+  `revision` is now `2.11-docx4j.3-SNAPSHOT`. It is still the long-lived branch (Jason,
+  2026-09-25); do not cut a new one per version.
 - If the branch is ever renamed, `.github/workflows/maven.yml` names it twice and must move
   with it. A stale list there fails silently: no runs at all looks exactly like no
   failures. It was missed in the 2026-09-26 rename for that reason.
@@ -87,7 +87,7 @@ Apache FOP's own Maven build, Java 8 and later (Java 11 or 21 here):
 
 ```bash
 mvn -B package checkstyle:check spotbugs:check     # what CI runs on every push (.github/workflows/maven.yml)
-mvn install -DskipTests                            # the snapshot docx4j consumes (2.11-docx4j.1-SNAPSHOT)
+mvn install -DskipTests                            # the snapshot docx4j consumes (2.11-docx4j.3-SNAPSHOT)
 mvn -pl fop-core -am test -Dtest=SomeTestCase       # one test class; -am is needed, see below
 mvn -pl fop-core test -Dtest=LayoutEngineTestSuite  # FOP's layout tests (fop-core/test/layoutengine/standard-testcases) - slow
 ```
@@ -169,11 +169,15 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-01, later. CR-003 to CR-007 all merged; nothing on a branch. Release is Jason's call. Read Enterprise CR-001 §6.6 before
+Last updated 2026-10-02. `2.11-docx4j.2` released; nothing on a branch; the next snapshot is `2.11-docx4j.3-SNAPSHOT`. Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
-**Released.** `2.11-docx4j.1` is on Maven Central, tagged `v2.11-docx4j.1` at `2f5030172`.
-`docs/developer/releasing.md` is the runbook and records what that release proved.
+**Released.** `2.11-docx4j.2` is on Maven Central (2026-10-02), tagged `v2.11-docx4j.2` at `3a68b4c57`,
+carrying fop/CR-001 to CR-007; `docs/release-notes/2.11-docx4j.2.md` is the record. `2.11-docx4j.1` before
+it, tagged at `2f5030172`. `docs/developer/releasing.md` is the runbook and records what each release proved.
+Jason built and deployed from the pushed branch on another host; the full suite there caught a test this
+session had not run (the capability count), so run `mvn -pl fop-core -am test` in full before a merge, not
+only the affected classes. Everything below the next heading is now released unless it says otherwise.
 
 **On the branch, unreleased.** `fop/CR-001`, the `fox:gsub-features` hook, capability
 `gsub-features`. It gated clean on 2026-09-27: of 603 corpus documents, 1 moved and
