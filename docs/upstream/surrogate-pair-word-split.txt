@@ -1,5 +1,8 @@
-JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
-Branch ready: FOP-surrogate-pair-word-split (rename to FOP-#### once filed)
+JIRA text, NOT filed as a new issue: it duplicates FOP-2918 (https://issues.apache.org/jira/browse/FOP-2918,
+open since 2020), whose attached patch has the same high-surrogate guard on the bidi-level branch and the
+same CharUtilities.containsSurrogatePairAt fix. The docx4j session added a comment there on 2026-10-03
+(id 18122098) with the font-selection case, the stack trace and the reproducer below, and announced a pull
+request against main titled FOP-2918. Branch: FOP-surrogate-pair-word-split, to be renamed FOP-2918.
 
 Project:          FOP
 Issue Type:       Bug
@@ -59,12 +62,12 @@ when it is a high surrogate. The same guard is applied to the bidi-level-change
 branch, which is the other place the word is ended for a reason that can fall
 between the two halves of a pair.
 
-Honest scope note for reviewers: only the font-selection branch is demonstrated
-by a test. I could not construct a case where the bidi-level-change branch
-splits a pair, because the two halves of a pair receive the same bidi level in
-every case tried, including an emoji beside Arabic inside fo:inline with
-unicode-bidi="embed" direction="rtl". That guard is therefore defensive. Say the
-word and it can be dropped from the patch, leaving only the demonstrated fix.
+Scope note, corrected 2026-10-03: this draft said the bidi-level-change branch could not be
+shown to split a pair and called that guard defensive. FOP-2918's own layout test,
+wordbreak_surrogates.xml (U+10826, Cypriot syllabary, a right-to-left supplementary-plane
+script), shows exactly that split, so both guards are demonstrated: the font-selection one by
+the test here, the bidi one by FOP-2918's. The pull request should carry that test too,
+credited to its author.
 
 Second, unrelated change in the same patch
 ------------------------------------------

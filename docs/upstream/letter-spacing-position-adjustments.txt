@@ -1,7 +1,9 @@
-JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
-Not yet filed. Found 2026-09-30 by the docx4j session on its corpus (Enterprise CR-001 §6.6 item
+JIRA text, filed.
+Filed 2026-10-03 as FOP-3344 (https://issues.apache.org/jira/browse/FOP-3344), Open, by the docx4j
+session as jharrop with Jason's approval; pull request not yet opened. Text below is the draft.
+Found 2026-09-30 by the docx4j session on its corpus (Enterprise CR-001 §6.6 item
 33), reproduced and fixed the same day on the fork's branch CR-005-letter-spacing-dp
-(fop/CR-005), to be cut against trunk as FOP-#### once filed. Present in main:
+(fop/CR-005), to be cut against trunk as FOP-3344. Present in main:
 PDFPainter.drawTextWithDP is unchanged there.
 
 Project:          FOP

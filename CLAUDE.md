@@ -242,11 +242,18 @@ measurement and the fallback order to fix it). A shaping and kerning change acro
 Carlito text, so it wants its own branch, capability and gate; Jason decides; docx4j's script
 CR is ordered after it.
 
-**Waiting on Jason.** Filing the six drafted JIRAs: two in commit messages (the empty-glyph
-and radical fixes) and four under `docs/upstream/` (surrogate word split, no-`DFLT` script
-table, and CR-002's two). Whether to give the radical fix a capability. Whether
-`2.11-docx4j.2` releases now that CR-002 is in. Pushing: nine commits on `2.11-docx4j.2`
-are local only.
+**Upstream, as of 2026-10-03.** All the JIRAs are filed, by the docx4j session as jharrop: FOP-3339
+(empty glyph), FOP-3340 (radical), FOP-3341 (lookup fallback, CR-003), FOP-3342 (shared default langsys,
+CR-004), FOP-3343 (kerning flag), FOP-3344 (letter spacing on the DP path, CR-005), FOP-3345 (ToUnicode
+for substituted glyphs, CR-002), FOP-3346 (selector drift), FOP-3347 (format characters, CR-007). The
+surrogate word split is a duplicate of FOP-2918 (2020, with a patch); a comment went there and the pull
+request goes under that number, with 2918's own `wordbreak_surrogates.xml`. The drafts under
+`docs/upstream/` are stamped. Not done: the second cut of each fix against `trunk` on a branch named
+for its number, and the pull requests, which publish as Jason and need his word. `trunk` is two commits
+behind `upstream/main`; main is 92 past `2_11`. Two commits there to read first: FOP-2722 (2a8efc165)
+gives `GlyphMapping.processWordMapping` a letter-space count, the measuring half of what FOP-3344 fixes
+in paint, and docx4j carries a workaround for its absence; FOP-3337 (feb2323ca) adds
+`MultiByteFont.hasPrivateUseSubstitutions()` for AFP, which FOP-3345's rewrite must be checked against.
 
 **Be honest about the fork.** Gated against Apache FOP, the measured fidelity difference is
 still nil, and that is why Apache FOP stayed docx4j's default through 17.2.1; docx4j 17.3.0

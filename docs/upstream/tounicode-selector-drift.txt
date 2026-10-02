@@ -1,9 +1,11 @@
-JIRA draft for Jason to file at https://issues.apache.org/jira/projects/FOP
-Not yet filed. Fixed on the fork's branch CR-002-ligature-tounicode as a by-product of the
+JIRA text, filed.
+Filed 2026-10-03 as FOP-3346 (https://issues.apache.org/jira/browse/FOP-3346), Open, by the docx4j
+session as jharrop with Jason's approval; pull request not yet opened. Text below is the draft.
+Fixed on the fork's branch CR-002-ligature-tounicode as a by-product of the
 ToUnicode rewrite there (tounicode-substituted-glyphs.txt), commit de8ca1cf9, merged to
 2.11-docx4j.2 at 7289e1726, unreleased; separable if wanted, since the fix for this alone is
 to number selectors per entry. Present in main: PDFToUnicodeCMap is still built from the
-positional char[] there. To be cut against trunk as FOP-#### once filed.
+positional char[] there. To be cut against trunk as FOP-3346.
 
 Project:          FOP
 Issue Type:       Bug
