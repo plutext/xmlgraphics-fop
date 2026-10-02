@@ -29,6 +29,7 @@ import org.apache.fop.accessibility.Accessibility;
 import org.apache.fop.accessibility.StructureTreeEventHandler;
 import org.apache.fop.fo.DelegatingFOEventHandler;
 import org.apache.fop.fo.FOEventHandler;
+import org.apache.fop.fo.FONode;
 import org.apache.fop.fo.FOText;
 import org.apache.fop.fo.extensions.ExternalDocument;
 import org.apache.fop.fo.flow.AbstractRetrieveMarker;
@@ -54,6 +55,7 @@ import org.apache.fop.fo.flow.RetrieveTableMarker;
 import org.apache.fop.fo.flow.Wrapper;
 import org.apache.fop.fo.flow.table.Table;
 import org.apache.fop.fo.flow.table.TableBody;
+import org.apache.fop.fo.flow.table.TableCaption;
 import org.apache.fop.fo.flow.table.TableCell;
 import org.apache.fop.fo.flow.table.TableColumn;
 import org.apache.fop.fo.flow.table.TableFooter;
@@ -356,6 +358,24 @@ public class FO2StructureTreeConverter extends DelegatingFOEventHandler {
             }
         });
         super.endTable(tbl);
+    }
+
+    public void startTableCaption(final TableCaption tableCaption) {
+        startContent(new Event(this) {
+            public void run() {
+                eventHandler.startTableCaption(tableCaption);
+            }
+        }, true);
+        super.startTableCaption(tableCaption);
+    }
+
+    public void endTableCaption(final TableCaption tableCaption) {
+        endContent(new Event(this) {
+            public void run() {
+                eventHandler.endTableCaption(tableCaption);
+            }
+        });
+        super.endTableCaption(tableCaption);
     }
 
     @Override
@@ -765,6 +785,22 @@ public class FO2StructureTreeConverter extends DelegatingFOEventHandler {
             }
         }, true);
         super.restoreState(retrieveMarker);
+    }
+
+    @Override
+    public void endRestoreState(RetrieveMarker retrieveMarker) {
+        boolean isInsideArtifact = false;
+        FONode obj = retrieveMarker.getParent();
+        while (obj != null && !isInsideArtifact) {
+            if (obj instanceof CommonAccessibilityHolder && isArtifact((CommonAccessibilityHolder)obj)) {
+                isInsideArtifact = true;
+            } else {
+                obj = obj.getParent();
+            }
+        }
+        if (isInsideArtifact && !converters.isEmpty()) {
+            converter = converters.pop();
+        }
     }
 
     @SuppressWarnings("unchecked")

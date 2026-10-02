@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
@@ -38,6 +37,7 @@ import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.area.CTM;
 import org.apache.fop.area.Trait;
+import org.apache.fop.traits.BorderStyle;
 
 public class AbstractPathOrientedRendererTestCase {
 
@@ -143,7 +143,7 @@ public class AbstractPathOrientedRendererTestCase {
         }
 
         protected void drawBorderLine(float x1, float y1, float x2, float y2, boolean horz,
-                boolean startOrBefore, int style, Color col) {
+                                      boolean startOrBefore, BorderStyle style, Color col) {
         }
 
         protected void startVParea(CTM ctm, Rectangle clippingRect) {

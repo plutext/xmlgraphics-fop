@@ -21,7 +21,6 @@ package org.apache.fop.pdf;
 
 import java.io.IOException;
 import java.io.OutputStream;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -245,17 +244,22 @@ public class PDFStructElem extends StructureHierarchyMember implements Structure
     }
 
     public void setTableAttributeColSpan(int colSpan) {
-        setTableAttributeRowColumnSpan("ColSpan", colSpan);
+        setTableAttributeRowColumnSpan("ColSpan", colSpan, Table.Scope.COLUMN);
     }
 
     public void setTableAttributeRowSpan(int rowSpan) {
-        setTableAttributeRowColumnSpan("RowSpan", rowSpan);
+        setTableAttributeRowColumnSpan("RowSpan", rowSpan, Table.Scope.ROW);
     }
 
-    private void setTableAttributeRowColumnSpan(String typeSpan, int span) {
+    private void setTableAttributeRowColumnSpan(String typeSpan, int span, Table.Scope scope) {
         PDFDictionary attribute = new PDFDictionary();
         attribute.put("O", Table.NAME);
         attribute.put(typeSpan, span);
+        if (this.getStructureType() == StandardStructureTypes.Table.THEAD
+                || this.getStructureType() == StandardStructureTypes.Table.TH) {
+            attribute.put("Scope", scope.getName());
+        }
+
         if (attributes == null) {
             attributes = new ArrayList<PDFDictionary>(2);
         }
@@ -267,6 +271,9 @@ public class PDFStructElem extends StructureHierarchyMember implements Structure
     }
 
     public int output(OutputStream stream) throws IOException {
+        if (structureType == StandardStructureTypes.InlineLevelStructure.NOTE) {
+            put("ID", "Note ID " + getObjectNumber().getNumber());
+        }
         if (getDocument() != null && getDocument().getProfile().getPDFUAMode().isEnabled()) {
             if (entries.containsKey("Alt") && "".equals(get("Alt"))) {
                 put("Alt", "No alternate text specified");
@@ -280,7 +287,16 @@ public class PDFStructElem extends StructureHierarchyMember implements Structure
                 }
             }
         }
-        return super.output(stream);
+        int len = super.output(stream);
+        close();
+        return len;
+    }
+
+    private void close() {
+        parent = null;
+        parentElement = null;
+        entries = null;
+        kids = null;
     }
 
     private boolean isBSLE(PDFStructElem kid) {

@@ -403,7 +403,7 @@ public class AFPDocumentHandler extends AbstractBinaryWritingIFDocumentHandler
             try {
                 getResourceManager().createIncludedResource(formMap.getName(),
                         formMap.getSrc(), accessor,
-                        ResourceObject.TYPE_FORMDEF, false, null);
+                        ResourceObject.TYPE_FORMDEF, false, null, null);
             } catch (IOException ioe) {
                 throw new IFException(
                         "I/O error while embedding form map resource: " + formMap.getName(), ioe);
@@ -517,6 +517,10 @@ public class AFPDocumentHandler extends AbstractBinaryWritingIFDocumentHandler
     /** {@inheritDoc} */
     public void setLineWidthCorrection(float correction) {
         paintingState.setLineWidthCorrection(correction);
+    }
+
+    public void setMetadataInObjectContainer(boolean metadataInObjectContainer) {
+        paintingState.setMetadataInObjectContainer(metadataInObjectContainer);
     }
 
     /** {@inheritDoc} */

@@ -23,7 +23,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.io.IOException;
 
-import org.apache.fop.traits.RuleStyle;
+import org.apache.fop.traits.BorderStyle;
 
 /**
  * Used primarily by {@link BorderPainter}, implementations are created for rendering
@@ -46,10 +46,11 @@ public interface GraphicsPainter {
      * @param startOrBefore true if the line is the start or end edge of a border box
      * @param style the border style
      * @param color the border color
+     * @param spaceWidth spacing between leader elements
      * @throws IOException if an I/O error occurs
      */
     void drawBorderLine(int x1, int y1, int x2, int y2,
-            boolean horz, boolean startOrBefore, int style, Color color) throws IOException;
+            boolean horz, boolean startOrBefore, BorderStyle style, Color color) throws IOException;
 
     /**
      * Draws a line/rule.
@@ -61,7 +62,7 @@ public interface GraphicsPainter {
      * @throws IOException if an I/O error occurs
      */
     void drawLine(Point start, Point end,
-            int width, Color color, RuleStyle style) throws IOException;
+            int width, Color color, BorderStyle style) throws IOException;
 
     /**
      * Moves the cursor to the given coordinate.
@@ -93,8 +94,8 @@ public interface GraphicsPainter {
      * @param height the extent of the ellipse in the y direction
      * @throws IOException if an I/O error occurs
      */
-    void arcTo(final double startAngle, final double endAngle, final int cx, final int cy,
-            final int width, final int height) throws IOException;
+    void arcTo(double startAngle, double endAngle, int cx, int cy,
+             int width, int height) throws IOException;
 
     /**
      * Rotate the coordinate frame

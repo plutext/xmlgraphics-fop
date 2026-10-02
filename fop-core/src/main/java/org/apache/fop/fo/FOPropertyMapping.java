@@ -2056,6 +2056,15 @@ public final class FOPropertyMapping implements Constants {
         m.setInherited(true);
         m.setDefault("1.0pt");
         addPropertyMaker("rule-thickness", m);
+
+        // FOP extension for non-standard fo:leader rule styles (square) that are not part of XSL 1.1's rule-style.
+        // When unspecified, the standard rule-style property is used instead
+        m = new EnumProperty.Maker(PR_X_RULE_STYLE);
+        m.setInherited(true);
+        m.addEnum("none", getEnumProperty(EN_NONE, "NONE"));
+        m.addEnum("square", getEnumProperty(EN_SQUARE, "SQUARE"));
+        m.setDefault("none");
+        addPropertyMaker("fox:rule-style", m);
     }
 
     private void createDynamicProperties() {
@@ -2288,6 +2297,10 @@ public final class FOPropertyMapping implements Constants {
         m.addEnum("odd", getEnumProperty(EN_ODD, "ODD"));
         m.addEnum("end-on-even", getEnumProperty(EN_END_ON_EVEN, "END_ON_EVEN"));
         m.addEnum("end-on-odd", getEnumProperty(EN_END_ON_ODD, "END_ON_ODD"));
+        m.addEnum("doubly-even", getEnumProperty(EN_DOUBLY_EVEN, "DOUBLY_EVEN"));
+        m.addEnum("end-on-doubly-even", getEnumProperty(EN_END_ON_DOUBLY_EVEN, "END_ON_DOUBLY_EVEN"));
+        m.addEnum("doubly-odd", getEnumProperty(EN_DOUBLY_ODD, "DOUBLY_ODD"));
+        m.addEnum("end-on-doubly-odd", getEnumProperty(EN_END_ON_DOUBLY_ODD, "END_ON_DOUBLY_ODD"));
         m.addEnum("no-force", getEnumProperty(EN_NO_FORCE, "NO_FORCE"));
         m.addEnum("auto", getEnumProperty(EN_AUTO, "AUTO"));
         m.setDefault("auto");

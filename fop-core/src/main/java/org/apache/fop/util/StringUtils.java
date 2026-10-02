@@ -17,21 +17,20 @@
 
 /* $Id$ */
 
-package org.apache.fop;
+package org.apache.fop.util;
 
-import org.apache.batik.transcoder.Transcoder;
+import org.apache.fop.render.intermediate.IFPainter;
 
-import org.apache.fop.render.ps.PSTranscoder;
+public final class StringUtils {
 
-/**
- * Basic runtime test for the PS transcoder. It is used to verify that
- * nothing obvious is broken after compiling.
- */
-public class BasicPSTranscoderTestCase extends AbstractBasicTranscoderTest {
+    private StringUtils() {
+    }
 
-    @Override
-    protected Transcoder createTranscoder() {
-        return new PSTranscoder();
+    public static String processSoftHyphen(String text, IFPainter painter) {
+        if (!painter.supportsSoftHyphen()) {
+            return text.replace(CharUtilities.SOFT_HYPHEN, '-');
+        }
+        return text;
     }
 
 }

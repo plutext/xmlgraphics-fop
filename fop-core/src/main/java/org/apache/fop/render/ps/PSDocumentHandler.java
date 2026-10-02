@@ -164,6 +164,8 @@ public class PSDocumentHandler extends AbstractBinaryWritingIFDocumentHandler {
             this.gen = new FOPPSGeneratorImpl(out);
             this.gen.setPSLevel(psUtil.getLanguageLevel());
             this.gen.setAcrobatDownsample(psUtil.isAcrobatDownsample());
+            this.gen.setJPEGCompressionRatio(psUtil.getJPEGCompressionRatio());
+            gen.setCompressStreams(psUtil.isCompressStreams());
             this.currentPageNumber = 0;
             this.documentBoundingBox = new Rectangle2D.Double();
 
@@ -542,7 +544,8 @@ public class PSDocumentHandler extends AbstractBinaryWritingIFDocumentHandler {
                     } catch (PSDictionaryFormatException e) {
                         PSEventProducer eventProducer = PSEventProducer.Provider.get(
                                 getUserAgent().getEventBroadcaster());
-                        eventProducer.postscriptDictionaryParseError(this, content, e);
+                        eventProducer.postscriptDictionaryParseError(this,
+                                "ps:ps-setpagedevice value: " + content, e);
                     }
                 }
             } else if (extension instanceof PSCommentBefore) {

@@ -29,7 +29,7 @@ import java.awt.geom.AffineTransform;
 import org.w3c.dom.Document;
 
 import org.apache.fop.traits.BorderProps;
-import org.apache.fop.traits.RuleStyle;
+import org.apache.fop.traits.BorderStyle;
 
 /**
  * Interface used to paint whole documents layouted by Apache FOP.
@@ -233,7 +233,7 @@ public interface IFPainter {
      * @param style the line style (using the Constants.EN_* constants for the rule-style property)
      * @throws IFException if an error occurs while handling this event
      */
-    void drawLine(Point start, Point end, int width, Color color, RuleStyle style)
+    void drawLine(Point start, Point end, int width, Color color, BorderStyle style)
             throws IFException;
 
     /**
@@ -261,4 +261,10 @@ public interface IFPainter {
 
     //etc. etc.
 
+    /**
+     * Allows specific painters to indicate whether a soft hyphen is supported.
+     *
+     * @return true if the painter supports soft hyphens, false otherwise
+     */
+    boolean supportsSoftHyphen();
 }

@@ -831,11 +831,14 @@ public interface Constants {
     /**For specifying extended text for abbreviation */
     int PR_X_ABBREVIATION = 294;
 
+    /** Extension for non-standard fo:leader rule styles (square) */
+    int PR_X_RULE_STYLE = 295;
+
     /** For adding to or removing from the OpenType GSUB features applied to text */
-    int PR_X_GSUB_FEATURES = 295;
+    int PR_X_GSUB_FEATURES = 296;
 
     /** Number of property constants defined */
-    int PROPERTY_COUNT = 295;
+    int PROPERTY_COUNT = 296;
 
     // compound property constants
 
@@ -1273,6 +1276,16 @@ public interface Constants {
     int EN_FIRST_INCLUDING_CARRYOVER = 204;
     /** Enumeration constant -- for auto-toggle */
     int EN_SELECT_FIRST_FITTING = 205;
+    /** Enumeration constant -- non-standard force-page-count property value */
+    int EN_DOUBLY_EVEN = 206;
+    /** Enumeration constant -- non-standard force-page-count property value */
+    int EN_END_ON_DOUBLY_EVEN = 207;
+    /** Enumeration constant -- non-standard force-page-count property value */
+    int EN_DOUBLY_ODD = 208;
+    /** Enumeration constant -- non-standard force-page-count property value */
+    int EN_END_ON_DOUBLY_ODD = 209;
+    /** Enumeration constant -- style format for a leader*/
+    int EN_SQUARE = 210;
     /** Number of enumeration constants defined */
-    int ENUM_COUNT = 205;
+    int ENUM_COUNT = 210;
 }

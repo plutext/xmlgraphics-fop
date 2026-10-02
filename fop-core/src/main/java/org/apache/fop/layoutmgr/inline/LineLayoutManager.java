@@ -279,7 +279,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
      * which was the first element in the paragraph
      * returned by each LM.
      */
-    private final class Update {
+    private static final class Update {
         private final InlineLevelLayoutManager inlineLM;
         private final int firstIndex;
 
@@ -1761,6 +1761,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         if (lineArea.getBidiLevel() >= 0) {
             BidiResolver.reorder(lineArea);
         }
+        lineArea.completeTraits(fobj.getUserAgent());
         parentLayoutManager.addChildArea(lineArea);
     }
 

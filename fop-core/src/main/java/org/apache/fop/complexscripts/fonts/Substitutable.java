@@ -58,12 +58,9 @@ public interface Substitutable {
 
     /**
      * As above, with a delta over the GSUB features the script's processor would apply.
-     * An implementor that cannot honour it should ignore it and substitute as before.
-     *
-     * <p>Declared abstract rather than as a Java 8 default method because the checkstyle
-     * this build pins, 2.14, cannot parse a default method and fails the whole file.
-     * Upstream raised its checkstyle in FOP-3281, so this can become a default method at
-     * the merge of Apache's main.</p>
+     * An implementor that cannot honour it ignores it and substitutes as before, which is
+     * what this default does, so an implementor that knows nothing of the delta (Apache's
+     * own, such as the AFP TrueType font) needs no change.
      *
      * @param cs character sequence
      * @param script a script identifier
@@ -73,8 +70,10 @@ public interface Substitutable {
      * @param gsubFeatures delta tokens like -liga and +clig, or null
      * @return the substituted sequence
      */
-    CharSequence performSubstitution(CharSequence cs, String script, String language, List associations,
-                                     boolean retainControls, String[] gsubFeatures);
+    default CharSequence performSubstitution(CharSequence cs, String script, String language, List associations,
+                                             boolean retainControls, String[] gsubFeatures) {
+        return performSubstitution(cs, script, language, associations, retainControls);
+    }
 
     /**
      * Reorder combining marks in character sequence so that they precede (within the sequence) the base

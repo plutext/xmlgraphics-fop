@@ -15,21 +15,27 @@
  * limitations under the License.
  */
 
-/* $Id$ */
+package org.apache.fop.pdf;
 
-package org.apache.fop;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+public class ImageObjectStream {
 
-/**
- * Test suite for basic functionality of FOP's transcoders.
- */
-@RunWith(Suite.class)
-@SuiteClasses({
-    BasicPDFTranscoderTestCase.class,
-    BasicPSTranscoderTestCase.class
-})
-public class BasicTranscoderTestSuite {
+    private PDFImage pdfImage;
+    private byte[] pdfStreamBytes;
+
+    public ImageObjectStream(PDFImage img) {
+        pdfImage = img;
+    }
+
+    public void outputImageData(OutputStream out) throws IOException {
+        if (pdfStreamBytes == null) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            pdfImage.outputContents(baos);
+            pdfStreamBytes = baos.toByteArray();
+        }
+        out.write(pdfStreamBytes);
+    }
 }

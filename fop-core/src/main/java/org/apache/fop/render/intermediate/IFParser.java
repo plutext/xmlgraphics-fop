@@ -60,12 +60,13 @@ import org.apache.fop.render.intermediate.extensions.DocumentNavigationExtension
 import org.apache.fop.render.intermediate.extensions.DocumentNavigationHandler;
 import org.apache.fop.render.intermediate.extensions.GoToXYAction;
 import org.apache.fop.traits.BorderProps;
-import org.apache.fop.traits.RuleStyle;
+import org.apache.fop.traits.BorderStyle;
 import org.apache.fop.util.ColorUtil;
 import org.apache.fop.util.ContentHandlerFactory;
 import org.apache.fop.util.ContentHandlerFactoryRegistry;
 import org.apache.fop.util.DOMBuilderContentHandlerFactory;
 import org.apache.fop.util.LanguageTags;
+import org.apache.fop.util.StringUtils;
 import org.apache.fop.util.XMLUtil;
 import org.apache.fop.utils.DefaultErrorListener;
 
@@ -683,7 +684,9 @@ public class IFParser implements IFConstants {
                     documentHandler.getContext().setHyphenated(isHyphenated);
                 }
                 boolean nextIsSpace = Boolean.valueOf(lastAttributes.getValue("next-is-space"));
-                painter.drawText(x, y, letterSpacing, wordSpacing, dp, content.toString(), nextIsSpace);
+
+                painter.drawText(x, y, letterSpacing, wordSpacing, dp,
+                        StringUtils.processSoftHyphen(content.toString(), painter), nextIsSpace);
                 documentHandler.getContext().setHyphenated(false);
                 resetStructureTreeElement();
             }
@@ -764,13 +767,17 @@ public class IFParser implements IFConstants {
                 int x2 = Integer.parseInt(attributes.getValue("x2"));
                 int y2 = Integer.parseInt(attributes.getValue("y2"));
                 int width = Integer.parseInt(attributes.getValue("stroke-width"));
+                int spaceWidth = 0;
+                if (attributes.getValue("space-width") != null) {
+                    spaceWidth = Integer.parseInt(attributes.getValue("space-width"));
+                }
                 Color color;
                 try {
                     color = getAttributeAsColor(attributes, "color");
                 } catch (PropertyException pe) {
                     throw new IFException("Error parsing the fill attribute", pe);
                 }
-                RuleStyle style = RuleStyle.valueOf(attributes.getValue("style"));
+                BorderStyle style = BorderStyle.valueOf(attributes.getValue("style"), spaceWidth);
                 painter.drawLine(new Point(x1, y1), new Point(x2, y2), width, color, style);
             }
 

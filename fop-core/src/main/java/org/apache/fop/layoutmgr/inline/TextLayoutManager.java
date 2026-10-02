@@ -74,7 +74,7 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
     /**
      * this class stores information about changes in vecAreaInfo which are not yet applied
      */
-    private final class PendingChange {
+    private static final class PendingChange {
 
         private final GlyphMapping mapping;
         private final int index;
@@ -103,7 +103,7 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
      * be used to influence the start position of the first letter. The entry i+1 defines the
      * cursor advancement after the character i. A null entry means no special advancement.
      */
-    private final MinOptMax[] letterSpaceAdjustArray; //size = textArray.length + 1
+    private MinOptMax[] letterSpaceAdjustArray; //size = textArray.length + 1
 
     /** Font used for the space between words. */
     private Font spaceFont;
@@ -147,7 +147,6 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
      */
     public TextLayoutManager(FOText node, FOUserAgent userAgent) {
         foText = node;
-        letterSpaceAdjustArray = new MinOptMax[node.length() + 1];
         mappings = new ArrayList<GlyphMapping>();
         this.userAgent = userAgent;
     }
@@ -272,7 +271,7 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
         }
 
         for (int i = mapping.startIndex; i < mapping.endIndex; i++) {
-            MinOptMax letterSpaceAdjustment = letterSpaceAdjustArray[i + 1];
+            MinOptMax letterSpaceAdjustment = getLetterSpaceAdjustment(i + 1);
             if (letterSpaceAdjustment != null && letterSpaceAdjustment.isElastic()) {
                 letterSpaceCount++;
             }
@@ -409,6 +408,7 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
             if (!context.treatAsArtifact()) {
                 TraitSetter.addStructureTreeElement(textArea, foText.getStructureTreeElement());
             }
+            textArea.completeTraits(userAgent);
             return textArea;
         }
 
@@ -664,8 +664,7 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
                 int j = letterSpaceAdjustIndex + i;
                 if (j > 0) {
                     int k = wordMapping.startIndex + i;
-                    MinOptMax adj = (k < letterSpaceAdjustArray.length)
-                        ? letterSpaceAdjustArray [ k ] : null;
+                    MinOptMax adj = getLetterSpaceAdjustment(k);
                     letterSpaceAdjust [ j ] = (adj == null) ? 0 : adj.getOpt();
                 }
                 if (letterSpaceCount > 0) {
@@ -983,6 +982,9 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
         char breakOpportunityChar = breakOpportunity ? ch : 0;
         char precedingChar = prevMapping != null && !prevMapping.isSpace
                 && prevMapping.endIndex > 0 ? foText.charAt(prevMapping.endIndex - 1) : 0;
+        if (letterSpaceAdjustArray == null && font.hasKerning()) {
+            letterSpaceAdjustArray = new MinOptMax[foText.length() + 1];
+        }
         GlyphMapping mapping = GlyphMapping.doGlyphMapping(foText, thisStart, lastIndex, font,
                 letterSpaceIPD, letterSpaceAdjustArray, precedingChar, breakOpportunityChar,
                 endsWithHyphen, level, false, false, retainControls);
@@ -1084,7 +1086,7 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
                 newIPD = newIPD.plus(font.getCharWidth(cp));
                 //if (i > startIndex) {
                 if (i < stopIndex) {
-                    MinOptMax letterSpaceAdjust = letterSpaceAdjustArray[i + 1];
+                    MinOptMax letterSpaceAdjust = getLetterSpaceAdjustment(i + 1);
                     if (i == stopIndex - 1 && hyphenFollows) {
                         //the letter adjust here needs to be handled further down during
                         //element generation because it depends on hyph/no-hyph condition
@@ -1396,7 +1398,7 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
             MinOptMax widthIfNoBreakOccurs = null;
             if (mapping.endIndex < foText.length()) {
                 //Add in kerning in no-break condition
-                widthIfNoBreakOccurs = letterSpaceAdjustArray[mapping.endIndex];
+                widthIfNoBreakOccurs = getLetterSpaceAdjustment(mapping.endIndex);
             }
             //if (mapping.breakIndex)
 
@@ -1531,6 +1533,13 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
             + "}";
     }
 
+    protected MinOptMax getLetterSpaceAdjustment(int i) {
+        if (letterSpaceAdjustArray == null || i >= letterSpaceAdjustArray.length) {
+            return null;
+        }
+        return letterSpaceAdjustArray[i];
+    }
+
     /**
      * docx4j-fo-renderer hook {@code inline-access}: the glyph mappings the text was broken
      * into, the live list.
@@ -1568,5 +1577,4 @@ public class TextLayoutManager extends LeafNodeLayoutManager {
     public FOText getFOText() {
         return foText;
     }
-
 }

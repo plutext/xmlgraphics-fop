@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.fop.area.inline.InlineArea;
-
 import static org.apache.fop.fo.Constants.EN_CENTER;
 import static org.apache.fop.fo.Constants.EN_END;
 import static org.apache.fop.fo.Constants.EN_JUSTIFY;
@@ -44,7 +43,7 @@ public class LineArea extends Area {
      * page-number or a page-number-citation is resolved
      */
     // @SuppressFBWarnings("SE_INNER_CLASS")
-    private final class LineAdjustingInfo implements Serializable {
+    private static final class LineAdjustingInfo implements Serializable {
 
         private static final long serialVersionUID = -6103629976229458273L;
 

@@ -35,6 +35,7 @@ import org.apache.fop.fo.FONode;
 import org.apache.fop.fo.FOText;
 import org.apache.fop.fo.FObj;
 import org.apache.fop.fo.extensions.ExtensionElementMapping;
+import org.apache.fop.fo.extensions.ExternalDocument;
 import org.apache.fop.fo.extensions.InternalElementMapping;
 import org.apache.fop.fo.flow.AbstractRetrieveMarker;
 import org.apache.fop.fo.flow.BasicLink;
@@ -58,6 +59,7 @@ import org.apache.fop.fo.flow.RetrieveTableMarker;
 import org.apache.fop.fo.flow.Wrapper;
 import org.apache.fop.fo.flow.table.Table;
 import org.apache.fop.fo.flow.table.TableBody;
+import org.apache.fop.fo.flow.table.TableCaption;
 import org.apache.fop.fo.flow.table.TableCell;
 import org.apache.fop.fo.flow.table.TableFooter;
 import org.apache.fop.fo.flow.table.TableHeader;
@@ -258,6 +260,14 @@ class StructureTreeEventTrigger extends FOEventHandler {
         tables.pop();
     }
 
+    public void startTableCaption(TableCaption tableCaption) {
+        startElement(tableCaption);
+    }
+
+    public void endTableCaption(TableCaption tableCaption) {
+        endElement(tableCaption);
+    }
+
     @Override
     public void startHeader(TableHeader header) {
         inTableHeader.push(Boolean.TRUE);
@@ -396,6 +406,12 @@ class StructureTreeEventTrigger extends FOEventHandler {
     public void image(ExternalGraphic eg) {
         startElementWithIDAndAltText(eg, eg.getAltText());
         endElement(eg);
+    }
+
+    @Override
+    public void startExternalDocument(ExternalDocument externalDocument) {
+        startElementWithIDAndAltText(externalDocument, null);
+        endElement(externalDocument);
     }
 
     @Override

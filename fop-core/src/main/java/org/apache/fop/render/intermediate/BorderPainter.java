@@ -24,6 +24,7 @@ import java.awt.Rectangle;
 import java.io.IOException;
 
 import org.apache.fop.traits.BorderProps;
+import org.apache.fop.traits.BorderStyle;
 
 /**
  * This is an abstract base class for handling border painting.
@@ -174,7 +175,7 @@ public class BorderPainter {
             closePath();
             clip();
             drawBorderLine(sx1a, outery, ex1a, innery, true, true,
-                    bpsTop.style, bpsTop.color);
+                    BorderStyle.valueOf(bpsTop.style), bpsTop.color);
             restoreGraphicsState();
         }
         if (bpsRight != null) {
@@ -206,7 +207,7 @@ public class BorderPainter {
             closePath();
             clip();
             drawBorderLine(innerx, sy1a, outerx, ey1a, false, false,
-                           bpsRight.style, bpsRight.color);
+                    BorderStyle.valueOf(bpsRight.style), bpsRight.color);
             restoreGraphicsState();
         }
         if (bpsBottom != null) {
@@ -237,7 +238,7 @@ public class BorderPainter {
             closePath();
             clip();
             drawBorderLine(sx1a, innery, ex1a, outery, true, false,
-                           bpsBottom.style, bpsBottom.color);
+                    BorderStyle.valueOf(bpsBottom.style), bpsBottom.color);
             restoreGraphicsState();
         }
         if (bpsLeft != null) {
@@ -270,7 +271,7 @@ public class BorderPainter {
             lineTo(innerx, ey2);
             closePath();
             clip();
-            drawBorderLine(outerx, sy1a, innerx, ey1a, false, true, bpsLeft.style, bpsLeft.color);
+            drawBorderLine(outerx, sy1a, innerx, ey1a, false, true, BorderStyle.valueOf(bpsLeft.style), bpsLeft.color);
             restoreGraphicsState();
         }
     }
@@ -317,11 +318,25 @@ public class BorderPainter {
         //Determine scale factor if any adjacent elliptic corners overlap
         double cornerCorrectionFactor = calculateCornerScaleCorrection(width, height, before, after, start,
                 end);
-        drawBorderSegment(start, before, end, 0, width, startx, starty, cornerCorrectionFactor);
-        drawBorderSegment(before, end, after, 1, height, startx + width, starty, cornerCorrectionFactor);
-        drawBorderSegment(end, after, start, 2, width, startx + width, starty + height,
-                cornerCorrectionFactor);
-        drawBorderSegment(after, start, before, 3, height, startx, starty + height, cornerCorrectionFactor);
+
+        if (hasRadius(before) || hasRadius(after) || hasRadius(start) || hasRadius(end)) {
+            drawBorderSegment(before, end, after, 1, height, startx + width, starty, cornerCorrectionFactor);
+            drawBorderSegment(after, start, before, 3, height, startx, starty + height, cornerCorrectionFactor);
+
+            drawBorderSegment(start, before, end, 0, width, startx, starty, cornerCorrectionFactor);
+            drawBorderSegment(end, after, start, 2, width, startx + width, starty + height,
+                    cornerCorrectionFactor);
+        } else {
+            drawBorderSegment(start, before, end, 0, width, startx, starty, cornerCorrectionFactor);
+            drawBorderSegment(before, end, after, 1, height, startx + width, starty, cornerCorrectionFactor);
+            drawBorderSegment(end, after, start, 2, width, startx + width, starty + height,
+                    cornerCorrectionFactor);
+            drawBorderSegment(after, start, before, 3, height, startx, starty + height, cornerCorrectionFactor);
+        }
+    }
+
+    private boolean hasRadius(BorderSegment segment) {
+        return segment.getRadiusStart() != 0 || segment.getRadiusEnd() != 0;
     }
 
     private void drawBorderSegment(BorderSegment start, BorderSegment before, BorderSegment end,
@@ -411,11 +426,11 @@ public class BorderPainter {
             clip();
             if (ellipseBERadiusY == 0 && ellipseSBRadiusY == 0) {
                 drawBorderLine(sx1a, outery, ex1a, innery, true, true,
-                        before.getStyle(), before.getColor());
+                        BorderStyle.valueOf(before.getStyle()), before.getColor());
             } else {
                 int innerFillY = Math.max(Math.max(ellipseBEY, ellipseSBY), innery);
                 drawBorderLine(sx1a, outery, ex1a, innerFillY, true, true,
-                        before.getStyle(), before.getColor());
+                        BorderStyle.valueOf(before.getStyle()), before.getColor());
             }
             restoreGraphicsState();
         }
@@ -891,7 +906,7 @@ public class BorderPainter {
     }
 
     private void drawBorderLine(int x1, int y1, int x2, int y2, boolean horz, boolean startOrBefore,
-            int style, Color color) throws IOException {
+                                BorderStyle style, Color color) throws IOException {
         graphicsPainter.drawBorderLine(x1, y1, x2, y2, horz, startOrBefore, style, color);
     }
 

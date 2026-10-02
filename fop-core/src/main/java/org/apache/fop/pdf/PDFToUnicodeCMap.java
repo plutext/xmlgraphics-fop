@@ -27,7 +27,6 @@ package org.apache.fop.pdf;
 
 import java.io.IOException;
 import java.io.Writer;
-
 import static java.lang.Character.isHighSurrogate;
 
 import org.apache.fop.events.EventBroadcaster;
