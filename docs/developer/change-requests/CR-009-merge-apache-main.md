@@ -210,6 +210,8 @@ It checked §3.2 to §3.4 against the code and agreed.
   - That is a no-op on today's renderers, so it lands first and is shown identical on `spacing-char`,
     `kern-title` and the corpus's `w:spacing` runs. The merge gate runs those again.
   - The docx4j change is the docx4j session's to write, on Jason's word.
+  - When `fop/CR-010` is implemented, the item 16 text goes to the docx4j session to enter, as item
+    35's did, so that §6.6 keeps one writer. Both capability names are agreed.
 - **§3.2, `setRuleStyle(int)`:** kept in the fork as a listed compatibility member, so docx4j 17.3.0
   runs unchanged. Proposed capability: `rule-style-int`.
   - No single call compiles against both lines: 2.11 has `setRuleStyle(int)` and `(String)`; `main`
