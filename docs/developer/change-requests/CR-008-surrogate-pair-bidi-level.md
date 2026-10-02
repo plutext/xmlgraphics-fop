@@ -1,7 +1,8 @@
 # CR-008: both units of a surrogate pair resolve to one bidi level
 
-Status: DONE 2026-10-03 on `2.11-docx4j.3`, committed there directly at Jason's request (no CR branch);
-unreleased; the docx4j gate follows on the snapshot (§6). Registry key `fop/CR-008`. Upstream-bound:
+Status: IMPLEMENTED 2026-10-03 on `2.11-docx4j.3`, committed there directly at Jason's request (no CR
+branch); UNGATED until the docx4j session's gate (§6) reports on the snapshot; unreleased. The registry
+has it `in_progress` until then. Registry key `fop/CR-008`. Upstream-bound:
 [FOP-2918](https://issues.apache.org/jira/browse/FOP-2918), pull request
 [#115](https://github.com/apache/xmlgraphics-fop/pull/115), which carries the first half of §2 and not
 the second (§5). No capability: docx4j has no workaround to drop.
@@ -98,9 +99,14 @@ under `-ea` before.
   U+1F300 (6.0) and U+263A it has right. So the commonest emoji inside right-to-left text still splits
   its run, as a strong left-to-right character would, with or without this change. Measured here, at
   font-free level (`BidiClass.getBidiClass`) and on the command line (`שלום😀 עולם` cuts the run where
-  U+263A does not). Not fixed and not filed. The same kind of defect as Enterprise CR-001 §6.6
-  item 29's line-break pair table, which predates Unicode 8.0. It is put to the docx4j session as a
-  candidate §6.6 item; it is not one until agreed.
+  U+263A does not). Over the whole table, against Python's Unicode 16.0 database: 3,683 of 155,063
+  assigned code points (surrogates and private use excluded) differ. 3,143 are outside the BMP (1,137
+  of the 2,361 in U+1F000 to U+1FAFF), and 2,317 differences overall are ON read as L. 540 are in the
+  BMP: U+058F and U+20BA to U+20C0 (currency signs, ET read as L), U+0860 to U+086A (AL read as R),
+  combining marks, and U+180E. FOP implements no isolates; U+2066 to U+2069 are BN to it. The table
+  is the same on Apache `main`. Not fixed and not filed. The same kind of defect as Enterprise CR-001
+  §6.6 item 29's line-break pair table, which predates Unicode 8.0. The docx4j session agreed it as
+  an item, numbered 35, which it keeps.
 - Pull request #115 has part 1 only. Part 2 should be added to branch `FOP-2918` in the worktree at
   `../fop-upstream-wt`, with the two neutral tests; pushing it is Jason's call.
 - Unrelated, already recorded: the position-adjustments paint path indexes its adjustments by UTF-16
