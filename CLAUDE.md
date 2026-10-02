@@ -249,7 +249,8 @@ table, and CR-002's two). Whether to give the radical fix a capability. Whether
 are local only.
 
 **Be honest about the fork.** Gated against Apache FOP, the measured fidelity difference is
-still nil, and that is why Apache FOP stays docx4j's default through 17.2.1. The value so
+still nil, and that is why Apache FOP stayed docx4j's default through 17.2.1; docx4j 17.3.0
+(2026-10-02) made the fork the default on the gated fixes and the hooks, not on fidelity. The value so
 far is the font fixes preventing failures and the hooks replacing reflection. Do not
 oversell it; I did, twice, about P2-8.
 
