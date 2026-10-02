@@ -3,8 +3,8 @@
 Status: DONE 2026-10-03 on `2.11-docx4j.3`, committed there directly at Jason's request (no CR branch);
 gated the same day by the docx4j session, PASS (§6); unreleased. Registry key `fop/CR-008`. Upstream-bound:
 [FOP-2918](https://issues.apache.org/jira/browse/FOP-2918), pull request
-[#115](https://github.com/apache/xmlgraphics-fop/pull/115), which carries the first half of §2 and not
-the second (§5). No capability: docx4j has no workaround to drop.
+[#115](https://github.com/apache/xmlgraphics-fop/pull/115), which carries both halves of §2 (the second
+added 2026-10-03, §5). No capability: docx4j has no workaround to drop.
 
 No Enterprise CR-001 §6.6 item. Item 31 records that characters outside the BMP occur in no corpus
 document, only in probes, so this is not a fidelity fix for the corpus. The fork carries it because
@@ -106,11 +106,10 @@ under `-ea` before.
   is the same on Apache `main`. Not fixed and not filed. The same kind of defect as Enterprise CR-001
   §6.6 item 29's line-break pair table, which predates Unicode 8.0. The docx4j session agreed it as
   an item, numbered 35, which it keeps.
-- Pull request #115 has part 1 only. Part 2 and the two neutral tests are committed on branch
-  `FOP-2918` as b401de0d9 (2026-10-03, local, one commit ahead of origin): on Apache `main` the neutral
-  test fails on part 1 alone, and the full build passes (3669 tests, 0 failures, 4 skipped; checkstyle
-  and spotbugs clean). The pull request text and a comment for the push are in
-  `../fop-upstream-prs/FOP-2918.md`. Pushing is Jason's call.
+- Pull request #115 had part 1 only. Part 2 and the two neutral tests are on branch `FOP-2918` as
+  b401de0d9, pushed 2026-10-03 at Jason's word, with #115's body updated (item 7) and a comment posted
+  (issuecomment-5962990508). On Apache `main` the neutral test fails on part 1 alone, and the full build
+  passes (3669 tests, 0 failures, 4 skipped; checkstyle and spotbugs clean).
 - Unrelated, already recorded: the position-adjustments paint path indexes its adjustments by UTF-16
   unit (Enterprise CR-001 item 33's note).
 
