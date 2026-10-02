@@ -254,8 +254,9 @@ for substituted glyphs, CR-002), FOP-3346 (selector drift), FOP-3347 (format cha
 surrogate word split is a duplicate of FOP-2918 (2020, with a patch); a comment went there and the pull
 request goes under that number, with 2918's own `wordbreak_surrogates.xml`. The drafts under
 `docs/upstream/` are stamped. The second cut of each fix against Apache `main` was done on 2026-10-03, ten branches, each measured on
-`main` and with its tests; pushing them and opening the pull requests publishes as Jason and waits on his
-word in this session. One thing the cut found that the fork lacks: FOP-2918's own layout test fails even
+`main` and with its tests; pushed and opened as pull requests the same day on Jason's word, after the full suite and checkstyle
+passed on every branch (main's baseline 3659 tests): #108 FOP-3339, #109 FOP-3340, #110 FOP-3341, #111
+FOP-3342, #112 FOP-3343, #113 FOP-3344, #114 FOP-3346, #115 FOP-2918, #116 FOP-3345, #117 FOP-3347. One thing the cut found that the fork lacks: FOP-2918's own layout test fails even
 with the word-splitting guards, because `UnicodeBidiAlgorithm.resolveLevels` gives the two units of a
 right-to-left surrogate pair different levels (its javadoc promises one); the `FOP-2918` branch fixes
 that at the root, and the fork should take the same fix as its next change request. `trunk` is at `upstream/main`, 92 commits past `2_11`. Two commits there to read first: FOP-2722 (2a8efc165)

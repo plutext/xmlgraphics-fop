@@ -2,7 +2,8 @@ JIRA text, NOT filed as a new issue: it duplicates FOP-2918 (https://issues.apac
 open since 2020), whose attached patch has the same high-surrogate guard on the bidi-level branch and the
 same CharUtilities.containsSurrogatePairAt fix. The docx4j session added a comment there on 2026-10-03
 (id 18122098) with the font-selection case, the stack trace and the reproducer below, and announced a pull
-request against main titled FOP-2918. Branch: FOP-surrogate-pair-word-split, to be renamed FOP-2918.
+request against main titled FOP-2918. Opened as https://github.com/apache/xmlgraphics-fop/pull/115 from
+branch FOP-2918, with 2918's layout test and the bidi-level root cause fixed.
 
 Project:          FOP
 Issue Type:       Bug
