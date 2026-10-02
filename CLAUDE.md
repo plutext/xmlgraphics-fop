@@ -68,7 +68,9 @@ session routed an edit to the wrong peer on that inference, is why.
   2026-09-25); do not cut a new one per version.
 - If the branch is ever renamed, `.github/workflows/maven.yml` names it twice and must move
   with it. A stale list there fails silently: no runs at all looks exactly like no
-  failures. It was missed in the 2026-09-26 rename for that reason.
+  failures. It was missed in the 2026-09-26 rename for that reason. To read the runs, name the
+  repository: `gh run list -R plutext/xmlgraphics-fop --branch 2.11-docx4j.2`; a bare `gh run list`
+  here resolves to Apache's repository through the `upstream` remote and shows Apache's runs.
 - `trunk` tracks Apache's `main`. Remotes: `origin` = plutext/xmlgraphics-fop,
   `upstream` = apache/xmlgraphics-fop, `metanorma` and `chunlin` = the two forks whose
   commits CR-020 §9 classified.
