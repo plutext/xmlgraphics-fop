@@ -209,11 +209,12 @@ rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits p
    showed docx4j documents reach the defect (an assertion under `-ea`, wrong order without). Part 2 is
    on #115 since 2026-10-03 (b401de0d9, green on `main`; body item 7 and a comment).
    FOP's bidi class table predating Unicode 6.1 is now Enterprise CR-001 item 35 (no corpus reach).
-2. *Merging Apache `main` into the fork* is due and is not routine. FOP-2722 (2a8efc165) gives
-   `GlyphMapping.processWordMapping` a letter-space count, the measuring half of what CR-005 fixed in
-   paint, and docx4j carries a workaround for its absence (`LetterSpacingWidthTest`); FOP-3337
-   (feb2323ca) adds `MultiByteFont.hasPrivateUseSubstitutions()` beside CR-002's rewrite. It wants its
-   own gate on letter-spaced text. `main`'s import order differs from 2.11's.
+2. *Merging Apache `main` into the fork*: triaged 2026-10-03, read-only, in `fop/CR-009` (all 91 commits;
+   75 take as they are). Before it can merge: Jason names the branch and version (CR-009 §6 recommends
+   `2.11-docx4j.4`); the fork keeps released xmlgraphics-commons and Batik, so FOP-3311 stays out
+   (§3.1); a `setRuleStyle(int)` compatibility member for docx4j (§3.2); FOP-2722 needs item 16's width
+   fix or a docx4j change (§3.3); docx4j decides on FOP-3293's image cache (§3.4); the property id 295
+   collides (§3.5). The merge goes on its own branch, not `2.11-docx4j.3`.
 3. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
    private-use code point in ToUnicode (CR-002 §10.2; ActualText per cluster is the follow-up); a format
    character the font has no glyph for is still lost (CR-007 §4); the position-adjustments paint path
