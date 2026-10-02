@@ -4,7 +4,7 @@
 > maintained by Plutext/docx4j and is not an Apache Software Foundation
 > release. Apache FOP is a trademark of the Apache Software Foundation.
 
-This branch (`2.11-docx4j.3`) is an upstream-tracking fork of
+This branch (`2.11-docx4j.4`) is an upstream-tracking fork of
 [Apache FOP](https://xmlgraphics.apache.org/fop/) 2.11, the XSL-FO formatter
 [docx4j](https://www.docx4java.org/) uses for docx to PDF. It exists so that
 docx4j's Word-layout-fidelity work can change FOP where reflection or
@@ -36,7 +36,8 @@ and the transcoders are in the tree but not built.
 Released: `2.11-docx4j.1` (2026-09-25) and `2.11-docx4j.2` (2026-10-02), both on Maven Central,
 tagged `v2.11-docx4j.N` here; `docs/release-notes/` says what each contains. Between releases the
 fork is consumed as a locally installed snapshot (`mvn install -DskipTests` here, then
-`-Pfo-renderer-fork` in docx4j), currently `2.11-docx4j.3-SNAPSHOT`. docx4j 17.3.0 depends on
+`-Pfo-renderer-fork` in docx4j), currently `2.11-docx4j.4-SNAPSHOT`. There is no `2.11-docx4j.3`: its branch, 2.11 plus `fop/CR-008`, was
+never released, and its content ships in `.4`. docx4j 17.3.0 depends on
 `2.11-docx4j.2` by default.
 
 The marker class `org.apache.fop.docx4j.Docx4jFop` carries the version and the

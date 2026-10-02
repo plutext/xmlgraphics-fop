@@ -18,7 +18,7 @@
          effective one, so without flattening consumers would receive a literal ${revision}
          they cannot resolve, and could not resolve the parent either to find out what it
          means. -->
-    <revision>2.11-docx4j.3-SNAPSHOT</revision>
+    <revision>2.11-docx4j.4-SNAPSHOT</revision>
     <ant.version>1.10.14</ant.version>
     <antrun.plugin.version>1.8</antrun.plugin.version>
     <batik.version>1.19</batik.version>

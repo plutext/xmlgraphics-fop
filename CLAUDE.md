@@ -56,14 +56,17 @@ session routed an edit to the wrong peer on that inference, is why.
 
 ## Branches and remotes
 
-- **`2.11-docx4j.3` is the fork's branch. Work on it; release from it.** It carries the
-  `revision` property that sets the version (`2.11-docx4j.3-SNAPSHOT`), so a release changes one
+- **`2.11-docx4j.4` is the fork's branch. Work on it; release from it.** It carries the
+  `revision` property that sets the version (`2.11-docx4j.4-SNAPSHOT`), so a release changes one
   line there; see `docs/developer/releasing.md`. Do not count it against `trunk`, which tracks
   Apache's `main` and so diverges from the fork's base.
 - **One branch per release line, named for the version it will ship** (Jason, 2026-10-03, replacing
   his 2026-09-25 rule of one long-lived branch whatever the version). When `2.11-docx4j.N` ships,
   cut `2.11-docx4j.N+1` from it, move the `revision` there, and add the new name to
   `.github/workflows/maven.yml`. The branch is not the tag: the release is `v2.11-docx4j.N`.
+- `2.11-docx4j.3` will not ship (Jason, 2026-10-03). It is Apache 2.11 plus `fop/CR-008`, and `.4` was cut
+  from it to take Apache `main` (`fop/CR-009`); `.4` ships when ready, carrying both. Leave `.3` alone.
+  `.4` keeps the `2.11` line on purpose: CR-009 §6 gives the reasons.
 - `2.11-docx4j.2` is the previous branch; `2.11-docx4j.2` the release was tagged `v2.11-docx4j.2` on
   it at ae4d4bc59. On origin it runs three commits past the release, ending at f7a1bdcd9, the first
   of which already moved the `revision` to `.3-SNAPSHOT`; those three are on `2.11-docx4j.3` as well.
@@ -71,7 +74,7 @@ session routed an edit to the wrong peer on that inference, is why.
   release: that shipped from `2f5030172` on it, tagged `v2.11-docx4j.1`.
 - `.github/workflows/maven.yml` names the branches twice and must gain each new one. A stale list there fails silently: no runs at all looks exactly like no
   failures. It was missed in the 2026-09-26 rename for that reason. To read the runs, name the
-  repository: `gh run list -R plutext/xmlgraphics-fop --branch 2.11-docx4j.3`; a bare `gh run list`
+  repository: `gh run list -R plutext/xmlgraphics-fop --branch 2.11-docx4j.4`; a bare `gh run list`
   here resolves to Apache's repository through the `upstream` remote and shows Apache's runs.
 - `trunk` tracks Apache's `main`. Remotes: `origin` = plutext/xmlgraphics-fop,
   `upstream` = apache/xmlgraphics-fop, `metanorma` and `chunlin` = the two forks whose
@@ -86,9 +89,9 @@ session routed an edit to the wrong peer on that inference, is why.
   `main` the import order differs from 2.11's (static imports directly under the others, no blank
   line) and no file carries the fork's change notice.
 - An upstream-bound fix is done twice: on its own `FOP-####` branch against `trunk`
-  for the PR, and on `2.11-docx4j.3` for the fork. A docx4j-only hook goes on
-  `2.11-docx4j.3` only.
-- Merge `upstream/main` into `2.11-docx4j.3` at least at every Apache release and
+  for the PR, and on `2.11-docx4j.4` for the fork. A docx4j-only hook goes on
+  `2.11-docx4j.4` only.
+- Merge `upstream/main` into `2.11-docx4j.4` at least at every Apache release and
   whenever a fix sent from here lands upstream.
 
 ## Build and test commands
@@ -97,7 +100,7 @@ Apache FOP's own Maven build, Java 8 and later (Java 11 or 21 here):
 
 ```bash
 mvn -B package checkstyle:check spotbugs:check     # what CI runs on every push (.github/workflows/maven.yml)
-mvn install -DskipTests                            # the snapshot docx4j consumes (2.11-docx4j.3-SNAPSHOT)
+mvn install -DskipTests                            # the snapshot docx4j consumes (2.11-docx4j.4-SNAPSHOT)
 mvn -pl fop-core -am test -Dtest=SomeTestCase       # one test class; -am is needed, see below
 mvn -pl fop-core test -Dtest=LayoutEngineTestSuite  # FOP's layout tests (fop/test/layoutengine/standard-testcases) - slow;
                                                     # one file: -Dfop.layoutengine.single=name.xml
@@ -138,7 +141,7 @@ helped. So one round trip per item:
 3. Message it: branch, commit, what changed in one paragraph, the §6.6 item or JIRA it
    serves, and what a pass would look like. It runs the gate and replies pass or fail with
    the measurement; a fail comes back with the scoreboard reading, not a guess.
-4. On a pass, merge to `2.11-docx4j.3`; it records the item in CR-020 §8. Where the change
+4. On a pass, merge to `2.11-docx4j.4`; it records the item in CR-020 §8. Where the change
    closes or narrows a §6.6 item, update that item here too, with the fork commit and the
    mechanism, and tell the Enterprise session. On a fail, the change stays on its branch,
    and if the fail taught something about FOP, that goes in §6.6 as well.
@@ -186,9 +189,10 @@ section above says.
 **State.** `2.11-docx4j.2` is on Maven Central (2026-10-02), tagged `v2.11-docx4j.2` at `ae4d4bc59`, and
 docx4j 17.3.0 depends on it by default. It carries `fop/CR-001` to `CR-007`; what each does is in
 `docs/release-notes/2.11-docx4j.2.md`, and the detail, measurements and gate readings are in the CR
-documents under `docs/developer/change-requests/`. Work continues on branch `2.11-docx4j.3`, snapshot
-`2.11-docx4j.3-SNAPSHOT`; unreleased on it: `fop/CR-008` (2026-10-03, gated PASS; draft notes in
-`docs/release-notes/2.11-docx4j.3.md`). `2.11-docx4j.1` was the
+documents under `docs/developer/change-requests/`. Work continues on branch `2.11-docx4j.4`, snapshot
+`2.11-docx4j.4-SNAPSHOT`, cut from `2.11-docx4j.3`, which will not ship; unreleased on it: `fop/CR-008`
+(2026-10-03, gated PASS) and the merge of Apache `main` (`fop/CR-009`); draft notes in
+`docs/release-notes/2.11-docx4j.4.md`. `2.11-docx4j.1` was the
 first release, tagged at `2f5030172`. `docs/developer/releasing.md` is the runbook and records what each
 release proved.
 
@@ -203,7 +207,7 @@ If a reviewer asks for changes, work in the worktree at `../fop-upstream-wt`; wh
 rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits past `2_11`.
 
 **Open, in the order I would take them.**
-1. *`fop/CR-008` (FOP-2918's bidi levels) is on `2.11-docx4j.3`, gated PASS 2026-10-03.* It found that
+1. *`fop/CR-008` (FOP-2918's bidi levels) is on `2.11-docx4j.4` (from `.3`), gated PASS 2026-10-03.* It found that
    #115 is half the fix: the low surrogate's placeholder must also take its character's bidi class
    (CR-008 §2), or a neutral outside the BMP inside right-to-left text still cuts the run. The gate
    showed docx4j documents reach the defect (an assertion under `-ea`, wrong order without). Part 2 is
@@ -214,7 +218,7 @@ rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits p
    `2.11-docx4j.4`); the fork keeps released xmlgraphics-commons and Batik, so FOP-3311 stays out
    (§3.1); a `setRuleStyle(int)` compatibility member for docx4j (§3.2); FOP-2722 needs item 16's width
    fix or a docx4j change (§3.3); docx4j decides on FOP-3293's image cache (§3.4); the property id 295
-   collides (§3.5). The merge goes on its own branch, not `2.11-docx4j.3`.
+   collides (§3.5). The merge goes on `2.11-docx4j.4` (Jason, 2026-10-03).
 3. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
    private-use code point in ToUnicode (CR-002 §10.2; ActualText per cluster is the follow-up); a format
    character the font has no glyph for is still lost (CR-007 §4); the position-adjustments paint path
