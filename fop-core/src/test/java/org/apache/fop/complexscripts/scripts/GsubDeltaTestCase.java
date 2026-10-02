@@ -20,7 +20,6 @@
 package org.apache.fop.complexscripts.scripts;
 
 import org.junit.Test;
-
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertSame;
 

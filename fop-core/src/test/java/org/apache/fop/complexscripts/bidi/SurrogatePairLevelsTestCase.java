@@ -20,7 +20,6 @@
 package org.apache.fop.complexscripts.bidi;
 
 import org.junit.Test;
-
 import static org.junit.Assert.assertArrayEquals;
 
 import org.apache.fop.traits.Direction;
