@@ -20,7 +20,6 @@
 package org.apache.fop.docx4j;
 
 import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -28,6 +27,7 @@ import static org.junit.Assert.fail;
 
 import org.apache.fop.area.inline.FilledArea;
 import org.apache.fop.area.inline.Space;
+import org.apache.fop.fo.Constants;
 import org.apache.fop.layoutmgr.LeafPosition;
 import org.apache.fop.layoutmgr.inline.LineLayoutManager.LineBreakPosition;
 import org.apache.fop.text.linebreak.LineBreakUtils;
@@ -48,7 +48,17 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.LOOKUP_FALLBACK));
         assertTrue(Docx4jFop.has(Docx4jFop.KERNING_FLAG));
         assertTrue(Docx4jFop.has(Docx4jFop.SHARED_GLYPH_TOUNICODE));
-        assertEquals(8, Docx4jFop.capabilities().size());
+        assertTrue(Docx4jFop.has(Docx4jFop.RULE_STYLE_INT));
+        assertEquals(9, Docx4jFop.capabilities().size());
+    }
+
+    @Test
+    public void testRuleStyleFromEnumValue() {
+        org.apache.fop.area.inline.Leader rule = new org.apache.fop.area.inline.Leader();
+        rule.setRuleStyle(Constants.EN_DOTTED);
+        assertEquals(Constants.EN_DOTTED, rule.getRuleStyle().getEnumValue());
+        rule.setRuleStyle(Constants.EN_SOLID);
+        assertEquals(Constants.EN_SOLID, rule.getRuleStyle().getEnumValue());
     }
 
     @Test

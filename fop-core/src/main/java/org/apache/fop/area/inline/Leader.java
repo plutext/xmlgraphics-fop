@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: hook rule-style-int, setRuleStyle(int) kept beside main's BorderStyle forms. See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.area.inline;
@@ -52,6 +56,18 @@ public class Leader extends InlineArea {
      */
     public void setRuleStyle(BorderStyle style) {
         this.ruleStyle = style;
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code rule-style-int}: set the rule style from its XSL enumeration
+     * value ({@link Constants#EN_DOTTED} and the rest), the form Apache FOP 2.11 took before
+     * FOP-3325 replaced it with {@link BorderStyle}. Kept so that code compiled against 2.11,
+     * docx4j's line manager among it, runs on this renderer.
+     *
+     * @param style the rule style as an XSL enumeration value
+     */
+    public void setRuleStyle(int style) {
+        setRuleStyle(BorderStyle.valueOf(style));
     }
 
     /**

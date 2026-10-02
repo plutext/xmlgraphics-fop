@@ -96,6 +96,13 @@ public final class Docx4jFop {
      */
     public static final String SHARED_GLYPH_TOUNICODE = "shared-glyph-tounicode";
 
+    /**
+     * {@code area.inline.Leader.setRuleStyle(int)}: the rule style from its XSL enumeration value,
+     * the form Apache FOP 2.11 had and FOP-3325 replaced with {@code BorderStyle}. Code compiled
+     * against 2.11 that builds rule leaders runs on this renderer (fop/CR-009).
+     */
+    public static final String RULE_STYLE_INT = "rule-style-int";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -108,6 +115,7 @@ public final class Docx4jFop {
         caps.add(LOOKUP_FALLBACK);
         caps.add(KERNING_FLAG);
         caps.add(SHARED_GLYPH_TOUNICODE);
+        caps.add(RULE_STYLE_INT);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 
