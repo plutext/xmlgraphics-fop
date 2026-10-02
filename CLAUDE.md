@@ -77,8 +77,9 @@ session routed an edit to the wrong peer on that inference, is why.
 - The upstream-facing branches are one fix each, cut against Apache `main`, named for their JIRA:
   `FOP-3328` and `FOP-packed-glyph-bboxes` (FOP-3330), whose pull requests #106 and #107 are open, and,
   cut 2026-10-03, `FOP-2918` and `FOP-3339` to `FOP-3347`. `FOP-3345` is stacked on `FOP-3346` and
-  `FOP-3340`. The older `FOP-cjk-radical-tounicode`, `FOP-empty-glyph-not-composite` and
-  `FOP-surrogate-pair-word-split` are superseded by their numbered branches. They are worked on in a
+  `FOP-3340`. The older names `FOP-cjk-radical-tounicode`, `FOP-empty-glyph-not-composite` and
+  `FOP-surrogate-pair-word-split` were deleted on 2026-10-03 (local only, never pushed; their commits
+  are in `FOP-3340`, `FOP-3339` and `FOP-2918`). The branches are worked on in a
   worktree at `../fop-upstream-wt`; the pull request texts are in `../fop-upstream-prs/`. On Apache
   `main` the import order differs from 2.11's (static imports directly under the others, no blank
   line) and no file carries the fork's change notice.

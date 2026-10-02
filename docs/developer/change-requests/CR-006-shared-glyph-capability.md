@@ -4,7 +4,7 @@ Status: DONE 2026-10-01, merged to `2.11-docx4j.2` after the docx4j session conf
 `FopCapabilities` probe reads; unreleased. The constant, the test line and the README rows of §3. No FOP
 behaviour changes, so no fork gate; docx4j's own gate for flipping its default follows the release (§4).
 Registry key `fop/CR-006`. Not upstream-bound: the fix it names is
-(`FOP-cjk-radical-tounicode`, JIRA drafted in its commit message); the capability is the fork's.
+(FOP-3340, branch `FOP-3340`, apache/xmlgraphics-fop#109); the capability is the fork's.
 
 Enterprise CR-001 §6.6 item 26.
 
