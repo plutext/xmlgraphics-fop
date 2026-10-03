@@ -385,6 +385,18 @@ forms.
   - One hazard predates FOP-3293 and is docx4j's to note: a caller reusing `FOSettings` with its own
     image handler and no UUID in file names gets document A's images in B, through FOP's per-factory
     image loader cache. That happens on .2 too.
-- Steps 3 to 5 (corpus and probes, hyphenation, tagged output) are to come. Letter-spaced runs are left
-  out of any verdict until a reinstall carries CR-010.
+- **Step 5, tagged output: the intended upstream changes, with no losses.** Run early, since it is
+  independent of the others. Six documents with accessibility, `pdf-ua-mode` PDF/UA-1 and a title, on
+  .2 and .4 under `-ea`: probes `footnotes`, `page-header-footnotes` and `tab-leader-kinds`, and corpus
+  `12_en-US_tbl_84` (hyperlinks), `16_ru-RU_tbl_10501` (`tblHeader`) and `16_it-IT_num_tbl_11490`
+  (footnotes). All render on both. The structure was compared with `qpdf --qdf`.
+  - Footnotes: each footnote wrapper is Sect on .2 and Reference on .4; the body stays Note
+    (FOP-3264).
+  - Tables gain TBody, and THead where the document has a header row (FOP-3165).
+  - Unchanged in all six: Scope counts, link annotations and their `/Contents`, Artifact marked content
+    (rule leaders included), `/Alt`, `/ActualText`, the trailer keys, MarkInfo and Lang.
+  - No conformance validator was run: veraPDF is not installed, and that is Jason's call.
+- Steps 3 (corpus and probes) and 4 (hyphenation) are to come. Letter-spaced runs are left out of any
+  verdict until a reinstall carries CR-010; that reinstall waits for the docx4j session to say it is
+  between steps.
 
