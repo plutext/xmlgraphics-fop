@@ -1,6 +1,6 @@
 # CR-010: a word's letter spaces are in its width on the complex-script path
 
-Status: DONE 2026-10-03 on `2.11-docx4j.4` (ab8fcaa48), unreleased, not yet gated. Capability
+Status: DONE 2026-10-03 on `2.11-docx4j.4` (ab8fcaa48), gated PASS with the merge (§4), unreleased. Capability
 `letter-space-width`. Registry key `fop/CR-010`. Upstream-bound: a duplicate of
 [FOP-2349](https://issues.apache.org/jira/browse/FOP-2349) (Open since 2014; Andreas L. Delmelle's 2015
 comments trace it to the same `[TBD]` and sketch this fix), found by the docx4j session's duplicate
@@ -76,10 +76,13 @@ letter spaces to the width and assumes the counted ones are already in it:
 So docx4j 17.3.0 measures letter-spaced runs on `.4` as it did on `.2`. Without this change, on the bare
 merge, it would add 1 where n−1 are missing (CR-009 §3.3).
 
-The docx4j session's path-aware `fixLetterSpaces` reads `letter-space-width` and agrees on every renderer.
-It is still needed for an Apache release that carries FOP-2722 without this change. The gate: the
-`spacing-char` and `kern-title` probes and the corpus's `w:spacing` runs, expected identical to
-`2.11-docx4j.2`.
+The docx4j session's path-aware `fixLetterSpaces` would read `letter-space-width` and agree on every
+renderer. It is still needed for an Apache release that carries FOP-2722 without this change; it is not
+yet written, and Jason's call.
+
+**Gated 2026-10-03, PASS** (the docx4j session, CR-009 §10). On the install carrying this change, the corpora
+and probes are 0 changed against 2.11-docx4j.2. `spacing-char` reads 0.7857 and `kern-title` 1.0000,
+as on .2, where the bare merge read 0.2857 and 0.9250. The "by reading" claim above is measured.
 
 ## 5. Not addressed
 

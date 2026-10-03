@@ -219,8 +219,9 @@ rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits p
    capability `letter-space-width`) is on the branch too (ab8fcaa48), not yet installed. Its upstream
    branch is `FOP-2349` (FOP-2349 upstream, open since 2014; comment posted 2026-10-03), stacked on
    `FOP-3344`; pull request #118 open since 2026-10-03. The docx4j
-   session's gate on the merge: steps 1 (compile, 17.3.0 binary) and 2 (image cache) PASS; corpus,
-   hyphenation and tagged output to come. Letter spacing is judged after a reinstall with CR-010. The per-file change
+   session's gate on the merge with CR-010: PASS on all five steps (CR-009 §10). The corpora and probes
+   are unchanged against 2.11-docx4j.2; on the bare merge, without CR-010, 51 documents regressed.
+   Releasable as 2.11-docx4j.4 when Jason says. The per-file change
    notices still say "derived from Apache FOP 2.11"; a mechanical pass is open.
 3. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
    private-use code point in ToUnicode (CR-002 §10.2; ActualText per cluster is the follow-up); a format

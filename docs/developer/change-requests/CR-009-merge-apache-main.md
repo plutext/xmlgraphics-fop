@@ -1,9 +1,8 @@
 # CR-009: merging Apache `main` into the fork, and the triage that comes first
 
-Status: MERGED 2026-10-03 on branch `2.11-docx4j.4` (Jason named it, and ruled that `2.11-docx4j.3` does not
-ship). The merge is 4d6c9d981; the follow-ups (§10) end at fa5f8bb1d. The full build is green. Not yet
-gated: the docx4j session compiles against the snapshot and gates per §5 and §8. `fop/CR-010` (§3.3) is
-still to do. Unreleased. Registry key `fop/CR-009`.
+Status: DONE 2026-10-03 on branch `2.11-docx4j.4` (Jason named it, and ruled that `2.11-docx4j.3` does not
+ship). The merge is 4d6c9d981; the follow-ups (§10) end at fa5f8bb1d; with `fop/CR-010` (§3.3) it is
+gated PASS on all five steps (§10, gate readings). Unreleased. Registry key `fop/CR-009`.
 
 After the merge the fork is Apache `main` plus fixes, not Apache FOP 2.11 plus fixes. Apache has
 released nothing after 2.11, and its `main` still declares `2.11.0-SNAPSHOT`.
@@ -422,6 +421,14 @@ forms.
     line identical to .2 (238 hyphenated line ends, all U+002D, on both).
   - The 21 with soft hyphens: identical. A break at a soft hyphen takes the hyphenation character, so
     FOP-2880's pass-through never reaches docx4j's output.
-- Next: step 3 again on a reinstall carrying CR-010, with no override. Expected: 0 changed against .2,
-  with `spacing-char` and `kern-title` as the letter-spacing gate.
+- **Step 3 again, on the install carrying CR-010 (no override): PASS, 0 changed.** The snapshot was
+  verified (`processWordMapping` takes the `MinOptMax`; the renderer lists ten hooks).
+  - Corpora and probes against .2: real, real2, real3 and the probes all 0 changed. Pages, matched lines
+    and mean parity are equal to .2's (0.9323, 0.9149, 0.9462, 0.9469). No errors or timeouts.
+  - The letter-spacing gate: `spacing-char` 0.7857 on .2, 0.2857 on the bare merge, 0.7857 with CR-010;
+    `kern-title` 1.0000, 0.9250, 1.0000. Both are line for line identical to .2.
+- **Reading: PASS on all five steps.** Compile and binary, image cache (kept on), corpora and probes,
+  hyphenation, and tagging (structurally; no veraPDF). Still on docx4j's side, and not blocking: the
+  path-aware `fixLetterSpaces` for an Apache release with FOP-2722 alone (Jason's call), and a
+  version-neutral `setRuleStyle` call at `LBP:535` before an Apache release carries FOP-3325.
 
