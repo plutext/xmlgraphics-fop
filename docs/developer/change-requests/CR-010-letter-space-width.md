@@ -5,7 +5,8 @@ Status: DONE 2026-10-03 on `2.11-docx4j.4` (ab8fcaa48), unreleased, not yet gate
 [FOP-2349](https://issues.apache.org/jira/browse/FOP-2349) (Open since 2014; Andreas L. Delmelle's 2015
 comments trace it to the same `[TBD]` and sketch this fix), found by the docx4j session's duplicate
 search. Comment posted there 2026-10-03 (id 18122144), with FOP-2722 and FOP-3344 linked; no new issue (`docs/upstream/letter-space-width.txt`). Branch `FOP-2349` in `../fop-upstream-wt` (7bbc3c2e7) is
-stacked on `FOP-3344` (#113) and not pushed; the pull request text is in
+stacked on `FOP-3344` (#113), pull request
+[#118](https://github.com/apache/xmlgraphics-fop/pull/118) open since 2026-10-03; the pull request text is in
 `../fop-upstream-prs/FOP-2349.md`.
 
 Enterprise CR-001 §6.6 item 16, the defect itself, in FOP. docx4j has worked around it since 2026-09-04

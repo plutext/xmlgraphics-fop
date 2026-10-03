@@ -11,7 +11,8 @@ point stands as the "Not addressed" paragraph below. The docx4j session posted a
 measurements on 2026-10-03 (id 18122144, as jharrop), and linked FOP-2722 and FOP-3344 as related; the
 pull request is to be titled FOP-2349. Fork change
 fop/CR-010 (Enterprise CR-001 §6.6 item 16). Branch FOP-2349 in ../fop-upstream-wt (7bbc3c2e7), STACKED ON
-FOP-3344 (pull request #113), on Apache main at ab5d6eba6; not pushed. The text below is the draft as written before the duplicate was found.
+FOP-3344 (pull request #113), on Apache main at ab5d6eba6; pull request
+https://github.com/apache/xmlgraphics-fop/pull/118, opened 2026-10-03 at Jason's word. The text below is the draft as written before the duplicate was found.
 
 Project:          FOP
 Issue Type:       Bug
