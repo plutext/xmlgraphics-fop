@@ -370,3 +370,21 @@ gates of §5 and §8. And the per-file change notices still say "derived from Ap
 form every notice shares; the README states the new base, and the notices are left for a mechanical
 pass of their own.
 
+### Gate readings (the docx4j session, on Jason's install of the merge, 2026-10-03)
+
+The candidate snapshot was installed from fa5f8bb1d and verified: `Leader` has three `setRuleStyle`
+forms.
+- **Step 1, compile and binary: PASS.** docx4j-export-fo's 55 main sources compile against the snapshot
+  with the released 17.3.0 jars. The unchanged `docx4j-export-fo-17.3.0.jar` renders a probe with
+  `leader-pattern="rule"` under `-ea` with no `NoSuchMethodError`, pixel-identical to 2.11-docx4j.2.
+- **Step 2, FOP-3293's image cache: PASS, and upstream's default (on) is kept.** Two generated two-pass
+  documents, each with an RGBA PNG and a JPEG used twice, rendered fresh and through one reused
+  factory, on .2, on .4 with the cache on, and on .4 with it off. The cache was exercised (6 then 12
+  keys; pass 2 drew cached images). `qpdf --check` is clean on all 12 PDFs, and every page is
+  pixel-identical across all of them.
+  - One hazard predates FOP-3293 and is docx4j's to note: a caller reusing `FOSettings` with its own
+    image handler and no UUID in file names gets document A's images in B, through FOP's per-factory
+    image loader cache. That happens on .2 too.
+- Steps 3 to 5 (corpus and probes, hyphenation, tagged output) are to come. Letter-spaced runs are left
+  out of any verdict until a reinstall carries CR-010.
+

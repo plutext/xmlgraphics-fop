@@ -1,0 +1,74 @@
+JIRA text, NOT filed. For Jason to file. Fork change fop/CR-010 (Enterprise CR-001 §6.6 item 16).
+Branch FOP-letter-space-width in ../fop-upstream-wt, STACKED ON FOP-3344 (pull request #113), which is
+on Apache main at ab5d6eba6; rename it to the JIRA number once filed. Present in main: FOP-2722
+(2a8efc165) added the count, not the width.
+
+Project:          FOP
+Issue Type:       Bug
+Affects Version:  2.11 and main
+Component:        layout
+
+Summary
+-------
+letter-spacing is left out of a word's width on the complex-script path, so letter-spaced
+text in a font with GSUB or GPOS tables overruns the line
+
+Description
+-----------
+GlyphMapping.doGlyphMapping takes one of two paths. For a font without substitution or
+positioning tables, processWordNoMapping counts the word's letter spaces and adds them to the
+word's width:
+
+    int letterSpaces = calculateLetterSpaces(startIndex, endIndex, breakOpportunityChar);
+    wordIPD = wordIPD.plus(letterSpaceIPD.mult(letterSpaces));
+
+For a font with GSUB or GPOS tables (every OpenType font while complex-script support is on,
+the default), processWordMapping is used instead. Before FOP-2722 it returned a letter-space
+count of 0 ("[TBD] - handle letter spacing"). Since FOP-2722 it returns the same count as the
+other path, but it still adds nothing to the width, and it is not passed letterSpaceIPD at
+all.
+
+The renderer spaces every glyph whichever path was taken. TextLayoutManager breaks lines on
+the mapping's width, so a letter-spaced paragraph in such a font is measured short and its
+lines run past the end of the line. The more spacing, the further: 3pt of letter spacing in
+12pt text overruns a 260pt line by up to 23pt, and words fall off the page.
+TextLayoutManager.addMappingAreas already assumes the counted spaces are in the width (it
+subtracts one letterSpaceIPD from realWidth when a line ends at a "/" or "-"). That
+assumption holds on the plain path and has not held on this one.
+
+To reproduce
+------------
+Any letter-spaced block in an OpenType font, for example Carlito at 12pt with
+letter-spacing="3pt", in a narrow region. Render it twice, once as is and once with complex
+scripts disabled (-nocs).
+
+On main as it stands, a second defect hides this one. When the font kerns through GPOS, every
+word goes to PDFPainter.drawTextWithDP, which does not paint the letter spacing at all
+(FOP-3344, pull request #113). So the text is measured without its letter spacing and also
+painted without it. Measured with Carlito, a 260pt line and a paragraph of 29 words:
+- main: 4 lines, unspaced, ending at 218.9, 228.9 and 233.9pt;
+- main with FOP-3344: the same 4 lines, now spaced, ending at 302.3, 297.3 and 302.7pt, where
+  the line ends at 280pt;
+- with -nocs (the plain path): 5 lines, all inside the margin (266.1, 251.8, 275.3, 255.4pt).
+
+Fix
+---
+Pass letterSpaceIPD to processWordMapping and add the counted letter spaces to the width, as
+processWordNoMapping does. Measured after the fix, on main with FOP-3344: the complex-script
+path breaks the paragraph into the same 5 lines as -nocs, ending at 265.6, 251.3, 275.2 and
+254.9pt. The 0.4pt differences are GPOS kerning: main applies it even to a font configured
+kerning="false" (FOP-3343, pull request #112). The last line differs by one ligature
+(Carlito's "ft"). With -nocs every glyph is at the same position as before, since that path
+is untouched.
+
+Applied to main without FOP-3344, the fix measures the spacing that the painter then drops,
+so lines come out short (ending at 161 to 188pt here). The two belong together; this branch
+is stacked on FOP-3344.
+
+GlyphMappingTestCase.testLetterSpacesInTheWidthOfAWordInAFontWithLayoutTables lays out "word"
+in DejaVuLGCSerif (which has GSUB and GPOS) with no letter spacing and with 3pt. The widths
+must differ by 3 x 3pt, the three counted letter spaces. Before the fix they differ by 0.
+
+Not addressed: the count is in characters while the painter spaces glyphs, so a word in which
+a ligature forms is measured one letter space wider per ligature than it is painted. The plain
+path has no ligatures and does not meet this.
