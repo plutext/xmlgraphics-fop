@@ -217,7 +217,8 @@ rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits p
    green, not gated. FOP-3311 and FOP-3326 are reverted (unreleased xmlgraphics-commons API); hook
    `rule-style-int` added; `gsub-features` is property id 296. `fop/CR-010` (item 16's width fix,
    capability `letter-space-width`) is on the branch too (ab8fcaa48), not yet installed. Its upstream
-   branch `FOP-letter-space-width` is stacked on `FOP-3344`, not pushed, JIRA not filed. The docx4j
+   branch is `FOP-2349` (FOP-2349 upstream, open since 2014; comment posted 2026-10-03), stacked on
+   `FOP-3344`, not pushed, no pull request yet. The docx4j
    session's gate on the merge: steps 1 (compile, 17.3.0 binary) and 2 (image cache) PASS; corpus,
    hyphenation and tagged output to come. Letter spacing is judged after a reinstall with CR-010. The per-file change
    notices still say "derived from Apache FOP 2.11"; a mechanical pass is open.

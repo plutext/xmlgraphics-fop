@@ -7,11 +7,11 @@ in, add letterSpaceIPD x nLS to the width, with nLS from the glyph sequence), th
 objection on fop-dev@ about combining marks (several glyphs to one character). Dan Caprioara (2019-05-21)
 reports the same with Arial and negative letter spacing. The fork's change differs from that sketch in
 taking FOP-2722's character count, and so making the width agree with the count FOP already has. Glenn's
-point stands as the "Not addressed" paragraph below. A comment on FOP-2349 with the measurements is being
-drafted by the docx4j session, for Jason to approve; the pull request is to be titled FOP-2349. Fork change
-fop/CR-010 (Enterprise CR-001 §6.6 item 16). Branch FOP-letter-space-width in ../fop-upstream-wt, STACKED
-ON FOP-3344 (pull request #113), on Apache main at ab5d6eba6; to be renamed FOP-2349 once the comment is
-up. The text below is the draft as written before the duplicate was found.
+point stands as the "Not addressed" paragraph below. The docx4j session posted a comment on FOP-2349 with the
+measurements on 2026-10-03 (id 18122144, as jharrop), and linked FOP-2722 and FOP-3344 as related; the
+pull request is to be titled FOP-2349. Fork change
+fop/CR-010 (Enterprise CR-001 §6.6 item 16). Branch FOP-2349 in ../fop-upstream-wt (7bbc3c2e7), STACKED ON
+FOP-3344 (pull request #113), on Apache main at ab5d6eba6; not pushed. The text below is the draft as written before the duplicate was found.
 
 Project:          FOP
 Issue Type:       Bug
