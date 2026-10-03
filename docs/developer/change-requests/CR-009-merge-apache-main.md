@@ -407,12 +407,21 @@ forms.
     `wordLayout=false` showed no difference on them.
   - The symptom in justified Caladea text: spaces drawn one glyph late ("parM onsieur") and more words
     per line, i.e. words measured short and painted full width.
-  - Bisected by putting `processWordMapping`'s FOP-2722 count back to 0 on the candidate: the three
-    sample documents become identical to .2, line for line. A full-corpus run with that override is
-    under way.
+  - Bisected by putting `processWordMapping`'s FOP-2722 count back to 0 on the candidate, then
+    confirmed across everything. With that one override, the full corpora and probes give 0 changed
+    documents against .2, and every scoreboard figure equals .2's (mean parity 0.9323, 0.9149, 0.9462,
+    0.9469; the same page counts). So FOP-2722's count against `fixLetterSpaces` is the whole of the
+    regression, its two "improvements" included. The other 90 merged commits are score-neutral through
+    docx4j.
   - So the regression is FOP-2722's count without its width, read by docx4j's `fixLetterSpaces`: the
     mechanism §3.3 predicted. CR-010 adds the width and should cure it, which is the expectation to
     gate. Step 3 is re-run on a reinstall carrying CR-010, with letter spacing included.
-- Step 4 (hyphenation) is to come. The reinstall waits for the docx4j session to say it is between
-  steps.
+- **Step 4, hyphenation: PASS, no change.** Run with the same override, so that FOP-2722 does not mask
+  FOP-2880, FOP-3270 or FOP-3332.
+  - The 10 corpus documents with `w:autoHyphenation`, scored with hyphenation on: 0 changed, line for
+    line identical to .2 (238 hyphenated line ends, all U+002D, on both).
+  - The 21 with soft hyphens: identical. A break at a soft hyphen takes the hyphenation character, so
+    FOP-2880's pass-through never reaches docx4j's output.
+- Next: step 3 again on a reinstall carrying CR-010, with no override. Expected: 0 changed against .2,
+  with `spacing-char` and `kern-title` as the letter-spacing gate.
 
