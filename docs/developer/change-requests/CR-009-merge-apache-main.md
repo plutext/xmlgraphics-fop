@@ -396,7 +396,23 @@ forms.
   - Unchanged in all six: Scope counts, link annotations and their `/Contents`, Artifact marked content
     (rule leaders included), `/Alt`, `/ActualText`, the trailer keys, MarkInfo and Lang.
   - No conformance validator was run: veraPDF is not installed, and that is Jason's call.
-- Steps 3 (corpus and probes) and 4 (hyphenation) are to come. Letter-spaced runs are left out of any
-  verdict until a reinstall carries CR-010; that reinstall waits for the docx4j session to say it is
-  between steps.
+- **Step 3, corpus and probes, on the bare merge (no CR-010): REGRESSIONS, all of them §3.3's
+  mechanism.** Released .2 against the .4 snapshot, the released 17.3.0 docx4j jars, corpora with
+  `hyphenate=false`. No errors or timeouts.
+  - Changed documents: real 20 (18 worse, 2 better; mean parity 0.9323 to 0.9193), real2 17 (all worse;
+    0.9149 to 0.9029), real3 9 (all worse; 0.9462 to 0.9261, among them `14_en-US_13753` from 8 pages
+    to 14 against Word's 8), and 5 probes (`spacing-char` 0.79 to 0.29, `kern-title` 1.00 to 0.925).
+  - Every one of the 51 movers carries non-zero `letter-spacing`. 39 have `w:spacing`; the other 12 get
+    it from docx4j's own width-factor fixups, which write it when Word layout is on. That is why
+    `wordLayout=false` showed no difference on them.
+  - The symptom in justified Caladea text: spaces drawn one glyph late ("parM onsieur") and more words
+    per line, i.e. words measured short and painted full width.
+  - Bisected by putting `processWordMapping`'s FOP-2722 count back to 0 on the candidate: the three
+    sample documents become identical to .2, line for line. A full-corpus run with that override is
+    under way.
+  - So the regression is FOP-2722's count without its width, read by docx4j's `fixLetterSpaces`: the
+    mechanism §3.3 predicted. CR-010 adds the width and should cure it, which is the expectation to
+    gate. Step 3 is re-run on a reinstall carrying CR-010, with letter spacing included.
+- Step 4 (hyphenation) is to come. The reinstall waits for the docx4j session to say it is between
+  steps.
 
