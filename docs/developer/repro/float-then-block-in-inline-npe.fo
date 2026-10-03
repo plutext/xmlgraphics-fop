@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:layout-master-set><fo:simple-page-master master-name="p" page-width="595pt" page-height="842pt" margin="72pt"><fo:region-body/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body">
+<fo:block><fo:float float="start"><fo:block-container width="100pt" height="60pt"><fo:block>Float</fo:block></fo:block-container></fo:float>The quick brown fox jumps over the lazy dog, and then it runs back across the field again before the evening comes.</fo:block><fo:block>Before <fo:inline>the run<fo:block linefeed-treatment="preserve">&#x2028;</fo:block>after the break</fo:inline> and on.</fo:block>
+</fo:flow></fo:page-sequence></fo:root>

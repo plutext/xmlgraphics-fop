@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:layout-master-set><fo:simple-page-master master-name="p" page-width="595pt" page-height="842pt" margin="85pt"><fo:region-body/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body">
+<fo:block><fo:float float="start"><fo:block-container width="480pt" height="200pt"><fo:block> </fo:block></fo:block-container></fo:float></fo:block><fo:block><fo:block>block child</fo:block><fo:inline>Overflowing ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ</fo:inline></fo:block>
+</fo:flow></fo:page-sequence></fo:root>
