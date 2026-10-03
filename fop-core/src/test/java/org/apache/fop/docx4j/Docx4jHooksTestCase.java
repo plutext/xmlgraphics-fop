@@ -49,7 +49,8 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.KERNING_FLAG));
         assertTrue(Docx4jFop.has(Docx4jFop.SHARED_GLYPH_TOUNICODE));
         assertTrue(Docx4jFop.has(Docx4jFop.RULE_STYLE_INT));
-        assertEquals(9, Docx4jFop.capabilities().size());
+        assertTrue(Docx4jFop.has(Docx4jFop.LETTER_SPACE_WIDTH));
+        assertEquals(10, Docx4jFop.capabilities().size());
     }
 
     @Test

@@ -103,6 +103,14 @@ public final class Docx4jFop {
      */
     public static final String RULE_STYLE_INT = "rule-style-int";
 
+    /**
+     * On the path for fonts with substitution or positioning tables ({@code GlyphMapping}'s mapping
+     * path) a word's counted letter spaces are in its width, as they always were on the other path.
+     * A consumer may take {@code GlyphMapping.letterSpaceCount} as the letter spaces already in
+     * {@code areaIPD} on both paths (Enterprise CR-001 item 16, fop/CR-010).
+     */
+    public static final String LETTER_SPACE_WIDTH = "letter-space-width";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -116,6 +124,7 @@ public final class Docx4jFop {
         caps.add(KERNING_FLAG);
         caps.add(SHARED_GLYPH_TOUNICODE);
         caps.add(RULE_STYLE_INT);
+        caps.add(LETTER_SPACE_WIDTH);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

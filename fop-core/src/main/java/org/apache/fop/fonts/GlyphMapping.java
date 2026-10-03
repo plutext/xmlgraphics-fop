@@ -16,8 +16,9 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: hook gsub-features, passing the fragment's delta to the substitution. See README.md,
- * "Changes from Apache FOP 2.11". */
+ * from Apache FOP 2.11: hook gsub-features, passing the fragment's delta to the substitution; and a word's
+ * letter spaces are in its width on the complex-script path too (fop/CR-010). See README.md, "Changes from
+ * Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -91,7 +92,7 @@ public class GlyphMapping {
             boolean dontOptimizeForIdentityMapping, boolean retainAssociations, boolean retainControls) {
         GlyphMapping mapping;
         if (font.performsSubstitution() || font.performsPositioning()) {
-            mapping = processWordMapping(text, startIndex, endIndex, font,
+            mapping = processWordMapping(text, startIndex, endIndex, font, letterSpaceIPD,
                     breakOpportunityChar, endsWithHyphen, level,
                     dontOptimizeForIdentityMapping, retainAssociations, retainControls);
         } else {
@@ -102,7 +103,7 @@ public class GlyphMapping {
     }
 
     private static GlyphMapping processWordMapping(TextFragment text, int startIndex,
-            int endIndex, final Font font, final char breakOpportunityChar,
+            int endIndex, final Font font, MinOptMax letterSpaceIPD, final char breakOpportunityChar,
             final boolean endsWithHyphen, int level,
             boolean dontOptimizeForIdentityMapping, boolean retainAssociations, boolean retainControls) {
         String script = text.getScript();
@@ -178,8 +179,13 @@ public class GlyphMapping {
             ipd = ipd.plus(w);
         }
 
+        // The letter spaces are part of the word's width, as processWordNoMapping makes them: the
+        // layout manager breaks lines on this width, and the painter spaces every glyph.
+        int letterSpaces = calculateLetterSpaces(startIndex, endIndex, breakOpportunityChar);
+        ipd = ipd.plus(letterSpaceIPD.mult(letterSpaces));
+
         return new GlyphMapping(startIndex, endIndex, 0,
-                calculateLetterSpaces(startIndex, endIndex, breakOpportunityChar), ipd, endsWithHyphen, false,
+                letterSpaces, ipd, endsWithHyphen, false,
                 breakOpportunityChar != 0, font, level, gpa,
                 !dontOptimizeForIdentityMapping && CharUtilities.isSameSequence(mcs, ics) ? null : mcs.toString(),
                 associations);
