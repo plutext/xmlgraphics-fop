@@ -224,11 +224,12 @@ rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits p
    Releasable as 2.11-docx4j.4 when Jason says. The per-file change
    notices still say "derived from Apache FOP 2.11"; a mechanical pass is open.
 3. *The bounded pass over §6.6 items 18, 20, 21, 24, 25 (2026-10-03, no code changed).*
-   - 25 is not a FOP defect: XSL 1.1 §6.4.15 gives `fo:region-before` no indent properties.
+   - 25 is not a FOP defect: XSL 1.1 §6.4.15 gives `fo:region-before` no indent properties (closed in §6.6).
    - 18 is conformant FOP (conditional space discarded at a reference area's end) against Word's rule:
      a docx4j hook in `PageBreakingAlgorithm.computeDifference`, as Enterprise CR-001 sketched, by reading.
-   - Two float crashes reproduce on `main` too (`docs/developer/repro/`). The overflow-report NPE is a
-     one-line guard. The `setVisibility` NPE hides lost content, so it needs real work.
+   - Two float crashes reproduce on `main` too (`docs/developer/repro/`), now §6.6 items 36 and 37.
+     37, the overflow-report NPE, is a one-line guard. 36, the `setVisibility` NPE, hides lost content,
+     so it needs real work.
    - 20, 21 and 24 did not reproduce from their descriptions; they need docx4j's FO with its workaround
      off.
 4. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a

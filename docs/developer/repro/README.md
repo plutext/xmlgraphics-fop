@@ -4,13 +4,13 @@ Synthetic FO, cut 2026-10-03 in the bounded pass over Enterprise CR-001 §6.6 it
 Each fails on the fork's 2.11-based build (2.11-docx4j.2) and on `2.11-docx4j.4` (Apache `main`), with
 Java assertions on and off. Run: `org.apache.fop.cli.Main -fo <file> -pdf out.pdf`.
 
-- `float-then-block-in-inline-npe.fo`: a float nested in a block, then a block nested in an inline (how
+- `float-then-block-in-inline-npe.fo` (Enterprise CR-001 §6.6 item 36): a float nested in a block, then a block nested in an inline (how
   docx4j writes a line break inside a run). `NullPointerException` in `TraitSetter.setVisibility`
   (`area` is null), from `BlockLayoutManager.addAreas`. A null guard stops the crash but the text after
   the inline's block is then lost ("after the break and on." is missing; present without the float),
   so the NPE is a symptom of content dropped on the float re-layout (`PageBreaker.handleFloatLayout`),
   not the defect. docx4j works around it with `WordLayoutFixups.hoistFloats`.
-- `wide-float-overflow-npe.fo`: a float wider than the measure, then a block whose line overflows.
+- `wide-float-overflow-npe.fo` (item 37): a float wider than the measure, then a block whose line overflows.
   `NullPointerException` in `LineLayoutManager$LineBreakingAlgorithm.updateData2` (`curChildLM` is null
   on the float re-layout pass), in the code that only reports the overflow. A `curChildLM == null` guard,
   as docx4j's own line manager has, is the whole fix: no layout effect.
