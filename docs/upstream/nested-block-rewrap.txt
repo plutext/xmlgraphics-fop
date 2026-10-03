@@ -1,0 +1,65 @@
+JIRA text, NOT filed. Fork change fop/CR-011 (Enterprise CR-001 §6.6 item 36). Related: FOP-1912 (Open
+since 2011, "Block elements inside inline elements that cause a page break where the next page has a
+different IPD causes NullPointerException"), this scenario's page-width form, whose 2011 trace is at another
+site. Whether to comment there or file new, linking it, is for Jason and the docx4j session. Branch
+not yet cut against Apache main.
+
+Project:          FOP
+Issue Type:       Bug
+Affects Version:  2.11 and main
+Component:        layout/unqualified
+
+Summary
+-------
+A block nested in an inline loses the lines after it, and FOP throws a NullPointerException in
+TraitSetter.setVisibility, when line breaking runs again (after a float, or on a page of a
+different IPD)
+
+Description
+-----------
+LineLayoutManager keeps a paragraph's Knuth sequences in knuthParagraphs. A block nested in an
+inline gives it a block-level sequence between two inline ones. postProcessLineBreaks passes that
+block-level sequence's elements upward as the same objects it stores, wrapping each in place:
+
+    tempElement.setPosition(notifyPos(new NonLeafPosition(this, tempElement.getPosition())));
+
+The enclosing block and flow managers wrap the same objects in place again
+(BlockStackingLayoutManager.wrapPositionElements).
+
+Line breaking runs a second time over the stored paragraphs in two cases: the content after a float
+(PageBreaker.handleFloatLayout restarts after it), and the restart after a change of IPD. The
+elements still carry the first pass's wrapping, so they are wrapped twice. With a float, the nested
+block's chain came out LineLM > FlowLM > BlockLM > LineLM > InlineLM > BlockLM, where it should be
+LineLM > InlineLM > BlockLM.
+
+LineLayoutManager.addBlockArea unwraps one level, reaches the FlowLayoutManager, and so re-enters
+the enclosing block's addAreas. That inner call flushes the block's area and sets curBlockArea to
+null. Back in the outer call, the line after the nested block reaches addChildArea, which drops it
+silently while the area is null. Then TraitSetter.setVisibility(curBlockArea, ...) throws the
+NullPointerException. A null check there would stop the exception and lose the text.
+
+To reproduce
+------------
+1. A float, then a paragraph with a block inside an inline:
+
+  <fo:block><fo:float float="start"><fo:block-container width="100pt" height="60pt">
+    <fo:block>Float</fo:block></fo:block-container></fo:float>Some text beside it.</fo:block>
+  <fo:block>Before <fo:inline>the run<fo:block linefeed-treatment="preserve">&#x2028;</fo:block>after
+    the break and on.</fo:inline></fo:block>
+
+2. Without a float: the same paragraph breaking onto a page whose region-body is narrower (a
+   page-sequence-master whose later pages have a larger margin-left).
+
+Both throw on 2.11 and on main. Without the float, or with pages of equal width, the same FO lays
+out completely.
+
+Fix
+---
+Before wrapping such an element, walk its chain of NonLeafPositions. If one of them belongs to this
+manager, an earlier pass left it there, so start again from the position inside it. On a first pass
+none does, so nothing changes. Only NonLeafPositions are walked: the wrapping is made of them, and a
+TableContentPosition returns itself from getPosition().
+
+Tests: layout tests inline_block_nested_float_relayout.xml (the float form) and
+inline_block_nested_ipd_relayout.xml (the page-width form). Both fail with the NullPointerException
+before the fix. All 778 standard test cases pass.
