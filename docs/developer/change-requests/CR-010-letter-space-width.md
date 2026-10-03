@@ -1,8 +1,10 @@
 # CR-010: a word's letter spaces are in its width on the complex-script path
 
 Status: DONE 2026-10-03 on `2.11-docx4j.4` (ab8fcaa48), unreleased, not yet gated. Capability
-`letter-space-width`. Registry key `fop/CR-010`. Upstream-bound: JIRA drafted, not filed
-(`docs/upstream/letter-space-width.txt`). Branch `FOP-letter-space-width` in `../fop-upstream-wt` is
+`letter-space-width`. Registry key `fop/CR-010`. Upstream-bound: a duplicate of
+[FOP-2349](https://issues.apache.org/jira/browse/FOP-2349) (Open since 2014; Andreas L. Delmelle's 2015
+comments trace it to the same `[TBD]` and sketch this fix), found by the docx4j session's duplicate
+search. A comment there is being drafted for Jason; no new issue (`docs/upstream/letter-space-width.txt`). Branch `FOP-letter-space-width` in `../fop-upstream-wt` is
 stacked on `FOP-3344` (#113) and not pushed; the pull request text is in
 `../fop-upstream-prs/FOP-letter-space-width.md`.
 
@@ -80,7 +82,9 @@ It is still needed for an Apache release that carries FOP-2722 without this chan
 
 ## 5. Not addressed
 
-The count is in characters; the painter spaces glyphs. A word in which a ligature forms is therefore
-measured one letter space wider per ligature than it is painted. The plain path forms no ligatures and
-does not meet this. Word applies no ligature unless `w14:ligatures` asks, and docx4j expresses that
+The count is in characters; the painter spaces glyphs. They disagree wherever substitution changes the
+number of glyphs: a ligature forms (measured one letter space wider than painted), or a character
+decomposes. Combining marks are spaced by the painter as glyphs too; that was Glenn Adams' objection on
+FOP-2349 in 2015, to a sketch that counted glyphs. The plain path forms no ligatures and does not meet
+this. Word applies no ligature unless `w14:ligatures` asks, and docx4j expresses that
 through `gsub-features`, so it should be rare there. This is noted, not measured on the corpus.

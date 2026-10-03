@@ -1,7 +1,17 @@
-JIRA text, NOT filed. For Jason to file. Fork change fop/CR-010 (Enterprise CR-001 §6.6 item 16).
-Branch FOP-letter-space-width in ../fop-upstream-wt, STACKED ON FOP-3344 (pull request #113), which is
-on Apache main at ab5d6eba6; rename it to the JIRA number once filed. Present in main: FOP-2722
-(2a8efc165) added the count, not the width.
+JIRA text, NOT filed as a new issue: it duplicates FOP-2349 (https://issues.apache.org/jira/browse/FOP-2349,
+"Inline elements with letter-spacing and custom font aren't correctly sized", reported by Matthias
+Reischenbacher 2014-02-25, Open, component layout/unqualified), found by the docx4j session's duplicate
+search 2026-10-03 and read here through JIRA's API. On it, Andreas L. Delmelle (2015-05-17) traced the
+defect to processWordMapping's "[TBD] - handle letter spacing" and sketched this fix (pass letterSpaceIPD
+in, add letterSpaceIPD x nLS to the width, with nLS from the glyph sequence), then recorded Glenn Adams'
+objection on fop-dev@ about combining marks (several glyphs to one character). Dan Caprioara (2019-05-21)
+reports the same with Arial and negative letter spacing. The fork's change differs from that sketch in
+taking FOP-2722's character count, and so making the width agree with the count FOP already has. Glenn's
+point stands as the "Not addressed" paragraph below. A comment on FOP-2349 with the measurements is being
+drafted by the docx4j session, for Jason to approve; the pull request is to be titled FOP-2349. Fork change
+fop/CR-010 (Enterprise CR-001 §6.6 item 16). Branch FOP-letter-space-width in ../fop-upstream-wt, STACKED
+ON FOP-3344 (pull request #113), on Apache main at ab5d6eba6; to be renamed FOP-2349 once the comment is
+up. The text below is the draft as written before the duplicate was found.
 
 Project:          FOP
 Issue Type:       Bug
@@ -69,6 +79,7 @@ GlyphMappingTestCase.testLetterSpacesInTheWidthOfAWordInAFontWithLayoutTables la
 in DejaVuLGCSerif (which has GSUB and GPOS) with no letter spacing and with 3pt. The widths
 must differ by 3 x 3pt, the three counted letter spaces. Before the fix they differ by 0.
 
-Not addressed: the count is in characters while the painter spaces glyphs, so a word in which
-a ligature forms is measured one letter space wider per ligature than it is painted. The plain
-path has no ligatures and does not meet this.
+Not addressed: the count is in characters while the painter spaces glyphs, so they disagree
+wherever substitution changes the number of glyphs: a ligature (measured one letter space wider
+than painted) or a decomposition, and combining marks, which the painter spaces as glyphs (the
+point Glenn Adams raised on FOP-2349). The plain path has neither. Not measured.
