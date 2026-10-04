@@ -192,7 +192,9 @@ section above says.
 Apache `main` after 2.11 plus the fork's fixes (`fop/CR-009`), with `fop/CR-008`, `fop/CR-010` and
 `fop/CR-011`; `docs/release-notes/2.11-docx4j.4.md` says what each does. docx4j 17.3.0 still depends on
 `2.11-docx4j.2`; the docx4j session scores the released `.4` before docx4j's pom moves to it (17.3.1).
-Work continues on branch `2.11-docx4j.5`, snapshot `2.11-docx4j.5-SNAPSHOT`, cut from the release commit.
+Work continues on branch `2.11-docx4j.5`, snapshot `2.11-docx4j.5-SNAPSHOT`, cut from the release commit;
+unreleased on it: `fop/CR-012` (page numbered 0, hook `page-number-zero`, gated PASS 2026-10-04; draft notes
+in `docs/release-notes/2.11-docx4j.5.md`).
 `2.11-docx4j.2` (2026-10-02) and `2.11-docx4j.1` (2026-09-25, tagged at `2f5030172`) are the earlier
 releases; `.3` never shipped. `docs/developer/releasing.md` is the runbook and records what each release
 proved.
