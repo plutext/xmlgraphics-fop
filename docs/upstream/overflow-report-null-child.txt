@@ -1,3 +1,7 @@
+FILED 2026-10-05 at Jason's word, as FOP-3349 (https://issues.apache.org/jira/browse/FOP-3349), by this session
+as jharrop, in JIRA markup with the text below. Branch FOP-3349 in ../fop-upstream-wt (3bfb3d376) against Apache main
+ab5d6eba6; pull request https://github.com/apache/xmlgraphics-fop/pull/121 (text in ../fop-upstream-prs/FOP-3349.md).
+
 JIRA text, NOT filed. Fork change fop/CR-011 §7 (Enterprise CR-001 §6.6 item 37). No existing issue
 found (JIRA searched 2026-10-04 for updateData2, lineOverflows, and float with LineLayoutManager).
 

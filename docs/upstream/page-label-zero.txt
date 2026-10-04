@@ -1,3 +1,7 @@
+FILED 2026-10-05 at Jason's word, as FOP-3350 (https://issues.apache.org/jira/browse/FOP-3350), by this session
+as jharrop, in JIRA markup with the text below (component renderer/pdf). Branch FOP-3350 in ../fop-upstream-wt (014daf810) against Apache main
+ab5d6eba6; pull request https://github.com/apache/xmlgraphics-fop/pull/122 (text in ../fop-upstream-prs/FOP-3350.md).
+
 JIRA text, NOT filed. Fork change fop/CR-012 (Enterprise CR-001 §6.6 item 38).
 
 Project:          FOP

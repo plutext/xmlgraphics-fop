@@ -63,8 +63,9 @@ is to follow.
 
 ## 5. Upstream
 
-Two drafts. `docs/upstream/page-label-zero.txt`: the page-label crash, a bug, to be filed with a pull request
-(Jason, 2026-10-05). `docs/upstream/page-number-zero-option.txt`: page 0 behind a user-agent option, an
+Two drafts. `docs/upstream/page-label-zero.txt`: the page-label crash, a bug. Filed 2026-10-05 at Jason's word as
+[FOP-3350](https://issues.apache.org/jira/browse/FOP-3350); branch `FOP-3350` (014daf810), the fop-core suite
+passing on `main` (3660 tests); pull request [#122](https://github.com/apache/xmlgraphics-fop/pull/122). `docs/upstream/page-number-zero-option.txt`: page 0 behind a user-agent option, an
 improvement. **Dropped** (Jason, 2026-10-05): Apache will not accept a deliberate departure from XSL, which makes
 `initial-page-number` a positive integer. The option stays a docx4j hook in the fork.
 

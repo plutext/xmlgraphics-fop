@@ -5,7 +5,8 @@ a corpus gate. Through docx4j with Word layout on (the default), neither change 
 construction: docx4j's `WordLineLayoutManager` carries its own copies of both methods, already fixed there
 (2ba434600 and 53b2b5921). The full build passes: 3748 tests. Unreleased.
 Registry key `fop/CR-011`. Upstream-bound: a FOP defect present in 2.11 and in Apache `main`. Its page-width
-form is the scenario of FOP-1912 (Open since 2011); the float form has no JIRA. Draft:
+form is the scenario of FOP-1912 (Open since 2011). Filed as FOP-3348 (item 36, pull request #120) and FOP-3349
+(item 37, #121) on 2026-10-05; see §6 and §7. Draft:
 `docs/upstream/nested-block-rewrap.txt`. No capability: docx4j carries its own copy of the method (§5), so
 the fix reaches docx4j through a docx4j change, not through a probe.
 
@@ -95,11 +96,14 @@ uses its own copy of the method.
 
 ## 6. Upstream
 
-FOP-1912 (Open since 2011, "Block elements inside inline elements that cause a page break where the next page
-has a different IPD causes NullPointerException") is this scenario's page-width form. Its 2011 trace is at
-`AbstractBreaker.getNextBlockListChangedIPD`, a different site, so it may be a different fault in the same
-scenario that `main` now reaches as this NPE. The float form has no JIRA. Whether to comment on FOP-1912 or
-file a new issue (linking it) is for Jason and the docx4j session.
+Filed 2026-10-05 at Jason's word as [FOP-3348](https://issues.apache.org/jira/browse/FOP-3348), linked "relates to"
+FOP-1912 (Open since 2011, "Block elements inside inline elements that cause a page break where the next page has a
+different IPD causes NullPointerException"). FOP-1912 is this scenario's page-width form, but its 2011 trace is at
+`AbstractBreaker.getNextBlockListChangedIPD`, a different site, so it may be a different fault in the same scenario,
+which `main` now reaches as this NPE. Branch `FOP-3348` against Apache `main` (1a86a5946): the fop-core suite passes,
+3665 tests, checkstyle clean, and both layout tests throw without the change. Pull request
+[#120](https://github.com/apache/xmlgraphics-fop/pull/120). Porting it found `unwrapEarlierPass` placed between
+`postProcessLineBreaks` and its javadoc; moved, on the branch and in the fork (f798b14d5).
 
 ## 7. Item 37 on the same branch (Jason, 2026-10-04)
 
@@ -115,4 +119,6 @@ reports; layout does not change. docx4j's `WordLineLayoutManager` already carrie
 
 Test: `float_overflow_relayout.xml` (one page; the overflowing word laid out). It fails without the change
 with the `NullPointerException`. No JIRA matches (searched `updateData2`, `lineOverflows`, and float with
-`LineLayoutManager`). Draft: `docs/upstream/overflow-report-null-child.txt`.
+`LineLayoutManager`). Filed 2026-10-05 as [FOP-3349](https://issues.apache.org/jira/browse/FOP-3349)
+(`docs/upstream/overflow-report-null-child.txt`); branch `FOP-3349` (3bfb3d376), the fop-core suite passing on `main`
+(3662 tests); pull request [#121](https://github.com/apache/xmlgraphics-fop/pull/121).

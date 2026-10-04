@@ -1,3 +1,9 @@
+FILED 2026-10-05 at Jason's word, as FOP-3348 (https://issues.apache.org/jira/browse/FOP-3348), by this session
+as jharrop, in JIRA markup with the text below; linked "relates to" FOP-1912. As filed, the last sentence reads "With it,
+the layout engine suite passes on main (743 standard test cases; the 34 in disabled-testcases.xml do not run)",
+where this draft said 778, which counted the fork's cases and the disabled ones. Branch FOP-3348 in ../fop-upstream-wt (1a86a5946) against Apache main
+ab5d6eba6; pull request https://github.com/apache/xmlgraphics-fop/pull/120 (text in ../fop-upstream-prs/FOP-3348.md).
+
 JIRA text, NOT filed. Fork change fop/CR-011 (Enterprise CR-001 §6.6 item 36). Related: FOP-1912 (Open
 since 2011, "Block elements inside inline elements that cause a page break where the next page has a
 different IPD causes NullPointerException"), this scenario's page-width form, whose 2011 trace is at another
@@ -62,4 +68,5 @@ TableContentPosition returns itself from getPosition().
 
 Tests: layout tests inline_block_nested_float_relayout.xml (the float form) and
 inline_block_nested_ipd_relayout.xml (the page-width form). Both fail with the NullPointerException
-before the fix. All 778 standard test cases pass.
+before the fix. With it, the layout engine suite passes on main (743 standard test cases; the 34 in
+disabled-testcases.xml do not run).
