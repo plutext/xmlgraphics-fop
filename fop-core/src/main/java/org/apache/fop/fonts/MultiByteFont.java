@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: FOP-3330: glyph bounding boxes packed as ints; and a CJK ideograph sharing a glyph
- * with a Kangxi radical is mapped back to the ideograph, not the radical (docx4j Enterprise CR-001 item 26).
- * See README.md, "Changes from Apache FOP 2.11".; hook gsub-features, a performSubstitution overload taking
- * the delta; and a substituted glyph records the characters it stands for, so the ToUnicode CMap can publish
- * them rather than a private-use code point (fop/CR-002, Enterprise CR-001 item 30); and a font declared with
- * kerning off is positioned without the kern feature (fop/CR-003); and a format character the font has a
- * zero-width glyph for is kept, so the text layer keeps it (fop/CR-007, Enterprise CR-001 item 34). */
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: FOP-3330: glyph bounding boxes packed as ints; and a CJK ideograph sharing a glyph with a Kangxi
+ * radical is mapped back to the ideograph, not the radical (docx4j Enterprise CR-001 item 26).; and hook to-
+ * unicode-map, overrides for the ToUnicode text of glyphs reached through given code points (fop/CR-014). See
+ * README.md, "Changes from Apache FOP 2.11".; hook gsub-features, a performSubstitution overload taking the delta;
+ * and a substituted glyph records the characters it stands for, so the ToUnicode CMap can publish them rather than
+ * a private-use code point (fop/CR-002, Enterprise CR-001 item 30); and a font declared with kerning off is
+ * positioned without the kern feature (fop/CR-003); and a format character the font has a zero-width glyph for is
+ * kept, so the text layer keeps it (fop/CR-007, Enterprise CR-001 item 34). */
 
 /* $Id$ */
 
@@ -90,6 +91,8 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
      * glyph of one character, and publishes its identity code point as before.
      */
     private Map<Integer, String> glyphMeanings = new HashMap<Integer, String>();
+
+    private Map<Integer, String> toUnicodeOverrides;
 
     /* dynamic private use (character) mappings */
     private int numMapped;
@@ -796,6 +799,42 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
      */
     String getGlyphMeaning(int glyphIndex) {
         return glyphMeanings.get(glyphIndex);
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code to-unicode-map}: the text the ToUnicode CMap publishes in place
+     * of these code points, such as the Unicode equivalent of a symbol font's private-use code point
+     * (Wingdings U+F04A, a smiling face, as U+263A). Only the text layer changes: glyph selection,
+     * widths and layout do not.
+     *
+     * @param overrides code point to text; null or empty for none
+     */
+    public void setToUnicodeOverrides(Map<Integer, String> overrides) {
+        this.toUnicodeOverrides = (overrides == null || overrides.isEmpty()) ? null
+                : new HashMap<Integer, String>(overrides);
+    }
+
+    /**
+     * The ToUnicode text for a glyph's text, each code point replaced by its override where there is one.
+     * @param text the glyph's text
+     * @return the text to publish
+     */
+    String toUnicodeText(String text) {
+        if (toUnicodeOverrides == null || text == null) {
+            return text;
+        }
+        StringBuilder sb = new StringBuilder(text.length());
+        for (int i = 0; i < text.length(); ) {
+            int cp = text.codePointAt(i);
+            String override = toUnicodeOverrides.get(cp);
+            if (override != null) {
+                sb.append(override);
+            } else {
+                sb.appendCodePoint(cp);
+            }
+            i += Character.charCount(cp);
+        }
+        return sb.toString();
     }
 
     /**

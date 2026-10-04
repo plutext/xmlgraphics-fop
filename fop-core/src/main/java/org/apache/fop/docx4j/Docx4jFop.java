@@ -127,6 +127,14 @@ public final class Docx4jFop {
      */
     public static final String CONTINUATION_DISPLAY_ALIGN = "continuation-display-align";
 
+    /**
+     * {@code <to-unicode code-point="F04A" unicode="263A"/>} in a font's configuration entry: the text
+     * the ToUnicode CMap publishes for a glyph reached through that code point, so a symbol font's
+     * private-use text (Wingdings, Symbol, Webdings) extracts as its Unicode equivalent. The text layer
+     * alone; glyphs and layout are unchanged (fop/CR-014).
+     */
+    public static final String TO_UNICODE_MAP = "to-unicode-map";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -143,6 +151,7 @@ public final class Docx4jFop {
         caps.add(LETTER_SPACE_WIDTH);
         caps.add(PAGE_NUMBER_ZERO);
         caps.add(CONTINUATION_DISPLAY_ALIGN);
+        caps.add(TO_UNICODE_MAP);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

@@ -15,13 +15,19 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook to-unicode-map, a font's <to-unicode> entries (fop/CR-014). See README.md, "Changes from
+ * Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fonts;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -115,6 +121,28 @@ public final class DefaultFontConfig implements FontConfig {
             parseDirectories();
         }
 
+        /**
+         * docx4j-fo-renderer hook {@code to-unicode-map}: {@code <to-unicode code-point="F04A"
+         * unicode="263A"/>} publishes the text "U+263A" in the ToUnicode CMap for a glyph the
+         * document reached through U+F04A. The code point and the text are hexadecimal; the text
+         * may be several code points separated by spaces. Glyphs, widths and layout are unchanged.
+         */
+        private void parseToUnicode(Configuration mapCfg, Font font) throws FOPException {
+            String codePoint = mapCfg.getAttribute("code-point", null);
+            String unicode = mapCfg.getAttribute("unicode", null);
+            try {
+                int from = Integer.parseInt(codePoint.trim(), 16);
+                StringBuilder text = new StringBuilder();
+                for (String cp : unicode.trim().split("\\s+")) {
+                    text.appendCodePoint(Integer.parseInt(cp, 16));
+                }
+                font.toUnicode.put(from, text.toString());
+            } catch (RuntimeException e) {
+                LogUtil.handleError(LOG, "to-unicode needs hexadecimal code-point and unicode attributes, found "
+                        + codePoint + " and " + unicode, strict);
+            }
+        }
+
         private void parseFonts() throws FOPException {
             boolean lazyLoad = fontInfoCfg.getAttributeAsBoolean("lazy-load", false);
             for (Configuration fontCfg : fontInfoCfg.getChildren("font")) {
@@ -147,6 +175,9 @@ public final class DefaultFontConfig implements FontConfig {
                 // no font triplet info
                 if (!hasTriplets) {
                     LogUtil.handleError(LOG, "font without font-triplet", strict);
+                }
+                for (Configuration mapCfg : fontCfg.getChildren("to-unicode")) {
+                    parseToUnicode(mapCfg, font);
                 }
                 try {
                     if (eventAdapter != null && font.getSimulateStyle()
@@ -328,6 +359,8 @@ public final class DefaultFontConfig implements FontConfig {
 
         private final List<FontTriplet> tripletList = new ArrayList<FontTriplet>();
 
+        private final Map<Integer, String> toUnicode = new HashMap<Integer, String>();
+
         public List<FontTriplet> getTripletList() {
             return Collections.unmodifiableList(tripletList);
         }
@@ -416,6 +449,14 @@ public final class DefaultFontConfig implements FontConfig {
 
         public boolean isLazyLoad() {
             return lazyLoad;
+        }
+
+        /**
+         * docx4j-fo-renderer hook {@code to-unicode-map}: the font's {@code <to-unicode>} entries.
+         * @return code point to ToUnicode text, empty when there are none
+         */
+        public Map<Integer, String> getToUnicode() {
+            return Collections.unmodifiableMap(toUnicode);
         }
     }
 }

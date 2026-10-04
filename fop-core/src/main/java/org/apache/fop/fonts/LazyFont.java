@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: hook gsub-features, a performSubstitution overload taking the delta. See README.md,
- * "Changes from Apache FOP 2.11". */
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook gsub-features, a performSubstitution overload taking the delta.; and hook to-unicode-map, a
+ * font's ToUnicode overrides handed to the loaded font (fop/CR-014). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -52,6 +52,7 @@ public class LazyFont extends Typeface implements FontDescriptor, Substitutable,
     private boolean simulateStyle;
     private boolean embedAsType1;
     private boolean useSVG;
+    private final java.util.Map<Integer, String> toUnicode;
     private final EncodingMode encodingMode;
     private final EmbeddingMode embeddingMode;
     private final String subFontName;
@@ -80,6 +81,7 @@ public class LazyFont extends Typeface implements FontDescriptor, Substitutable,
         this.simulateStyle = fontInfo.getSimulateStyle();
         this.embedAsType1 = fontInfo.getEmbedAsType1();
         useSVG = fontInfo.getUseSVG();
+        toUnicode = fontInfo.getToUnicode();
         this.encodingMode = fontInfo.getEncodingMode() != null ? fontInfo.getEncodingMode()
                 : EncodingMode.AUTO;
         this.embeddingMode = fontInfo.getEmbeddingMode() != null ? fontInfo.getEmbeddingMode()
@@ -127,6 +129,9 @@ public class LazyFont extends Typeface implements FontDescriptor, Substitutable,
                 }
                 if (realFont instanceof FontDescriptor) {
                     realFontDescriptor = (FontDescriptor) realFont;
+                }
+                if (toUnicode != null && realFont instanceof MultiByteFont) {
+                    ((MultiByteFont) realFont).setToUnicodeOverrides(toUnicode);
                 }
             } catch (RuntimeException e) {
                 String error = "Failed to read font file " + fontUris.getEmbed() + " " + e.getMessage();
