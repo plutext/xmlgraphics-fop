@@ -446,3 +446,14 @@ followers of the two probes (ligatures-arabic 105 to 63, fonts-hebrew-no-cs 24 t
 Merged to `2.11-docx4j.2` by fast-forward. The bullets drawn as `#` are now a docx4j
 layout-fidelity item: the document holds U+F0A7 in a plain Times New Roman run, Word draws
 a bullet, docx4j's substitute Tinos has no glyph.
+
+## 11. A regression this CR introduced, found 2026-10-05 (corrected by `fop/CR-016`)
+
+§10.1's rule, that the first glyph of a multiple substitution records the source character, was wrong for a glyph
+that plain text also reaches through the cmap. Cambria Regular's `ccmp` splits ά into `alpha` and a tonos mark, so
+`alpha` recorded ά. A plain α records nothing, so it never contested that. Every α in the subset then published ά,
+and likewise o, e, u, c, and A as Å. Stock FOP published the base glyph's own character and lost only the unmapped
+marks. So this CR made the text layer of such documents worse, from `2.11-docx4j.2` on. The docx4j session found it
+on the corpus (Enterprise CR-001 §6.6 item 42); §10's tests and gates had no Latin decomposition. `fop/CR-016` gives
+each glyph its piece of the character's canonical decomposition where the split follows it, and leaves the rule
+here in place otherwise. The fix belongs on pull request #116 with this CR.
