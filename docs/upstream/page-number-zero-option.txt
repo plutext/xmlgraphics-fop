@@ -1,0 +1,26 @@
+JIRA text, NOT filed. Fork change fop/CR-012 (Enterprise CR-001 §6.6 item 38). Depends on the
+page-label fix (docs/upstream/page-label-zero.txt).
+
+Project:          FOP
+Issue Type:       Improvement
+Affects Version:  2.11 and main
+Component:        layout/unqualified
+
+Summary
+-------
+An option to keep initial-page-number="0", for documents converted from word processors
+
+Description
+-----------
+A word processor can number a cover page 0: Word's w:pgNumType w:start="0", RTF's \pgnstarts0. The
+first numbered page is then 1. Converted to XSL-FO, this is initial-page-number="0". XSL 1.1 makes
+the property a positive integer and lets an implementation use 1 instead, which FOP does in three
+places: the property's maker (NumberProperty.PositiveIntegerMaker), the page sequence's starting
+number (AbstractPageSequence.initPageNumber), and the previous sequence's force-page-count="auto"
+(AbstractPageSequenceLayoutManager.doForcePageCount). Every page number and page-number citation
+in such a document then prints one higher than the source.
+
+Proposal: a user-agent option, off by default, under which all three keep 0. The default stays
+conformant. The fork's implementation: FOUserAgent.setPageNumberZeroAllowed(boolean), a maker for
+initial-page-number that consults it, and the same test in the two layout readers. Tests:
+PageNumberZeroTestCase (default 1, 2; allowed 0, 1; force-page-count; a PDF with the page labelled).

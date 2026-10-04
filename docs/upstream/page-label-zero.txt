@@ -1,0 +1,28 @@
+JIRA text, NOT filed. Fork change fop/CR-012 (Enterprise CR-001 §6.6 item 38).
+
+Project:          FOP
+Issue Type:       Bug
+Affects Version:  2.11 and main
+Component:        pdf
+
+Summary
+-------
+PDFPageLabels.addPageLabel throws StringIndexOutOfBoundsException for a page label of "0"
+
+Description
+-----------
+addPageLabel counts a decimal label's leading zeros with
+
+    do {
+        zeroPadding++;
+    } while (pageLabel.charAt(zeroPadding) == '0');
+
+which runs past the end of a label made only of zeros. A page numbered 0 is reachable wherever a
+page sequence's numbering yields 0: an extension, or a user agent that honours
+initial-page-number="0", as documents converted from word processors ask for a cover page.
+
+Fix
+---
+Write an all-zero decimal label as a prefix label (/P), since /St must be at least 1 (ISO 32000-1,
+12.4.2), and so skip the loop for it. Test: PDFPageLabelsTestCase.testPageNumberedZero labels "0",
+"1", "2" as [0 << /P (0) >> 1 << /S /D >>]; without the fix it throws.
