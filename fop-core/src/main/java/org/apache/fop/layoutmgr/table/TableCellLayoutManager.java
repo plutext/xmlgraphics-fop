@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: a cell's continuation part takes fox:continuation-display-align where it is set (hook
+ * continuation-display-align, fop/CR-013). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr.table;
@@ -526,15 +530,21 @@ public class TableCellLayoutManager extends BlockStackingLayoutManager {
                 borderAfterWhich == ConditionalBorder.REST,
                 false, false, this);
 
-        //Handle display-align
+        //Handle display-align; a part after the cell's first may take the cell's
+        //fox:continuation-display-align instead
+        int partDisplayAlign = getTableCell().getDisplayAlign();
+        if (borderBeforeWhich == ConditionalBorder.REST
+                && getTableCell().getContinuationDisplayAlign() != EN_AUTO) {
+            partDisplayAlign = getTableCell().getContinuationDisplayAlign();
+        }
         if (usedBPD < cellBPD) {
-            if (getTableCell().getDisplayAlign() == EN_CENTER) {
+            if (partDisplayAlign == EN_CENTER) {
                 Block space = new Block();
                 space.setChangeBarList(getChangeBarList());
                 space.setBPD((cellBPD - usedBPD) / 2);
                 space.setBidiLevel(getTableCell().getBidiLevelRecursive());
                 curBlockArea.addBlock(space);
-            } else if (getTableCell().getDisplayAlign() == EN_AFTER) {
+            } else if (partDisplayAlign == EN_AFTER) {
                 Block space = new Block();
                 space.setChangeBarList(getChangeBarList());
                 space.setBPD(cellBPD - usedBPD);

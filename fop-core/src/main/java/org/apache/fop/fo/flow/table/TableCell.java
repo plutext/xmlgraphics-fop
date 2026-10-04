@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook continuation-display-align, the cell's fox:continuation-display-align (fop/CR-013). See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo.flow.table;
@@ -42,6 +46,7 @@ public class TableCell extends TableFObj implements CommonAccessibilityHolder {
     private LengthRangeProperty blockProgressionDimension;
     private int columnNumber;
     private int displayAlign;
+    private int continuationDisplayAlign;
     private int emptyCells;
     private int endsRow;
     private int numberColumnsSpanned;
@@ -82,6 +87,7 @@ public class TableCell extends TableFObj implements CommonAccessibilityHolder {
         commonBorderPaddingBackground = pList.getBorderPaddingBackgroundProps();
         blockProgressionDimension = pList.get(PR_BLOCK_PROGRESSION_DIMENSION).getLengthRange();
         displayAlign = pList.get(PR_DISPLAY_ALIGN).getEnum();
+        continuationDisplayAlign = pList.get(PR_X_CONTINUATION_DISPLAY_ALIGN).getEnum();
         emptyCells = pList.get(PR_EMPTY_CELLS).getEnum();
         startsRow = pList.get(PR_STARTS_ROW).getEnum();
         // For properly computing columnNumber
@@ -210,6 +216,18 @@ public class TableCell extends TableFObj implements CommonAccessibilityHolder {
      */
     public int getDisplayAlign() {
         return displayAlign;
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code continuation-display-align}: the display-align of this cell's
+     * parts after the first, when the cell is broken across pages (fox:continuation-display-align).
+     * {@link #getDisplayAlign()} where it is auto, the default. A word processor sets a broken cell's
+     * later parts from the top whatever the cell's vertical alignment.
+     *
+     * @return the "display-align" for the continuation parts, or EN_AUTO
+     */
+    public int getContinuationDisplayAlign() {
+        return continuationDisplayAlign;
     }
 
     /**

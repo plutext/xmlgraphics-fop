@@ -119,6 +119,14 @@ public final class Docx4jFop {
      */
     public static final String PAGE_NUMBER_ZERO = "page-number-zero";
 
+    /**
+     * {@code fox:continuation-display-align} on fo:table-cell (TableCell.getContinuationDisplayAlign):
+     * the display-align of a cell's parts after the first when it is broken across pages, where a word
+     * processor sets them from the top whatever the cell's vertical alignment; auto, the default, keeps
+     * display-align (Enterprise CR-001 item 39, fop/CR-013).
+     */
+    public static final String CONTINUATION_DISPLAY_ALIGN = "continuation-display-align";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -134,6 +142,7 @@ public final class Docx4jFop {
         caps.add(RULE_STYLE_INT);
         caps.add(LETTER_SPACE_WIDTH);
         caps.add(PAGE_NUMBER_ZERO);
+        caps.add(CONTINUATION_DISPLAY_ALIGN);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

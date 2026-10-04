@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: hook gsub-features, the PR_X_GSUB_FEATURES property id. See README.md, "Changes from
- * Apache FOP 2.11". */
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook gsub-features, the PR_X_GSUB_FEATURES property id.; and PR_X_CONTINUATION_DISPLAY_ALIGN
+ * (hook continuation-display-align, fop/CR-013). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -837,8 +837,11 @@ public interface Constants {
     /** For adding to or removing from the OpenType GSUB features applied to text */
     int PR_X_GSUB_FEATURES = 296;
 
+    /** For the display-align of a table cell's continuation parts (hook continuation-display-align) */
+    int PR_X_CONTINUATION_DISPLAY_ALIGN = 297;
+
     /** Number of property constants defined */
-    int PROPERTY_COUNT = 296;
+    int PROPERTY_COUNT = 297;
 
     // compound property constants
 

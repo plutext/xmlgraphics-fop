@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: hook gsub-features, registering the attribute. See README.md, "Changes from Apache FOP
- * 2.11". */
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook gsub-features, registering the attribute.; and continuation-display-align (fop/CR-013). See
+ * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -59,6 +59,7 @@ public class ExtensionElementMapping extends ElementMapping {
         PROPERTY_ATTRIBUTES.add("header");
         PROPERTY_ATTRIBUTES.add("abbreviation");
         PROPERTY_ATTRIBUTES.add("gsub-features");
+        PROPERTY_ATTRIBUTES.add("continuation-display-align");
         //fox:border-*-radius-*
         PROPERTY_ATTRIBUTES.add("border-before-radius-start");
         PROPERTY_ATTRIBUTES.add("border-before-radius-end");

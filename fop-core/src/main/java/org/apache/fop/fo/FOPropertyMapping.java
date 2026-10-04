@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: hook gsub-features, the fox:gsub-features property, inherited; and initial-page-number's
- * maker, which keeps 0 where the user agent allows it (fop/CR-012). See README.md, "Changes from Apache FOP 2.11". */
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook gsub-features, the fox:gsub-features property, inherited; and initial-page-number's maker,
+ * which keeps 0 where the user agent allows it (fop/CR-012).; and fox:continuation-display-align (fop/CR-013). See
+ * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -2691,6 +2692,17 @@ public final class FOPropertyMapping implements Constants {
         m.setInherited(true);
         m.setDefault("");
         addPropertyMaker("fox:gsub-features", m);
+
+        // fox:continuation-display-align, the display-align of a table cell's parts after the first
+        // when the cell is broken across pages; auto keeps display-align
+        m = new EnumProperty.Maker(PR_X_CONTINUATION_DISPLAY_ALIGN);
+        m.setInherited(false);
+        m.addEnum("before", getEnumProperty(EN_BEFORE, "BEFORE"));
+        m.addEnum("after", getEnumProperty(EN_AFTER, "AFTER"));
+        m.addEnum("center", getEnumProperty(EN_CENTER, "CENTER"));
+        m.addEnum("auto", getEnumProperty(EN_AUTO, "AUTO"));
+        m.setDefault("auto");
+        addPropertyMaker("fox:continuation-display-align", m);
 
         // fox:auto-toggle, used only in fo:multi-switch
         m = new EnumProperty.Maker(PR_X_AUTO_TOGGLE);
