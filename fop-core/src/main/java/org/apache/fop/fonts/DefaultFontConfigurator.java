@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook to-unicode-map, the font's <to-unicode> entries carried to its EmbedFontInfo (fop/CR-014).
+ * See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fonts;
@@ -170,6 +174,9 @@ public class DefaultFontConfigurator implements FontConfigurator<EmbedFontInfo> 
         EmbedFontInfo embedFontInfo = new EmbedFontInfo(fontUris, font.isKerning(),
                 font.isAdvanced(), tripletList, subFont, encodingMode, embeddingMode,
                 font.getSimulateStyle(), font.getEmbedAsType1(), font.getUseSVG(), font.isLazyLoad());
+        if (!font.getToUnicode().isEmpty()) {
+            embedFontInfo.setToUnicode(font.getToUnicode());
+        }
         if (fontCache != null) {
             if (!fontCache.containsFont(embedFontInfo)) {
                 fontCache.addFont(embedFontInfo, resourceResolver);

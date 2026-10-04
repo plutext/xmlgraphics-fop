@@ -51,7 +51,8 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.RULE_STYLE_INT));
         assertTrue(Docx4jFop.has(Docx4jFop.LETTER_SPACE_WIDTH));
         assertTrue(Docx4jFop.has(Docx4jFop.PAGE_NUMBER_ZERO));
-        assertEquals(11, Docx4jFop.capabilities().size());
+        assertTrue(Docx4jFop.has(Docx4jFop.TO_UNICODE_MAP));
+        assertEquals(12, Docx4jFop.capabilities().size());
     }
 
     @Test

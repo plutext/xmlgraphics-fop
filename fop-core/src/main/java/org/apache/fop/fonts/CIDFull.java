@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: getUnicodeSequences, so a fully embedded font's ToUnicode carries the per-glyph
- * meaning too (fop/CR-002). See README.md, "Changes from Apache FOP 2.11". */
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: getUnicodeSequences, so a fully embedded font's ToUnicode carries the per-glyph meaning too
+ * (fop/CR-002).; and the font's ToUnicode overrides applied (hook to-unicode-map, fop/CR-014). See README.md,
+ * "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -119,6 +120,7 @@ public class CIDFull implements CIDSet {
             if (meaning != null) {
                 sequences[gi] = meaning;
             }
+            sequences[gi] = font.toUnicodeText(sequences[gi]);
         }
         return sequences;
     }

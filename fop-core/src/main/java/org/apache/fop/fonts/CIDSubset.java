@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: getUnicodeSequences reads the per-glyph meaning the font recorded at substitution
- * (fop/CR-002). See README.md, "Changes from Apache FOP 2.11". */
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: getUnicodeSequences reads the per-glyph meaning the font recorded at substitution (fop/CR-002).;
+ * and the font's ToUnicode overrides applied (hook to-unicode-map, fop/CR-014). See README.md, "Changes from Apache
+ * FOP 2.11". */
 
 /* $Id$ */
 
@@ -154,6 +155,9 @@ public class CIDSubset implements CIDSet {
         for (int i = 0; i < usedGlyphsCount; i++) {
             String meaning = (font == null) ? null : font.getGlyphMeaning(getOriginalGlyphIndex(i));
             sequences[i] = (meaning != null) ? meaning : new String(Character.toChars(getUnicode(i)));
+            if (font != null) {
+                sequences[i] = font.toUnicodeText(sequences[i]);
+            }
         }
         return sequences;
     }

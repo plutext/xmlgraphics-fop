@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook to-unicode-map, the font's ToUnicode overrides (fop/CR-014). See README.md, "Changes from
+ * Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fonts;
@@ -22,7 +26,9 @@ package org.apache.fop.fonts;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * FontInfo contains meta information on fonts (where is the metrics file etc.)
@@ -33,6 +39,8 @@ public class EmbedFontInfo implements Serializable {
 
     /** Serialization Version UID */
     private static final long serialVersionUID = 8755432068669997369L;
+
+    private HashMap<Integer, String> toUnicode;
 
     /** false, to disable kerning */
     protected final boolean kerning;
@@ -219,6 +227,23 @@ public class EmbedFontInfo implements Serializable {
 
     public boolean isLazyLoad() {
         return lazyLoad;
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code to-unicode-map}: the text the ToUnicode CMap publishes for
+     * glyphs reached through these code points, in place of the code point itself.
+     * @param toUnicode code point to text
+     */
+    public void setToUnicode(Map<Integer, String> toUnicode) {
+        this.toUnicode = toUnicode == null ? null : new HashMap<Integer, String>(toUnicode);
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code to-unicode-map}: see {@link #setToUnicode(Map)}.
+     * @return code point to text, or null
+     */
+    public Map<Integer, String> getToUnicode() {
+        return toUnicode;
     }
 
     private void readObject(java.io.ObjectInputStream in)
