@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: a label of zeros (a page numbered 0) is written as a prefix label, not read past its end
+ * (fop/CR-012). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.pdf;
@@ -71,7 +75,12 @@ public class PDFPageLabels extends PDFNumberTreeNode {
             currentPageLabelType = DECIMAL;
             currentPageNumber = Integer.parseInt(pageLabel);
             int zeroPadding = 0;
-            if (pageLabel.charAt(zeroPadding) == '0') {
+            if (currentPageNumber == 0) {
+                // a page numbered 0: /St must be at least 1, so a label of zeros is written as a
+                // prefix; counting its leading zeros below would run past its end
+                currentPageLabelType = PREFIX;
+                addNewPageLabel = true;
+            } else if (pageLabel.charAt(zeroPadding) == '0') {
                 do {
                     zeroPadding++;
                 } while (pageLabel.charAt(zeroPadding) == '0');

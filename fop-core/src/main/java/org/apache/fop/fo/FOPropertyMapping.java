@@ -16,8 +16,8 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: hook gsub-features, the fox:gsub-features property, inherited. See README.md, "Changes
- * from Apache FOP 2.11". */
+ * from Apache FOP 2.11: hook gsub-features, the fox:gsub-features property, inherited; and initial-page-number's
+ * maker, which keeps 0 where the user agent allows it (fop/CR-012). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -2307,7 +2307,7 @@ public final class FOPropertyMapping implements Constants {
         addPropertyMaker("force-page-count", m);
 
         // initial-page-number
-        m  = new NumberProperty.PositiveIntegerMaker(PR_INITIAL_PAGE_NUMBER);
+        m  = new NumberProperty.InitialPageNumberMaker(PR_INITIAL_PAGE_NUMBER);
         m.setInherited(false);
         m.addEnum("auto", getEnumProperty(EN_AUTO, "AUTO"));
         m.addEnum("auto-odd", getEnumProperty(EN_AUTO_ODD, "AUTO_ODD"));

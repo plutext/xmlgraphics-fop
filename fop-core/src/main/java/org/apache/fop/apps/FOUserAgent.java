@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook page-number-zero, an option to number a page 0 (fop/CR-012). See README.md, "Changes from
+ * Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.apps;
@@ -112,6 +116,7 @@ public class FOUserAgent {
     private StructureTreeEventHandler structureTreeEventHandler
             = DummyStructureTreeEventHandler.INSTANCE;
     private boolean pdfUAEnabled;
+    private boolean pageNumberZeroAllowed;
 
     /** Producer:  Metadata element for the system/software that produces
      * the document. (Some renderers can store this in the document.)
@@ -540,6 +545,28 @@ public class FOUserAgent {
      */
     public boolean validateStrictly() {
         return factory.validateStrictly();
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code page-number-zero}: whether initial-page-number="0" numbers the
+     * first page 0. XSL 1.1 makes the property a positive integer and allows 1 as the error
+     * recovery for anything else, which is what FOP does by default. A word processor's document
+     * may number a cover page 0 (Word's w:pgNumType w:start="0"), so a producer converting one can
+     * allow it here. Off by default.
+     *
+     * @param allowed true to keep a starting page number of 0
+     */
+    public void setPageNumberZeroAllowed(boolean allowed) {
+        this.pageNumberZeroAllowed = allowed;
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code page-number-zero}: see {@link #setPageNumberZeroAllowed(boolean)}.
+     *
+     * @return true if initial-page-number="0" is kept as 0
+     */
+    public boolean isPageNumberZeroAllowed() {
+        return pageNumberZeroAllowed;
     }
 
     /**

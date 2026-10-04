@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: a test for a page numbered 0 (fop/CR-012). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.pdf;
@@ -89,4 +92,21 @@ public class PDFPageLabelsTestCase {
         baos.close();
     }
 
+
+    /**
+     * A page numbered 0 (initial-page-number="0" where the user agent allows it) is labelled as a
+     * prefix, since /St must be at least 1; counting the leading zeros of "0" ran past its end.
+     */
+    @Test
+    public void testPageNumberedZero() throws IOException {
+        PDFDocument pdfDoc = mock(PDFDocument.class);
+        PDFPageLabels pageLabels = new PDFPageLabels();
+        pageLabels.setDocument(pdfDoc);
+        pageLabels.addPageLabel(0, "0");
+        pageLabels.addPageLabel(1, "1");
+        pageLabels.addPageLabel(2, "2");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        pageLabels.getNums().output(baos);
+        assertEquals("[0 << /P (0) >> 1 << /S /D >>]", baos.toString());
+    }
 }

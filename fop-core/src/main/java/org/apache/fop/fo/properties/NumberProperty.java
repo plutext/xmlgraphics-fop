@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: InitialPageNumberMaker, which keeps 0 where the user agent allows it (hook page-number-zero,
+ * fop/CR-012). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo.properties;
@@ -104,6 +108,46 @@ public final class NumberProperty extends Property implements Numeric {
             return convertPropertyDatatype(p, propertyList, fo);
         }
 
+    }
+
+    /**
+     * The maker for initial-page-number: a positive integer, as PositiveIntegerMaker makes it,
+     * except that 0 is kept where the user agent allows it (FOUserAgent.isPageNumberZeroAllowed).
+     * Both readers of the property, the page sequence's starting number and the previous
+     * sequence's force-page-count, then see the same value.
+     */
+    public static class InitialPageNumberMaker extends PositiveIntegerMaker {
+
+        /**
+         * Constructor for NumberProperty.InitialPageNumberMaker
+         * @param propId the id of the property
+         */
+        public InitialPageNumberMaker(int propId) {
+            super(propId);
+        }
+
+        /**
+         * Keep 0 where the user agent allows it; otherwise as PositiveIntegerMaker.
+         *
+         * {@inheritDoc}
+         */
+        public Property convertProperty(Property p, PropertyList propertyList, FObj fo)
+                    throws PropertyException {
+            if (!(p instanceof EnumProperty)) {
+                Number val = p.getNumber();
+                if (val != null && Math.round(val.floatValue()) == 0
+                        && pageNumberZeroAllowed(propertyList, fo)) {
+                    return getInstance(0);
+                }
+            }
+            return super.convertProperty(p, propertyList, fo);
+        }
+
+        private static boolean pageNumberZeroAllowed(PropertyList propertyList, FObj fo) {
+            FObj owner = fo != null ? fo : (propertyList != null ? propertyList.getFObj() : null);
+            return owner != null && owner.getUserAgent() != null
+                    && owner.getUserAgent().isPageNumberZeroAllowed();
+        }
     }
 
     /** cache holding all canonical NumberProperty instances */

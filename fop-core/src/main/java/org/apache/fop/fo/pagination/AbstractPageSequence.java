@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: initial-page-number="0" kept where the user agent allows it (hook page-number-zero, fop/CR-012).
+ * See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo.pagination;
@@ -110,7 +114,8 @@ public abstract class AbstractPageSequence extends FObj implements CommonAccessi
             }
         } else { // <integer> for explicit page number
             int pageStart = initialPageNumber.getValue();
-            startingPageNumber = (pageStart > 0) ? pageStart : 1; // spec rule
+            boolean zeroAllowed = pageStart == 0 && getUserAgent().isPageNumberZeroAllowed();
+            startingPageNumber = (pageStart > 0 || zeroAllowed) ? pageStart : 1; // spec rule
         }
     }
 

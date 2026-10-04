@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+ * from Apache FOP 2.11: force-page-count reads initial-page-number="0" as 0 where the user agent allows it
+ * (hook page-number-zero, fop/CR-012). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -351,8 +355,10 @@ public abstract class AbstractPageSequenceLayoutManager extends AbstractLayoutMa
                 }
             } else { // <integer> for explicit page number
                 int nextPageSeqPageStart = nextPageSeqInitialPageNumber.getValue();
-                // spec rule
-                nextPageSeqPageStart = (nextPageSeqPageStart > 0) ? nextPageSeqPageStart : 1;
+                // spec rule; 0 only where the user agent allows it, as for the next sequence itself
+                boolean zeroAllowed = nextPageSeqPageStart == 0
+                        && pageSeq.getUserAgent().isPageNumberZeroAllowed();
+                nextPageSeqPageStart = (nextPageSeqPageStart > 0 || zeroAllowed) ? nextPageSeqPageStart : 1;
                 if (nextPageSeqPageStart % 2 == 0) {   // explicit even startnumber
                     forcePageCount = Constants.EN_END_ON_ODD;
                 } else {    // explicit odd startnumber

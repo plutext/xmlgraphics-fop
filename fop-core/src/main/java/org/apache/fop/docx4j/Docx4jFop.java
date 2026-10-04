@@ -111,6 +111,14 @@ public final class Docx4jFop {
      */
     public static final String LETTER_SPACE_WIDTH = "letter-space-width";
 
+    /**
+     * {@code FOUserAgent.setPageNumberZeroAllowed(boolean)}: with it set, initial-page-number="0"
+     * numbers the first page 0 (Word's cover page, {@code w:pgNumType w:start="0"}), where FOP's
+     * default, the XSL error recovery, makes it 1. The PDF page labels write such a page as a
+     * prefix label (Enterprise CR-001 item 38, fop/CR-012).
+     */
+    public static final String PAGE_NUMBER_ZERO = "page-number-zero";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -125,6 +133,7 @@ public final class Docx4jFop {
         caps.add(SHARED_GLYPH_TOUNICODE);
         caps.add(RULE_STYLE_INT);
         caps.add(LETTER_SPACE_WIDTH);
+        caps.add(PAGE_NUMBER_ZERO);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 
