@@ -1,6 +1,7 @@
 # CR-014: a font's ToUnicode text for given code points, from its configuration entry
 
-Status: DONE 2026-10-05, gated PASS by the docx4j session (§4) and merged to `2.11-docx4j.5`; unreleased.
+Status: DONE 2026-10-05, gated PASS by the docx4j session (§4) and merged to `2.11-docx4j.5` (77a8b3cfe; full build after
+the merge 3758 tests, 0 failures, checkstyle and spotbugs clean); unreleased.
 Registry key `fop/CR-014`. Capability `to-unicode-map`. A docx4j hook; not upstream-bound as it stands
 (see §5).
 

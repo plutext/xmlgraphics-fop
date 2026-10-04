@@ -194,8 +194,11 @@ Apache `main` after 2.11 plus the fork's fixes (`fop/CR-009`), with `fop/CR-008`
 `2.11-docx4j.2`; the docx4j session scores the released `.4` before docx4j's pom moves to it (17.3.1).
 Work continues on branch `2.11-docx4j.5`, snapshot `2.11-docx4j.5-SNAPSHOT`, cut from the release commit;
 unreleased on it: `fop/CR-012` (page numbered 0, hook `page-number-zero`) and `fop/CR-013` (a table cell's
-continuation parts, hook `continuation-display-align`), both gated PASS 2026-10-04; draft notes in
-`docs/release-notes/2.11-docx4j.5.md`. `fop/CR-014` (hook `to-unicode-map`) is on its branch, gate pending.
+continuation parts, hook `continuation-display-align`), both gated PASS 2026-10-04, and `fop/CR-014` (a symbol
+font's ToUnicode text from its configuration, hook `to-unicode-map`), gated PASS and merged 2026-10-05; draft
+notes in `docs/release-notes/2.11-docx4j.5.md`. `fop/CR-015` (Enterprise CR-001 item 40: a positive OS/2
+typo descender, and the 0/0 ascender and descender of a font without `d` and `p` glyphs; capability
+`ascender-descender`; FOP-1896) is on branch `CR-015-positive-typo-descender`, gate pending.
 `2.11-docx4j.2` (2026-10-02) and `2.11-docx4j.1` (2026-09-25, tagged at `2f5030172`) are the earlier
 releases; `.3` never shipped. `docs/developer/releasing.md` is the runbook and records what each release
 proved.
