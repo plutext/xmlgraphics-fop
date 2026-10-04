@@ -166,6 +166,21 @@ numbered staging repositories like `orgdocx4j-1095`.
 - The next development version is `2.11-docx4j.3-SNAPSHOT`, set right after the release so a local
   `mvn install` cannot shadow the published `2.11-docx4j.2` in `~/.m2`.
 
+## Proven by the third release, 2.11-docx4j.4 on 2026-10-04
+
+- **The first release on Apache `main`'s base** (`fop/CR-009`). It still builds against the released
+  `xmlgraphics-commons` 2.11 and Batik 1.19, where `main` pins snapshots. The two commits that needed
+  the snapshot API (FOP-3311, FOP-3326) are left out.
+- **Tagged before deploying**: `v2.11-docx4j.4`, annotated, on the version commit `75f9b0262`. That commit
+  also carries the final release notes, the project url and the five artifact descriptions. The branch
+  and the tag were pushed by name. CI was green on that commit on JDK 8, 11, 17, 21 and 25.
+- **Verified from Central after publication**: the five artifacts, each with sources, javadoc, `.asc`,
+  `.md5` and `.sha1` (the parent a pom only). The core manifest's `Implementation-Version` is
+  `2.11-docx4j.4`, and the published core carries `fop/CR-010` (`processWordMapping` takes the letter
+  space).
+- The next development version is `2.11-docx4j.5-SNAPSHOT`, on branch `2.11-docx4j.5`, cut from the
+  release commit and added to CI's branch list.
+
 ## Two things that look wrong and are not
 
 **The published pom lists fewer dependencies than the module's own pom.** For the core
