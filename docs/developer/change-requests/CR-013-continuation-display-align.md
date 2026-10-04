@@ -1,7 +1,6 @@
 # CR-013: the display-align of a table cell's continuation parts
 
-Status: DONE ON BRANCH 2026-10-04, `CR-013-continuation-display-align` off `2.11-docx4j.5`; not merged, not
-gated. Registry key `fop/CR-013`. Capability `continuation-display-align`. A docx4j hook (Word compatibility,
+Status: DONE 2026-10-04, gated PASS by the docx4j session (below) and merged to `2.11-docx4j.5`; unreleased. Registry key `fop/CR-013`. Capability `continuation-display-align`. A docx4j hook (Word compatibility,
 not an XSL defect), so not upstream-bound.
 
 The docx4j session's batch 51 (probe table-rowsplit-3, variant F), taken to the fork at Jason's word on
@@ -47,3 +46,18 @@ page is unchanged.
 
 With `continuation-display-align` present, docx4j writes `fox:continuation-display-align="before"` on cells
 whose `w:vAlign` is center or bottom.
+
+## The docx4j gate, 2026-10-04: PASS
+
+Run by the docx4j session on Jason's install of 49e805835, copied aside as r6. The CR-012 snapshot (r5) was
+the base, so this CR is isolated. Coverage: the three corpora, real-c2 and the probes, with the Windows VM's
+faces. docx4j's side writes `fox:continuation-display-align="before"` on cells with `display-align` center
+or after when the capability is present.
+- **Base, r5 against `.4`:** only the documents numbering a page 0 move, all up: 13347 +10 lines, 2189 +2,
+  6083 +18, 4899 +71, 6251 +3. That is CR-012, as its own gate found, with 2189 newly moving.
+- **Control, r6 without the attribute:** 0 movers against r5.
+- **Measurement, r6 with the attribute:** 10 movers, none down.
+  - 13102 +12 lines, and its real-c2 copy +11;
+  - 11741 +4, 11657 +3, 3310 +1, 4025 +1;
+  - the four table-rowsplit-3 probe modes (compat 11, 11 for 11657, 12, 14): 0.998 to 1.0000.
+
