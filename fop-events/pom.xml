@@ -5,7 +5,7 @@
   <groupId>org.docx4j</groupId>
   <artifactId>docx4j-fo-renderer-events</artifactId>
   <name>docx4j FO renderer events</name>
-  <description>docx4j FO renderer events, based on Apache FOP 2.11 (fop-events). This is a modified distribution derived from Apache FOP 2.11. It is maintained by Plutext/docx4j and is not an Apache Software Foundation release. Apache FOP is a trademark of the Apache Software Foundation.</description>
+  <description>docx4j FO renderer events, based on Apache FOP's main branch after 2.11 (fop-events). This is a modified distribution derived from Apache FOP (its main branch after the 2.11 release). It is maintained by Plutext/docx4j and is not an Apache Software Foundation release. Apache FOP is a trademark of the Apache Software Foundation.</description>
 
   <parent>
     <groupId>org.docx4j</groupId>

@@ -34,7 +34,7 @@ import java.util.Set;
  * shape (a {@code version()} and a {@code capabilities()} static, both without arguments)
  * is a contract.</p>
  *
- * @see <a href="https://github.com/plutext/xmlgraphics-fop/tree/docx4j-2.11">the fork</a>
+ * @see <a href="https://github.com/plutext/xmlgraphics-fop">the fork</a>
  */
 public final class Docx4jFop {
 
