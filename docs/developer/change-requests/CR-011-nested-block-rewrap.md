@@ -97,3 +97,19 @@ has a different IPD causes NullPointerException") is this scenario's page-width 
 `AbstractBreaker.getNextBlockListChangedIPD`, a different site, so it may be a different fault in the same
 scenario that `main` now reaches as this NPE. The float form has no JIRA. Whether to comment on FOP-1912 or
 file a new issue (linking it) is for Jason and the docx4j session.
+
+## 7. Item 37 on the same branch (Jason, 2026-10-04)
+
+Enterprise CR-001 §6.6 item 37: a float wider than the measure, then a block whose line overflows. On the float
+re-layout pass, `LineLayoutManager$LineBreakingAlgorithm.updateData2` reports the overflow through
+`curChildLM.getFObj()`. `curChildLM` is null on that pass, so FOP threw a `NullPointerException` instead of
+reporting the overflow. Reproduced on 2.11 and on Apache `main` (`docs/developer/repro/wide-float-overflow-npe.fo`).
+
+The change: `curChildLM == null ||` added to the existing `getFObj() == null` test, so the overflow is
+reported against the line manager's own FO, as it already was where the child had no FO. The code only
+reports; layout does not change. docx4j's `WordLineLayoutManager` already carries the same guard
+(53b2b5921), so nothing changes through docx4j.
+
+Test: `float_overflow_relayout.xml` (one page; the overflowing word laid out). It fails without the change
+with the `NullPointerException`. No JIRA matches (searched `updateData2`, `lineOverflows`, and float with
+`LineLayoutManager`). Draft: `docs/upstream/overflow-report-null-child.txt`.

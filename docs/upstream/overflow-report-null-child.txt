@@ -1,0 +1,42 @@
+JIRA text, NOT filed. Fork change fop/CR-011 §7 (Enterprise CR-001 §6.6 item 37). No existing issue
+found (JIRA searched 2026-10-04 for updateData2, lineOverflows, and float with LineLayoutManager).
+
+Project:          FOP
+Issue Type:       Bug
+Affects Version:  2.11 and main
+Component:        layout/unqualified
+
+Summary
+-------
+NullPointerException in LineLayoutManager's line breaking when a line overflows beside a float
+wider than the measure
+
+Description
+-----------
+LineLayoutManager.LineBreakingAlgorithm.updateData2 reports a line that does not fit through
+curChildLM:
+
+    if (curChildLM.getFObj() == null) {
+        eventProducer.lineOverflows(this, getFObj().getName(), ...);
+    } else {
+        eventProducer.lineOverflows(this, curChildLM.getFObj().getName(), ...);
+    }
+
+On the float re-layout pass (PageBreaker.handleFloatLayout), curChildLM is null, so a line that
+overflows there throws a NullPointerException, and the document fails, instead of the overflow
+being reported.
+
+To reproduce
+------------
+  <fo:block><fo:float float="start"><fo:block-container width="480pt" height="200pt">
+    <fo:block> </fo:block></fo:block-container></fo:float></fo:block>
+  <fo:block><fo:block>block child</fo:block><fo:inline>Overflowing
+    ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ</fo:inline></fo:block>
+
+in a region 425pt wide. It fails on 2.11 and on main.
+
+Fix
+---
+Test curChildLM == null as well as getFObj() == null, so the overflow is reported against the line
+manager's own FO, as it already is when the child has no FO. The code only reports; layout does not
+change. Layout test float_overflow_relayout.xml fails before with the NullPointerException.
