@@ -1,4 +1,7 @@
-JIRA comment text, NOT posted. For FOP-1896 (https://issues.apache.org/jira/browse/FOP-1896, "Incorrect text
+JIRA comment, POSTED 2026-10-05 by the docx4j session as jharrop: id 18123196
+(https://issues.apache.org/jira/browse/FOP-1896?focusedCommentId=18123196), from
+~/fidelity-cr030/fop1896-comment.txt, which is the text below with one line per paragraph and the table in
+{noformat}. For FOP-1896 (https://issues.apache.org/jira/browse/FOP-1896, "Incorrect text
 underlines position for some fonts", reported by Alexander Chingarev 2011-02-05, Open, read here through JIRA's
 API 2026-10-05). On it, Eugene Markovskyi (2011-02-15) attached an edited TTFFile.java making the same two
 changes as the fork's. Andreas L. Delmelle (2011-02-22) found it inconsequential but wanted a test font, and
@@ -8,7 +11,7 @@ required a negative hhea descender, which none of the 2,547 fonts measured needs
 ../fop-upstream-wt (da279ee9d), on Apache main at ab5d6eba6; pull request
 https://github.com/apache/xmlgraphics-fop/pull/119, opened 2026-10-05 at Jason's word, with this comment
 (the text in ../fop-upstream-prs/FOP-1896.md). Fork change fop/CR-015 (Enterprise CR-001 §6.6 item 40).
-Jason approved posting this comment with the pull request on 2026-10-05; the docx4j session posts it.
+Jason approved posting this comment with the pull request on 2026-10-05.
 
 Comment
 -------

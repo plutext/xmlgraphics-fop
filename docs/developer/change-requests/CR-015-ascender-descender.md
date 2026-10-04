@@ -11,7 +11,8 @@ had no test font. Branch `FOP-1896` in `../fop-upstream-wt` (da279ee9d), on Apac
 suite passes, 3663 tests, checkstyle clean, and the three tests fail without the change. Pull request
 [#119](https://github.com/apache/xmlgraphics-fop/pull/119) opened 2026-10-05 at Jason's word; the pull request
 text is in `../fop-upstream-prs/FOP-1896.md`. The comment on FOP-1896 (`docs/upstream/typo-descender.txt`), approved
-by Jason the same day, is posted through the docx4j session.
+by Jason the same day, was posted by the docx4j session as jharrop (id 18123196, 2026-10-04T21:35Z UTC), with the
+pull request's link.
 
 Enterprise CR-001 §6.6 item 40. Found by the docx4j session (batch 51, corpus document 5975, a column of
 `w:sym` Wingdings smileys). docx4j works around it for its own lines with `RunFontSelector.symbolLineHeight`
