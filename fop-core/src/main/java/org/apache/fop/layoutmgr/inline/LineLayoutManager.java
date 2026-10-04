@@ -1027,12 +1027,6 @@ public class LineLayoutManager extends InlineStackingLayoutManager
     }
 
     /**
-     * Creates the element list in BP direction for the broken lines.
-     * @param alignment the currently applicable vertical alignment
-     * @param context the layout context
-     * @return the newly built element list
-     */
-    /**
      * The position inside this manager's own wrapping, where an earlier pass left one. The
      * elements of a nested block-level sequence are kept in knuthParagraphs and are wrapped in
      * place, here and by the ancestor managers. When line breaking runs again over the same
@@ -1055,6 +1049,12 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         return pos;
     }
 
+    /**
+     * Creates the element list in BP direction for the broken lines.
+     * @param alignment the currently applicable vertical alignment
+     * @param context the layout context
+     * @return the newly built element list
+     */
     private List<ListElement> postProcessLineBreaks(int alignment, LayoutContext context) {
 
         List<ListElement> returnList = new LinkedList<>();
