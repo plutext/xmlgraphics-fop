@@ -25,8 +25,8 @@ glyphs whenever the two together exceed the em, whether or not it found those gl
 gets an ascender and a descender of 0. TTFFileTestCase asserts exactly that for AndroidEmoji, beside "TODO:
 Nedd to be fixed?". Of 2,547 distinct font files loaded through FontLoader here, 978 get 0 and 0. They
 include most Noto fonts for scripts other than Latin (Devanagari, Bengali, Thai, Arabic, Hebrew, Sinhala and
-the rest), the Droid script fonts, MT Extra and Algerian. With a text area of height 0, the baseline sits in the middle of the
-line and the glyphs rise into the line above.
+the rest), the Droid script fonts, MT Extra and Algerian. With a text area of height 0, the baseline sits in
+the middle of the line and the glyphs rise into the line above.
 
 Fixing (1) alone makes Wingdings worse: its hhea box exceeds the em and it has no 'd' or 'p', so it falls
 to (2) and gets 0 and 0. Both conditions are needed:
