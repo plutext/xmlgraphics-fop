@@ -228,8 +228,9 @@ rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits p
    - 18 is conformant FOP (conditional space discarded at a reference area's end) against Word's rule:
      a docx4j hook in `PageBreakingAlgorithm.computeDifference`, as Enterprise CR-001 sketched, by reading.
    - Two float crashes reproduce on `main` too (`docs/developer/repro/`), now §6.6 items 36 and 37.
-     37, the overflow-report NPE, is a one-line guard. 36, the `setVisibility` NPE, hides lost content,
-     so it needs real work.
+     Both are fixed on `2.11-docx4j.4` as `fop/CR-011` (merged 2026-10-04): 36's cause was a nested
+     block's positions being wrapped twice when line breaking reran, and 37 was a null guard in the
+     overflow report. Upstream not yet sent: 36 relates to FOP-1912; 37 has no JIRA.
    - 20, 21 and 24 did not reproduce from their descriptions; they need docx4j's FO with its workaround
      off.
 4. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a

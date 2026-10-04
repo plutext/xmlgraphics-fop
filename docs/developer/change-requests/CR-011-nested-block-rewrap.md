@@ -1,6 +1,9 @@
 # CR-011: a nested block's positions are not wrapped twice when line breaking runs again
 
-Status: DONE ON BRANCH 2026-10-03, `CR-011-nested-block-rewrap` off `2.11-docx4j.4`; not merged, not gated.
+Status: DONE, merged to `2.11-docx4j.4` 2026-10-04 by fast-forward at Jason's word, with item 37 (§7), and without
+a corpus gate. Through docx4j with Word layout on (the default), neither change can alter output by
+construction: docx4j's `WordLineLayoutManager` carries its own copies of both methods, already fixed there
+(2ba434600 and 53b2b5921). The full build passes: 3748 tests. Unreleased.
 Registry key `fop/CR-011`. Upstream-bound: a FOP defect present in 2.11 and in Apache `main`. Its page-width
 form is the scenario of FOP-1912 (Open since 2011); the float form has no JIRA. Draft:
 `docs/upstream/nested-block-rewrap.txt`. No capability: docx4j carries its own copy of the method (§5), so
