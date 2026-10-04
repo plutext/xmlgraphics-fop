@@ -104,9 +104,19 @@ does not read at all; that is not this change.
 
 ## 5. What moves through docx4j
 
-Every document with text in a face from §4. For the gate's partition: FOP writes each font's ascender and
-descender to the PDF as the font descriptor's `/Ascent` and `/Descent`, so the faces that moved are the ones
-whose descriptor changed between control and measurement. Glyph-fallback faces count. The docx4j workaround
+Every document with text in a face from §4. Glyph-fallback faces count.
+
+**Retracted (2026-10-05): the partition first proposed here does not work.** This section said FOP writes each
+font's ascender and descender to the PDF as the font descriptor's `/Ascent` and `/Descent`, so the faces that
+moved would be the ones whose descriptor changed. That holds only for a single-byte font. A TrueType font
+embedded as a CID font gets `PDFCIDFontDescriptor`, which takes `/Ascent` and `/Descent` from the font's bounding
+box (`fontBBox[3]`, `fontBBox[1]`). The docx4j session measured it: 5975's descriptors are identical on the
+control and the measurement for every face, and Wingdings' read 898 and −210 on stock FOP too, while layout used
+770 and +205. In its place, the faces that move are listed by the name FOP embeds (the PDF `BaseFont` without
+its subset tag): 761 names from the 1,677 moved files of §4, given to the docx4j session as
+`~/fidelity-cr030/cr015-moved-faces.txt`, with a per-file table of the values before and after. Eight of the
+names (`DroidSansFallback`, `NotoSansElymaic-Regular`, six `NotoSansSinhala` styles) also belong to another
+version of the font that does not move. The docx4j workaround
 (`symbolLineHeight`) sets the line height of a `w:sym` span. This change sets the font's own metrics, from which
 FOP places the baseline in that line, so the two meet in 5975.
 
@@ -124,6 +134,15 @@ span: fields, generated text, and `w:sym` on the XSLT pathway. That pathway neve
 5975 rendered through it shows what this change alone recovers. The docx4j session agreed the second finding
 (Wingdings' `d` and `p` are only at U+F064 and U+F070, which the guess does not find) and recorded item 40
 (Enterprise a29d111).
+
+**Corpus document 5975, the fork alone** (the docx4j session, 2026-10-05, on install r8 against r6). On docx4j's
+XSLT pathway, where `w:sym` never had `symbolLineHeight`, the smiley's baseline was:
+- r6 (stock metrics): 165.32, 4.41pt high, the old bug;
+- r8 (this change): 170.75, 1.02pt low.
+
+Word's is 169.73. On the visitor pathway with `symbolLineHeight`, both read 169.57, 0.16pt from Word's. So this
+change corrects FOP's metrics, but docx4j's inherited pitch still scales by the block font's box, and the
+workaround stays useful on this renderer.
 
 ## 6. Not addressed
 
