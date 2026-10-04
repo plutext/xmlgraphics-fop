@@ -1,6 +1,7 @@
 # CR-015: a font's descender is not above its baseline, nor 0 for want of glyphs to guess from
 
-Status: DONE 2026-10-05, gated PASS by the docx4j session (§5) and merged to `2.11-docx4j.5`; unreleased. Implemented at
+Status: DONE 2026-10-05, gated PASS by the docx4j session (§5) and merged to `2.11-docx4j.5` (aad832b49; full
+build after the merge 3762 tests, 0 failures, checkstyle and spotbugs clean); unreleased. Implemented at
 Jason's word on branch `CR-015-positive-typo-descender` (code a8c3afc7d); the full build on the branch passes, 3760
 tests, 0 failures, checkstyle and spotbugs clean. Registry key `fop/CR-015`. Capability `ascender-descender`. Upstream-bound: a FOP
 defect in 2.11 and in Apache `main`, reported as [FOP-1896](https://issues.apache.org/jira/browse/FOP-1896)
