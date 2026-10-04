@@ -7,7 +7,11 @@ tests, 0 failures, checkstyle and spotbugs clean. Registry key `fop/CR-015`. Cap
 defect in 2.11 and in Apache `main`, reported as [FOP-1896](https://issues.apache.org/jira/browse/FOP-1896)
 (Open since 2011, "Incorrect text underlines position for some fonts"). A patch attached there in 2011 made the
 same two changes; it stalled in 2012 because it was an edited source file rather than a diff, and the fix
-had no test font. Draft comment: `docs/upstream/typo-descender.txt`.
+had no test font. Branch `FOP-1896` in `../fop-upstream-wt` (da279ee9d), on Apache `main` at ab5d6eba6: the fop-core
+suite passes, 3663 tests, checkstyle clean, and the three tests fail without the change. Pull request
+[#119](https://github.com/apache/xmlgraphics-fop/pull/119) opened 2026-10-05 at Jason's word; the pull request
+text is in `../fop-upstream-prs/FOP-1896.md`. The comment on FOP-1896 (`docs/upstream/typo-descender.txt`), approved
+by Jason the same day, is posted through the docx4j session.
 
 Enterprise CR-001 §6.6 item 40. Found by the docx4j session (batch 51, corpus document 5975, a column of
 `w:sym` Wingdings smileys). docx4j works around it for its own lines with `RunFontSelector.symbolLineHeight`

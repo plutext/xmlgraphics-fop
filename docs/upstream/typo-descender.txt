@@ -4,9 +4,11 @@ API 2026-10-05). On it, Eugene Markovskyi (2011-02-15) attached an edited TTFFil
 changes as the fork's. Andreas L. Delmelle (2011-02-22) found it inconsequential but wanted a test font, and
 Glenn Adams (2012-04) asked for a patch file rather than an edited source; it went no further. The fork's change
 was written independently and then compared: both conditions are those of the 2011 patch, except that it also
-required a negative hhea descender, which none of the 2,547 fonts measured needs. No pull request yet; one
-would be titled FOP-1896, on a branch FOP-1896 cut against Apache main. Fork change fop/CR-015 (Enterprise
-CR-001 §6.6 item 40). Whether to post is for Jason.
+required a negative hhea descender, which none of the 2,547 fonts measured needs. Branch FOP-1896 in
+../fop-upstream-wt (da279ee9d), on Apache main at ab5d6eba6; pull request
+https://github.com/apache/xmlgraphics-fop/pull/119, opened 2026-10-05 at Jason's word, with this comment
+(the text in ../fop-upstream-prs/FOP-1896.md). Fork change fop/CR-015 (Enterprise CR-001 §6.6 item 40).
+Jason approved posting this comment with the pull request on 2026-10-05; the docx4j session posts it.
 
 Comment
 -------
@@ -44,3 +46,6 @@ it, none of the 2,547 has either. The tests need no new font: TTFFileTestCase pa
 (OS/2 offset 70) in memory. AndroidEmoji with +650 is Wingdings' case, and expects its hhea 2200 and -650.
 DejaVuLGCSerif with +492 is the Lucida case, and expects its glyph bounds 1556 and -426. The AndroidEmoji
 assertion in testGetLowerCaseAscent becomes 2200.
+
+Pull request: https://github.com/apache/xmlgraphics-fop/pull/119, against main. The fop-core suite passes
+with it (3663 tests, 0 failures) and checkstyle reports 0 violations; the three tests fail without it.
