@@ -1,8 +1,8 @@
 # CR-015: a font's descender is not above its baseline, nor 0 for want of glyphs to guess from
 
-Status: implemented 2026-10-05 on branch `CR-015-positive-typo-descender` off `2.11-docx4j.5` (a8c3afc7d), at Jason's word;
-awaiting the docx4j gate. The full build passes: 3760 tests, 0 failures, 4 skipped; checkstyle and spotbugs
-clean. Registry key `fop/CR-015`. Capability `ascender-descender`. Upstream-bound: a FOP
+Status: DONE 2026-10-05, gated PASS by the docx4j session (§5) and merged to `2.11-docx4j.5`; unreleased. Implemented at
+Jason's word on branch `CR-015-positive-typo-descender` (code a8c3afc7d); the full build on the branch passes, 3760
+tests, 0 failures, checkstyle and spotbugs clean. Registry key `fop/CR-015`. Capability `ascender-descender`. Upstream-bound: a FOP
 defect in 2.11 and in Apache `main`, reported as [FOP-1896](https://issues.apache.org/jira/browse/FOP-1896)
 (Open since 2011, "Incorrect text underlines position for some fonts"). A patch attached there in 2011 made the
 same two changes; it stalled in 2012 because it was an edited source file rather than a diff, and the fix
@@ -143,6 +143,20 @@ XSLT pathway, where `w:sym` never had `symbolLineHeight`, the smiley's baseline 
 Word's is 169.73. On the visitor pathway with `symbolLineHeight`, both read 169.57, 0.16pt from Word's. So this
 change corrects FOP's metrics, but docx4j's inherited pitch still scales by the block font's box, and the
 workaround stays useful on this renderer.
+
+**Gated 2026-10-05, PASS** (the docx4j session). Install r8 (this branch) against r6 (`.5` with CR-012 and
+CR-013, the branch's base), with the same docx4j jars, over the three corpora, real-c2 and the probes,
+partitioned by the embedded names above:
+- 112 of 739 documents embed a moved face.
+- 3 movers, all inside the partition, none outside it:
+  - real2 `14_en-US_tbl_394` (Noto Sans Devanagari): +9 lines, 0.4277 to 0.4798;
+  - real `12_en-US_num_tbl_5905` (Noto Sans Ethiopic): +2, 0.4769 to 0.5077;
+  - its real-c2 copy (same faces): −1, 0.4627 to 0.4478. This is a pairing change in a document near 0.45
+    whose script faces were 0 and 0 before.
+- 5975 stays at 1.0000, and 13118 (0.9830), 2514 (0.7148) and 13265 (0.9869) are unchanged.
+- No probe moved.
+- None of the other 109 documents with a moved face moved. On this corpus the `lead + follow` pitch path made
+  no difference, since most text runs carry docx4j's own line height.
 
 ## 6. Not addressed
 
