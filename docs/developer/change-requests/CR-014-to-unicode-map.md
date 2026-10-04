@@ -1,6 +1,6 @@
 # CR-014: a font's ToUnicode text for given code points, from its configuration entry
 
-Status: DONE ON BRANCH 2026-10-04, `CR-014-to-unicode-map` off `2.11-docx4j.5`; not merged, not gated.
+Status: DONE 2026-10-05, gated PASS by the docx4j session (§4) and merged to `2.11-docx4j.5`; unreleased.
 Registry key `fop/CR-014`. Capability `to-unicode-map`. A docx4j hook; not upstream-bound as it stands
 (see §5).
 
@@ -66,6 +66,19 @@ Wingdings, Wingdings 2, Wingdings 3 and Webdings, keyed by the low byte, with th
 that byte. The gate:
 - control: no entries, nothing moves;
 - with entries: layout identical, and the 5975 render extracts as ☺ and 😐.
+
+**Gated 2026-10-05, PASS** (the docx4j session, on install r7 of this branch, without CR-013):
+- control (r7, docx4j's entries off) against r5: 0 movers;
+- measurement (r7, entries on) against the control: 0 movers;
+- 5975's text layer reads U+263A ×5 and U+1F610 ×4 where it read U+F04A and U+F04B, with all 3,372 glyph
+  quads identical;
+- docx4j's `SymbolRealFontTest` text-layer test passes against the snapshot (docx4j 5ec4e3ff9).
+
+The first reading showed seven movers with identical glyphs. They came from the gate's harness, not the
+renderer: it read a symbol-font glyph in 0x20 to 0xFF as an 8-bit code, so a replacement the map writes in the
+Latin-1 range (U+00F7 for Symbol 0xB8) was read back as Symbol 0xF7. docx4j fixed the harness (00b43540f) and
+re-scored without re-rendering. The fix also corrected Word's side: 2394 and 11782 score higher on renders
+without the hook too.
 
 ## 5. Upstream
 
