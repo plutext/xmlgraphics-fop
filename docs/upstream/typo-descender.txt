@@ -1,0 +1,46 @@
+JIRA comment text, NOT posted. For FOP-1896 (https://issues.apache.org/jira/browse/FOP-1896, "Incorrect text
+underlines position for some fonts", reported by Alexander Chingarev 2011-02-05, Open, read here through JIRA's
+API 2026-10-05). On it, Eugene Markovskyi (2011-02-15) attached an edited TTFFile.java making the same two
+changes as the fork's. Andreas L. Delmelle (2011-02-22) found it inconsequential but wanted a test font, and
+Glenn Adams (2012-04) asked for a patch file rather than an edited source; it went no further. The fork's change
+was written independently and then compared: both conditions are those of the 2011 patch, except that it also
+required a negative hhea descender, which none of the 2,547 fonts measured needs. No pull request yet; one
+would be titled FOP-1896, on a branch FOP-1896 cut against Apache main. Fork change fop/CR-015 (Enterprise
+CR-001 §6.6 item 40). Whether to post is for Jason.
+
+Comment
+-------
+This is still present on main, and the second half of the 2011 patch matters more than the first.
+
+1. OpenFont.determineAscDesc takes OS/2 sTypoAscender and sTypoDescender, in its first branch and in its
+fallback, without checking that the descender is at or below the baseline. Several shipping fonts have
+the descender's sign wrong. Windows' Wingdings, Wingdings 2 and 3, Lucida Sans, Lucida Fax and Lucida
+Sans Typewriter all have sTypoDescender +420 of 2048 where their hhea descender is -432. Maiandra GD,
+Haettenschweiler and Lucida Handwriting are similar. FOP takes the positive value, so the text area lies
+wholly above the baseline (0.565 em for Wingdings), and the underline, placed from the descender, runs
+through the letters. That is this issue's report.
+
+2. guessVerticalMetricsFromGlyphBBox replaces the ascender and descender with the bounds of the 'd' and 'p'
+glyphs whenever the two together exceed the em, whether or not it found those glyphs. A font without them
+gets an ascender and a descender of 0. TTFFileTestCase asserts exactly that for AndroidEmoji, beside "TODO:
+Nedd to be fixed?". Of 2,547 distinct font files loaded through FontLoader here, 978 get 0 and 0. They
+include most Noto fonts for scripts other than Latin (Devanagari, Bengali, Thai, Arabic, Hebrew, Sinhala and
+the rest), the Droid script fonts, MT Extra and Algerian. With a text area of height 0, the baseline sits in the middle of the
+line and the glyphs rise into the line above.
+
+Fixing (1) alone makes Wingdings worse: its hhea box exceeds the em and it has no 'd' or 'p', so it falls
+to (2) and gets 0 and 0. Both conditions are needed:
+
+- determineAscDesc: use the OS/2 values (first branch and fallback) only when sTypoDescender <= 0;
+- guessVerticalMetricsFromGlyphBBox: replace only when localAscender > 0 && localDescender < 0.
+
+Measured at 11pt (area tree, text area height and baseline from its top):
+  Wingdings             6.215pt, 8.470pt   ->  12.188pt, 9.878pt   (Word: 12.21pt, 9.89pt)
+  Lucida Sans           6.215pt, 8.470pt   ->  10.582pt, 8.470pt
+  Noto Sans Devanagari  0pt, 0pt           ->  14.344pt, 9.856pt
+
+Every font the change moves had, before it, an ascender of 0 or a descender at or above the baseline. After
+it, none of the 2,547 has either. The tests need no new font: TTFFileTestCase patches sTypoDescender
+(OS/2 offset 70) in memory. AndroidEmoji with +650 is Wingdings' case, and expects its hhea 2200 and -650.
+DejaVuLGCSerif with +492 is the Lucida case, and expects its glyph bounds 1556 and -426. The AndroidEmoji
+assertion in testGetLowerCaseAscent becomes 2200.

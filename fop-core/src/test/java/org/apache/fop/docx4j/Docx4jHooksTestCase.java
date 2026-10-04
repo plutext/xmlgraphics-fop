@@ -53,7 +53,8 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.PAGE_NUMBER_ZERO));
         assertTrue(Docx4jFop.has(Docx4jFop.CONTINUATION_DISPLAY_ALIGN));
         assertTrue(Docx4jFop.has(Docx4jFop.TO_UNICODE_MAP));
-        assertEquals(13, Docx4jFop.capabilities().size());
+        assertTrue(Docx4jFop.has(Docx4jFop.ASCENDER_DESCENDER));
+        assertEquals(14, Docx4jFop.capabilities().size());
     }
 
     @Test
