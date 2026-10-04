@@ -110,6 +110,21 @@ whose descriptor changed between control and measurement. Glyph-fallback faces c
 (`symbolLineHeight`) sets the line height of a `w:sym` span. This change sets the font's own metrics, from which
 FOP places the baseline in that line, so the two meet in 5975.
 
+docx4j reads these metrics itself, by the docx4j session's account of its code (2026-10-05):
+- `WordBlockLayoutManager.initialize` takes `lead` and `follow` from the block font's ascender and descender.
+- `WordLineLayoutManager.wordLine` uses them in three places:
+  - A run without its own line height gets a pitch scaled by `lead + follow`. With a block font at 0 and 0
+    that divides by zero, and the cast leaves a pitch of −1.
+  - An inline at the picture baseline takes FOP's altitude.
+  - A block without docx4j's line hints stacks with FOP's altitude and depth.
+- Most text runs carry docx4j's own line height, with their ascent from Word's win metrics rather than FOP's.
+
+So movers are expected among documents whose block font is a moved face, or whose runs lack a line-height
+span: fields, generated text, and `w:sym` on the XSLT pathway. That pathway never had `symbolLineHeight`, so
+5975 rendered through it shows what this change alone recovers. The docx4j session agreed the second finding
+(Wingdings' `d` and `p` are only at U+F064 and U+F070, which the guess does not find) and recorded item 40
+(Enterprise a29d111).
+
 ## 6. Not addressed
 
 - FOP never reads `usWinAscent` and `usWinDescent`, which Word's line height uses. Where hhea and win differ,
