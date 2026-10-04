@@ -1,3 +1,7 @@
+DROPPED 2026-10-05 (Jason): Apache will not accept a deliberate departure from XSL, and XSL 1.1 makes
+initial-page-number a positive integer. Not to be filed; the option stays a docx4j hook in the fork
+(capability page-number-zero). Kept as the record of what was proposed.
+
 JIRA text, NOT filed. Fork change fop/CR-012 (Enterprise CR-001 §6.6 item 38). Depends on the
 page-label fix (docs/upstream/page-label-zero.txt).
 

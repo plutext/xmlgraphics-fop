@@ -63,8 +63,10 @@ is to follow.
 
 ## 5. Upstream
 
-Two drafts. `docs/upstream/page-label-zero.txt`: the page-label crash, a bug. `docs/upstream/page-number-zero-option.txt`:
-page 0 behind a user-agent option, an improvement. Neither is filed.
+Two drafts. `docs/upstream/page-label-zero.txt`: the page-label crash, a bug, to be filed with a pull request
+(Jason, 2026-10-05). `docs/upstream/page-number-zero-option.txt`: page 0 behind a user-agent option, an
+improvement. **Dropped** (Jason, 2026-10-05): Apache will not accept a deliberate departure from XSL, which makes
+`initial-page-number` a positive integer. The option stays a docx4j hook in the fork.
 
 ## 6. The docx4j gate, 2026-10-04: PASS
 
