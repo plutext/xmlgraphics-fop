@@ -52,7 +52,8 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.LETTER_SPACE_WIDTH));
         assertTrue(Docx4jFop.has(Docx4jFop.PAGE_NUMBER_ZERO));
         assertTrue(Docx4jFop.has(Docx4jFop.CONTINUATION_DISPLAY_ALIGN));
-        assertEquals(12, Docx4jFop.capabilities().size());
+        assertTrue(Docx4jFop.has(Docx4jFop.ASCENDER_DESCENDER));
+        assertEquals(13, Docx4jFop.capabilities().size());
     }
 
     @Test

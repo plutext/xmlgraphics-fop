@@ -127,6 +127,15 @@ public final class Docx4jFop {
      */
     public static final String CONTINUATION_DISPLAY_ALIGN = "continuation-display-align";
 
+    /**
+     * A TrueType or OpenType font's ascender and descender are not taken from an OS/2 typo descender
+     * above the baseline (Wingdings, the Lucida faces: a sign error in the font), and are not made 0
+     * for a font without the 'd' and 'p' glyphs whose ascender and descender together exceed the em
+     * (symbol fonts, and many fonts for other scripts): the hhea values stand there (Enterprise
+     * CR-001 item 40, fop/CR-015).
+     */
+    public static final String ASCENDER_DESCENDER = "ascender-descender";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -143,6 +152,7 @@ public final class Docx4jFop {
         caps.add(LETTER_SPACE_WIDTH);
         caps.add(PAGE_NUMBER_ZERO);
         caps.add(CONTINUATION_DISPLAY_ALIGN);
+        caps.add(ASCENDER_DESCENDER);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 
