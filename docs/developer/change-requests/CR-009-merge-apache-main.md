@@ -432,3 +432,16 @@ forms.
   path-aware `fixLetterSpaces` for an Apache release with FOP-2722 alone (Jason's call), and a
   version-neutral `setRuleStyle` call at `LBP:535` before an Apache release carries FOP-3325.
 
+### The released artifact, scored (the docx4j session, 2026-10-04)
+
+`2.11-docx4j.4` from Maven Central (the scoreboard line names it, with ten hooks), against 2.11-docx4j.2:
+**PASS**.
+- real and real2: identical.
+- Probes: one move, `surrogate-pairs-bidi` 0.4286 to 0.5714 (CR-008), now matching Word's golden.
+- real3: one move below the 0.02 floor, `14_en-GB_sdt_num_8371` 0.6799 to 0.6778 (four Greek lines). It is
+  not CR-011: the gate run on the `.4` snapshot before CR-011 merged already read 0.6778. The docx4j
+  session attributes the difference to the path-aware letter spacing between .2 and .4.
+- docx4j's reactor on `.4`: green.
+
+docx4j's pom moves to `2.11-docx4j.4` for 17.3.1 (docx4j f796d8eca, local).
+
