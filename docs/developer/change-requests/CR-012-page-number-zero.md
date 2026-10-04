@@ -1,6 +1,6 @@
 # CR-012: a page numbered 0, behind a user-agent option; and the page label of a page numbered 0
 
-Status: DONE ON BRANCH 2026-10-04, `CR-012-page-number-zero` off `2.11-docx4j.5`; not merged, not gated.
+Status: DONE 2026-10-04, gated PASS by the docx4j session (§6) and merged to `2.11-docx4j.5`; unreleased.
 Registry key `fop/CR-012`. Capability `page-number-zero`.
 
 Enterprise CR-001 §6.6 item 38, the docx4j session's (batch 50, found 2026-10-04):
@@ -65,3 +65,21 @@ is to follow.
 
 Two drafts. `docs/upstream/page-label-zero.txt`: the page-label crash, a bug. `docs/upstream/page-number-zero-option.txt`:
 page 0 behind a user-agent option, an improvement. Neither is filed.
+
+## 6. The docx4j gate, 2026-10-04: PASS
+
+Run by the docx4j session on Jason's install of `fab8f6268` (copied aside with its md5s, so no later install
+could move it). Basis b74-resaved-nofields: the three corpora and 173 probes.
+- **Control**, docx4j without the setter call, against the same docx4j on `.4`: 0 documents and 0 probes
+  moved in all three corpora. The renderer alone changes nothing, as the option's default promises.
+- **Measurement**, docx4j b629f2be3 (the setter on both passes, `getFOUserAgent` and `calcResults`, and
+  `foliosInverted`'s parity swap off under `page-number-zero`), against the same docx4j on `.4`: exactly four
+  documents move, all up. 13347 0.8981 to 0.9444 (+10 lines), 6083 0.9207 to 0.9627 (+18), 4899 0.8983 to
+  0.9267 (+71), 6251 0.9740 to 0.9760 (+3). Nothing else moves in the corpora or the probes. 278 and 2189,
+  the other two corpus documents with `start="0"`, are unchanged.
+- **Tests**: docx4j-export-fo and docx4j-export-fo-tests on the snapshot ran 240 and 682 with 0 failures
+  (`PageMastersParityTest` took the page-zero branch); on `.4`, 682/0.
+
+docx4j's side is committed locally on VERSION_17_3_1 as b629f2be3. It is inert until docx4j depends on a
+release that carries this CR.
+
