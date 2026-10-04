@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
  * from Apache FOP 2.11: hook inline-access, LineBreakPosition public with getters; and a nested block's positions
- * are not wrapped twice when line breaking runs again (fop/CR-011). See README.md, "Changes from Apache FOP 2.11". */
+ * are not wrapped twice when line breaking runs again, and a line overflow is reported when there is no current child
+ * (fop/CR-011). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -497,7 +498,8 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                 InlineLevelEventProducer eventProducer
                     = InlineLevelEventProducer.Provider.get(
                         getFObj().getUserAgent().getEventBroadcaster());
-                if (curChildLM.getFObj() == null) {
+                // curChildLM is null on the float re-layout pass (PageBreaker.handleFloatLayout)
+                if (curChildLM == null || curChildLM.getFObj() == null) {
                     eventProducer.lineOverflows(this, getFObj().getName(), bestActiveNode.line,
                             -lack, getFObj().getLocator());
                 } else {
