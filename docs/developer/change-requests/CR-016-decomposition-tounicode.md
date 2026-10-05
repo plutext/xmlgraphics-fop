@@ -1,8 +1,7 @@
 # CR-016: a decomposition's glyphs each publish their piece, not the precomposed letter
 
-Status: implemented 2026-10-05 on branch `CR-016-decomposition-tounicode` off `2.11-docx4j.5`; the full build passes, 3765
-tests, 0 failures, checkstyle and spotbugs clean; awaiting the docx4j
-gate. Registry key `fop/CR-016`. No capability: docx4j has no workaround that depends on it. A correction to
+Status: DONE 2026-10-05, gated PASS by the docx4j session (§5) and merged to `2.11-docx4j.5` by fast-forward;
+unreleased. The full build on the branch passes, 3765 tests, 0 failures, checkstyle and spotbugs clean. Registry key `fop/CR-016`. No capability: docx4j has no workaround that depends on it. A correction to
 `fop/CR-002`, so it is upstream-bound with CR-002's pull request,
 [#116](https://github.com/apache/xmlgraphics-fop/pull/116) (FOP-3345), not as an issue of its own.
 
@@ -82,6 +81,26 @@ The text layer of every document set in a font whose substitutions decompose pre
 lines, Cambria Regular above all; layout nowhere. The docx4j session counted nine class 2 documents in Cambria
 Regular with mislabelled glyphs, about 1,900 lines, 8371 alone 1,517. Word's text is precomposed, so the gate's
 harness must compare after NFC.
+
+**Gated 2026-10-05, PASS** (the docx4j session). Install r9 (this branch) against r8 (`.5` with CR-015, without
+CR-014, whose own gate moved nothing). Both scored with the same docx4j jars, through a harness that now compares
+NFC on both sides, against the r8 baseline re-read the same way. Every page of every mover rasterises identically on
+r8 and r9 (pdftoppm, 100dpi, grey). Nine movers, all up, all class 2, page counts kept:
+
+| document | line parity | lines matched |
+|---|---|---|
+| real3 8371 | 0.1630 to 0.9918 | +1520 |
+| real 6693 | 0.2118 to 0.9866 | +289 |
+| real2 6195 | 0.8547 to 0.9658 | +65 |
+| real3 2065 | 0.9102 to 0.9373 | +56 |
+| real3 3236 | 0.9044 to 0.9334 | +17 |
+| real 11126 | 0.8681 to 0.9560 | +8 |
+| real3 299 | 0.9175 to 0.9897 | +7 |
+| real 7742 | 0.9600 to 1.0000 | +5 |
+| real 2852 | 0.9000 to 1.0000 | +5 |
+
+real-c2 and the probes did not move. No document in another script moved, and six Russian and Arabic documents
+spot-checked have identical ink on every page. The docx4j fidelity baseline is now b99r9.
 
 ## 6. Not addressed
 
