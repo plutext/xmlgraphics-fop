@@ -525,3 +525,33 @@ restarting one, which continues the count.
 
 **Estimate**: about a day and a half: the folio in `PageProvider`, the attributes, and the tests. Registry: a
 step of this CR, `fop/CR-017.2`, for docx4j CR-031 phase 3 to depend on.
+
+## 12. A defect found by the restart work, 2026-10-05: the first page's owner was not recorded
+
+docx4j's restart build (cand45) marks restarting parts, even where their masters do not change. On install r11
+two corpus documents broke (gate b121 against b119):
+- **79:** one column, then two. Page 1 held 59 lines where b119 and Word have 46, and its last line ran 10pt below
+  the body. 7 pages became 6.
+- **8940:** the same shape. 324 lines were laid out where b119 has 502, so content was lost.
+
+In both, a marker named a master with the same body as the one in force (`s1-p1`). It sat on the first FO of a
+two-column part, right after an unmarked `span="all"` block, part-way down the page-sequence's first page.
+
+**Cause.** The first page is handed out in `PageSequenceLayoutManager.activateLayout`, before the parts are found
+(`PageOwnership.initialize`, at the first element list), so `PageProvider` recorded no owner for it. A list that
+starts part-way down that page, after a span change, had its first node owned by the new part (the column-0
+rule). `getAvailableBPD` then measured page 1's columns as a fresh page of the new part's master, not the height
+left on page 1. Since `s1-p1-simple` is a different master object from `s1-simple`, though identical, the full
+body height was used, and page 1 overflowed. Any marker on a part starting part-way down the first page after a
+span change hit it; the restart only made such markers common. §5's span-change test started the second part on
+page 2, and the first part was marked, so page 1 was recorded through its replacement.
+
+**Fix:**
+- the first page's owner is recorded when the parts are found, as any later page's is (`recordHandedOutPage`);
+- the page an element list starts on, which always exists already, always gives its own remaining height
+  (`getAvailableBPD`, `pageIndex > 0`).
+
+In FOP alone, 79 and 8940 now lay out line for line as they do without the markers (79: 57, 84, 85, 83, 88, 59;
+8940: 218, 212, 59), each page with its owner's master. Regression test `first-page-span`: an unmarked
+`span="all"` block, then a marked two-column part, with an identical master and with a different one. It fails
+without the fix, with 5 pages where 6 are right. Committed on `2.11-docx4j.5`, and so in CR-017.2's branch.
