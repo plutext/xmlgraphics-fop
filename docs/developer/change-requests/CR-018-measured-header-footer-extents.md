@@ -1,7 +1,8 @@
 # CR-018: header and footer extents measured in FOP
 
-Status: IMPLEMENTED 2026-10-05 on branch `CR-018-measured-region-extents` (7ae4c950a, §9); gate pending, not merged.
-Designed and revised the same day after two reviews (§8). Registry key `fop/CR-018`. Capability
+Status: DONE 2026-10-06, gated PASS by the docx4j session (§9) and merged to `2.11-docx4j.5` by fast-forward
+(3e5381d6f; the change is 7ae4c950a); unreleased. Designed and revised on 2026-10-05 after two reviews (§8).
+Registry key `fop/CR-018`. Capability
 `measured-region-extents`. A docx4j hook (Word's rule for where the body starts, which FO leaves to the producer),
 so not upstream-bound. Requested by the docx4j session for docx4j CR-031 phase 5, the companion hook at the end of
 CR-031 §4.2b, which Jason asked it to take up with CR-031's carried-over items. Gated separately from CR-017, since
@@ -316,7 +317,27 @@ cannot write its area tree and the retrieve-marker test measures two lines where
 broadcaster not muted, `MeasuredRegionExtentsTestCase` counts four line overflows where FOP reports three.
 `Docx4jHooksTestCase` counts 17 capabilities.
 
-**The gate** is the docx4j session's, as §7 describes. First the snapshot without the attribute: nothing moves.
-Then docx4j writes the attribute and drops its pre-pass where the capability is present. Each master's extents
-should equal the pre-pass's to the point, except where the pre-pass's doctored copy differs from the real header.
-Render time is measured, and nothing else should move.
+**Gated 2026-10-06, PASS** (the docx4j session, for docx4j CR-031 phase 5; install r13, this branch):
+- **Without the attribute** (docx4j unchanged; b132 on r13 against b129 on r12): no document moved.
+- **With it.** docx4j writes the attribute where a region reserves space and skips its pre-pass (cand52, b136).
+  The control is the same docx4j with the pre-pass forced (b137). Across the four corpora and 215 probes:
+  - no document moved;
+  - per-master extents, read from the area tree: 2 of 1,902 masters differ from the pre-pass's by more than
+    0.5pt, both in 11868, where the measurement is the better one (its footer lines within 0.5pt of Word's, the
+    pre-pass's 11pt off);
+  - render time 270s with the pre-pass, 249s measured (-7.6%).
+
+The first run with the attribute (b133, docx4j's first version of its side) moved six documents and put ten
+masters more than 0.5pt off the pre-pass. None was a fork defect:
+- **Floating drawings in headers.** A header paragraph whose only content is a floating drawing was written in
+  the region's flow, so the measurement counted it: 12502's full-page picture measured 857pt. The pre-pass
+  measures a copy without such paragraphs (12502, 17, 1576, 5320). §3.2's premise, that a floating drawing is
+  absolutely positioned and takes no height, held in docx4j's body but not in its headers. docx4j now writes
+  those pictures absolutely positioned in a zero-height container, as Word places them, and the measurement
+  skips them as written. A fork attribute marking a block for the measurement to skip, considered after the
+  first run, is not needed.
+- **Regions docx4j does not ask to be measured** had been left at a placeholder extent, so an empty footer
+  paragraph was drawn mid-page (6603, 3160, 10452). docx4j now aligns their content to the foot.
+
+On the same renderer, docx4j's revised side also gains 17 (its header text beside its logo, as in Word) and 12363
+(Word's 15 pages, where it had 16).
