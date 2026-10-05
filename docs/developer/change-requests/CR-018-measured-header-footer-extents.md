@@ -1,10 +1,14 @@
 # CR-018: header and footer extents measured in FOP
 
-Status: PROPOSED 2026-10-05; design and estimate, not started. Registry key `fop/CR-018`. Capability
+Status: PROPOSED 2026-10-05; design and estimate, not started. Revised the same day after a review (§8). Registry key `fop/CR-018`. Capability
 `measured-region-extents`. A docx4j hook (Word's rule for where the body starts, which FO leaves to the producer),
 so not upstream-bound. Requested by the docx4j session for docx4j CR-031 phase 5, the companion hook at the end of
 CR-031 §4.2b, which Jason asked it to take up with CR-031's carried-over items. Gated separately from CR-017, since
 it changes every conversion that asks for it.
+
+No Enterprise CR-001 §6.6 item covers the extent pre-pass; the list ends at 42. Item 25 bears on it: FOP ignores
+indents on `fo:region-before` and `fo:region-after`, so docx4j puts a header's indents on the static content's own
+blocks (`WordLayoutFixups.headerFooterPartIndent`). That is why measuring at the region's full width is right.
 
 ## 1. What docx4j does now, and what it costs
 
@@ -45,7 +49,21 @@ laid out when a page is finished (`StaticContentLayoutManager.doLayout`), much l
 FOP already has a precedent for measuring static content early: `PageBreaker.handleFootnoteSeparator` lays out
 the `xsl-footnote-separator` static content once, into a scratch block, to learn its height before breaking. Its
 own comment notes that the content "could be different from page to page, but its bpd would likely be always the
-same".
+same". The precedent runs while element lists are collected, when a current page exists. It is not reusable as it
+stands: `StaticContentLayoutManager` picks the scratch block over the page's region only for the flow name
+`xsl-footnote-separator`, in `addChildArea`, `getParentArea` and `doLayout`.
+
+**A page is made with no current page.** `AbstractPageSequenceLayoutManager.makeNewPage` calls `finishPage`, which
+sets the current page to null, and only then `createPage`; the sequence's first page is made with none too. Yet
+laying out static content reads the current page in several places:
+- `fo:page-number` (`PageNumberLayoutManager`, lines 77 and 115);
+- `fo:retrieve-marker` (`resolveRetrieveMarker`, line 237), which then walks back over the pages already in the
+  area tree;
+- id registration;
+- an unresolved citation such as NUMPAGES's `fo:page-number-citation-last`;
+- the overflow event (`StaticContentLayoutManager`, line 143).
+
+So the measurement needs a page of its own (§3.2).
 
 ## 3. The change
 
@@ -66,17 +84,32 @@ not two: Word always clears the header, so there is no case for a measured regio
 
 ### 3.2 The measurement
 
-Per page-sequence and master, on the master's first use (a page made or measured with it):
-- the page-sequence's `fo:static-content` for the region's name is laid out with a `StaticContentLayoutManager`
-  into a scratch block of the region's width (the footnote-separator pattern), and its height read;
-- the result is cached by (page-sequence, master, region). It is per page-sequence, since two page-sequences can
-  give one region-name different static content.
+Per page-sequence and master, on the master's first use (a page made, or a height measured, with it):
+1. **The measuring page.** The page is built with the stated extents.
+2. **Its context.** It is made the page-sequence layout manager's current page for the measurement, and the page
+   that was current, or none, is restored afterwards. So `fo:page-number` and everything else that reads the
+   current page has one.
+3. **The layout.** The page-sequence's `fo:static-content` for the region's name is laid out with a
+   `StaticContentLayoutManager` into a scratch block of the region's width (the footnote-separator pattern), and
+   its height read. `StaticContentLayoutManager` chooses the scratch block whenever it is given one, rather than
+   by the separator's flow name.
+4. **The result.** It is cached by (page-sequence, master, region). `PageProvider` is already per page-sequence,
+   so CR-017's fresh-page heights need no new key.
+
+**The measurement has no side effects.** It runs in a measuring mode, consulted where static content touches
+anything beyond its own areas:
+- `resolveRetrieveMarker` retrieves nothing. Otherwise a master first used mid-sequence would retrieve the last
+  marker before it, and its measured height would depend on when the master was first touched.
+- No id is registered against the measuring page.
+- No unresolved citation is attached to it.
+- No overflow event is raised.
 
 What it measures is the static content as FOP lays it out, which is the real header, not a copy:
 - **Absolutely positioned block-containers** (floating drawings) take no height, as in a real layout.
-- **Page-dependent content** is laid out as on a page with no markers:
-  - `fo:page-number` and citations take their width, not their height, so the height is right;
-  - `fo:retrieve-marker` retrieves nothing.
+- **Page-dependent content:**
+  - `fo:page-number` takes its own page's number, and a citation its placeholder; both take width, not height,
+    so the height is right;
+  - `fo:retrieve-marker` retrieves nothing, deterministically.
 
   A STYLEREF header therefore measures without its text, unless the block keeps its line height. The docx4j
   session's answer, measured on the four corpora (2026-10-05):
@@ -93,7 +126,9 @@ What it measures is the static content as FOP lays it out, which is the real hea
 
 ### 3.3 Where it takes effect
 
-`area.Page` gets the measured extents when a page is made:
+`area.Page` gets the measured extents when a page is made. Its rectangles are computed in
+`area.Page(SimplePageMaster)`, reached through `layoutmgr.Page` and `PageViewport` (line 107), so the extents travel
+through three constructors. Each gets an overload; signatures are not changed, since `PageViewport` is public.
 - region-before's and region-after's viewport rectangles take the measured heights;
 - the body's rectangle takes the larger margins.
 
@@ -103,7 +138,17 @@ master goes through one method, which supplies the extents:
 - the fresh-page heights of CR-017 (`getFreshPageBPD`);
 - `getLastPageIPD`.
 
-So the breaker sees each page's real body height, with no other change to the breaking.
+So the breaker sees each page's real body height, with no other change to the breaking. The fourth `new Page(` in
+`PageOwnership` (line 222) reads only the body's width and column count, which measured extents do not change.
+So it stays as it is.
+
+**Classes changed:**
+- `area.Page`, `PageViewport` and `layoutmgr.Page`: the overloads;
+- `PageProvider`: the one page-making method and the cache;
+- `AbstractPageSequenceLayoutManager`: the measuring context and mode, and `resolveRetrieveMarker`;
+- `StaticContentLayoutManager`: the scratch block, and no overflow event while measuring;
+- the id registration and citation paths that consult the mode;
+- `Docx4jFop`.
 
 Supported: the `lr-tb` and `rl-tb` writing modes and `reference-orientation` 0, which is what docx4j writes.
 Elsewhere the attribute is reported once and the stated values apply.
@@ -123,7 +168,8 @@ finished.
 
 1. A header of three lines, `fox:extent="measured"`: region-before is three lines tall, and the body starts below
    it where the stated margin is smaller, at the stated margin where it is larger.
-2. The same at the foot.
+2. The same at the foot. Region-after is anchored at the page's foot (`reldims.bpd - extent`), so the test also
+   asserts its top edge, which a measured extent moves.
 3. Two masters with different headers: each measured on its own, and the page breaker uses each page's body height
    (with CR-017's per-part masters).
 4. One master in two page-sequences with different static content: measured per page-sequence.
@@ -131,6 +177,12 @@ finished.
 6. A header with an absolutely positioned block-container and a page number: the block-container takes no height,
    and the page number its line.
 7. No attribute: the whole layout suite unchanged.
+8. A header with `fo:page-number`, and one with `fo:page-number-citation-last` (NUMPAGES), on the sequence's first
+   page: measured, nothing thrown, and the citation resolved on the real pages.
+9. A retrieve-marker header on a master first used after pages that carry markers: measured as with none, and the
+   real header on its page still retrieves the marker.
+10. An id on a header block, cited from the body: the citation gives the real page, not the measuring page.
+11. A blank page whose master has a measured region.
 
 ## 6. Not addressed
 
@@ -141,12 +193,37 @@ finished.
 
 ## 7. Estimate
 
-About three to four days in the fork to a gated snapshot:
-- the measurement with its cache: about a day;
-- the extents in `area.Page` and the one page-making method in `PageProvider`: about a day;
-- the seven tests: about a day;
+About four to five days in the fork to a gated snapshot:
+- the measuring context and mode, and the measurement with its cache: about two days (the review's findings 1 to 3
+  are the real work);
+- the extents through the three constructors, and the one page-making method in `PageProvider`: about a day;
+- the eleven tests: about a day and a half;
 - the build and the hand-off: half a day.
 
 The docx4j side writes the attribute instead of running the pre-pass, with its exceptions kept by not asking; that
 is the docx4j session's. The gate it describes: every master's extents equal the pre-pass's to the point, except
 where the pre-pass's doctored copy differs from the real header; render time measured; nothing else moving.
+
+## 8. Review, 2026-10-05
+
+A review of the first version (a reading against `2.11-docx4j.5`, nothing run) found the rule and the seam right,
+and the measurement unable to run where §3.3 put it. Each finding was checked against the code, and each holds:
+1. **No current page when a page is made** (`finishPage` sets it to null before `createPage`), and static content
+   reads it in five places. A PAGE field, the commonest header, would throw on page 1. Now §2 and §3.2: the
+   measuring page is made the current page for the measurement.
+2. **`resolveRetrieveMarker` does not retrieve nothing.** It walks back over earlier pages, so the height would
+   depend on when a master was first touched. Now §3.2: retrieval is suppressed while measuring.
+3. **Side effects.** An id registered against the measuring page, and an unresolved citation attached to it. Now
+   §3.2's measuring mode, with tests 8 and 10.
+4. **The footnote-separator pattern keys on its flow name** in three places of `StaticContentLayoutManager`. Now §2
+   and §3.2, and the class is listed.
+5. **The rectangles are made in `area.Page`, through three constructors.** Now §3.3, with overloads. `PageOwnership`'s
+   `new Page(` is noted as unaffected.
+6. **No §6.6 item was cited.** None covers the pre-pass; item 25 bears on it. Now the header.
+7. **The estimate was light.** Three to four days became four to five.
+
+The review's added tests are tests 8 to 11, and test 2's footer edge. It confirmed and this revision keeps:
+- the arithmetic (max of the stated body margin and the measured height is Word's rule);
+- caching per page-sequence;
+- keeping the extents out of the FO tree, in `area.Page`;
+- the registry entry.
