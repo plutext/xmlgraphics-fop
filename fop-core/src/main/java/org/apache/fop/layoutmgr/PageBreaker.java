@@ -194,6 +194,8 @@ public class PageBreaker extends AbstractBreaker {
     private void ownPagesOfNewList() {
         PageOwnership ownership = pageProvider.getOwnership();
         ownership.initialize(pslm.getCurrentPage());
+        // the first page was handed out before the parts were found: record its owner as any later page's
+        pageProvider.recordHandedOutPage(pslm.getCurrentPageNum());
         if (!ownership.isActive() || blockLists == null || blockLists.isEmpty()) {
             return;
         }
