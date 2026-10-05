@@ -78,10 +78,18 @@ What it measures is the static content as FOP lays it out, which is the real hea
   - `fo:page-number` and citations take their width, not their height, so the height is right;
   - `fo:retrieve-marker` retrieves nothing.
 
-  A STYLEREF header therefore measures without its text, unless the block keeps its line height (an empty line
-  is still a line where docx4j writes one). docx4j's pre-pass paints the cached result; the docx4j session to say
-  which documents rely on that, and whether it writes the block so its line stands empty. Per-page measurement
-  (§6) is the later answer.
+  A STYLEREF header therefore measures without its text, unless the block keeps its line height. The docx4j
+  session's answer, measured on the four corpora (2026-10-05):
+  - five documents have a STYLEREF in a header or footer;
+  - in most the field shares its line with other text, so the line's height is there anyway (9623, 2907, 12502's
+    footers);
+  - it stands alone on its line in 8695's three headers, 12502's header2 and probably 278's header, which rely on
+    the pre-pass's painted result today.
+
+  Where the capability is in use, docx4j gives a header or footer block whose only content is the retrieve-marker
+  a zero-length `fo:leader` as a strut: a line box of the block's own font and line height, with no width, so
+  alignment is unchanged. The residual is a STYLEREF whose text would wrap to a second line, which measures one
+  line, per master (8695's long error text, perhaps). That waits on per-page measurement (§6).
 
 ### 3.3 Where it takes effect
 
