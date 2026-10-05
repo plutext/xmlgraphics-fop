@@ -105,7 +105,8 @@ their masters from it instead of from the page-sequence's `master-reference`. Pa
 the sequence's own masters. It is read through `FObj`'s foreign attributes, or registered as an extension property
 as `fox:continuation-display-align` was (fop/CR-013), whichever keeps validation quiet.
 
-Each condition below is reported once, as a warning in FOP's log, and the marker is then ignored, so the
+Each condition below is reported once, by a warning event of FOP's `BlockLevelEventProducer` (a warning in FOP's
+log until §13), and the marker is then ignored, so the
 sequence's own master applies:
 - **Where the marker sits.** A block-level FO (`fo:block`, `fo:block-container`, `fo:list-block`, `fo:table`)
   whose ancestors up to the `fo:flow` are blocks or block-containers. A marker inside a table cell, a list item,
@@ -532,8 +533,8 @@ step of this CR, `fop/CR-017.2`, for docx4j CR-031 phase 3 to depend on.
 
 **Implemented, 2026-10-05**, at Jason's word, on branch `CR-017.2-page-number-restart` off `2.11-docx4j.5`.
 - `PageOwnership` reads `fox:page-number-restart` and `fox:page-number-restart-parity` with each part's marker.
-  A restart that is not a whole number is logged and ignored. 0 becomes 1 unless the user agent allows a page
-  numbered 0.
+  A restart that is not a whole number is reported and ignored (by an event since §13). 0 becomes 1 unless the
+  user agent allows a page numbered 0.
 - `PageProvider` records the number each handed-out page prints, as above, with each page's owner, and makes the
   page's number string from it, replacing a page cached during breaking whose string differs.
 - `PageSequenceLayoutManager.finishPageSequence` reports the last page's printed number, so a following sequence
@@ -611,10 +612,25 @@ and the rest on CR-018's (its §10). Each was checked against the code. On branc
 - **`page-position="last"` in a part's master was ignored without a word**, where §3.5 says it is reported. The
   check now warns when a named master has alternatives with `page-position` `last` or `only`, which
   `getPageMasterFor` skips, and the part is accepted with the others.
-- **"Rejections go to the log, not the event producer."** §3.1 says "a warning in FOP's log", and that is what
-  the code does. The observation's point stands as a choice, not a defect: a consumer that listens for FOP's
-  events does not see them. Moving them to an event producer, with messages in `EventFormatter.xml`, is left to
-  Jason and the docx4j session.
+- **"Rejections go to the log, not the event producer."** §3.1 said "a warning in FOP's log", and the code
+  did that. But §3.1's choice departed from FOP's practice. FOP's documentation keeps logging for the developer
+  debugging FOP and reports problems in the input to the user and the embedding tool by events, with a
+  translatable message and the FO's place. Its page-master problems are events of `BlockLevelEventProducer`
+  (`pageSequenceMasterExhausted`, `lastPageMasterReferenceMissing`), and `fo/pagination` has no log warning.
+  So, at Jason's word, every warning of this CR, of CR-017.2 and of CR-018 is now a `WARN` event of
+  `BlockLevelEventProducer`, with its message in `BlockLevelEventProducer.xml`:
+  - `pageMasterReferenceMisplaced`, `pageMasterReferenceNotAlternatives`, `pageMasterReferenceNoBodyForFlow` and
+    `pageMasterReferenceBodyDiffers` (§3.1);
+  - `pageMasterReferenceLastOrOnlyIgnored` (§3.5, above);
+  - `pageNumberRestartInvalid` and `pageNumberRestartParityInvalid` (§11);
+  - `measuredExtentUnsupported` (CR-018 §10).
+
+  Each names the FO it concerns, which the log lines did not. Test `page-master-by-content_ignored` now checks
+  its four rejections' events. `page-master-by-content_last-alternative`, `page-number-restart_rejected` and
+  `measured-region-extents_unsupported` are new. Each fails without the change ("Event did not occur").
+  docx4j registers no event listener (the docx4j session, 2026-10-06), so FOP's default logs them, now under the
+  `org.apache.fop.apps.FOUserAgent` logger rather than `PageOwnership`'s and `PageSequenceLayoutManager`'s.
+  Across its gate logs from b120 to b139, none of the old warnings ever fired.
 - **One page past each element list's end is cached in a sequence with parts.** `assignPageOwner` asks for the
   column of every new node, the list's last included, whose part never begins. FOP discards surplus pages, the
   review found no harm, and neither did this check. With CR-018, a master can be measured slightly before its

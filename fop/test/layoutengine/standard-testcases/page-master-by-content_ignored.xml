@@ -21,9 +21,10 @@
 <testcase>
   <info>
     <p>
-      Markers that cannot be honoured are reported and ignored, and the page-sequence's own master applies: a
-      page-sequence-master that is not one unbounded alternatives; a master whose body is wider; a master whose
-      region-body is not named for the flow; a marker inside a table cell; and, last, no marker at all.
+      Markers that cannot be honoured are reported, each by its event, and ignored, and the page-sequence's own
+      master applies: a page-sequence-master that is not one unbounded alternatives; a master whose body is wider;
+      a master whose region-body is not named for the flow; a marker inside a table cell; and, last, no marker at
+      all.
     </p>
   </info>
   <fo>
@@ -40,4 +41,10 @@
     <eval expected="20" xpath="count(//pageViewport)"/>
     <eval expected="0" xpath="count(//pageViewport[@simple-page-master-name != 'A'])"/>
   </checks>
+  <event-checks>
+    <event key="pageMasterReferenceNotAlternatives" psmName="psmR"/>
+    <event key="pageMasterReferenceBodyDiffers" psmName="psmW" masterName="W"/>
+    <event key="pageMasterReferenceNoBodyForFlow" psmName="psmN" masterName="N" flowName="xsl-region-body"/>
+    <event key="pageMasterReferenceMisplaced" psmName="psmB" elementName="fo:block"/>
+  </event-checks>
 </testcase>

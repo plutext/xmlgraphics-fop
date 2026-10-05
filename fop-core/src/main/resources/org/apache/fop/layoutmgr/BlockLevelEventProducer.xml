@@ -16,6 +16,9 @@
     limitations under the License.
 -->
 <!-- $Id$ -->
+<!-- Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: the warnings of hook page-master-by-content (fop/CR-017), page-number-restart
+     (fop/CR-017.2) and measured-region-extents (fop/CR-018). See README.md, "Changes from Apache FOP 2.11". -->
 <catalogue xml:lang="en">
   <message key="locator">[ (See position {loc})| (See {#gatherContextInfo})| (No context info available)]</message>
   <message key="rowTooTall">The contents of table-row {row} are taller than they should be (there is a block-progression-dimension or height constraint on the indicated row). Due to its contents the row grows to {effCellBPD} millipoints, but the row shouldn't get any taller than {maxCellBPD} millipoints.{{locator}}</message>
@@ -33,4 +36,12 @@
   <message key="nonRestartableContentFlowingToNarrowerPage">Content that cannot handle IPD changes is flowing to a narrower page. Part of it may be clipped by the page border.</message>
   <message key="layoutHasReachedParts">A layout has reached {partCount} part(s).</message>
   <message key="lastPageMasterReferenceMissing">page-position="last" master reference missing.{{locator}}</message>
+  <message key="pageMasterReferenceMisplaced">fox:page-sequence-master-reference="{psmName}" on {elementName} is ignored: it applies to a block-level FO whose ancestors up to the flow are blocks or block-containers.{{locator}}</message>
+  <message key="pageMasterReferenceNotAlternatives">fox:page-sequence-master-reference="{psmName}" is ignored: it must name a page-sequence-master that is one unbounded repeatable-page-master-alternatives.{{locator}}</message>
+  <message key="pageMasterReferenceNoBodyForFlow">fox:page-sequence-master-reference="{psmName}" is ignored: master "{masterName}" has no region-body named for the flow "{flowName}".{{locator}}</message>
+  <message key="pageMasterReferenceBodyDiffers">fox:page-sequence-master-reference="{psmName}" is ignored: master "{masterName}" differs from the page-sequence's in its body's width or column count.{{locator}}</message>
+  <message key="pageMasterReferenceLastOrOnlyIgnored">fox:page-sequence-master-reference="{psmName}": the alternatives with page-position "last" or "only" are ignored, and the others apply.{{locator}}</message>
+  <message key="pageNumberRestartInvalid">fox:page-number-restart="{value}" is ignored: it must be a whole number.{{locator}}</message>
+  <message key="pageNumberRestartParityInvalid">fox:page-number-restart-parity="{value}" is ignored: its value is "keep".{{locator}}</message>
+  <message key="measuredExtentUnsupported">fox:extent="measured" on master "{masterName}" is ignored: it applies to the lr-tb and rl-tb writing modes at reference-orientation 0.{{locator}}</message>
 </catalogue>

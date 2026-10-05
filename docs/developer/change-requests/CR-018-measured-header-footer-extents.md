@@ -166,7 +166,7 @@ So it stays as it is.
 - `Docx4jFop`.
 
 Supported: the `lr-tb` and `rl-tb` writing modes and `reference-orientation` 0, which is what docx4j writes.
-Elsewhere the attribute is reported once and the stated values apply.
+Elsewhere the attribute is reported once (by an event since §10) and the stated values apply.
 
 ### 3.4 Capability
 
@@ -286,8 +286,8 @@ It is §3 as designed, with these differences, each found while building it:
 - **The cache** holds each master's extents, both regions together, in a map `PageProvider` clears with its other
   per-sequence state.
 - **The unsupported case.** A master in another writing mode or at a nonzero reference-orientation gets a log
-  warning when it is measured (so once per master and page-sequence), and its stated extents. A region with its
-  own nonzero reference-orientation keeps its stated extent without a warning.
+  warning (an event since §10) when it is measured (so once per master and page-sequence), and its stated
+  extents. A region with its own nonzero reference-orientation keeps its stated extent without a warning.
 
 What building it found:
 - **Without the mode, a link into a header fails the rendering.** An `fo:basic-link` to an id in a header resolves
@@ -360,8 +360,10 @@ branch `CR-017-018-review`:
   sides by the difference between each measured extent and the stated one. Without precedence the sides span the
   page as before. Test `measured-region-extents_start-end.xml` has both cases, and it fails without the change,
   the start region at its stated place. docx4j writes no region-start or region-end, so nothing it renders moves.
-- **The writing-mode rejection goes to the log.** As in CR-017 §13: §3.3 says reported, and §9 records a log
-  warning. An event producer is left to the same decision.
+- **The writing-mode rejection went to the log.** It is now the event `measuredExtentUnsupported`, with CR-017's
+  and CR-017.2's warnings (CR-017 §13 gives the reason: FOP reports problems in the input by events). It is raised
+  before the measurement mutes events, as the docx4j session asked: test `measured-region-extents_unsupported`
+  checks the event and that the region keeps its stated extent.
 - **A master may be measured one page early** (CR-017 §13, the page past a list's end). The measurement depends on
   no page's content, retrieving no marker and registering nothing, so the extents are the same.
 

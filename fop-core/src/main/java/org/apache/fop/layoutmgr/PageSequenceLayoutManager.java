@@ -102,8 +102,8 @@ public class PageSequenceLayoutManager extends AbstractPageSequenceLayoutManager
         if (spm.getReferenceOrientation() != 0
                 || (spm.getWritingMode().getEnumValue() != Constants.EN_LR_TB
                     && spm.getWritingMode().getEnumValue() != Constants.EN_RL_TB)) {
-            log.warn("fox:extent=\"measured\" on master \"" + spm.getMasterName() + "\" is ignored: it applies to"
-                    + " the lr-tb and rl-tb writing modes at reference-orientation 0");
+            BlockLevelEventProducer.Provider.get(getPageSequence().getUserAgent().getEventBroadcaster())
+                    .measuredExtentUnsupported(spm, spm.getMasterName(), spm.getLocator());
             return extents;
         }
         Page measuringPage = new Page(spm, pageNumber, pageNumberString, blank, false, false);

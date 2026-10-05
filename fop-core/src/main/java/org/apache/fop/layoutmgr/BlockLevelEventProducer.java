@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the warnings of hook page-master-by-content (fop/CR-017), page-number-restart (fop/CR-017.2)
+ * and measured-region-extents (fop/CR-018). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -219,4 +223,86 @@ public interface BlockLevelEventProducer extends EventProducer {
      * @event.severity WARN
      */
     void lastPageMasterReferenceMissing(Object source, Locator loc);
+
+    /**
+     * Hook page-master-by-content: fox:page-sequence-master-reference on an FO that cannot carry it is ignored.
+     * @param source the event source
+     * @param psmName the page-sequence-master named
+     * @param elementName the FO carrying it
+     * @param loc the location of the error or null
+     * @event.severity WARN
+     */
+    void pageMasterReferenceMisplaced(Object source, String psmName, String elementName, Locator loc);
+
+    /**
+     * Hook page-master-by-content: fox:page-sequence-master-reference naming a page-sequence-master not in the
+     * required form is ignored.
+     * @param source the event source
+     * @param psmName the page-sequence-master named
+     * @param loc the location of the error or null
+     * @event.severity WARN
+     */
+    void pageMasterReferenceNotAlternatives(Object source, String psmName, Locator loc);
+
+    /**
+     * Hook page-master-by-content: fox:page-sequence-master-reference naming a master whose region-body is not
+     * named for the flow is ignored.
+     * @param source the event source
+     * @param psmName the page-sequence-master named
+     * @param masterName the simple-page-master
+     * @param flowName the flow's name
+     * @param loc the location of the error or null
+     * @event.severity WARN
+     */
+    void pageMasterReferenceNoBodyForFlow(Object source, String psmName, String masterName, String flowName,
+            Locator loc);
+
+    /**
+     * Hook page-master-by-content: fox:page-sequence-master-reference naming a master whose body differs from
+     * the page-sequence's in its width or column count is ignored.
+     * @param source the event source
+     * @param psmName the page-sequence-master named
+     * @param masterName the simple-page-master
+     * @param loc the location of the error or null
+     * @event.severity WARN
+     */
+    void pageMasterReferenceBodyDiffers(Object source, String psmName, String masterName, Locator loc);
+
+    /**
+     * Hook page-master-by-content: the alternatives with page-position "last" or "only" of a page-sequence-master
+     * named by fox:page-sequence-master-reference are ignored, and the others apply.
+     * @param source the event source
+     * @param psmName the page-sequence-master named
+     * @param loc the location of the error or null
+     * @event.severity WARN
+     */
+    void pageMasterReferenceLastOrOnlyIgnored(Object source, String psmName, Locator loc);
+
+    /**
+     * Hook page-number-restart: a fox:page-number-restart that is not a whole number is ignored.
+     * @param source the event source
+     * @param value the value given
+     * @param loc the location of the error or null
+     * @event.severity WARN
+     */
+    void pageNumberRestartInvalid(Object source, String value, Locator loc);
+
+    /**
+     * Hook page-number-restart: a fox:page-number-restart-parity other than "keep" is ignored.
+     * @param source the event source
+     * @param value the value given
+     * @param loc the location of the error or null
+     * @event.severity WARN
+     */
+    void pageNumberRestartParityInvalid(Object source, String value, Locator loc);
+
+    /**
+     * Hook measured-region-extents: fox:extent="measured" on a master outside the lr-tb and rl-tb writing modes
+     * at reference-orientation 0 is ignored, and the stated extents apply.
+     * @param source the event source
+     * @param masterName the simple-page-master
+     * @param loc the location of the error or null
+     * @event.severity WARN
+     */
+    void measuredExtentUnsupported(Object source, String masterName, Locator loc);
 }

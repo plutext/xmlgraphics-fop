@@ -199,38 +199,32 @@ public final class PageOwnership {
     private Part check(FObj fo, String name, boolean ancestorsAccepted, BodyRegion reference) {
         if (!ancestorsAccepted || !(fo instanceof Block || fo instanceof BlockContainer
                 || fo instanceof ListBlock || fo instanceof Table)) {
-            LOG.warn("fox:page-sequence-master-reference=\"" + name + "\" on " + fo.getName()
-                    + " is ignored: it applies to a block-level FO whose ancestors up to the flow are blocks"
-                    + " or block-containers");
+            getEventProducer().pageMasterReferenceMisplaced(fo, name, fo.getName(), fo.getLocator());
             return null;
         }
         PageSequenceMaster psm = pageSequence.getRoot().getLayoutMasterSet().getPageSequenceMaster(name);
         RepeatablePageMasterAlternatives alternatives = (psm == null) ? null : psm.getSoleUnboundedAlternatives();
         if (alternatives == null) {
-            LOG.warn("fox:page-sequence-master-reference=\"" + name + "\" is ignored: it must name a"
-                    + " page-sequence-master that is one unbounded repeatable-page-master-alternatives");
+            getEventProducer().pageMasterReferenceNotAlternatives(fo, name, fo.getLocator());
             return null;
         }
         String flowName = pageSequence.getMainFlow().getFlowName();
         for (SimplePageMaster spm : alternatives.getAlternativeMasters()) {
             Region body = spm.getRegion(FO_REGION_BODY);
             if (body == null || !flowName.equals(body.getRegionName())) {
-                LOG.warn("fox:page-sequence-master-reference=\"" + name + "\" is ignored: master \""
-                        + spm.getMasterName() + "\" has no region-body named for the flow \"" + flowName + "\"");
+                getEventProducer().pageMasterReferenceNoBodyForFlow(fo, name, spm.getMasterName(), flowName,
+                        fo.getLocator());
                 return null;
             }
             BodyRegion candidate = new Page(spm, 1, "", false, false, false).getPageViewport().getBodyRegion();
             if (candidate.getColumnCount() != reference.getColumnCount()
                     || candidate.getColumnIPD() != reference.getColumnIPD()) {
-                LOG.warn("fox:page-sequence-master-reference=\"" + name + "\" is ignored: master \""
-                        + spm.getMasterName() + "\" differs from the page-sequence's in its body's width or"
-                        + " column count");
+                getEventProducer().pageMasterReferenceBodyDiffers(fo, name, spm.getMasterName(), fo.getLocator());
                 return null;
             }
         }
         if (alternatives.hasPagePositionLast() || alternatives.hasPagePositionOnly()) {
-            LOG.warn("fox:page-sequence-master-reference=\"" + name + "\": the alternatives with page-position"
-                    + " \"last\" or \"only\" are ignored, and the others apply");
+            getEventProducer().pageMasterReferenceLastOrOnlyIgnored(fo, name, fo.getLocator());
         }
         Part part = new Part(fo, alternatives);
         readRestart(fo, part);
@@ -253,7 +247,7 @@ public final class PageOwnership {
             number = -1;
         }
         if (number < 0) {
-            LOG.warn("fox:page-number-restart=\"" + restart + "\" is ignored: it must be a whole number");
+            getEventProducer().pageNumberRestartInvalid(fo, restart, fo.getLocator());
             return;
         }
         if (number == 0 && !pageSequence.getUserAgent().isPageNumberZeroAllowed()) {
@@ -265,9 +259,14 @@ public final class PageOwnership {
             if ("keep".equals(parity.trim())) {
                 part.keepParity = true;
             } else {
-                LOG.warn("fox:page-number-restart-parity=\"" + parity + "\" is ignored: its value is \"keep\"");
+                getEventProducer().pageNumberRestartParityInvalid(fo, parity, fo.getLocator());
             }
         }
+    }
+
+    /** The producer of the warnings of a marker that cannot be honoured, reported as FOP reports its own. */
+    private BlockLevelEventProducer getEventProducer() {
+        return BlockLevelEventProducer.Provider.get(pageSequence.getUserAgent().getEventBroadcaster());
     }
 
     private static final int FO_REGION_BODY = org.apache.fop.fo.Constants.FO_REGION_BODY;

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: a test of hook measured-region-extents (fop/CR-018). -->
+<testcase>
+  <info>
+    <p>
+      fox:extent="measured" on a master at reference-orientation 90, which the measurement does not support: an
+      event reports it, raised before the measurement mutes events, and the region keeps its stated extent (10pt)
+      where its static content is three lines.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"><fo:layout-master-set><fo:simple-page-master master-name="R" page-width="300pt" page-height="300pt" margin="20pt" reference-orientation="90"><fo:region-body margin-top="30pt"/><fo:region-before extent="10pt" fox:extent="measured"/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="R"><fo:static-content flow-name="xsl-region-before" font-size="10pt" line-height="12pt"><fo:block>h1</fo:block><fo:block>h2</fo:block><fo:block>h3</fo:block></fo:static-content><fo:flow flow-name="xsl-region-body" font-size="10pt" line-height="12pt"><fo:block>a1</fo:block><fo:block>a2</fo:block><fo:block>a3</fo:block><fo:block>a4</fo:block><fo:block>a5</fo:block></fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <eval expected="1" xpath="count(//pageViewport)"/>
+    <eval expected="10000" xpath="//regionViewport/regionBefore/@bpd"/>
+  </checks>
+  <event-checks>
+    <event key="measuredExtentUnsupported" masterName="R"/>
+  </event-checks>
+</testcase>
