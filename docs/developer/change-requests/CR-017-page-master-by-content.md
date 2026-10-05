@@ -1,7 +1,7 @@
 # CR-017: page masters chosen by the content a page starts with
 
-Status: PROPOSED 2026-10-05; design and estimate, not started. Revised 2026-10-05 after two reviews (§8); the
-second found it ready to start. Registry key
+Status: IMPLEMENTED 2026-10-05 at Jason's word, on branch `CR-017-page-master-by-content` off `2.11-docx4j.5`
+(§9); awaiting the docx4j gate. Designed and revised after two reviews (§8); the second found it ready to start. Registry key
 `fop/CR-017`. Capability `page-master-by-content`. A docx4j hook, for Word compatibility: XSL chooses a page master
 by position, parity and blankness only. So it is not upstream-bound. Requested by the docx4j session for docx4j
 CR-031 phase 2 (registered as `docx4j/CR-031.2`). That follows Jason's decision 1 there (2026-10-05): the fork
@@ -103,7 +103,7 @@ their masters from it instead of from the page-sequence's `master-reference`. Pa
 the sequence's own masters. It is read through `FObj`'s foreign attributes, or registered as an extension property
 as `fox:continuation-display-align` was (fop/CR-013), whichever keeps validation quiet.
 
-Each condition below is reported once through the event producer, and the marker is then ignored, so the
+Each condition below is reported once, as a warning in FOP's log, and the marker is then ignored, so the
 sequence's own master applies:
 - **Where the marker sits.** A block-level FO (`fo:block`, `fo:block-container`, `fo:list-block`, `fo:table`)
   whose ancestors up to the `fo:flow` are blocks or block-containers. A marker inside a table cell, a list item,
@@ -284,6 +284,7 @@ the body's position. The suite runs with assertions on.
 13. **A side float** (`fo:float`, which docx4j writes) in a merged run, with a marker after it in the re-read tail:
     the part takes over where it should. If this cannot be made right, the fallback is to report and ignore the
     markers in a sequence with side floats. This test decides between the two, and the CR records which.
+    **Decided (§9): honoured.** The marker in the re-read tail is seen, so 719 and 11256 get the fix.
 
 ## 6. Risks
 
@@ -373,3 +374,57 @@ none structural. Each was checked against the code, and each holds:
 6. **§3.1's wording on the IPD-change restart.** Now "no change of master reaches it".
 
 This review predates probe P6. §3.5's restart step is parked on P6 and P7 independently of it.
+
+## 9. Implemented, 2026-10-05
+
+On branch `CR-017-page-master-by-content` off `2.11-docx4j.5`, at Jason's word.
+
+**Files.**
+- `PageOwnership` (new): finds the marked FOs once per page-sequence, by walking the main flow's FO subtree. That
+  is also where misplaced markers and unacceptable masters are reported. It records each element list's
+  transitions and answers which part owns the content after a break. With no valid marker it is inactive, and
+  nothing below scans or asks anything.
+- `PageProvider`:
+  - records the owner of every page handed out for areas (`createPage`, relative to the page-sequence): the
+    pending owner where one is set, else the previous page's, not as its first;
+  - makes or replaces the page with that owner's master, through the existing replacement path;
+  - `getAvailableBPD(index, owner, first)` measures a fresh page of the owner's master (cached by master) for
+    pages not yet handed out;
+  - caches each part's column per list.
+- `PageBreakingAlgorithm`:
+  - the owner and first-page flag on `KnuthPageNode`, set in both `createNode`s;
+  - `getLineWidth(KnuthNode)` at the five call sites;
+  - footnote-only pages copy the owner of the page before;
+  - each `PageBreakPosition` carries the owner of its part.
+- `AbstractBreaker`: the owner fields on `PageBreakPosition`, and two no-op hooks, around `startPart` and at the
+  IPD restart's committed break.
+- `PageBreaker`:
+  - scans each new list;
+  - replaces the list's still-empty first page where its owner differs;
+  - sets the pending owner around `startPart` and before `redoLayout`'s page;
+  - commits at a float's restart.
+- `PageSequenceMaster.getSoleUnboundedAlternatives` and
+  `RepeatablePageMasterAlternatives.getPageMasterFor` / `getAlternativeMasters`: the master for a page without
+  consuming a repeat.
+- `Docx4jFop.PAGE_MASTER_BY_CONTENT`, the fifteenth capability.
+
+**Tests**: twelve layout tests, `page-master-by-content_*.xml`, covering §5's thirteen, all with assertions on:
+
+| test file | §5 | what it shows |
+|---|---|---|
+| `mid-page` | 1 | page 2 keeps A where B starts mid-page; page 3 takes B, body 30pt lower |
+| `page-top` | 2 | B opening page 3 takes its first-page master Bf, then B |
+| `span-change` | 3 | two columns to one and one to two: page 2 keeps A2 in every column, page 3 takes B2 |
+| `odd-even` | 4 | odd and even masters of different heights alternate |
+| `footnote-pages` | 5 | footnote-only pages take A, the page before's owner, not B |
+| `citation` | 6 | a citation to a block on a replaced page gives page 3 |
+| `ignored` | 7, 8 | four rejected markers, then none at all: every page keeps the sequence's master |
+| `empty-and-absolute` | 9 | an empty marked block, and a marked absolute block-container, start their part |
+| `page-breaks` | 10 | a break inside a part; a marker after a break, its first master included; the span="all" form; a marker on the flow's first block |
+| `blank-pages` | 11 | blanks from force-page-count and from break-before="odd-page" take Cb, the owner's blank master |
+| `balancing` | 12 | the balanced page beyond the list's first is B2's |
+| `float` | 13 | the marker after a side float is honoured |
+
+Without the change, ten fail and two pass. `ignored` passes either way by design. `footnote-pages` also gives A
+on stock FOP; it fails, with B, when only the footnote-page rule is removed. §6.6 item 24's assertion did not
+trip in `span-change` or `balancing`.
