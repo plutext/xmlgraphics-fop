@@ -31,6 +31,7 @@ import org.apache.fop.datatypes.FODimension;
 import org.apache.fop.fo.Constants;
 import org.apache.fop.fo.extensions.ExtensionElementMapping;
 import org.apache.fop.fo.pagination.Region;
+import org.apache.fop.fo.pagination.RegionBA;
 import org.apache.fop.fo.pagination.SimplePageMaster;
 
 /**
@@ -113,9 +114,34 @@ public final class MeasuredExtents {
                 return rect;
             }
             return new Rectangle(rect.x, newTop, rect.width, Math.max(0, reldims.bpd - newTop - newBottom));
+        case Constants.FO_REGION_START:
+        case Constants.FO_REGION_END:
+            return adjustSide(region, rect, reldims);
         default:
             return rect;
         }
+    }
+
+    /**
+     * Region-start and region-end lie between region-before and region-after where those have precedence
+     * (XSL 1.1, the precedence property), so they move by the difference between a measured extent and the stated one.
+     */
+    private Rectangle adjustSide(Region region, Rectangle rect, FODimension reldims) {
+        SimplePageMaster spm = (SimplePageMaster) region.getParent();
+        int top = 0;
+        int bottom = 0;
+        RegionBA regionBefore = (RegionBA) spm.getRegion(Constants.FO_REGION_BEFORE);
+        if (before >= 0 && regionBefore != null && regionBefore.getPrecedence() == Constants.EN_TRUE) {
+            top = before - regionBefore.getViewportRectangle(reldims).height;
+        }
+        RegionBA regionAfter = (RegionBA) spm.getRegion(Constants.FO_REGION_AFTER);
+        if (after >= 0 && regionAfter != null && regionAfter.getPrecedence() == Constants.EN_TRUE) {
+            bottom = after - regionAfter.getViewportRectangle(reldims).height;
+        }
+        if (top == 0 && bottom == 0) {
+            return rect;
+        }
+        return new Rectangle(rect.x, rect.y + top, rect.width, Math.max(0, rect.height - top - bottom));
     }
 
     /** {@inheritDoc} */

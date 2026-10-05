@@ -596,3 +596,27 @@ In FOP alone, 79 and 8940 now lay out line for line as they do without the marke
 8940: 218, 212, 59), each page with its owner's master. Regression test `first-page-span`: an unmarked
 `span="all"` block, then a marked two-column part, with an identical master and with a different one. It fails
 without the fix, with 5 pages where 6 are right. Committed on `2.11-docx4j.5`, and so in CR-017.2's branch.
+
+## 13. Review of the commits since 2.11-docx4j.4, 2026-10-06
+
+A review of `.5`'s commits (a reading, nothing run) made seven low-severity observations, four on this CR's code
+and the rest on CR-018's (its §10). Each was checked against the code. On branch `CR-017-018-review`:
+- **Owner records were never trimmed when cached pages are discarded** (`PageProvider.owners`,
+  `printedNumbers`). A stale record would win in `assignPageOwner` and `getAvailableBPD`. By reading, none can
+  exist today. Records are made only for pages handed out for areas, which are handed out in order. Both discards
+  start at the current page or later: the replacement in `getPage`, and the last-page redo (`previousIndex` is the
+  current page's). `discardCacheStartingWith` now forgets the records of the pages after the first one it
+  discards, which keeps that so. It keeps the first page's own record, which a replacement has just made. No test
+  reaches it.
+- **`page-position="last"` in a part's master was ignored without a word**, where §3.5 says it is reported. The
+  check now warns when a named master has alternatives with `page-position` `last` or `only`, which
+  `getPageMasterFor` skips, and the part is accepted with the others.
+- **"Rejections go to the log, not the event producer."** §3.1 says "a warning in FOP's log", and that is what
+  the code does. The observation's point stands as a choice, not a defect: a consumer that listens for FOP's
+  events does not see them. Moving them to an event producer, with messages in `EventFormatter.xml`, is left to
+  Jason and the docx4j session.
+- **One page past each element list's end is cached in a sequence with parts.** `assignPageOwner` asks for the
+  column of every new node, the list's last included, whose part never begins. FOP discards surplus pages, the
+  review found no harm, and neither did this check. With CR-018, a master can be measured slightly before its
+  first real use, which gives the same extents. Left as it is.
+

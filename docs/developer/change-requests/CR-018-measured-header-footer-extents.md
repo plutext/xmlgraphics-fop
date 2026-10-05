@@ -150,7 +150,7 @@ The `CTM`s are computed as now, from the adjusted rectangles. Every place `PageP
 master goes through one method, which supplies the extents:
 - `cacheNextPage`;
 - the fresh-page heights of CR-017 (`getFreshPageBPD`);
-- `getLastPageIPD`.
+- `getLastPageIPD`. (Not in the end: it reads only a column's width, which measured extents do not change; §9.)
 
 So the breaker sees each page's real body height, with no other change to the breaking. The fourth `new Page(` in
 `PageOwnership` (line 222) reads only the body's width and column count, which measured extents do not change.
@@ -205,7 +205,8 @@ finished.
 - **Per-page measurement.** A STYLEREF header varies from page to page, and measuring it per page is circular: its
   markers come from the page's body, whose height depends on the header. Per master first, as the pre-pass does,
   and per page later, once a Word probe shows what Word does.
-- `fo:region-start` and `fo:region-end`, which docx4j does not write.
+- Measuring `fo:region-start` and `fo:region-end`, which docx4j does not write. Where before or after has
+  precedence, the sides move with their measured extents (§10).
 
 ## 7. Estimate
 
@@ -341,3 +342,26 @@ masters more than 0.5pt off the pre-pass. None was a fork defect:
 
 On the same renderer, docx4j's revised side also gains 17 (its header text beside its logo, as in Word) and 12363
 (Word's 15 pages, where it had 16).
+
+## 10. Review of the commits since 2.11-docx4j.4, 2026-10-06
+
+The review that CR-017 §13 records made five observations on this CR's code. Each was checked against the code. On
+branch `CR-017-018-review`:
+- **`getLastPageIPD` still makes its page directly**, where `PageProvider`'s notice and `makePage`'s comment said
+  every page goes through `makePage`. §9 records why. The comments now say what is true: every page cached, and
+  every fresh page measured for its height. §3.3 points to §9.
+- **`FOUserAgent.setEventsMuted` drops every event, errors included, and is public.** The measurement restores it
+  in a `finally`. A fatal event still throws, since FOP throws in the event proxy after the broadcast. Its javadoc
+  now says so, and that a caller who leaves it set silences the rest of the rendering. It stays public, since the
+  layout manager that sets it is in another package.
+- **`fo:region-start` and `fo:region-end` were not adjusted.** Where region-before or region-after has
+  `precedence="true"`, the sides lie between them (XSL 1.1, the `precedence` property). So a measured extent moved
+  before or after and left the sides where the stated extents put them. `MeasuredExtents.adjust` now moves the
+  sides by the difference between each measured extent and the stated one. Without precedence the sides span the
+  page as before. Test `measured-region-extents_start-end.xml` has both cases, and it fails without the change,
+  the start region at its stated place. docx4j writes no region-start or region-end, so nothing it renders moves.
+- **The writing-mode rejection goes to the log.** As in CR-017 §13: §3.3 says reported, and §9 records a log
+  warning. An event producer is left to the same decision.
+- **A master may be measured one page early** (CR-017 §13, the page past a list's end). The measurement depends on
+  no page's content, retrieving no marker and registering nothing, so the extents are the same.
+

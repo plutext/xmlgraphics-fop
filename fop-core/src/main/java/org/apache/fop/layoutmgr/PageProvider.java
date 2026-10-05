@@ -18,9 +18,9 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook page-master-by-content, each page made with the master of the part that owns it, and the
  * height of a page asked for with its owner (fop/CR-017); and hook page-number-restart, each page numbered by a
- * running count that a part may restart (fop/CR-017.2); and hook measured-region-extents, each page made through one
- * method, with its master's header and footer extents measured where the master asks (fop/CR-018). See README.md,
- * "Changes from Apache FOP 2.11". */
+ * running count that a part may restart (fop/CR-017.2); and hook measured-region-extents, each page cached or
+ * measured for its height made through one method, with its master's header and footer extents measured where the
+ * master asks (fop/CR-018). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -28,6 +28,7 @@ package org.apache.fop.layoutmgr;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -172,9 +173,10 @@ public class PageProvider implements Constants {
     }
 
     /**
-     * Makes a page of a master: every page this provider makes or measures is made here, so a master asking for
-     * its header and footer extents to be measured (fox:extent="measured", hook measured-region-extents) has them
-     * measured on its first use and applied to every page made with it.
+     * Makes a page of a master: every page this provider caches, and every fresh page whose height it measures, is
+     * made here, so a master asking for its header and footer extents to be measured (fox:extent="measured", hook
+     * measured-region-extents) has them measured on its first use and applied to every page made with it.
+     * {@link #getLastPageIPD()} makes its own, since it reads only a column's width, which they do not change.
      */
     private Page makePage(SimplePageMaster spm, int pageNumber, String pageNumberString, boolean blank,
             boolean spanAll, boolean isPagePositionOnly) {
@@ -636,6 +638,26 @@ public class PageProvider implements Constants {
                 log.warn("goToPreviousSimplePageMaster() on the first page called!");
             }
         }
+        forgetPagesAfter(index + startPageOfPageSequence);
+    }
+
+    /**
+     * Hook page-master-by-content: forgets the owners and printed numbers recorded for the pages after one, which
+     * are to be made again. The page itself keeps its record, since a replacement in {@link #getPage(boolean, int)}
+     * discards the page just recorded. Pages are handed out in order, and both discards start at the current page
+     * or later, so no record lies there today; this keeps it so.
+     */
+    private void forgetPagesAfter(int pageNumber) {
+        for (Iterator<Integer> it = owners.keySet().iterator(); it.hasNext();) {
+            if (it.next() > pageNumber) {
+                it.remove();
+            }
+        }
+        for (Iterator<Integer> it = printedNumbers.keySet().iterator(); it.hasNext();) {
+            if (it.next() > pageNumber) {
+                it.remove();
+            }
+        }
     }
 
     private Page cacheNextPage(int index, boolean isBlank, boolean isLastPage, boolean spanAll,
@@ -680,6 +702,7 @@ public class PageProvider implements Constants {
         int index = this.cachedPages.size();
         boolean isFirstPage = (startPageOfPageSequence == index);
         SimplePageMaster spm = pageSeq.getLastSimplePageMaster(index, isFirstPage, false);
+        // not through makePage: a column's width does not depend on measured extents (hook measured-region-extents)
         Page page = new Page(spm, index, "", false, false, false);
         if (pageSeq.getRoot().getLastSeq() != null && pageSeq.getRoot().getLastSeq() != pageSeq) {
             return -1;

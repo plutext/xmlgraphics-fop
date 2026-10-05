@@ -575,7 +575,9 @@ public class FOUserAgent {
 
     /**
      * docx4j-fo-renderer hook {@code measured-region-extents} (fop/CR-018): drops the events broadcast while set,
-     * so a header or footer laid out only to measure it does not report its events a second time.
+     * so a header or footer laid out only to measure it does not report its events a second time. Every listener
+     * misses them, warnings and errors alike; a fatal event still throws. The measurement sets it and restores
+     * the value returned in a {@code finally}; a caller that leaves it set silences the rest of the rendering.
      * @param muted true to drop events, false to report them again
      * @return whether events were muted before
      */

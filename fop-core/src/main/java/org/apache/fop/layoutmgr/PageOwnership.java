@@ -228,6 +228,10 @@ public final class PageOwnership {
                 return null;
             }
         }
+        if (alternatives.hasPagePositionLast() || alternatives.hasPagePositionOnly()) {
+            LOG.warn("fox:page-sequence-master-reference=\"" + name + "\": the alternatives with page-position"
+                    + " \"last\" or \"only\" are ignored, and the others apply");
+        }
         Part part = new Part(fo, alternatives);
         readRestart(fo, part);
         return part;
