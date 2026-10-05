@@ -469,7 +469,7 @@ b118:
 section-continuous-geometry stays a page short (8 against Word's 9) until docx4j's phase 3, which gives S3 its own
 empty footer.
 
-## 11. The restart step, designed after P7 (2026-10-05; implemented on branch `CR-017.2-page-number-restart`)
+## 11. The restart step, designed after P7 (2026-10-05; `fop/CR-017.2`, gated PASS and merged to `2.11-docx4j.5`)
 
 **Word's rule**, from docx4j CR-031 §2 D3 items 2 and 5 (docx4j dbd38d4f7). The four restart readings:
 
@@ -551,6 +551,21 @@ step of this CR, `fop/CR-017.2`, for docx4j CR-031 phase 3 to depend on.
 - `PageNumberRestartTestCase`: a restart at 0 with and without the page-number-zero option.
 
 All four fail without the change.
+
+**Gated 2026-10-05, PASS** (the docx4j session, on install r12, byte-identical to 1c960ac66: CR-017.2 with the
+first-page fix of §12).
+- **Control** (b122: docx4j without restart attributes, on r12, against b119 on r11): 0 movers in the four corpora
+  and the probes.
+- **Measurement** (b123: restart attributes on, against b122): no exceptions.
+  - The restart probes, P3, P6 and its mirror twin, and P7 start2 and its mirror twin, all reach line parity
+    1.0000, so Word's folios and odd and even sides. P7 oddstart was already right.
+  - 79: +1 line. 8940: unchanged, with no lines lost.
+  - 13347: -10 lines, with the restart right. Section 1 restarts at 2 on page 2, so the table of contents now
+    prints Word's 3. docx4j's own extra empty page 4 (two breaks where Word makes one) had been cancelling the
+    off-by-one, and is the docx4j session's to fix.
+  - Nothing else moves; 9539's restart at 1 equals its continuing count.
+
+Merged to `2.11-docx4j.5` by fast-forward to 1c960ac66; the full build there passes, 3815 tests.
 
 ## 12. A defect found by the restart work, 2026-10-05: the first page's owner was not recorded
 
