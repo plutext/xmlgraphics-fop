@@ -469,7 +469,7 @@ b118:
 section-continuous-geometry stays a page short (8 against Word's 9) until docx4j's phase 3, which gives S3 its own
 empty footer.
 
-## 11. The restart step, designed after P7 (2026-10-05; proposed, not started)
+## 11. The restart step, designed after P7 (2026-10-05; implemented on branch `CR-017.2-page-number-restart`)
 
 **Word's rule**, from docx4j CR-031 §2 D3 items 2 and 5 (docx4j dbd38d4f7). The four restart readings:
 
@@ -493,7 +493,9 @@ empty footer.
   probe it equals the physical page's, since there was no earlier restart. This is not measured.
 - **Open:** a restarting part that opens its page (no mid-page start) under odd and even headers, where S has the
   wrong parity. By the rule the count would begin on the next page, leaving the opening page one below S. No probe
-  has it, so the step treats that page as S's page and records the case as unmeasured, until a probe reads it.
+  has it, so the step treats that page as S's page and records the case as unmeasured, until a probe reads it. The
+  docx4j session found no such document in the corpus. The only document with odd and even headers and a continuous
+  restart, 9539, starts mid-page and confirms the rule: restart 1 on page 1, both odd, numbered 1, 2, 3.
 
 **The attributes**, on the marked FO, alongside `fox:page-sequence-master-reference`:
 - `fox:page-number-restart="S"`: an integer, the part's first page number. 0 only where the user agent allows a
@@ -517,7 +519,9 @@ folio by Word's rule. The start page is known from the owner records: it is the 
 owned page when that page is not the part's first (a mid-page start), else that page itself.
 
 **Not covered:** a number format that changes at a continuous break (`w:pgNumType w:fmt`, roman to arabic, say).
-That would be a third attribute, if the corpus has such a document; the docx4j session to say.
+The docx4j session found none visible in the corpus. 14067's upper-roman section inherits a footer whose field is
+`PAGE \* Arabic`, and 8695's change starts a page-sequence of its own. So there is no third attribute until a
+probe or a document shows one.
 
 **Tests**: the four probes' shapes as layout tests, each checking every page's printed number in a header and
 in a citation; plus a restart at 0 with and without `page-number-zero`, and a part with no restart after a
@@ -525,3 +529,25 @@ restarting one, which continues the count.
 
 **Estimate**: about a day and a half: the folio in `PageProvider`, the attributes, and the tests. Registry: a
 step of this CR, `fop/CR-017.2`, for docx4j CR-031 phase 3 to depend on.
+
+**Implemented, 2026-10-05**, at Jason's word, on branch `CR-017.2-page-number-restart` off `2.11-docx4j.5`.
+- `PageOwnership` reads `fox:page-number-restart` and `fox:page-number-restart-parity` with each part's marker.
+  A restart that is not a whole number is logged and ignored. 0 becomes 1 unless the user agent allows a page
+  numbered 0.
+- `PageProvider` records the number each handed-out page prints, as above, with each page's owner, and makes the
+  page's number string from it, replacing a page cached during breaking whose string differs.
+- `PageSequenceLayoutManager.finishPageSequence` reports the last page's printed number, so a following sequence
+  with `initial-page-number="auto"` continues from it.
+- Capability `page-number-restart`, the sixteenth.
+
+**Tests:**
+- `page-number-restart_probes.xml`: P3, P6 and both P7 shapes, every page's printed number.
+- `page-number-restart_cases.xml`:
+  - a restarting part opening its page prints S;
+  - a part with no restart continues the count;
+  - a citation gives the printed number;
+  - a restart at 0 without the option gives 1;
+  - a following `auto` sequence continues from the last printed number.
+- `PageNumberRestartTestCase`: a restart at 0 with and without the page-number-zero option.
+
+All four fail without the change.
