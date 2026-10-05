@@ -220,7 +220,7 @@ breaking have the sequence's masters. That is harmless, because every master has
   it, and that owner's blank alternative where it has one. This is the provider's default (§3.4); see test 11.
 - `page-position="last"` alternatives in an owner's master are out of scope, since docx4j writes none. They are
   reported and ignored.
-- No restart offset; **the restart step is parked**. CR-031 §2 D3 (items 2 and 5) has Word's folios at a
+- No restart offset in the first step. **The restart step is designed in §11**, after probe P7. CR-031 §2 D3 (items 2 and 5) has Word's folios at a
   continuous restart:
   - **P3, without `w:evenAndOddHeaders`:** 1, 2, 2, 3. The section's page 1 is the page it starts on, mid-page,
     which shows the section before's header and folio.
@@ -468,3 +468,60 @@ b118:
 
 section-continuous-geometry stays a page short (8 against Word's 9) until docx4j's phase 3, which gives S3 its own
 empty footer.
+
+## 11. The restart step, designed after P7 (2026-10-05; proposed, not started)
+
+**Word's rule**, from docx4j CR-031 §2 D3 items 2 and 5 (docx4j dbd38d4f7). The four restart readings:
+
+| probe | `w:evenAndOddHeaders` | restart at | the part starts | folios |
+|---|---|---|---|---|
+| P3 | no | 1 | mid page 2 | 1, 2, 2, 3 |
+| P6 | yes | 1 | mid page 2 | 1, 2, 1, 2, 3 |
+| P7 start2 | yes | 2 | mid page 2 | 1, 2, 3, 4, 5 |
+| P7 oddstart | yes | 1 | mid page 1 | 1, 2, 3, 4 |
+
+- The page a restarting continuous part starts on prints its owner's folio. When the part starts mid-page, the owner
+  is the part before, so that page keeps the old count.
+- The part's count, with its page 1 numbered at the restart number S, begins at:
+  - without odd and even headers: the page the part starts on, so the next page prints S + 1;
+  - with odd and even headers: the page the part starts on if S has that page's parity, else the next page, which
+    then prints S itself.
+- So with odd and even headers a folio's parity always equals its physical page's. Odd and even masters, and
+  mirrored margins, follow both, and the two never differ. It is the continuous counterpart of the blank page Word
+  inserts before a next-page restart.
+- **Assumption:** "that page's parity" is taken as the parity of the owner's folio on the start page. In every
+  probe it equals the physical page's, since there was no earlier restart. This is not measured.
+- **Open:** a restarting part that opens its page (no mid-page start) under odd and even headers, where S has the
+  wrong parity. By the rule the count would begin on the next page, leaving the opening page one below S. No probe
+  has it, so the step treats that page as S's page and records the case as unmeasured, until a probe reads it.
+
+**The attributes**, on the marked FO, alongside `fox:page-sequence-master-reference`:
+- `fox:page-number-restart="S"`: an integer, the part's first page number. 0 only where the user agent allows a
+  page numbered 0 (`page-number-zero`, fop/CR-012).
+- `fox:page-number-restart-parity="keep"`: present where the document has odd and even headers. The count then
+  begins on the start page only if S has that page's parity.
+
+**The mechanism.** A page's printed number, which headers, `fo:page-number`, citations and the PDF page labels all
+read, is the `PageViewport`'s page-number string, made when the page is made (`makeFormattedPageNumber(index)`).
+`PageProvider` already records each handed-out page's owner (§3.4), and pages are handed out in order. It now
+also keeps a running folio:
+- the first page is numbered as FOP numbers it now;
+- each later page is numbered one more than the page before;
+- except the page where a restarting part's count begins, which is numbered S. That page is the start page or the
+  one after it, by the rule above.
+
+It builds each page with `makeFormattedPageNumber(folio)`, in the page-sequence's own format, and the replacement
+path makes the page again where a page cached during breaking carries a different string. The integer page index,
+`force-page-count` and odd/even master selection stay physical; with odd and even headers they agree with the
+folio by Word's rule. The start page is known from the owner records: it is the page before the part's first
+owned page when that page is not the part's first (a mid-page start), else that page itself.
+
+**Not covered:** a number format that changes at a continuous break (`w:pgNumType w:fmt`, roman to arabic, say).
+That would be a third attribute, if the corpus has such a document; the docx4j session to say.
+
+**Tests**: the four probes' shapes as layout tests, each checking every page's printed number in a header and
+in a citation; plus a restart at 0 with and without `page-number-zero`, and a part with no restart after a
+restarting one, which continues the count.
+
+**Estimate**: about a day and a half: the folio in `PageProvider`, the attributes, and the tests. Registry: a
+step of this CR, `fop/CR-017.2`, for docx4j CR-031 phase 3 to depend on.
