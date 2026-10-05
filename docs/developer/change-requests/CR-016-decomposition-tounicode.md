@@ -2,8 +2,11 @@
 
 Status: DONE 2026-10-05, gated PASS by the docx4j session (§5) and merged to `2.11-docx4j.5` by fast-forward
 (28a18b70c); unreleased. The full build on the branch passes, 3765 tests, 0 failures, checkstyle and spotbugs clean. Registry key `fop/CR-016`. No capability: docx4j has no workaround that depends on it. A correction to
-`fop/CR-002`, so it is upstream-bound with CR-002's pull request,
-[#116](https://github.com/apache/xmlgraphics-fop/pull/116) (FOP-3345), not as an issue of its own.
+`fop/CR-002`, so it went upstream with CR-002's pull request,
+[#116](https://github.com/apache/xmlgraphics-fop/pull/116) (FOP-3345), not as an issue of its own. Pushed there
+2026-10-05 at Jason's word as 696830652 on branch `FOP-3345`: the fop-core suite against Apache `main` gives 3684
+tests and 0 failures, checkstyle clean, and the two decomposition tests fail without it. A comment on the pull
+request explains it (issuecomment-5986995470; text in `../fop-upstream-prs/FOP-3345-decomposition-comment.md`).
 
 Enterprise CR-001 §6.6 item 42. Found by the docx4j session (ledger8 slice A, corpus documents 8371, 6693 and 7742,
 about 1,900 class 2 lines) and handed to the fork at Jason's OK on 2026-10-05.

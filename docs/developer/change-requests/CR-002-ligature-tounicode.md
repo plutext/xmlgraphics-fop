@@ -456,4 +456,5 @@ and likewise o, e, u, c, and A as Å. Stock FOP published the base glyph's own c
 marks. So this CR made the text layer of such documents worse, from `2.11-docx4j.2` on. The docx4j session found it
 on the corpus (Enterprise CR-001 §6.6 item 42); §10's tests and gates had no Latin decomposition. `fop/CR-016` gives
 each glyph its piece of the character's canonical decomposition where the split follows it, and leaves the rule
-here in place otherwise. The fix belongs on pull request #116 with this CR.
+here in place otherwise. The fix is on pull request #116 with this CR since 2026-10-05 (696830652, with a
+comment explaining it).
