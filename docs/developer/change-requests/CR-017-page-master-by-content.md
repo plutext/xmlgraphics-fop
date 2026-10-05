@@ -187,9 +187,21 @@ breaking have the sequence's masters. That is harmless, because every master has
   blank alternative where it has one (§5, test 11).
 - `page-position="last"` alternatives in an owner's master are out of scope, since docx4j writes none. They are
   reported and ignored.
-- No restart offset. CR-031 §2 measured Word's folios at a continuous restart (P3: 1, 2, 2, 3). Which master, odd
-  or even, the page after such a restart takes is not measured: probe P6 is waiting for a Word run. That restart is
-  a later step of this CR, designed once P6 is read (CR-031 phase 3).
+- No restart offset; **the restart step is parked**. CR-031 §2 D3 (items 2 and 5) has Word's folios at a
+  continuous restart:
+  - **P3, without `w:evenAndOddHeaders`:** 1, 2, 2, 3. The section's page 1 is the page it starts on, mid-page,
+    which shows the section before's header and folio.
+  - **P6, the same shape with `w:evenAndOddHeaders`:** 1, 2, 1, 2, 3. The section's page 1 is the first page it
+    owns.
+
+  So "start number plus pages since the start page" holds only without odd and even headers. Odd/even headers and
+  mirrored margins follow one parity together, but P6 does not separate folio parity from physical parity, and two
+  readings fit:
+  - H1: with odd and even headers, the count starts at the first page the section owns.
+  - H2: Word puts the origin where folio parity and physical parity agree.
+
+  Probe P7 (CR-031 §5) separates them and waits on a Word run. The step is designed once it is read (CR-031 phase
+  3); nothing else in this CR depends on it.
 
 ### 3.6 Capability
 
