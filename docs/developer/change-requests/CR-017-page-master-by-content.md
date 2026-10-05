@@ -110,10 +110,13 @@ any. A part begins where that FO is a different FO from the part in force. FOs a
 consecutive parts naming the same master are still two parts.
 
 - **The transition sits on the first box at or after that element.** A marked FO whose first element is a glue or
-  penalty (its space-before, a break) therefore still takes effect. What an empty marked block emits is to be
-  established in implementation (§5, test 9). If it emits no element at all, the marker cannot be seen in the list.
-  Then the marked FO's layout manager notes itself to the breaker when it produces its (empty) contribution, and
-  the transition sits on the next box.
+  penalty (its space-before, a break) therefore still takes effect. **A marked FO that produces no box starts its
+  part at the next box**, rather than being lost. Examples are an empty block, or an absolutely positioned
+  block-container (a floating table or picture of height 0). What such an FO emits is to be established in
+  implementation (§5, test 9). If it emits no element at all, the marker cannot be seen in the list. Then the
+  marked FO's layout manager notes itself to the breaker when it produces its (empty) contribution, and the
+  transition sits on the next box. A marker on an `fo:float` is reported and ignored, since a float is not one of
+  the FO kinds §3.1 accepts.
 - **There is no "already seen" set.** The part in force at the start of a list is the part in force at the last
   committed break: the last break whose areas were added. So it is the same whether the list follows a forced
   break, a span change, a redo, or a float restart that re-reads elements from mid-list (§3.4).
@@ -196,7 +199,8 @@ only where the capability is present; on Apache FOP it writes today's FO.
 ## 4. What is unchanged
 
 FOP's output for any FO without the attribute. On the docx4j side, every document without a merged run whose
-parts' vertical margins differ: CR-031 counts 34 that have one, across the corpora's 550.
+parts' vertical margins differ: 32 across the corpora's 550 have one. CR-031 counted 34, but 9539 and 11741 change
+the page size at the margin change, so they are separate sequences already.
 
 ## 5. Tests (FOP layout tests, before any docx4j gate)
 
@@ -220,7 +224,8 @@ the body's position. The suite runs with assertions on.
    - a region-body not named for the flow;
    - a marker inside a table cell or a footnote.
 8. No attribute: the whole layout suite is unchanged (the full build).
-9. A marked empty block, then content: the part takes over at that content's first box.
+9. A marked empty block, then content; and a marked absolutely positioned block-container, then content: in both,
+   the part takes over at that content's first box.
 10. **Page breaks:**
     - a `break-before="page"` inside a later part: the new page keeps that part's owner;
     - a marked block directly after a page break, at the top of its list: the fresh page is replaced with the
@@ -262,16 +267,22 @@ the body's position. The suite runs with assertions on.
 
 The restart step (§3.5), once P6 is read, is about a day more.
 
-**For the docx4j session**, since the docx4j side is built against §3.1 and §3.6:
-- The marker must sit on a block-level FO whose ancestors up to the flow are blocks or block-containers. It must
-  not be inside a table, list, footnote or float.
-- Each part's masters must have the reference part's region-body width, its column count, and a region-body named
-  for the flow.
-- Item 21 records that docx4j stopped emitting block-containers in multi-column flows, but CR-031 §4.2b puts the
-  marker on the `XSLT_Ind` indent container where a part has one. Where that container is not emitted, the marker
-  goes on the part's first block. The docx4j session to confirm which applies.
-- Merged runs may contain `fo:float` (`FOPictWriterFloatUsed`). Test 13 decides whether markers there are honoured
-  or reported and ignored.
+**For the docx4j session**, since the docx4j side is built against §3.1 and §3.6. Its answers, 2026-10-05:
+- **Marker placement.** Every marker is a child of `fo:flow`: the part's `span="all"` block where the part has
+  fewer columns, otherwise its first in-flow block-level FO. docx4j skips an absolutely positioned block-container
+  and an `fo:float` when choosing it. §3.2 also starts a part at the next box if a marked FO has none.
+- **Region-body.** docx4j's region-body states no `region-name`, so it is `xsl-region-body`, as is every flow's
+  `flow-name`. The per-part masters keep the reference part's region-body width and column count, and change only
+  the vertical margins, the before and after extents, and the region names.
+- **Item 21.** `XSLT_Ind` writes no container in either pathway, multi-column or not. Since 17.0.5
+  `XsltFOFunctions.shiftIndents` adds the margin difference to the part's own paragraphs and tables, because of the
+  balancing exception item 21 records. The factory javadoc, and CR-031 §4.2b after it, still described a
+  block-container; both are corrected (docx4j 75af3b3aa).
+- **Side floats.** Two of the 32 documents have side `fo:float`s in a merged run: 719 and 11256, one Turkish
+  template, six floats each. All six are in part 1, before the run's one part boundary. Part 1's top margin is 0
+  and part 2's 70.85pt. Both documents are off Word's page count today (719 28 against 29, 11256 27 against 25). So
+  test 13's outcome decides them: honoured, they get the fix; reported and ignored, they keep today's margins. No
+  other of the 32 has a side float in its merged run.
 
 ## 8. Review, 2026-10-05
 
