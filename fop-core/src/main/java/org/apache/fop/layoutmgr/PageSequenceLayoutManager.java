@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook page-number-restart, a following page-sequence continues from the number the last page
+ * prints (fop/CR-017.2). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -157,7 +161,8 @@ public class PageSequenceLayoutManager extends AbstractPageSequenceLayoutManager
         if (pageSeq.hasId()) {
             idTracker.signalIDProcessed(pageSeq.getId());
         }
-        pageSeq.getRoot().notifyPageSequenceFinished(currentPageNum,
+        // hook page-number-restart: a following sequence continues from the number the last page prints
+        pageSeq.getRoot().notifyPageSequenceFinished(pageProvider.getPrintedPageNumber(currentPageNum),
                 (currentPageNum - startPageNum) + 1);
         areaTreeHandler.notifyPageSequenceFinished(pageSeq,
                 (currentPageNum - startPageNum) + 1);

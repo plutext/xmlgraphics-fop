@@ -16,8 +16,9 @@
  */
 
 /* Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
- * Apache FOP 2.11: hook page-master-by-content, which part of a page-sequence owns each page (fop/CR-017). See
- * README.md, "Changes from Apache FOP 2.11". */
+ * Apache FOP 2.11: hook page-master-by-content, which part of a page-sequence owns each page (fop/CR-017); and
+ * hook page-number-restart, a part's page numbers restarting (fop/CR-017.2). See README.md, "Changes from Apache
+ * FOP 2.11". */
 
 /* $Id$ */
 
@@ -64,6 +65,16 @@ public final class PageOwnership {
     public static final QName ATTRIBUTE = new QName(ExtensionElementMapping.URI,
             "fox:page-sequence-master-reference");
 
+    /** The attribute restarting a part's page numbers at a given number (hook page-number-restart). */
+    public static final QName RESTART = new QName(ExtensionElementMapping.URI, "fox:page-number-restart");
+
+    /**
+     * The attribute, value {@code keep}, under which a restarted count begins on the part's start page only if
+     * the restart number has that page's parity, else on the next page (hook page-number-restart).
+     */
+    public static final QName RESTART_PARITY = new QName(ExtensionElementMapping.URI,
+            "fox:page-number-restart-parity");
+
     /**
      * A part: the content from a marked FO up to the next, and the alternatives its pages take their
      * masters from. Parts are told apart by their FO, so two parts naming one master are two parts.
@@ -74,9 +85,24 @@ public final class PageOwnership {
 
         private final RepeatablePageMasterAlternatives alternatives;
 
+        /** The number the part's page numbers restart at, or -1 where they continue. */
+        private int restart = -1;
+
+        private boolean keepParity;
+
         private Part(FObj fo, RepeatablePageMasterAlternatives alternatives) {
             this.fo = fo;
             this.alternatives = alternatives;
+        }
+
+        /** @return the number the part's page numbers restart at, or -1 where they continue */
+        int getRestart() {
+            return restart;
+        }
+
+        /** @return whether a restarted count keeps the parity of the page it would begin on */
+        boolean keepsParity() {
+            return keepParity;
         }
 
         /**
@@ -202,7 +228,42 @@ public final class PageOwnership {
                 return null;
             }
         }
-        return new Part(fo, alternatives);
+        Part part = new Part(fo, alternatives);
+        readRestart(fo, part);
+        return part;
+    }
+
+    /**
+     * Reads a part's page-number restart: a whole number, at least 1, or 0 where the user agent allows a page
+     * numbered 0 (hook page-number-zero), else 1, as the error recovery of initial-page-number gives.
+     */
+    private void readRestart(FObj fo, Part part) {
+        String restart = (String) fo.getForeignAttributes().get(RESTART);
+        if (restart == null) {
+            return;
+        }
+        int number;
+        try {
+            number = Integer.parseInt(restart.trim());
+        } catch (NumberFormatException e) {
+            number = -1;
+        }
+        if (number < 0) {
+            LOG.warn("fox:page-number-restart=\"" + restart + "\" is ignored: it must be a whole number");
+            return;
+        }
+        if (number == 0 && !pageSequence.getUserAgent().isPageNumberZeroAllowed()) {
+            number = 1;
+        }
+        part.restart = number;
+        String parity = (String) fo.getForeignAttributes().get(RESTART_PARITY);
+        if (parity != null) {
+            if ("keep".equals(parity.trim())) {
+                part.keepParity = true;
+            } else {
+                LOG.warn("fox:page-number-restart-parity=\"" + parity + "\" is ignored: its value is \"keep\"");
+            }
+        }
     }
 
     private static final int FO_REGION_BODY = org.apache.fop.fo.Constants.FO_REGION_BODY;

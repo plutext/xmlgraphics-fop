@@ -153,6 +153,15 @@ public final class Docx4jFop {
      */
     public static final String PAGE_MASTER_BY_CONTENT = "page-master-by-content";
 
+    /**
+     * {@code fox:page-number-restart="S"} on an FO carrying {@code fox:page-sequence-master-reference} restarts its
+     * part's page numbers at S, as Word restarts a continuous section's: the page the part starts on prints its
+     * owner's number, and the count begins there, or with {@code fox:page-number-restart-parity="keep"} (odd and
+     * even headers) on the next page where S's parity differs. A following page-sequence continues from the
+     * number the last page prints (docx4j CR-031 phase 3, fop/CR-017.2).
+     */
+    public static final String PAGE_NUMBER_RESTART = "page-number-restart";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -172,6 +181,7 @@ public final class Docx4jFop {
         caps.add(TO_UNICODE_MAP);
         caps.add(ASCENDER_DESCENDER);
         caps.add(PAGE_MASTER_BY_CONTENT);
+        caps.add(PAGE_NUMBER_RESTART);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

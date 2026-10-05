@@ -55,7 +55,8 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.TO_UNICODE_MAP));
         assertTrue(Docx4jFop.has(Docx4jFop.ASCENDER_DESCENDER));
         assertTrue(Docx4jFop.has(Docx4jFop.PAGE_MASTER_BY_CONTENT));
-        assertEquals(15, Docx4jFop.capabilities().size());
+        assertTrue(Docx4jFop.has(Docx4jFop.PAGE_NUMBER_RESTART));
+        assertEquals(16, Docx4jFop.capabilities().size());
     }
 
     @Test

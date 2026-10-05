@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook page-master-by-content, each page made with the master of the part that owns it, and the
- * height of a page asked for with its owner (fop/CR-017). See README.md, "Changes from Apache FOP 2.11". */
+ * height of a page asked for with its owner (fop/CR-017); and hook page-number-restart, each page numbered by a
+ * running count that a part may restart (fop/CR-017.2). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -85,6 +86,8 @@ public class PageProvider implements Constants {
     private OwnerRecord pendingOwner;
     private final Map<SimplePageMaster, Integer> freshPageBPDs = new IdentityHashMap<SimplePageMaster, Integer>();
     private final List<Column> partColumns = new java.util.ArrayList<Column>();
+    /** Hook page-number-restart: the number each page handed out prints, by page index, where parts restart it. */
+    private final Map<Integer, Integer> printedNumbers = new HashMap<Integer, Integer>();
 
     /** The part owning a page, and whether the page is that part's first. */
     static final class OwnerRecord {
@@ -132,6 +135,18 @@ public class PageProvider implements Constants {
         pendingOwner = null;
         freshPageBPDs.clear();
         partColumns.clear();
+        printedNumbers.clear();
+    }
+
+    /**
+     * Hook page-number-restart: the number a page prints, which a part restarting its page numbers sets apart
+     * from the page's index.
+     * @param index a page's index
+     * @return the number it prints
+     */
+    public int getPrintedPageNumber(int index) {
+        Integer printed = printedNumbers.get(index);
+        return (printed == null) ? index : printed;
     }
 
     /** @return which part of the page-sequence owns each page (hook page-master-by-content) */
@@ -436,6 +451,36 @@ public class PageProvider implements Constants {
             record = new OwnerRecord(previous == null ? null : previous.part, false);
         }
         owners.put(index, record);
+        recordPrintedNumber(index, record);
+    }
+
+    /**
+     * Hook page-number-restart (fop/CR-017.2): the number a page handed out prints, one more than the page
+     * before's, except where a part restarting its numbers at S begins its count, as Word counts a continuous
+     * section that restarts. A part opening its page prints S there. A part starting part-way down a page leaves
+     * that page its owner's number, and its count begins on that page, so its first own page prints S + 1;
+     * with parity kept, the count begins there only where S has the parity of the number that page prints,
+     * else on the first own page, which then prints S.
+     */
+    private void recordPrintedNumber(int index, OwnerRecord record) {
+        Integer before = printedNumbers.get(index - 1);
+        int printed = (before != null) ? before + 1 : index;
+        PageOwnership.Part part = record.part;
+        if (part != null && part.getRestart() >= 0) {
+            OwnerRecord previous = owners.get(index - 1);
+            boolean firstOwnPage = previous == null || previous.part != part;
+            int restart = part.getRestart();
+            if (record.first) {
+                printed = restart;
+            } else if (firstOwnPage) {
+                int startPagePrints = (before != null) ? before : index - 1;
+                boolean sameParity = (restart % 2) == (startPagePrints % 2);
+                printed = (!part.keepsParity() || sameParity) ? restart + 1 : restart;
+            }
+        }
+        if (printed != index || !printedNumbers.isEmpty()) {
+            printedNumbers.put(index, printed);
+        }
     }
 
     /** The master the owner recorded for a page gives it, or null for the page-sequence's own. */
@@ -484,6 +529,11 @@ public class PageProvider implements Constants {
             log.debug("master doesn't match the page's owner. Replacing PageViewport.");
             replace = true;
         }
+        if (printedNumbers.containsKey(index) && !pageSeq.makeFormattedPageNumber(getPrintedPageNumber(index))
+                .equals(page.getPageViewport().getPageNumberString())) {
+            log.debug("page number doesn't match the page's count. Replacing PageViewport.");
+            replace = true;
+        }
         if (page.getPageViewport().isBlank() != isBlank) {
             log.debug("blank condition doesn't match. Replacing PageViewport.");
             replace = true;
@@ -526,7 +576,7 @@ public class PageProvider implements Constants {
 
     private Page cacheNextPage(int index, boolean isBlank, boolean isLastPage, boolean spanAll,
             SimplePageMaster ownerMaster) {
-        String pageNumberString = pageSeq.makeFormattedPageNumber(index);
+        String pageNumberString = pageSeq.makeFormattedPageNumber(getPrintedPageNumber(index));
         boolean isFirstPage = (startPageOfPageSequence == index);
         boolean skipPagePositionOnlyCheck = skipPagePositionOnly && foUserAgent.isSkipPagePositionOnlyAllowed();
         SimplePageMaster spm = pageSeq.getNextSimplePageMaster(
