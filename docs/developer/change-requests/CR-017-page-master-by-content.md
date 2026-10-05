@@ -1,6 +1,7 @@
 # CR-017: page masters chosen by the content a page starts with
 
-Status: PROPOSED 2026-10-05; design and estimate, not started. Revised 2026-10-05 after a review (§8). Registry key
+Status: PROPOSED 2026-10-05; design and estimate, not started. Revised 2026-10-05 after two reviews (§8); the
+second found it ready to start. Registry key
 `fop/CR-017`. Capability `page-master-by-content`. A docx4j hook, for Word compatibility: XSL chooses a page master
 by position, parity and blankness only. So it is not upstream-bound. Requested by the docx4j session for docx4j
 CR-031 phase 2 (registered as `docx4j/CR-031.2`). That follows Jason's decision 1 there (2026-10-05): the fork
@@ -55,9 +56,21 @@ here (§3.4).
   - `handleFloatLayout` (line 786) adds areas, then re-reads elements from a position inside the list, skipping
     `getNextBlockList`'s preamble.
 
-  Each of them, and the new list's start, calls `PageProvider.setStartOfNextElementList`, at lines 176, 363, 412
-  and 521. `PageProvider.getPage` already replaces a cached page whose blank, last-page or span condition no
-  longer matches: `newPageVP.replace(oldPageVP)` and `IDTracker.replacePageViewPort`.
+  - Outside the breaker: the sequence's first page, in `PageSequenceLayoutManager.activateLayout` (line 139),
+    before the breaker exists. The blank pages of `force-page-count`, in `AbstractPageSequenceLayoutManager`
+    (lines 372-411), after the breaker is done. The blank page of an odd- or even-page break, in
+    `PageBreaker.handleBreakBeforeFollowingPage`.
+
+  `PageProvider.setStartOfNextElementList`, which tells the provider where a list starts, is called four times:
+  - `getNextBlockList` (176);
+  - `prepareToRedoLayout` (363), for last-page masters only, which are out of scope (§3.5);
+  - `redoLayout` (412);
+  - `startPart` (521).
+
+  **`handleFloatLayout` makes no such call.** It sets `pageBreakHandled`, so `getNextBlockList`'s preamble and
+  `startPart`'s call are both skipped, and the re-read list runs against the old list's start in the provider.
+  `PageProvider.getPage` already replaces a cached page whose blank, last-page or span condition no longer
+  matches: `newPageVP.replace(oldPageVP)` and `IDTracker.replacePageViewPort`.
 
 FOP already lays out pages of different body heights, such as a taller first-page region-body, as long as the
 height is a function of the page's number. This CR lets it depend on what the page starts with.
@@ -100,7 +113,8 @@ sequence's own master applies:
   state.
 - **What every master it can choose has.** The reference part's region-body width and column count, and a
   region-body whose `region-name` is the flow's `flow-name`. `getAvailableBPD` skips pages without the latter.
-  Equal width and columns mean FOP's IPD-change restart (`restartAtLM`) is never reached.
+  Equal width and columns mean no change of master reaches FOP's IPD-change restart (`restartAtLM`). Side floats
+  reach it regardless, as they do today.
 
 ### 3.2 Where each part begins
 
@@ -111,12 +125,15 @@ consecutive parts naming the same master are still two parts.
 
 - **The transition sits on the first box at or after that element.** A marked FO whose first element is a glue or
   penalty (its space-before, a break) therefore still takes effect. **A marked FO that produces no box starts its
-  part at the next box**, rather than being lost. Examples are an empty block, or an absolutely positioned
-  block-container (a floating table or picture of height 0). What such an FO emits is to be established in
-  implementation (§5, test 9). If it emits no element at all, the marker cannot be seen in the list. Then the
-  marked FO's layout manager notes itself to the breaker when it produces its (empty) contribution, and the
-  transition sits on the next box. A marker on an `fo:float` is reported and ignored, since a float is not one of
-  the FO kinds §3.1 accepts.
+  part at the next box**, rather than being lost:
+  - **An empty `fo:block`** is not that case. `BlockStackingLayoutManager` (lines 359-364) gives it an auxiliary
+    zero-width box, unless it carries a forced break after, and the transition sits on that box.
+  - **An absolutely positioned block-container** (a floating table or picture of height 0) is not checked yet;
+    test 9 settles what it emits. If it emits no element at all, the marker cannot be seen in the list. Then its
+    layout manager notes itself to the breaker when it produces its (empty) contribution, and the transition sits
+    on the next box.
+
+  A marker on an `fo:float` is reported and ignored, since a float is not one of the FO kinds §3.1 accepts.
 - **There is no "already seen" set.** The part in force at the start of a list is the part in force at the last
   committed break: the last break whose areas were added. So it is the same whether the list follows a forced
   break, a span change, a redo, or a float restart that re-reads elements from mid-list (§3.4).
@@ -133,16 +150,24 @@ this node, and whether that part opens the owner's first page. They are set once
 - the list's first page, when that page already holds content (§3.4): the page's recorded owner.
 
 `getLineWidth(KnuthNode node)` replaces `getLineWidth(node.line)` at the five call sites. It reads the two fields,
-with no walk back through `previous` inside `computeDifference`'s loop. A page holding only footnote bodies
-(`createFootnotePages`) takes the owner of the page before it. That is not measured in Word (CR-031 §8).
+with no walk back through `previous` inside `computeDifference`'s loop.
+
+**A page holding only footnote bodies** takes the owner of the page before it. That is not measured in Word
+(CR-031 §8). It is not what the general rule gives: `createFootnotePages` creates its nodes at `lastNode.position`
+(lines 992 and 1007), so the column-0 rule would give the part in force at the end of the list. The two differ when
+a part starts part-way down the last content page. So those two `createNode` calls copy the owner from the previous
+node, with "not its first page" (test 5).
 
 Without the attribute anywhere in the sequence, the fields are unset and `getLineWidth(node)` is
 `getLineWidth(node.line)`, so FOP's behaviour is unchanged.
 
 ### 3.4 Pages: every page is made with its owner
 
-`PageProvider` keeps a record of the owner of every page it has handed out. **Every place that makes a page tells
-the provider the page's owner first**, so the page is made, or replaced, with that owner's master:
+`PageProvider` keeps a record of the owner of every page it has handed out. **Every place in the breaker that makes
+a page tells the provider the page's owner first**, so the page is made, or replaced, with that owner's master.
+**When the provider has not been told, its default is the previous page's owner, not its first page.** That covers
+the pages made outside the breaker without a hook at each site: the `force-page-count` blanks, and the blank page
+of an odd- or even-page break. §3.5 follows from this default. The breaker's places are these:
 - **`startPart` during `addAreas`**: the owner of the content after the chosen break, by the same function the
   breaker used, so the two agree.
 - **`getNextBlockList`** makes the list's first page before the list exists. The page is made with the owner in
@@ -153,12 +178,18 @@ the provider the page's owner first**, so the page is made, or replaced, with th
   new owner's master. The page is still empty: no areas, no markers, no static content yet. So the replacement goes
   through the provider's existing replace path: the cache, `IDTracker`, then `pslm.setCurrentPage`. Whether a
   page is fresh is read as `PageBreaker` already does (`getPageViewport().getPage().isEmpty()`).
+
+  The replacement must keep the span `handleBreakTrait` gave the page, `span="all"` included. The same rule
+  covers a marker on the flow's very first block: that page is made in `activateLayout` before the breaker exists,
+  and is still empty when the first list shows its first box. docx4j writes no such marker, but it is harmless.
 - **`redoLayout`**: the page made with `handleBreakTrait(EN_PAGE)` takes the owner of the first box after the
   restart break (`newStartPos`). The balancing algorithm then starts its list on that page and reads its recorded
   owner (§3.3), although it has no chain back to the main run.
 - **`handleFloatLayout`**: the areas it adds go through `startPart` as above. The elements it re-reads are scanned
   as a new list, from the part in force at the last committed break (§3.2), so a marker in the discarded tail is
-  seen again.
+  seen again. It makes no `setStartOfNextElementList` call (§1), so nothing on this path may key "the list's first
+  page" on that call. The re-read list's pages take their owners from the provider's record and its default. Test
+  13 decides whether that is enough.
 - **The list's first page, when it already holds content.** After a span change, FOP starts the next list on a
   page that already exists. Its height is that page's `getRemainingBPD()`, as now, and **every column of that page
   keeps that page's recorded owner, not only the list's first node**. Ownership is decided afresh only from the
@@ -183,8 +214,8 @@ breaking have the sequence's masters. That is harmless, because every master has
 
 ### 3.5 Blank pages, the last page, restarts
 
-- A blank page (`force-page-count`, odd/even padding) takes the owner of the page before it, and that owner's
-  blank alternative where it has one (§5, test 11).
+- A blank page (`force-page-count`, or the blank of an odd- or even-page break) takes the owner of the page before
+  it, and that owner's blank alternative where it has one. This is the provider's default (§3.4); see test 11.
 - `page-position="last"` alternatives in an owner's master are out of scope, since docx4j writes none. They are
   reported and ignored.
 - No restart offset; **the restart step is parked**. CR-031 §2 D3 (items 2 and 5) has Word's folios at a
@@ -226,8 +257,8 @@ the body's position. The suite runs with assertions on.
    one column to two. Every column of the continuing page keeps the first part's owner and the remaining height,
    and the next page takes the second part's master. Run under `-ea`, which is item 24's code.
 4. Odd and even masters of different body heights in the second part: the heights follow the folio.
-5. A footnote whose body carries over to a page holding only footnotes: that page takes the owner of the page
-   before it.
+5. A footnote whose body carries over to a page holding only footnotes, with a part boundary part-way down the
+   last content page: the footnote page takes that page's owner, not the part in force at the end of the list.
 6. An `id` on a block that lands on a replaced page, cited by `fo:page-number-citation`: the citation gives the
    right page.
 7. Each rejected case in §3.1 is reported, and the sequence's master applies:
@@ -241,9 +272,12 @@ the body's position. The suite runs with assertions on.
 10. **Page breaks:**
     - a `break-before="page"` inside a later part: the new page keeps that part's owner;
     - a marked block directly after a page break, at the top of its list: the fresh page is replaced with the
-      marked part's master, its first-page master included.
-11. An odd/even blank page from `force-page-count`: it takes the previous page's owner and that owner's blank
-    alternative.
+      marked part's master, its first-page master included;
+    - in a multi-column sequence, a marked `span="all"` block directly after a page break: the replaced page keeps
+      the span `handleBreakTrait` gave it;
+    - a marker on the flow's first block: the first page, made in `activateLayout`, is replaced while empty.
+11. An odd/even blank page from `force-page-count`, and one from `break-before="odd-page"`: each takes the
+    previous page's owner and that owner's blank alternative.
 12. **Balancing beyond the list's first page.** A two-column part that runs past the page it starts on, with a
     part boundary before it. The balanced last page has its recorded owner, and the balancing algorithm sees that
     owner's remaining height.
@@ -322,3 +356,20 @@ The review confirmed and this revision keeps: the five call sites and their line
 alternatives per page without walk state; that docx4j-export-fo subclasses none of the four classes, so no
 signature hazard; that per-part static-content names validate against the whole layout-master-set; and the
 single-column exactness argument.
+
+### 8.1 Second review, 2026-10-05
+
+The second review found the revision answers all seven, and the design ready to start. It raised six corrections,
+none structural. Each was checked against the code, and each holds:
+1. **§1 was wrong about floats.** `handleFloatLayout` makes no `setStartOfNextElementList` call, since it sets
+   `pageBreakHandled`. And `prepareToRedoLayout` (363) is a fourth caller, last-page only. Now §1 and §3.4.
+2. **Footnote-only pages are created at `lastNode.position`** (lines 992 and 1007), so the general rule would give
+   the wrong owner when a part starts on the last content page. Now §3.3, with test 5 tightened.
+3. **Blank pages are made outside the breaker** (`force-page-count`; an odd- or even-page break's blank). Now the
+   provider's default, the previous page's owner, not its first page (§3.4), with test 11 widened.
+4. **An empty `fo:block` gets an auxiliary zero-width box**, so the fallback is not needed for blocks. Now §3.2.
+5. **Test 10 needs a `span="all"` variant, and the flow's first block needs a rule.** Now both are in §3.4 and
+   test 10.
+6. **§3.1's wording on the IPD-change restart.** Now "no change of master reaches it".
+
+This review predates probe P6. §3.5's restart step is parked on P6 and P7 independently of it.
