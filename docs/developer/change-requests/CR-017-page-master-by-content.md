@@ -1,8 +1,9 @@
 # CR-017: page masters chosen by the content a page starts with
 
-Status: IMPLEMENTED 2026-10-05 at Jason's word, on branch `CR-017-page-master-by-content` off `2.11-docx4j.5`
-(§9; code f0d2717fa). The full build passes: 3801 tests, 0 failures, checkstyle and spotbugs clean. Awaiting the
-docx4j gate. Designed and revised after two reviews (§8); the second found it ready to start. Registry key
+Status: DONE 2026-10-05, gated PASS by the docx4j session (§10) and merged to `2.11-docx4j.5` by fast-forward;
+unreleased. Implemented at Jason's word on branch `CR-017-page-master-by-content` (code f0d2717fa, the 12802 fix
+7c6f43b07); the full build passes, 3804 tests, 0 failures, checkstyle and spotbugs clean. Designed and revised after
+two reviews (§8). Registry key
 `fop/CR-017`. Capability `page-master-by-content`. A docx4j hook, for Word compatibility: XSL chooses a page master
 by position, parity and blankness only. So it is not upstream-bound. Requested by the docx4j session for docx4j
 CR-031 phase 2 (registered as `docx4j/CR-031.2`). That follows Jason's decision 1 there (2026-10-05): the fork
@@ -455,3 +456,15 @@ opens. The earlier tests are unchanged.
 Also found by that gate, and docx4j's own: section-continuous-geometry pages 5 and 6 now take S3's top but run to
 the foot, where Word ends at 508.9. That is a docx4j rule (a footer distance past a quarter of the page over an
 empty footer part is ignored), which the docx4j session is correcting.
+
+**The second gate, 2026-10-05, PASS.** On install r11 (d5a7616b9, with the fix), 12802's page 5 starts at 29.2
+(Word 31.1; r10 41.4), and pages 3 to 6 are within 2pt of Word. b118 (docx4j cand43 on r11) against b116 (the same on
+r10): 0 movers in all four corpora and the probes, no exceptions, so everything b115 moved holds. The net from b112 to
+b118:
+- 5507 at Word's 4 pages, line parity 1.0000 (with docx4j's footer-distance correction, 1ee6dfa8f);
+- 7235 +22 lines;
+- 12802 pages 3 to 6 within 2pt of Word;
+- P1 page parity 0.917 to 0.959.
+
+section-continuous-geometry stays a page short (8 against Word's 9) until docx4j's phase 3, which gives S3 its own
+empty footer.
