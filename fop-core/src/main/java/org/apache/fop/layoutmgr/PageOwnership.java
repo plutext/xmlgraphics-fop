@@ -213,9 +213,9 @@ public final class PageOwnership {
     }
 
     /**
-     * Records where each part begins in a new element list. A part begins at the first box whose
-     * position chain reaches its marked FO, or, for a marked FO that produces no box, at the next box
-     * after its elements. The list starts in the part in force at the last committed break.
+     * Records where each part begins in a new element list. A part begins at the first content box whose
+     * position chain reaches its marked FO, or, for a marked FO that produces no box, at the next content
+     * box after its elements. The list starts in the part in force at the last committed break.
      * @param elements the element list
      */
     void scan(List<? extends ListElement> elements) {
@@ -231,7 +231,7 @@ public final class PageOwnership {
         for (int i = 0; i < elements.size(); i++) {
             ListElement element = elements.get(i);
             Part found = partOf(element.getPosition());
-            if (element.isBox()) {
+            if (isContentBox(element)) {
                 Part next = (found != null) ? found : pending;
                 if (next != null && next != current) {
                     transitionIndex.add(i);
@@ -268,9 +268,31 @@ public final class PageOwnership {
         return null;
     }
 
+    /**
+     * Whether an element is a box some layout manager produced. The space resolver adds boxes of its own,
+     * with no layout manager (a SpaceHandlingPosition, for a block's space-before at the start of a list);
+     * those are not a part's content, and neither begin a part nor open a page's content.
+     */
+    private static boolean isContentBox(ListElement element) {
+        if (!element.isBox()) {
+            return false;
+        }
+        for (Position p = element.getPosition(); p != null; ) {
+            if (p.getLM() != null) {
+                return true;
+            }
+            Position inner = p.getPosition();
+            if (inner == p) {
+                break;
+            }
+            p = inner;
+        }
+        return false;
+    }
+
     private int nextBox(int position) {
         int i = position + 1;
-        while (i < list.size() && !list.get(i).isBox()) {
+        while (i < list.size() && !isContentBox(list.get(i))) {
             i++;
         }
         return i;

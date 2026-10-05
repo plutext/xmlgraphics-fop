@@ -199,14 +199,20 @@ public class PageBreaker extends AbstractBreaker {
         }
         BlockSequence list = blockLists.get(blockLists.size() - 1);
         ownership.scan(list);
-        if (layoutRedone || handlingFloat()
-                || !pslm.getCurrentPage().getPageViewport().getPage().isEmpty()) {
-            return;
-        }
         PageOwnership.Part owner = ownership.ownerAfter(-1);
         boolean first = ownership.opensPart(-1);
         int pageNumber = pslm.getCurrentPageNum();
         PageProvider.OwnerRecord record = pageProvider.getOwnerRecord(pageNumber);
+        if (log.isDebugEnabled()) {
+            log.debug("page-master-by-content: list on page " + pageNumber + " starts in " + owner
+                    + (first ? " (its first page)" : "") + "; the page's recorded owner "
+                    + (record == null ? "none" : record.part + (record.first ? " (first)" : ""))
+                    + "; empty " + pslm.getCurrentPage().getPageViewport().getPage().isEmpty());
+        }
+        if (layoutRedone || handlingFloat()
+                || !pslm.getCurrentPage().getPageViewport().getPage().isEmpty()) {
+            return;
+        }
         if (owner == null || (record != null && record.part == owner && record.first == first)) {
             return;
         }
