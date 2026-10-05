@@ -1,6 +1,6 @@
 # CR-018: header and footer extents measured in FOP
 
-Status: PROPOSED 2026-10-05; design and estimate, not started. Revised the same day after a review (§8). Registry key `fop/CR-018`. Capability
+Status: PROPOSED 2026-10-05; design and estimate, not started. Revised the same day after two reviews (§8); the second found it ready to start. Registry key `fop/CR-018`. Capability
 `measured-region-extents`. A docx4j hook (Word's rule for where the body starts, which FO leaves to the producer),
 so not upstream-bound. Requested by the docx4j session for docx4j CR-031 phase 5, the companion hook at the end of
 CR-031 §4.2b, which Jason asked it to take up with CR-031's carried-over items. Gated separately from CR-017, since
@@ -84,8 +84,14 @@ not two: Word always clears the header, so there is no case for a measured regio
 
 ### 3.2 The measurement
 
+The measurement lives in the page-sequence layout manager, which owns the current page and the static content.
+`PageProvider`, which is built with only the area tree handler and the page-sequence, asks it through a callback
+the manager installs. So the provider keeps to its one page-making method and the cache.
+
 Per page-sequence and master, on the master's first use (a page made, or a height measured, with it):
-1. **The measuring page.** The page is built with the stated extents.
+1. **The measuring page.** The page is built with the stated extents and the formatted number of the page it is
+   measured for: the page's printed number where the page is being made, and the number its index gives where only
+   a height is wanted (CR-017's fresh pages).
 2. **Its context.** It is made the page-sequence layout manager's current page for the measurement, and the page
    that was current, or none, is restored afterwards. So `fo:page-number` and everything else that reads the
    current page has one.
@@ -99,16 +105,22 @@ Per page-sequence and master, on the master's first use (a page made, or a heigh
 **The measurement has no side effects.** It runs in a measuring mode, consulted where static content touches
 anything beyond its own areas:
 - `resolveRetrieveMarker` retrieves nothing. Otherwise a master first used mid-sequence would retrieve the last
-  marker before it, and its measured height would depend on when the master was first touched.
-- No id is registered against the measuring page.
-- No unresolved citation is attached to it.
-- No overflow event is raised.
+  marker before it, and its measured height would depend on when the master was first touched. It also keeps
+  `bindMarker` from cloning a marker subtree into the FO during a measurement.
+- **No id or unresolved reference is registered.** They all pass through three methods of
+  `AbstractPageSequenceLayoutManager`, which the mode short-circuits:
+  - `associateLayoutManagerID` and `notifyEndOfLayout` for ids;
+  - `addUnresolvedArea` for citations, NUMPAGES, and an `fo:basic-link` with an internal destination alike.
+
+  The implementation confirms that nothing else registers around them.
+- **No event is reported.** The user agent's event broadcaster is muted for the measurement, so line-overflow,
+  missing-glyph and region-overflow events from the scratch layout are not reported a second time per master.
 
 What it measures is the static content as FOP lays it out, which is the real header, not a copy:
 - **Absolutely positioned block-containers** (floating drawings) take no height, as in a real layout.
 - **Page-dependent content:**
-  - `fo:page-number` takes its own page's number, and a citation its placeholder; both take width, not height,
-    so the height is right;
+  - `fo:page-number` takes the measuring page's number, and a citation its placeholder. Only the height is used,
+    and `PageNumberLayoutManager` sets the area's height from the font, whatever the text;
   - `fo:retrieve-marker` retrieves nothing, deterministically.
 
   A STYLEREF header therefore measures without its text, unless the block keeps its line height. The docx4j
@@ -145,9 +157,10 @@ So it stays as it is.
 **Classes changed:**
 - `area.Page`, `PageViewport` and `layoutmgr.Page`: the overloads;
 - `PageProvider`: the one page-making method and the cache;
-- `AbstractPageSequenceLayoutManager`: the measuring context and mode, and `resolveRetrieveMarker`;
+- `AbstractPageSequenceLayoutManager` and `PageSequenceLayoutManager`: the measurement, the callback, the measuring
+  context and mode, `resolveRetrieveMarker` and the id and reference methods;
+- `FOUserAgent`: the broadcaster's mute;
 - `StaticContentLayoutManager`: the scratch block, and no overflow event while measuring;
-- the id registration and citation paths that consult the mode;
 - `Docx4jFop`.
 
 Supported: the `lr-tb` and `rl-tb` writing modes and `reference-orientation` 0, which is what docx4j writes.
@@ -177,8 +190,9 @@ finished.
 6. A header with an absolutely positioned block-container and a page number: the block-container takes no height,
    and the page number its line.
 7. No attribute: the whole layout suite unchanged.
-8. A header with `fo:page-number`, and one with `fo:page-number-citation-last` (NUMPAGES), on the sequence's first
-   page: measured, nothing thrown, and the citation resolved on the real pages.
+8. A header with `fo:page-number`, one with `fo:page-number-citation-last` (NUMPAGES), and a footer whose only
+   content is `fo:page-number` (the commonest footer), on the sequence's first page: measured, nothing thrown, the
+   citation resolved on the real pages, and no event reported twice.
 9. A retrieve-marker header on a master first used after pages that carry markers: measured as with none, and the
    real header on its page still retrieves the marker.
 10. An id on a header block, cited from the body: the citation gives the real page, not the measuring page.
@@ -227,3 +241,24 @@ The review's added tests are tests 8 to 11, and test 2's footer edge. It confirm
 - caching per page-sequence;
 - keeping the extents out of the FO tree, in `area.Page`;
 - the registry entry.
+
+### 8.1 Second review, 2026-10-05
+
+It found the revision answers all seven findings and CR-018 ready to start, with four points to settle. Each was
+checked against the code, and each holds:
+1. **`PageProvider` cannot reach the layout manager.** It is built with the area tree handler and the page-sequence
+   only (`PageSequenceLayoutManager` line 78). Now §3.2: the measurement lives in the layout manager, and the
+   provider asks through a callback.
+2. **The fresh-page path builds its page with an empty number string.** Now §3.2: the measuring page carries a
+   formatted number, and only the height is used, which `PageNumberLayoutManager` takes from the font.
+3. **The mode should cover every unresolved reference and every event.** A basic link with an internal destination
+   uses `addUnresolvedArea` too, and line-overflow or missing-glyph events would be reported twice. Now §3.2: the
+   three methods ids and references pass through, and a muted broadcaster.
+4. **Test 8 should include a footer whose only content is the page number.** Now it does.
+
+It confirmed:
+- setting and restoring the current page works both inside `makeNewPage`, where it is null, and inside the
+  breaker;
+- suppressing retrieval also keeps `bindMarker` from cloning marker subtrees;
+- the constructor overloads;
+- the estimate of four to five days.
