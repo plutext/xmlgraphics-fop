@@ -178,6 +178,17 @@ public class PageProvider implements Constants {
     }
 
     /**
+     * Records the owner of a page handed out before the parts were found (the page-sequence's first page,
+     * made before its page breaking starts), as any page handed out later is recorded.
+     * @param pageNumber the page's number
+     */
+    void recordHandedOutPage(int pageNumber) {
+        if (ownership.isActive() && !owners.containsKey(pageNumber)) {
+            recordOwner(false, pageNumber);
+        }
+    }
+
+    /**
      * The page breaker notifies the provider about the page number an element list starts
      * on so it can later retrieve PageViewports relative to this first page.
      * @param startPage the number of the first page for the element list.
@@ -259,7 +270,8 @@ public class PageProvider implements Constants {
         this.lastRequestedOwner = owner;
         this.lastRequestedOwnerFirst = first;
         this.lastReportedBPD = page.getPageViewport().getBodyRegion().getRemainingBPD();
-        if (owner != null) {
+        // the page the element list starts on already exists, with its own master: its height is its own
+        if (owner != null && pageIndex > 0) {
             int pageNumber = startPageOfCurrentElementList + pageIndex + startPageOfPageSequence - 1;
             if (!owners.containsKey(pageNumber)) {
                 SimplePageMaster spm = owner.masterFor(pageNumber, first, false);
