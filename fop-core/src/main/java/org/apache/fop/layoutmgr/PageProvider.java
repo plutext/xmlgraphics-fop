@@ -18,7 +18,9 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook page-master-by-content, each page made with the master of the part that owns it, and the
  * height of a page asked for with its owner (fop/CR-017); and hook page-number-restart, each page numbered by a
- * running count that a part may restart (fop/CR-017.2). See README.md, "Changes from Apache FOP 2.11". */
+ * running count that a part may restart (fop/CR-017.2); and hook measured-region-extents, each page made through one
+ * method, with its master's header and footer extents measured where the master asks (fop/CR-018). See README.md,
+ * "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -35,6 +37,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.area.AreaTreeHandler;
 import org.apache.fop.area.BodyRegion;
+import org.apache.fop.area.MeasuredExtents;
 import org.apache.fop.area.PageViewport;
 import org.apache.fop.fo.Constants;
 import org.apache.fop.fo.pagination.PageProductionException;
@@ -89,6 +92,27 @@ public class PageProvider implements Constants {
     /** Hook page-number-restart: the number each page handed out prints, by page index, where parts restart it. */
     private final Map<Integer, Integer> printedNumbers = new HashMap<Integer, Integer>();
 
+    /**
+     * Hook measured-region-extents (fop/CR-018): measures a master's region-before and region-after from the
+     * page-sequence's static content. The page-sequence layout manager, which owns the current page and the
+     * static content, installs it.
+     */
+    interface RegionMeasurer {
+        /**
+         * @param spm the master
+         * @param pageNumber the number of the page the master is first used for
+         * @param pageNumberString that page's printed number
+         * @param blank whether that page is blank
+         * @return the measured extents
+         */
+        MeasuredExtents measure(SimplePageMaster spm, int pageNumber, String pageNumberString, boolean blank);
+    }
+
+    private RegionMeasurer regionMeasurer;
+    /** Hook measured-region-extents: each master's measured extents, measured on its first use. */
+    private final Map<SimplePageMaster, MeasuredExtents> measuredExtents
+            = new IdentityHashMap<SimplePageMaster, MeasuredExtents>();
+
     /** The part owning a page, and whether the page is that part's first. */
     static final class OwnerRecord {
         final PageOwnership.Part part;
@@ -136,6 +160,33 @@ public class PageProvider implements Constants {
         freshPageBPDs.clear();
         partColumns.clear();
         printedNumbers.clear();
+        measuredExtents.clear();
+    }
+
+    /**
+     * Installs the measurer of masters' header and footer extents (hook measured-region-extents).
+     * @param measurer the measurer
+     */
+    void setRegionMeasurer(RegionMeasurer measurer) {
+        this.regionMeasurer = measurer;
+    }
+
+    /**
+     * Makes a page of a master: every page this provider makes or measures is made here, so a master asking for
+     * its header and footer extents to be measured (fox:extent="measured", hook measured-region-extents) has them
+     * measured on its first use and applied to every page made with it.
+     */
+    private Page makePage(SimplePageMaster spm, int pageNumber, String pageNumberString, boolean blank,
+            boolean spanAll, boolean isPagePositionOnly) {
+        MeasuredExtents extents = null;
+        if (regionMeasurer != null && MeasuredExtents.isRequested(spm)) {
+            extents = measuredExtents.get(spm);
+            if (extents == null) {
+                extents = regionMeasurer.measure(spm, pageNumber, pageNumberString, blank);
+                measuredExtents.put(spm, extents);
+            }
+        }
+        return new Page(spm, pageNumber, pageNumberString, blank, spanAll, isPagePositionOnly, extents);
     }
 
     /**
@@ -290,7 +341,8 @@ public class PageProvider implements Constants {
     private int getFreshPageBPD(SimplePageMaster spm, int pageNumber) {
         Integer bpd = freshPageBPDs.get(spm);
         if (bpd == null) {
-            Page page = new Page(spm, pageNumber, "", false, spanAllForCurrentElementList, false);
+            Page page = makePage(spm, pageNumber, pageSeq.makeFormattedPageNumber(getPrintedPageNumber(pageNumber)),
+                    false, spanAllForCurrentElementList, false);
             bpd = page.getPageViewport().getBodyRegion().getRemainingBPD();
             freshPageBPDs.put(spm, bpd);
         }
@@ -602,7 +654,7 @@ public class PageProvider implements Constants {
             // own masters were still walked, so their state stays as FOP keeps it
             spm = ownerMaster;
         }
-        Page page = new Page(spm, index, pageNumberString, isBlank, spanAll, isPagePositionOnly);
+        Page page = makePage(spm, index, pageNumberString, isBlank, spanAll, isPagePositionOnly);
         //Set unique key obtained from the AreaTreeHandler
         page.getPageViewport().setKey(areaTreeHandler.generatePageViewportKey());
         page.getPageViewport().setForeignAttributes(spm.getForeignAttributes());

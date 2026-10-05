@@ -15,12 +15,17 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook measured-region-extents, a constructor taking measured header and footer extents
+ * (fop/CR-018). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
 
 import java.awt.Rectangle;
 
+import org.apache.fop.area.MeasuredExtents;
 import org.apache.fop.area.PageViewport;
 import org.apache.fop.fo.pagination.SimplePageMaster;
 
@@ -46,8 +51,24 @@ public class Page {
      */
     public Page(SimplePageMaster spm, int pageNumber, String pageNumberStr,
             boolean blank, boolean spanAll, boolean isPagePositionOnly) {
+        this(spm, pageNumber, pageNumberStr, blank, spanAll, isPagePositionOnly, null);
+    }
+
+    /**
+     * A page whose region-before and region-after are as tall as measured, and whose region-body clears them
+     * (hook measured-region-extents, fop/CR-018).
+     * @param spm the simple-page-master used for this page
+     * @param pageNumber the page number (as an int)
+     * @param pageNumberStr the page number (as a String)
+     * @param blank true if this is a blank page
+     * @param spanAll true if the first span area spans all columns
+     * @param isPagePositionOnly whether the page is a page-position="only" page
+     * @param measured the measured extents, or null for the master's own
+     */
+    public Page(SimplePageMaster spm, int pageNumber, String pageNumberStr,
+            boolean blank, boolean spanAll, boolean isPagePositionOnly, MeasuredExtents measured) {
         this.spm = spm;
-        this.pageViewport = new PageViewport(spm, pageNumber, pageNumberStr, blank, spanAll);
+        this.pageViewport = new PageViewport(spm, pageNumber, pageNumberStr, blank, spanAll, measured);
         this.isPagePositionOnly = isPagePositionOnly;
     }
 

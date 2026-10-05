@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook measured-region-extents, a page made with its header and footer extents measured
+ * (fop/CR-018). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.area;
@@ -81,6 +85,17 @@ public class Page extends AreaTreeObject implements Serializable {
      *            page-reference-area
      */
     public Page(SimplePageMaster spm) {
+        this(spm, null);
+    }
+
+    /**
+     * Creates a new page, its region-before and region-after as tall as measured, and its region-body clearing
+     * them (hook measured-region-extents, fop/CR-018).
+     *
+     * @param spm SimplePageMaster containing the dimensions for this page-reference-area
+     * @param measured the measured extents, or null for the master's own
+     */
+    public Page(SimplePageMaster spm, MeasuredExtents measured) {
         // Width and Height of the page view port
         FODimension pageViewPortDims = new FODimension(spm.getPageWidth().getValue()
                             ,  spm.getPageHeight().getValue());
@@ -127,7 +142,7 @@ public class Page extends AreaTreeObject implements Serializable {
         // Create a RegionViewport/ reference area pair for each page region
         RegionReference rr;
         for (Region r : spm.getRegions().values()) {
-            RegionViewport rvp = makeRegionViewport(r, reldims, pageCTM);
+            RegionViewport rvp = makeRegionViewport(r, reldims, pageCTM, measured);
             if (r.getNameId() == FO_REGION_BODY) {
                 rr = new BodyRegion((RegionBody) r, rvp);
             } else {
@@ -157,10 +172,15 @@ public class Page extends AreaTreeObject implements Serializable {
      * @param r the region the viewport is to be created for
      * @param reldims relative dimensions
      * @param pageCTM page coordinate transformation matrix
+     * @param measured the measured extents, or null
      * @return the new region viewport
      */
-    private static RegionViewport makeRegionViewport(Region r, FODimension reldims, CTM pageCTM) {
+    private static RegionViewport makeRegionViewport(Region r, FODimension reldims, CTM pageCTM,
+            MeasuredExtents measured) {
         Rectangle2D relRegionRect = r.getViewportRectangle(reldims);
+        if (measured != null) {
+            relRegionRect = measured.adjust(r, (Rectangle) relRegionRect, reldims);
+        }
         Rectangle2D absRegionRect = pageCTM.transform(relRegionRect);
         // Get the region viewport rectangle in absolute coords by
         // transforming it using the page CTM

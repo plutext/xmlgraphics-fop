@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: a test of hook measured-region-extents (fop/CR-018). -->
+<testcase>
+  <info>
+    <p>
+      A header with fo:page-number and fo:page-number-citation-last (Word's PAGE and NUMPAGES), and a footer whose
+      only content is fo:page-number, measured on the page-sequence's first page: nothing thrown, two lines and
+      one, and the citation resolved on the real pages.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+<fo:layout-master-set><fo:simple-page-master master-name="M" page-width="300pt" page-height="300pt" margin-top="20pt" margin-bottom="20pt" margin-left="10pt" margin-right="10pt"><fo:region-body margin-top="30pt" margin-bottom="30pt"/><fo:region-before extent="10pt" region-name="xsl-region-before" fox:extent="measured"/><fo:region-after extent="10pt" region-name="xsl-region-after" fox:extent="measured"/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="M" id="s"><fo:static-content flow-name="xsl-region-before" font-size="10pt" line-height="12pt"><fo:block>Page <fo:page-number/> of <fo:page-number-citation-last ref-id="s"/></fo:block><fo:block>h2</fo:block></fo:static-content><fo:static-content flow-name="xsl-region-after" font-size="10pt" line-height="12pt"><fo:block><fo:page-number/></fo:block></fo:static-content><fo:flow flow-name="xsl-region-body" font-size="10pt" line-height="12pt"><fo:block>a1</fo:block><fo:block>a2</fo:block><fo:block>a3</fo:block><fo:block>a4</fo:block><fo:block>a5</fo:block><fo:block>a6</fo:block><fo:block>a7</fo:block><fo:block>a8</fo:block><fo:block>a9</fo:block><fo:block>a10</fo:block><fo:block>a11</fo:block><fo:block>a12</fo:block><fo:block>a13</fo:block><fo:block>a14</fo:block><fo:block>a15</fo:block><fo:block>a16</fo:block><fo:block>a17</fo:block><fo:block>a18</fo:block><fo:block>a19</fo:block><fo:block>a20</fo:block></fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <eval expected="2" xpath="count(//pageViewport)"/>
+    <eval expected="10000 20000 280000 24000" xpath="(//pageViewport)[1]//regionViewport[regionBefore]/@rect"/>
+    <eval expected="10000 268000 280000 12000" xpath="(//pageViewport)[1]//regionViewport[regionAfter]/@rect"/>
+    <eval expected="2" xpath="((//pageViewport)[1]//regionBefore//word)[4]"/>
+    <eval expected="2" xpath="((//pageViewport)[2]//regionAfter//word)[1]"/>
+  </checks>
+</testcase>

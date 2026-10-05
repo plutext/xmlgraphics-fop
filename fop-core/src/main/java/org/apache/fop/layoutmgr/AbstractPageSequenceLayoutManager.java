@@ -17,7 +17,9 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
  * from Apache FOP 2.11: force-page-count reads initial-page-number="0" as 0 where the user agent allows it
- * (hook page-number-zero, fop/CR-012). See README.md, "Changes from Apache FOP 2.11". */
+ * (hook page-number-zero, fop/CR-012); and a measuring mode, in which laying out a header or footer to measure it
+ * registers no id or reference and retrieves no marker (hook measured-region-extents, fop/CR-018). See README.md,
+ * "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -157,6 +159,9 @@ public abstract class AbstractPageSequenceLayoutManager extends AbstractLayoutMa
      * @param id the ID reference to add
      */
     public void addIDToPage(String id) {
+        if (measuring) {
+            return;
+        }
         if (id != null && !id.isEmpty() && curPage != null) {
             idTracker.associateIDWithPageViewport(id, curPage.getPageViewport());
         }
@@ -170,6 +175,10 @@ public abstract class AbstractPageSequenceLayoutManager extends AbstractLayoutMa
      * TODO Maybe give this a better name
      */
     public boolean associateLayoutManagerID(String id) {
+        if (measuring) {
+            // hook measured-region-extents: nothing is pending for a layout made only to be measured
+            return true;
+        }
         if (log.isDebugEnabled()) {
             log.debug("associateLayoutManagerID(" + id + ")");
         }
@@ -187,8 +196,18 @@ public abstract class AbstractPageSequenceLayoutManager extends AbstractLayoutMa
      * @param id the id for which layout has finished
      */
     public void notifyEndOfLayout(String id) {
+        if (measuring) {
+            return;
+        }
         idTracker.signalIDProcessed(id);
     }
+
+    /**
+     * Hook measured-region-extents (fop/CR-018): while set, layout is done only to measure a header or footer,
+     * on a page that is not in the area tree, so no id or unresolved reference is registered against it and no
+     * marker is retrieved.
+     */
+    protected boolean measuring;
 
     /**
      * Identify an unresolved area (one needing an idref to be
@@ -207,6 +226,9 @@ public abstract class AbstractPageSequenceLayoutManager extends AbstractLayoutMa
      * @param res the resolvable object that needs resolving
      */
     public void addUnresolvedArea(String id, Resolvable res) {
+        if (measuring) {
+            return;
+        }
         curPage.getPageViewport().addUnresolvedIDRef(id, res);
         idTracker.addUnresolvedIDRef(id, curPage.getPageViewport());
     }
@@ -229,6 +251,10 @@ public abstract class AbstractPageSequenceLayoutManager extends AbstractLayoutMa
      * could be found.
      */
     public RetrieveMarker resolveRetrieveMarker(RetrieveMarker rm) {
+        if (measuring) {
+            // hook measured-region-extents: a measured header retrieves nothing, whatever pages came before
+            return null;
+        }
         AreaTreeModel areaTreeModel = areaTreeHandler.getAreaTreeModel();
         String name = rm.getRetrieveClassName();
         int boundary = rm.getRetrieveBoundary();

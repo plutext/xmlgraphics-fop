@@ -16,8 +16,9 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
- * Apache FOP 2.11: hook page-number-zero, an option to number a page 0 (fop/CR-012). See README.md, "Changes from
- * Apache FOP 2.11". */
+ * Apache FOP 2.11: hook page-number-zero, an option to number a page 0 (fop/CR-012); and hook
+ * measured-region-extents, events muted while a header or footer is measured (fop/CR-018). See README.md, "Changes
+ * from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -569,6 +570,21 @@ public class FOUserAgent {
         return pageNumberZeroAllowed;
     }
 
+    /** Hook measured-region-extents: whether events are being dropped, not reported. */
+    private boolean eventsMuted;
+
+    /**
+     * docx4j-fo-renderer hook {@code measured-region-extents} (fop/CR-018): drops the events broadcast while set,
+     * so a header or footer laid out only to measure it does not report its events a second time.
+     * @param muted true to drop events, false to report them again
+     * @return whether events were muted before
+     */
+    public boolean setEventsMuted(boolean muted) {
+        boolean before = eventsMuted;
+        eventsMuted = muted;
+        return before;
+    }
+
     /**
      * Are invalid positions to be allowed when breaking text?
      *
@@ -673,6 +689,9 @@ public class FOUserAgent {
 
         /** {@inheritDoc} */
         public void broadcastEvent(Event event) {
+            if (eventsMuted) {
+                return;
+            }
             rootListener.processEvent(event);
         }
 

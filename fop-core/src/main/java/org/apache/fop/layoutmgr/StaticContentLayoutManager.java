@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook measured-region-extents, static content laid out into a block whenever given one, not only
+ * for the footnote separator (fop/CR-018). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -94,7 +98,7 @@ public class StaticContentLayoutManager extends BlockStackingLayoutManager {
      * {@inheritDoc}
      */
     public void addChildArea(Area childArea) {
-        if (getStaticContentFO().getFlowName().equals("xsl-footnote-separator")) {
+        if (targetBlock != null) {
             targetBlock.addBlock((Block)childArea);
         } else {
             targetRegion.addBlock((Block)childArea);
@@ -105,7 +109,7 @@ public class StaticContentLayoutManager extends BlockStackingLayoutManager {
      * {@inheritDoc}
      */
     public Area getParentArea(Area childArea) {
-        if (getStaticContentFO().getFlowName().equals("xsl-footnote-separator")) {
+        if (targetBlock != null) {
             return targetBlock;
         } else {
             return targetRegion;
@@ -122,7 +126,7 @@ public class StaticContentLayoutManager extends BlockStackingLayoutManager {
         boolean autoHeight = false;
         StaticContentBreaker breaker;
 
-        if (getStaticContentFO().getFlowName().equals("xsl-footnote-separator")) {
+        if (targetBlock != null) {
             targetIPD = targetBlock.getIPD();
             targetBPD = targetBlock.getBPD();
             if (targetBPD == 0) {

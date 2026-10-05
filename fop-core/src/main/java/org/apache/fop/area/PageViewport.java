@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook measured-region-extents, a constructor taking measured header and footer extents
+ * (fop/CR-018). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.area;
@@ -95,6 +99,21 @@ public class PageViewport extends AreaTreeObject implements Resolvable {
      */
     public PageViewport(SimplePageMaster spm, int pageNumber, String pageStr,
             boolean blank, boolean spanAll) {
+        this(spm, pageNumber, pageStr, blank, spanAll, null);
+    }
+
+    /**
+     * Create a page viewport whose region-before and region-after are as tall as measured, and whose
+     * region-body clears them (hook measured-region-extents, fop/CR-018).
+     * @param spm SimplePageMaster indicating the page and region dimensions
+     * @param pageNumber the page number
+     * @param pageStr String representation of the page number
+     * @param blank true if this is a blank page
+     * @param spanAll true if the first span area spans all columns
+     * @param measured the measured extents, or null for the master's own
+     */
+    public PageViewport(SimplePageMaster spm, int pageNumber, String pageStr,
+            boolean blank, boolean spanAll, MeasuredExtents measured) {
         this.simplePageMasterName = spm.getMasterName();
         setExtensionAttachments(spm.getExtensionAttachments());
         setForeignAttributes(spm.getForeignAttributes());
@@ -104,7 +123,7 @@ public class PageViewport extends AreaTreeObject implements Resolvable {
         this.pageNumber = pageNumber;
         this.pageNumberString = pageStr;
         this.viewArea = new Rectangle(0, 0, pageWidth, pageHeight);
-        this.page = new Page(spm);
+        this.page = new Page(spm, measured);
         createSpan(spanAll);
     }
 

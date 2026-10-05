@@ -162,6 +162,15 @@ public final class Docx4jFop {
      */
     public static final String PAGE_NUMBER_RESTART = "page-number-restart";
 
+    /**
+     * {@code fox:extent="measured"} on {@code fo:region-before} or {@code fo:region-after}: the region is as tall
+     * as its static content, measured per page-sequence and master, and the region-body's margin on that side is
+     * the larger of its stated margin and that height, so the body clears the region, as a word processor places
+     * it below its header. The lr-tb and rl-tb writing modes at reference-orientation 0 (docx4j CR-031 phase 5,
+     * fop/CR-018).
+     */
+    public static final String MEASURED_REGION_EXTENTS = "measured-region-extents";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -182,6 +191,7 @@ public final class Docx4jFop {
         caps.add(ASCENDER_DESCENDER);
         caps.add(PAGE_MASTER_BY_CONTENT);
         caps.add(PAGE_NUMBER_RESTART);
+        caps.add(MEASURED_REGION_EXTENTS);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

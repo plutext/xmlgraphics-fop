@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: a test of hook measured-region-extents (fop/CR-018). -->
+<testcase>
+  <info>
+    <p>
+      fox:extent="measured" on fo:region-before: the region is as tall as its static content, and the body's
+      margin on that side is the larger of its stated margin (30pt below the region's top) and that height.
+      First sequence: three lines (36pt), so the body starts 36pt below the region's top. Second: one line
+      (12pt), so it stays at its stated margin. Third: no static content, so the stated extent (10pt). Fourth:
+      the master without the attribute, three lines in a 10pt region, as FOP has always laid it out. The first
+      two share a master, so the measurement is per page-sequence.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+<fo:layout-master-set><fo:simple-page-master master-name="M" page-width="300pt" page-height="300pt" margin-top="20pt" margin-bottom="20pt" margin-left="10pt" margin-right="10pt"><fo:region-body margin-top="30pt" margin-bottom="30pt"/><fo:region-before extent="10pt" region-name="xsl-region-before" fox:extent="measured"/><fo:region-after extent="10pt" region-name="xsl-region-after" fox:extent="measured"/></fo:simple-page-master><fo:simple-page-master master-name="N" page-width="300pt" page-height="300pt" margin-top="20pt" margin-bottom="20pt" margin-left="10pt" margin-right="10pt"><fo:region-body margin-top="30pt" margin-bottom="30pt"/><fo:region-before extent="10pt" region-name="xsl-region-before"/><fo:region-after extent="10pt" region-name="xsl-region-after"/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="M"><fo:static-content flow-name="xsl-region-before" font-size="10pt" line-height="12pt"><fo:block>h1</fo:block><fo:block>h2</fo:block><fo:block>h3</fo:block></fo:static-content><fo:flow flow-name="xsl-region-body" font-size="10pt" line-height="12pt"><fo:block>a1</fo:block><fo:block>a2</fo:block><fo:block>a3</fo:block><fo:block>a4</fo:block><fo:block>a5</fo:block><fo:block>a6</fo:block><fo:block>a7</fo:block><fo:block>a8</fo:block><fo:block>a9</fo:block><fo:block>a10</fo:block><fo:block>a11</fo:block><fo:block>a12</fo:block><fo:block>a13</fo:block><fo:block>a14</fo:block><fo:block>a15</fo:block><fo:block>a16</fo:block><fo:block>a17</fo:block><fo:block>a18</fo:block><fo:block>a19</fo:block><fo:block>a20</fo:block></fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="M"><fo:static-content flow-name="xsl-region-before" font-size="10pt" line-height="12pt"><fo:block>h1</fo:block></fo:static-content><fo:flow flow-name="xsl-region-body" font-size="10pt" line-height="12pt"><fo:block>b1</fo:block><fo:block>b2</fo:block><fo:block>b3</fo:block><fo:block>b4</fo:block><fo:block>b5</fo:block><fo:block>b6</fo:block><fo:block>b7</fo:block><fo:block>b8</fo:block><fo:block>b9</fo:block><fo:block>b10</fo:block><fo:block>b11</fo:block><fo:block>b12</fo:block><fo:block>b13</fo:block><fo:block>b14</fo:block><fo:block>b15</fo:block><fo:block>b16</fo:block><fo:block>b17</fo:block><fo:block>b18</fo:block><fo:block>b19</fo:block><fo:block>b20</fo:block></fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="M"><fo:flow flow-name="xsl-region-body" font-size="10pt" line-height="12pt"><fo:block>c1</fo:block><fo:block>c2</fo:block><fo:block>c3</fo:block><fo:block>c4</fo:block><fo:block>c5</fo:block><fo:block>c6</fo:block><fo:block>c7</fo:block><fo:block>c8</fo:block><fo:block>c9</fo:block><fo:block>c10</fo:block><fo:block>c11</fo:block><fo:block>c12</fo:block><fo:block>c13</fo:block><fo:block>c14</fo:block><fo:block>c15</fo:block><fo:block>c16</fo:block><fo:block>c17</fo:block><fo:block>c18</fo:block><fo:block>c19</fo:block><fo:block>c20</fo:block></fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="N"><fo:static-content flow-name="xsl-region-before" font-size="10pt" line-height="12pt"><fo:block>h1</fo:block><fo:block>h2</fo:block><fo:block>h3</fo:block></fo:static-content><fo:flow flow-name="xsl-region-body" font-size="10pt" line-height="12pt"><fo:block>d1</fo:block><fo:block>d2</fo:block><fo:block>d3</fo:block><fo:block>d4</fo:block><fo:block>d5</fo:block><fo:block>d6</fo:block><fo:block>d7</fo:block><fo:block>d8</fo:block><fo:block>d9</fo:block><fo:block>d10</fo:block><fo:block>d11</fo:block><fo:block>d12</fo:block><fo:block>d13</fo:block><fo:block>d14</fo:block><fo:block>d15</fo:block><fo:block>d16</fo:block><fo:block>d17</fo:block><fo:block>d18</fo:block><fo:block>d19</fo:block><fo:block>d20</fo:block></fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <eval expected="8" xpath="count(//pageViewport)"/>
+    <eval expected="10000 20000 280000 36000" xpath="(//pageViewport)[1]//regionViewport[regionBefore]/@rect"/>
+    <eval expected="10000 56000 280000 194000" xpath="(//pageViewport)[1]//regionViewport[regionBody]/@rect"/>
+    <eval expected="10000 20000 280000 12000" xpath="(//pageViewport)[3]//regionViewport[regionBefore]/@rect"/>
+    <eval expected="10000 50000 280000 200000" xpath="(//pageViewport)[3]//regionViewport[regionBody]/@rect"/>
+    <eval expected="10000 20000 280000 10000" xpath="(//pageViewport)[5]//regionViewport[regionBefore]/@rect"/>
+    <eval expected="10000 50000 280000 200000" xpath="(//pageViewport)[5]//regionViewport[regionBody]/@rect"/>
+    <eval expected="10000 20000 280000 10000" xpath="(//pageViewport)[7]//regionViewport[regionBefore]/@rect"/>
+    <eval expected="10000 50000 280000 200000" xpath="(//pageViewport)[7]//regionViewport[regionBody]/@rect"/>
+    <eval expected="a17" xpath="((//pageViewport)[2]//regionBody//word)[1]"/>
+  </checks>
+</testcase>

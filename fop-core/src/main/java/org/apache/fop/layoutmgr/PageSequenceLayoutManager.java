@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook page-number-restart, a following page-sequence continues from the number the last page
- * prints (fop/CR-017.2). See README.md, "Changes from Apache FOP 2.11". */
+ * prints (fop/CR-017.2); and hook measured-region-extents, a master's header and footer measured from the
+ * page-sequence's static content (fop/CR-018). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -33,7 +34,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.fop.area.Area;
 import org.apache.fop.area.AreaTreeHandler;
 import org.apache.fop.area.AreaTreeModel;
+import org.apache.fop.area.Block;
 import org.apache.fop.area.LineArea;
+import org.apache.fop.area.MeasuredExtents;
+import org.apache.fop.area.RegionReference;
 import org.apache.fop.complexscripts.bidi.BidiResolver;
 import org.apache.fop.fo.Constants;
 import org.apache.fop.fo.pagination.PageSequence;
@@ -41,6 +45,7 @@ import org.apache.fop.fo.pagination.PageSequenceMaster;
 import org.apache.fop.fo.pagination.Region;
 import org.apache.fop.fo.pagination.RegionBody;
 import org.apache.fop.fo.pagination.SideRegion;
+import org.apache.fop.fo.pagination.SimplePageMaster;
 import org.apache.fop.fo.pagination.StaticContent;
 import org.apache.fop.layoutmgr.inline.ContentLayoutManager;
 import org.apache.fop.traits.MinOptMax;
@@ -76,6 +81,67 @@ public class PageSequenceLayoutManager extends AbstractPageSequenceLayoutManager
     public PageSequenceLayoutManager(AreaTreeHandler ath, PageSequence pseq) {
         super(ath, pseq);
         this.pageProvider = new PageProvider(ath, pseq);
+        this.pageProvider.setRegionMeasurer(new PageProvider.RegionMeasurer() {
+            public MeasuredExtents measure(SimplePageMaster spm, int pageNumber, String pageNumberString,
+                    boolean blank) {
+                return measureRegions(spm, pageNumber, pageNumberString, blank);
+            }
+        });
+    }
+
+    /**
+     * Hook measured-region-extents (fop/CR-018): measures a master's region-before and region-after, where they
+     * carry fox:extent="measured", by laying out the page-sequence's static content for each into a scratch block
+     * of the region's width. The layout runs on a page of the master made with its stated extents, made the
+     * current page for the measurement, with no id, reference or marker registered (the measuring mode) and no
+     * event reported; the page that was current, or none, is restored afterwards.
+     */
+    private MeasuredExtents measureRegions(SimplePageMaster spm, int pageNumber, String pageNumberString,
+            boolean blank) {
+        MeasuredExtents extents = new MeasuredExtents();
+        if (spm.getReferenceOrientation() != 0
+                || (spm.getWritingMode().getEnumValue() != Constants.EN_LR_TB
+                    && spm.getWritingMode().getEnumValue() != Constants.EN_RL_TB)) {
+            log.warn("fox:extent=\"measured\" on master \"" + spm.getMasterName() + "\" is ignored: it applies to"
+                    + " the lr-tb and rl-tb writing modes at reference-orientation 0");
+            return extents;
+        }
+        Page measuringPage = new Page(spm, pageNumber, pageNumberString, blank, false, false);
+        Page previousPage = curPage;
+        boolean previouslyMeasuring = measuring;
+        boolean previouslyMuted = getPageSequence().getUserAgent().setEventsMuted(true);
+        try {
+            curPage = measuringPage;
+            measuring = true;
+            measureRegion(spm, Constants.FO_REGION_BEFORE, measuringPage, extents);
+            measureRegion(spm, Constants.FO_REGION_AFTER, measuringPage, extents);
+        } finally {
+            curPage = previousPage;
+            measuring = previouslyMeasuring;
+            getPageSequence().getUserAgent().setEventsMuted(previouslyMuted);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("measured master " + spm.getMasterName() + ": " + extents);
+        }
+        return extents;
+    }
+
+    private void measureRegion(SimplePageMaster spm, int regionId, Page measuringPage, MeasuredExtents extents) {
+        Region region = spm.getRegion(regionId);
+        if (!MeasuredExtents.isRequested(region) || region.getReferenceOrientation() != 0) {
+            return;
+        }
+        StaticContent content = getPageSequence().getStaticContent(region.getRegionName());
+        if (content == null) {
+            return;
+        }
+        RegionReference reference = measuringPage.getPageViewport().getRegionReference(regionId);
+        Block block = new Block();
+        block.setIPD(reference.getIPD());
+        StaticContentLayoutManager lm = getLayoutManagerMaker().makeStaticContentLayoutManager(this, content, block);
+        lm.doLayout();
+        extents.setExtent(regionId, block.getBPD() + reference.getBorderAndPaddingWidthBefore()
+                + reference.getBorderAndPaddingWidthAfter());
     }
 
     /** @return the PageProvider applicable to this page-sequence. */

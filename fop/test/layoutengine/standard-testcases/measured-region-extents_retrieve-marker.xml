@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: a test of hook measured-region-extents (fop/CR-018). -->
+<testcase>
+  <info>
+    <p>
+      A header whose only content is an fo:retrieve-marker with retrieve-boundary="document", after a
+      zero-length leader that keeps its line (as docx4j writes a STYLEREF header), on a master first used by the
+      second page-sequence. The first page-sequence carries a marker long enough to wrap to two lines; the
+      second page carries a short one. The measurement retrieves no marker, so the header measures one line;
+      retrieving, it would find the long marker, the measuring page carrying none, and measure two. The real
+      header retrieves the page's own marker.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+<fo:layout-master-set><fo:simple-page-master master-name="A" page-width="300pt" page-height="300pt" margin-top="20pt" margin-bottom="20pt" margin-left="10pt" margin-right="10pt"><fo:region-body margin-top="30pt" margin-bottom="30pt"/><fo:region-before extent="10pt" region-name="xsl-region-before"/><fo:region-after extent="10pt" region-name="xsl-region-after"/></fo:simple-page-master><fo:simple-page-master master-name="B" page-width="300pt" page-height="300pt" margin-top="20pt" margin-bottom="20pt" margin-left="10pt" margin-right="10pt"><fo:region-body margin-top="30pt" margin-bottom="30pt"/><fo:region-before extent="10pt" region-name="b-before" fox:extent="measured"/><fo:region-after extent="10pt" region-name="xsl-region-after" fox:extent="measured"/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="A"><fo:flow flow-name="xsl-region-body" font-size="10pt" line-height="12pt"><fo:block><fo:marker marker-class-name="h">Heading 1 with a title long enough to run over the width of the header line</fo:marker>a1</fo:block></fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="B"><fo:static-content flow-name="b-before" font-size="10pt" line-height="12pt"><fo:block><fo:leader leader-length="0pt"/><fo:retrieve-marker retrieve-class-name="h" retrieve-boundary="document"/></fo:block></fo:static-content><fo:flow flow-name="xsl-region-body" font-size="10pt" line-height="12pt"><fo:block><fo:marker marker-class-name="h">Short</fo:marker>b1</fo:block><fo:block>b2</fo:block><fo:block>b3</fo:block><fo:block>b4</fo:block><fo:block>b5</fo:block><fo:block>b6</fo:block></fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <eval expected="2" xpath="count(//pageViewport)"/>
+    <eval expected="10000 20000 280000 12000" xpath="(//pageViewport)[2]//regionViewport[regionBefore]/@rect"/>
+    <eval expected="10000 50000 280000 200000" xpath="(//pageViewport)[2]//regionViewport[regionBody]/@rect"/>
+    <eval expected="Short" xpath="((//pageViewport)[2]//regionBefore//word)[1]"/>
+  </checks>
+</testcase>
