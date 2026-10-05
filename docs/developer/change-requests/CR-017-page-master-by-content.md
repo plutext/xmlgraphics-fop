@@ -425,7 +425,33 @@ On branch `CR-017-page-master-by-content` off `2.11-docx4j.5`, at Jason's word.
 | `blank-pages` | 11 | blanks from force-page-count and from break-before="odd-page" take Cb, the owner's blank master |
 | `balancing` | 12 | the balanced page beyond the list's first is B2's |
 | `float` | 13 | the marker after a side float is honoured |
+| `space-before` | 10 | a marked block with space-before after a page break, in two columns and one, and at a natural page top (§10) |
 
 Without the change, ten fail and two pass. `ignored` passes either way by design. `footnote-pages` also gives A
 on stock FOP; it fails, with B, when only the footnote-page rule is removed. §6.6 item 24's assertion did not
 trip in `span-change` or `balancing`.
+
+## 10. The first gate, 2026-10-05
+
+The docx4j session's gate on install r10 (code f0d2717fa):
+- **Control** (b114: r10, docx4j writing no attribute, against b113): 0 movers in the four corpora and the
+  probes.
+- **Measurement** (b115: markers and per-part masters on, against b114): no exceptions, every status ok.
+  - P1 (both modes): page parity 0.9172 to 0.9586. continuous-margins-at-top 0.9200 to 0.9467.
+  - 12802: pages 3 and 4 now start at 41.9 and 42.5 (Word 43.3 and 43.4; before 34.9 and 35.5).
+  - 7235: +22 lines; 5507 +1.
+
+**One miss, 12802 page 5**: a marked `span="all"` block with `break-before="page"` opened page 5, but the page
+kept the previous part's master. The cause was not the span or the break. The block has `space-before`, and
+FOP's space resolver puts a box of its own at the start of the element list, with a `SpaceHandlingPosition` and
+no layout manager. §3.2's scan took that box as the list's first box, so the part's transition fell one box later,
+and the list's first page was given the previous part. Fix: only a box some layout manager produced counts, both
+as a part's first box and as the first content of a page (`PageOwnership.isContentBox`). 12802's page 5 now
+takes `s1-p5-simple` (top 30.85pt).
+
+Regression test `space-before` (four shapes). It fails without the fix, with A2 on the page the marked block
+opens. The earlier tests are unchanged.
+
+Also found by that gate, and docx4j's own: section-continuous-geometry pages 5 and 6 now take S3's top but run to
+the foot, where Word ends at 508.9. That is a docx4j rule (a footer distance past a quarter of the page over an
+empty footer part is ignored), which the docx4j session is correcting.
