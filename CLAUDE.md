@@ -198,7 +198,9 @@ continuation parts, hook `continuation-display-align`), both gated PASS 2026-10-
 font's ToUnicode text from its configuration, hook `to-unicode-map`) and `fop/CR-015` (Enterprise CR-001
 item 40: a positive OS/2 typo descender, and the 0/0 ascender and descender of a font without `d` and `p`
 glyphs; capability `ascender-descender`; FOP-1896, pull request #119 from branch `FOP-1896`), both gated PASS and merged
-2026-10-05; fourteen capabilities; draft notes in `docs/release-notes/2.11-docx4j.5.md`.
+2026-10-05; and `fop/CR-016` (item 42: a decomposition's glyphs each publish their piece, correcting a
+regression `fop/CR-002` introduced in `.2`), gated PASS and merged 2026-10-05, to go on #116 too; fourteen
+capabilities; draft notes in `docs/release-notes/2.11-docx4j.5.md`.
 `2.11-docx4j.2` (2026-10-02) and `2.11-docx4j.1` (2026-09-25, tagged at `2f5030172`) are the earlier
 releases; `.3` never shipped. `docs/developer/releasing.md` is the runbook and records what each release
 proved.
