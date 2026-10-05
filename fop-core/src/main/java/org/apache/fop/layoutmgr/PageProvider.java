@@ -15,11 +15,18 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook page-master-by-content, each page made with the master of the part that owns it, and the
+ * height of a page asked for with its owner (fop/CR-017). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
 
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,6 +72,30 @@ public class PageProvider implements Constants {
     //Cache to optimize getAvailableBPD() calls
     private int lastRequestedIndex = -1;
     private int lastReportedBPD = -1;
+    private PageOwnership.Part lastRequestedOwner;
+    private boolean lastRequestedOwnerFirst;
+
+    /*
+     * docx4j-fo-renderer hook page-master-by-content (fop/CR-017): the part of the page-sequence that owns
+     * each page handed out for areas, by page number; the owner the next page is to be made for; the body
+     * height of a fresh page by master; and the column of each part of the current element list.
+     */
+    private PageOwnership ownership;
+    private final Map<Integer, OwnerRecord> owners = new HashMap<Integer, OwnerRecord>();
+    private OwnerRecord pendingOwner;
+    private final Map<SimplePageMaster, Integer> freshPageBPDs = new IdentityHashMap<SimplePageMaster, Integer>();
+    private final List<Column> partColumns = new java.util.ArrayList<Column>();
+
+    /** The part owning a page, and whether the page is that part's first. */
+    static final class OwnerRecord {
+        final PageOwnership.Part part;
+        final boolean first;
+
+        OwnerRecord(PageOwnership.Part part, boolean first) {
+            this.part = part;
+            this.first = first;
+        }
+    }
 
     /**
      * AreaTreeHandler which activates the PSLM and controls
@@ -91,10 +122,44 @@ public class PageProvider implements Constants {
         this.pageSeq = ps;
         this.startPageOfPageSequence = ps.getStartingPageNumber();
         foUserAgent = ath.getUserAgent();
+        this.ownership = new PageOwnership(ps);
     }
 
     public void initialize() {
         cachedPages.clear();
+        ownership = new PageOwnership(pageSeq);
+        owners.clear();
+        pendingOwner = null;
+        freshPageBPDs.clear();
+        partColumns.clear();
+    }
+
+    /** @return which part of the page-sequence owns each page (hook page-master-by-content) */
+    PageOwnership getOwnership() {
+        return ownership;
+    }
+
+    /**
+     * The owner the next page handed out for areas is made for, unless it is blank; null to clear it, after
+     * which a page takes the owner of the page before it (hook page-master-by-content).
+     * @param part the owning part, or null for the page-sequence's own masters
+     * @param first whether the page is the part's first
+     */
+    void setPendingOwner(PageOwnership.Part part, boolean first) {
+        this.pendingOwner = new OwnerRecord(part, first);
+    }
+
+    /** Clears the pending owner. */
+    void clearPendingOwner() {
+        this.pendingOwner = null;
+    }
+
+    /**
+     * @param pageNumber a page number
+     * @return the owner recorded for the page when it was handed out for areas, or null
+     */
+    OwnerRecord getOwnerRecord(int pageNumber) {
+        return owners.get(pageNumber);
     }
 
     /**
@@ -116,6 +181,7 @@ public class PageProvider implements Constants {
         //Reset Cache
         this.lastRequestedIndex = -1;
         this.lastReportedBPD = -1;
+        this.partColumns.clear();
     }
 
     /**
@@ -135,8 +201,22 @@ public class PageProvider implements Constants {
      * @return the available BPD
      */
     public int getAvailableBPD(int index) {
+        return getAvailableBPD(index, null, false);
+    }
+
+    /**
+     * The available BPD for a part, where the page it lies on is owned by a part of the page-sequence
+     * (hook page-master-by-content). A page already handed out for areas has its own height; any other
+     * is measured as a fresh page of the owner's master.
+     * @param index zero-based index of the requested part/page
+     * @param owner the part owning the page, or null for the page-sequence's own masters
+     * @param first whether the page is the owner's first
+     * @return the available BPD
+     */
+    int getAvailableBPD(int index, PageOwnership.Part owner, boolean first) {
         //Special optimization: There may be many equal calls by the BreakingAlgorithm
-        if (this.lastRequestedIndex == index) {
+        if (this.lastRequestedIndex == index && this.lastRequestedOwner == owner
+                && this.lastRequestedOwnerFirst == first) {
             if (log.isTraceEnabled()) {
                 log.trace("getAvailableBPD(" + index + ") -> (cached) " + lastReportedBPD);
             }
@@ -161,11 +241,61 @@ public class PageProvider implements Constants {
             pageIndexTmp--;
         }
         this.lastRequestedIndex = index;
+        this.lastRequestedOwner = owner;
+        this.lastRequestedOwnerFirst = first;
         this.lastReportedBPD = page.getPageViewport().getBodyRegion().getRemainingBPD();
+        if (owner != null) {
+            int pageNumber = startPageOfCurrentElementList + pageIndex + startPageOfPageSequence - 1;
+            if (!owners.containsKey(pageNumber)) {
+                SimplePageMaster spm = owner.masterFor(pageNumber, first, false);
+                if (spm != null && spm != page.getSimplePageMaster()) {
+                    this.lastReportedBPD = getFreshPageBPD(spm, pageNumber);
+                }
+            }
+        }
         if (log.isTraceEnabled()) {
             log.trace("getAvailableBPD(" + index + ") -> " + lastReportedBPD);
         }
         return this.lastReportedBPD;
+    }
+
+    /** The body height of a fresh page of a master, measured without caching the page. */
+    private int getFreshPageBPD(SimplePageMaster spm, int pageNumber) {
+        Integer bpd = freshPageBPDs.get(spm);
+        if (bpd == null) {
+            Page page = new Page(spm, pageNumber, "", false, spanAllForCurrentElementList, false);
+            bpd = page.getPageViewport().getBodyRegion().getRemainingBPD();
+            freshPageBPDs.put(spm, bpd);
+        }
+        return bpd;
+    }
+
+    /**
+     * @param index the index of a part of the current element list
+     * @return whether the part is the first column of its page (hook page-master-by-content)
+     */
+    boolean partOpensPage(int index) {
+        return getPartColumn(index).colIndex == 0;
+    }
+
+    /**
+     * @param index the index of a part of the current element list
+     * @return the number of the page the part lies on (hook page-master-by-content)
+     */
+    int pageNumberOfPart(int index) {
+        return startPageOfCurrentElementList + getPartColumn(index).pageIndex + startPageOfPageSequence - 1;
+    }
+
+    private Column getPartColumn(int index) {
+        while (partColumns.size() <= index) {
+            partColumns.add(null);
+        }
+        Column column = partColumns.get(index);
+        if (column == null) {
+            column = getColumn(index);
+            partColumns.set(index, column);
+        }
+        return column;
     }
 
     private static class Column {
@@ -276,6 +406,9 @@ public class PageProvider implements Constants {
      */
     public Page getPage(boolean isBlank, int index, int relativeTo) {
         if (relativeTo == RELTO_PAGE_SEQUENCE) {
+            if (ownership.isActive()) {
+                recordOwner(isBlank, index);
+            }
             return getPage(isBlank, index);
         } else if (relativeTo == RELTO_CURRENT_ELEMENT_LIST) {
             int effIndex = startPageOfCurrentElementList + index;
@@ -285,6 +418,33 @@ public class PageProvider implements Constants {
             throw new IllegalArgumentException(
                     "Illegal value for relativeTo: " + relativeTo);
         }
+    }
+
+    /**
+     * Records the owner of a page handed out for areas: the pending owner where one is set and the page is
+     * not blank, else the owner already recorded for it, else the owner of the page before it, the page not
+     * being its first (hook page-master-by-content).
+     */
+    private void recordOwner(boolean isBlank, int index) {
+        OwnerRecord record;
+        if (pendingOwner != null && !isBlank) {
+            record = pendingOwner;
+        } else if (owners.containsKey(index)) {
+            return;
+        } else {
+            OwnerRecord previous = owners.get(index - 1);
+            record = new OwnerRecord(previous == null ? null : previous.part, false);
+        }
+        owners.put(index, record);
+    }
+
+    /** The master the owner recorded for a page gives it, or null for the page-sequence's own. */
+    private SimplePageMaster getOwnerMaster(boolean isBlank, int index) {
+        OwnerRecord record = owners.get(index);
+        if (record == null || record.part == null) {
+            return null;
+        }
+        return record.part.masterFor(index, record.first, isBlank);
     }
 
     /**
@@ -310,14 +470,20 @@ public class PageProvider implements Constants {
         }
         if (intIndex > cachedPages.size()) {
             throw new UnsupportedOperationException("Cannot handle holes in page cache");
-        } else if (intIndex == cachedPages.size()) {
+        }
+        SimplePageMaster ownerMaster = getOwnerMaster(isBlank, index);
+        if (intIndex == cachedPages.size()) {
             if (log.isTraceEnabled()) {
                 log.trace("Caching " + index);
             }
-            cacheNextPage(index, isBlank, isLastPage, this.spanAllForCurrentElementList);
+            cacheNextPage(index, isBlank, isLastPage, this.spanAllForCurrentElementList, ownerMaster);
         }
         Page page = cachedPages.get(intIndex);
         boolean replace = false;
+        if (ownerMaster != null && page.getSimplePageMaster() != ownerMaster) {
+            log.debug("master doesn't match the page's owner. Replacing PageViewport.");
+            replace = true;
+        }
         if (page.getPageViewport().isBlank() != isBlank) {
             log.debug("blank condition doesn't match. Replacing PageViewport.");
             replace = true;
@@ -341,7 +507,7 @@ public class PageProvider implements Constants {
         if (replace) {
             discardCacheStartingWith(intIndex);
             PageViewport oldPageVP = page.getPageViewport();
-            page = cacheNextPage(index, isBlank, isLastPage, this.spanAllForCurrentElementList);
+            page = cacheNextPage(index, isBlank, isLastPage, this.spanAllForCurrentElementList, ownerMaster);
             PageViewport newPageVP = page.getPageViewport();
             newPageVP.replace(oldPageVP);
             this.areaTreeHandler.getIDTracker().replacePageViewPort(oldPageVP, newPageVP);
@@ -358,7 +524,8 @@ public class PageProvider implements Constants {
         }
     }
 
-    private Page cacheNextPage(int index, boolean isBlank, boolean isLastPage, boolean spanAll) {
+    private Page cacheNextPage(int index, boolean isBlank, boolean isLastPage, boolean spanAll,
+            SimplePageMaster ownerMaster) {
         String pageNumberString = pageSeq.makeFormattedPageNumber(index);
         boolean isFirstPage = (startPageOfPageSequence == index);
         boolean skipPagePositionOnlyCheck = skipPagePositionOnly && foUserAgent.isSkipPagePositionOnlyAllowed();
@@ -367,6 +534,11 @@ public class PageProvider implements Constants {
         boolean isPagePositionOnly = pageSeq.hasPagePositionOnly() && !skipPagePositionOnly;
         if (isPagePositionOnly) {
             spm = pageSeq.getNextSimplePageMaster(index, isFirstPage, true, isBlank, false);
+        }
+        if (ownerMaster != null) {
+            // hook page-master-by-content: the master of the part owning the page; the page-sequence's
+            // own masters were still walked, so their state stays as FOP keeps it
+            spm = ownerMaster;
         }
         Page page = new Page(spm, index, pageNumberString, isBlank, spanAll, isPagePositionOnly);
         //Set unique key obtained from the AreaTreeHandler

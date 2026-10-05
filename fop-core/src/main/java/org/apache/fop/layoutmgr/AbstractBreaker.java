@@ -55,6 +55,9 @@ public abstract class AbstractBreaker {
         int footnoteFirstElementIndex;
         int footnoteLastListIndex;
         int footnoteLastElementIndex;
+        /** Hook page-master-by-content: the part owning this part's page, and whether it is the part's first. */
+        PageOwnership.Part pageOwner;
+        boolean opensOwner;
 
         PageBreakPosition(LayoutManager lm, int breakIndex,
                           int ffli, int ffei, int flli, int flei,
@@ -336,6 +339,23 @@ public abstract class AbstractBreaker {
     protected abstract void finishPart(PageBreakingAlgorithm alg, PageBreakPosition pbp);
 
     /**
+     * Hook page-master-by-content (fop/CR-017): called before and after a part is started, so a page it
+     * makes is made for the part of the page-sequence owning it. Does nothing here.
+     * @param pbp the break ending the part
+     * @param starting true before the part is started, false after
+     */
+    protected void notePartOwner(PageBreakPosition pbp, boolean starting) {
+    }
+
+    /**
+     * Hook page-master-by-content (fop/CR-017): the content of the current element list is committed up to
+     * an element, and the next list is read again from after it. Does nothing here.
+     * @param position the last committed element's index
+     */
+    protected void noteCommittedTo(int position) {
+    }
+
+    /**
      * Creates the top-level LayoutContext for the breaker operation.
      * @return the top-level LayoutContext
      */
@@ -447,6 +467,7 @@ public abstract class AbstractBreaker {
                         }
                         if (ipdChangesOnNextPage) {
                             addAreas(alg, optimalPageCount, blockList, blockList);
+                            noteCommittedTo(alg.getPageBreaks().get(optimalPageCount - 1).getLeafPos());
                         }
                         blockLists.clear();
                         blockListIndex = -1;
@@ -590,7 +611,9 @@ public abstract class AbstractBreaker {
                     + ", break at pos " + endElementIndex
                     + ", break class = " + getBreakClassName(lastBreakClass));
 
+            notePartOwner(pbp, true);
             startPart(effectiveList, lastBreakClass, startElementIndex > endElementIndex);
+            notePartOwner(pbp, false);
 
             int displayAlign = getCurrentDisplayAlign();
 

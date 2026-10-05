@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook page-master-by-content, each page made for the part of the page-sequence that owns it
+ * (fop/CR-017). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -176,8 +180,60 @@ public class PageBreaker extends AbstractBreaker {
             pageProvider.setStartOfNextElementList(pslm.getCurrentPageNum(), pslm.getCurrentPV()
                     .getCurrentSpan().getCurrentFlowIndex(), this.spanAllActive);
         }
-        return super.getNextBlockList(childLC, nextSequenceStartsOn, positionAtIPDChange,
+        int next = super.getNextBlockList(childLC, nextSequenceStartsOn, positionAtIPDChange,
                 restartLM, firstElements);
+        ownPagesOfNewList();
+        return next;
+    }
+
+    /**
+     * Hook page-master-by-content (fop/CR-017): finds where each part begins in the element list just
+     * built, and, where the list starts on a page still empty whose owner is not the part of the list's first
+     * box, makes that page again for its owner.
+     */
+    private void ownPagesOfNewList() {
+        PageOwnership ownership = pageProvider.getOwnership();
+        ownership.initialize(pslm.getCurrentPage());
+        if (!ownership.isActive() || blockLists == null || blockLists.isEmpty()) {
+            return;
+        }
+        BlockSequence list = blockLists.get(blockLists.size() - 1);
+        ownership.scan(list);
+        if (layoutRedone || handlingFloat()
+                || !pslm.getCurrentPage().getPageViewport().getPage().isEmpty()) {
+            return;
+        }
+        PageOwnership.Part owner = ownership.ownerAfter(-1);
+        boolean first = ownership.opensPart(-1);
+        int pageNumber = pslm.getCurrentPageNum();
+        PageProvider.OwnerRecord record = pageProvider.getOwnerRecord(pageNumber);
+        if (owner == null || (record != null && record.part == owner && record.first == first)) {
+            return;
+        }
+        pageProvider.setPendingOwner(owner, first);
+        try {
+            pslm.setCurrentPage(pageProvider.getPage(false, pageNumber, PageProvider.RELTO_PAGE_SEQUENCE));
+        } finally {
+            pageProvider.clearPendingOwner();
+        }
+        pageProvider.setStartOfNextElementList(pageNumber,
+                pslm.getCurrentPV().getCurrentSpan().getCurrentFlowIndex(), this.spanAllActive);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void notePartOwner(PageBreakPosition pbp, boolean starting) {
+        if (starting && pageProvider.getOwnership().isActive()) {
+            pageProvider.setPendingOwner(pbp.pageOwner, pbp.opensOwner);
+        } else {
+            pageProvider.clearPendingOwner();
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void noteCommittedTo(int position) {
+        pageProvider.getOwnership().commitTo(position);
     }
 
     private boolean containsFootnotes(List<ListElement> contentList, LayoutContext context) {
@@ -398,7 +454,17 @@ public class PageBreaker extends AbstractBreaker {
             newStartPos = alg.par.getFirstBoxIndex(pbp.getLeafPos() + 1);
             //Handle page break right here to avoid any side-effects
             if (newStartPos > 0) {
-                handleBreakTrait(Constants.EN_PAGE);
+                // hook page-master-by-content: the page the redo starts is owned by the part of its first box
+                PageOwnership ownership = pageProvider.getOwnership();
+                if (ownership.isActive()) {
+                    pageProvider.setPendingOwner(ownership.ownerAfter(pbp.getLeafPos()),
+                            ownership.opensPart(pbp.getLeafPos()));
+                }
+                try {
+                    handleBreakTrait(Constants.EN_PAGE);
+                } finally {
+                    pageProvider.clearPendingOwner();
+                }
             }
         }
 
@@ -797,6 +863,8 @@ public class PageBreaker extends AbstractBreaker {
         /* Retrieve the original position wrapped into this space position */
         positionAtBreak = positionAtBreak.getPosition();
         addAreas(alg, optimalPageCount, blockList, blockList);
+        // hook page-master-by-content: the elements read again after the float start in the part in force there
+        noteCommittedTo(floatPosition);
         blockLists.clear();
         blockListIndex = -1;
         LayoutManager restartAtLM = null;

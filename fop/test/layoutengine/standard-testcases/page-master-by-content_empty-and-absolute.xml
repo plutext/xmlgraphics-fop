@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: a test of hook page-master-by-content (fop/CR-017). -->
+<testcase>
+  <info>
+    <p>
+      A marked FO that produces no line still starts its part at the next content: an empty fo:block (first
+      sequence) and an absolutely positioned fo:block-container (second sequence), each followed by unmarked
+      blocks starting part-way down page 2. Page 3 takes the marked part's master in both.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+<fo:layout-master-set><fo:simple-page-master master-name="A" page-width="300pt" page-height="200pt" margin-top="10pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="1" column-gap="10pt"/></fo:simple-page-master><fo:simple-page-master master-name="B" page-width="300pt" page-height="200pt" margin-top="40pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="1" column-gap="10pt"/></fo:simple-page-master><fo:simple-page-master master-name="Bf" page-width="300pt" page-height="200pt" margin-top="60pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="1" column-gap="10pt"/></fo:simple-page-master><fo:simple-page-master master-name="Co" page-width="300pt" page-height="200pt" margin-top="40pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="1" column-gap="10pt"/></fo:simple-page-master><fo:simple-page-master master-name="Ce" page-width="300pt" page-height="200pt" margin-top="70pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="1" column-gap="10pt"/></fo:simple-page-master><fo:simple-page-master master-name="Cb" page-width="300pt" page-height="200pt" margin-top="100pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="1" column-gap="10pt"/></fo:simple-page-master><fo:page-sequence-master master-name="psmA"><fo:repeatable-page-master-alternatives><fo:conditional-page-master-reference master-reference="A"/></fo:repeatable-page-master-alternatives></fo:page-sequence-master><fo:page-sequence-master master-name="psmB"><fo:repeatable-page-master-alternatives><fo:conditional-page-master-reference master-reference="Bf" page-position="first"/><fo:conditional-page-master-reference master-reference="B"/></fo:repeatable-page-master-alternatives></fo:page-sequence-master><fo:page-sequence-master master-name="psmC"><fo:repeatable-page-master-alternatives><fo:conditional-page-master-reference master-reference="Cb" blank-or-not-blank="blank"/><fo:conditional-page-master-reference master-reference="Co" odd-or-even="odd"/><fo:conditional-page-master-reference master-reference="Ce" odd-or-even="even"/></fo:repeatable-page-master-alternatives></fo:page-sequence-master></fo:layout-master-set>
+<fo:page-sequence master-reference="psmA"><fo:flow flow-name="xsl-region-body" font-size="10pt" line-height="12pt"><fo:block fox:page-sequence-master-reference="psmA"><fo:block>a1</fo:block><fo:block>a2</fo:block><fo:block>a3</fo:block><fo:block>a4</fo:block><fo:block>a5</fo:block><fo:block>a6</fo:block><fo:block>a7</fo:block><fo:block>a8</fo:block><fo:block>a9</fo:block><fo:block>a10</fo:block><fo:block>a11</fo:block><fo:block>a12</fo:block><fo:block>a13</fo:block><fo:block>a14</fo:block><fo:block>a15</fo:block><fo:block>a16</fo:block><fo:block>a17</fo:block><fo:block>a18</fo:block><fo:block>a19</fo:block><fo:block>a20</fo:block></fo:block><fo:block fox:page-sequence-master-reference="psmB"/><fo:block>x1</fo:block><fo:block>x2</fo:block><fo:block>x3</fo:block><fo:block>x4</fo:block><fo:block>x5</fo:block><fo:block>x6</fo:block><fo:block>x7</fo:block><fo:block>x8</fo:block><fo:block>x9</fo:block><fo:block>x10</fo:block><fo:block>x11</fo:block><fo:block>x12</fo:block><fo:block>x13</fo:block><fo:block>x14</fo:block><fo:block>x15</fo:block><fo:block>x16</fo:block><fo:block>x17</fo:block><fo:block>x18</fo:block><fo:block>x19</fo:block><fo:block>x20</fo:block><fo:block>x21</fo:block><fo:block>x22</fo:block><fo:block>x23</fo:block><fo:block>x24</fo:block><fo:block>x25</fo:block><fo:block>x26</fo:block><fo:block>x27</fo:block><fo:block>x28</fo:block><fo:block>x29</fo:block><fo:block>x30</fo:block></fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="psmA"><fo:flow flow-name="xsl-region-body" font-size="10pt" line-height="12pt"><fo:block fox:page-sequence-master-reference="psmA"><fo:block>a1</fo:block><fo:block>a2</fo:block><fo:block>a3</fo:block><fo:block>a4</fo:block><fo:block>a5</fo:block><fo:block>a6</fo:block><fo:block>a7</fo:block><fo:block>a8</fo:block><fo:block>a9</fo:block><fo:block>a10</fo:block><fo:block>a11</fo:block><fo:block>a12</fo:block><fo:block>a13</fo:block><fo:block>a14</fo:block><fo:block>a15</fo:block><fo:block>a16</fo:block><fo:block>a17</fo:block><fo:block>a18</fo:block><fo:block>a19</fo:block><fo:block>a20</fo:block></fo:block><fo:block-container absolute-position="absolute" top="0pt" left="0pt" width="20pt" height="20pt" fox:page-sequence-master-reference="psmB"><fo:block>abs</fo:block></fo:block-container><fo:block>y1</fo:block><fo:block>y2</fo:block><fo:block>y3</fo:block><fo:block>y4</fo:block><fo:block>y5</fo:block><fo:block>y6</fo:block><fo:block>y7</fo:block><fo:block>y8</fo:block><fo:block>y9</fo:block><fo:block>y10</fo:block><fo:block>y11</fo:block><fo:block>y12</fo:block><fo:block>y13</fo:block><fo:block>y14</fo:block><fo:block>y15</fo:block><fo:block>y16</fo:block><fo:block>y17</fo:block><fo:block>y18</fo:block><fo:block>y19</fo:block><fo:block>y20</fo:block><fo:block>y21</fo:block><fo:block>y22</fo:block><fo:block>y23</fo:block><fo:block>y24</fo:block><fo:block>y25</fo:block><fo:block>y26</fo:block><fo:block>y27</fo:block><fo:block>y28</fo:block><fo:block>y29</fo:block><fo:block>y30</fo:block></fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <eval expected="8" xpath="count(//pageViewport)"/>
+    <eval expected="A" xpath="(//pageViewport)[1]/@simple-page-master-name"/>
+    <eval expected="A" xpath="(//pageViewport)[2]/@simple-page-master-name"/>
+    <eval expected="B" xpath="(//pageViewport)[3]/@simple-page-master-name"/>
+    <eval expected="B" xpath="(//pageViewport)[4]/@simple-page-master-name"/>
+    <eval expected="A" xpath="(//pageViewport)[5]/@simple-page-master-name"/>
+    <eval expected="A" xpath="(//pageViewport)[6]/@simple-page-master-name"/>
+    <eval expected="B" xpath="(//pageViewport)[7]/@simple-page-master-name"/>
+    <eval expected="B" xpath="(//pageViewport)[8]/@simple-page-master-name"/>
+    <eval expected="x11" xpath="((//pageViewport)[3]//word)[1]"/>
+    <eval expected="y11" xpath="((//pageViewport)[7]//word)[1]"/>
+  </checks>
+</testcase>

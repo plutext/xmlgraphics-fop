@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: a test of hook page-master-by-content (fop/CR-017). -->
+<testcase>
+  <info>
+    <p>
+      Column balancing beyond the first page of an element list: a two-column part runs from page 1 to page 4,
+      where a span="all" block makes FOP balance the columns. The balanced page is the part's, with its master's
+      height.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+<fo:layout-master-set><fo:simple-page-master master-name="A2" page-width="300pt" page-height="200pt" margin-top="10pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="2" column-gap="10pt"/></fo:simple-page-master><fo:simple-page-master master-name="B2" page-width="300pt" page-height="200pt" margin-top="40pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="2" column-gap="10pt"/></fo:simple-page-master><fo:page-sequence-master master-name="psmA2"><fo:repeatable-page-master-alternatives><fo:conditional-page-master-reference master-reference="A2"/></fo:repeatable-page-master-alternatives></fo:page-sequence-master><fo:page-sequence-master master-name="psmB2"><fo:repeatable-page-master-alternatives><fo:conditional-page-master-reference master-reference="B2"/></fo:repeatable-page-master-alternatives></fo:page-sequence-master></fo:layout-master-set>
+<fo:page-sequence master-reference="psmA2"><fo:flow flow-name="xsl-region-body" font-size="10pt" line-height="12pt"><fo:block fox:page-sequence-master-reference="psmA2"><fo:block>a1</fo:block><fo:block>a2</fo:block><fo:block>a3</fo:block><fo:block>a4</fo:block><fo:block>a5</fo:block><fo:block>a6</fo:block><fo:block>a7</fo:block><fo:block>a8</fo:block><fo:block>a9</fo:block><fo:block>a10</fo:block></fo:block><fo:block fox:page-sequence-master-reference="psmB2"><fo:block>b1</fo:block><fo:block>b2</fo:block><fo:block>b3</fo:block><fo:block>b4</fo:block><fo:block>b5</fo:block><fo:block>b6</fo:block><fo:block>b7</fo:block><fo:block>b8</fo:block><fo:block>b9</fo:block><fo:block>b10</fo:block><fo:block>b11</fo:block><fo:block>b12</fo:block><fo:block>b13</fo:block><fo:block>b14</fo:block><fo:block>b15</fo:block><fo:block>b16</fo:block><fo:block>b17</fo:block><fo:block>b18</fo:block><fo:block>b19</fo:block><fo:block>b20</fo:block><fo:block>b21</fo:block><fo:block>b22</fo:block><fo:block>b23</fo:block><fo:block>b24</fo:block><fo:block>b25</fo:block><fo:block>b26</fo:block><fo:block>b27</fo:block><fo:block>b28</fo:block><fo:block>b29</fo:block><fo:block>b30</fo:block><fo:block>b31</fo:block><fo:block>b32</fo:block><fo:block>b33</fo:block><fo:block>b34</fo:block><fo:block>b35</fo:block><fo:block>b36</fo:block><fo:block>b37</fo:block><fo:block>b38</fo:block><fo:block>b39</fo:block><fo:block>b40</fo:block><fo:block>b41</fo:block><fo:block>b42</fo:block><fo:block>b43</fo:block><fo:block>b44</fo:block><fo:block>b45</fo:block><fo:block>b46</fo:block><fo:block>b47</fo:block><fo:block>b48</fo:block><fo:block>b49</fo:block><fo:block>b50</fo:block><fo:block>b51</fo:block><fo:block>b52</fo:block><fo:block>b53</fo:block><fo:block>b54</fo:block><fo:block>b55</fo:block><fo:block>b56</fo:block><fo:block>b57</fo:block><fo:block>b58</fo:block><fo:block>b59</fo:block><fo:block>b60</fo:block><fo:block>b61</fo:block><fo:block>b62</fo:block><fo:block>b63</fo:block><fo:block>b64</fo:block><fo:block>b65</fo:block><fo:block>b66</fo:block><fo:block>b67</fo:block><fo:block>b68</fo:block><fo:block>b69</fo:block><fo:block>b70</fo:block></fo:block><fo:block span="all">end</fo:block></fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <eval expected="4" xpath="count(//pageViewport)"/>
+    <eval expected="A2" xpath="(//pageViewport)[1]/@simple-page-master-name"/>
+    <eval expected="B2" xpath="(//pageViewport)[2]/@simple-page-master-name"/>
+    <eval expected="B2" xpath="(//pageViewport)[3]/@simple-page-master-name"/>
+    <eval expected="B2" xpath="(//pageViewport)[4]/@simple-page-master-name"/>
+    <eval expected="b21" xpath="((//pageViewport)[2]//word)[1]"/>
+    <eval expected="b69" xpath="((//pageViewport)[4]//word)[1]"/>
+    <eval expected="end" xpath="((//pageViewport)[4]//word)[3]"/>
+  </checks>
+</testcase>

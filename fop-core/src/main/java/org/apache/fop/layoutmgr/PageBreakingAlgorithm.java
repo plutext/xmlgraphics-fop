@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook page-master-by-content, a page's height asked for with the part of the page-sequence that
+ * owns it, carried on the node that starts it (fop/CR-017). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -168,6 +172,13 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
 
         /** Index of the last inserted element of the last inserted footnote. */
         public int footnoteElementIndex;
+
+        /**
+         * Hook page-master-by-content: the part owning the page the part starting at this node lies on, and
+         * whether that page is the part's first; null without parts.
+         */
+        PageOwnership.Part pageOwner;
+        boolean opensOwner;
 
         /**
          * Pending variants of dynamic contents that were evaluated WRT this node.
@@ -344,19 +355,21 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                                    int totalWidth, int totalStretch, int totalShrink,
                                    double adjustRatio, int availableShrink, int availableStretch,
                                    int difference, double totalDemerits, KnuthNode previous) {
-        return new KnuthPageNode(position, line, fitness,
+        KnuthPageNode node = new KnuthPageNode(position, line, fitness,
                                  totalWidth, totalStretch, totalShrink,
                                  insertedFootnotesLength, totalFootnotesLength,
                                  footnoteListIndex, footnoteElementIndex,
                                  adjustRatio, availableShrink, availableStretch,
                                  difference, totalDemerits, previous);
+        assignPageOwner(node, previous);
+        return node;
     }
 
     /** {@inheritDoc} */
     @Override
     protected KnuthNode createNode(int position, int line, int fitness,
                                    int totalWidth, int totalStretch, int totalShrink) {
-        return new KnuthPageNode(position, line, fitness,
+        KnuthPageNode node = new KnuthPageNode(position, line, fitness,
                                  totalWidth, totalStretch, totalShrink,
                                  ((BestPageRecords) best).getInsertedFootnotesLength(fitness),
                                  ((BestPageRecords) best).getTotalFootnotesLength(fitness),
@@ -365,6 +378,41 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                                  best.getAdjust(fitness), best.getAvailableShrink(fitness),
                                  best.getAvailableStretch(fitness), best.getDifference(fitness),
                                  best.getDemerits(fitness), best.getNode(fitness));
+        assignPageOwner(node, best.getNode(fitness));
+        return node;
+    }
+
+    /** Whether the nodes being created are those of pages holding only footnote bodies. */
+    private boolean creatingFootnotePages;
+
+    /**
+     * Hook page-master-by-content (fop/CR-017): the part owning the page a new node's part lies on. A page
+     * already handed out for areas keeps the owner recorded for it; the first column of any other page is
+     * owned by the part of its first box; a later column, and a page holding only footnote bodies, by the
+     * owner of the node before.
+     */
+    private void assignPageOwner(KnuthPageNode node, KnuthNode previous) {
+        if (pageProvider == null || !pageProvider.getOwnership().isActive()) {
+            return;
+        }
+        KnuthPageNode previousPageNode = (previous instanceof KnuthPageNode) ? (KnuthPageNode) previous : null;
+        if (creatingFootnotePages && previousPageNode != null) {
+            node.pageOwner = previousPageNode.pageOwner;
+            node.opensOwner = false;
+            return;
+        }
+        PageProvider.OwnerRecord record = pageProvider.getOwnerRecord(pageProvider.pageNumberOfPart(node.line));
+        if (record != null) {
+            node.pageOwner = record.part;
+            node.opensOwner = record.first;
+        } else if (previousPageNode == null || pageProvider.partOpensPage(node.line)) {
+            PageOwnership ownership = pageProvider.getOwnership();
+            node.pageOwner = ownership.ownerAfter(node.position);
+            node.opensOwner = ownership.opensPart(node.position);
+        } else {
+            node.pageOwner = previousPageNode.pageOwner;
+            node.opensOwner = previousPageNode.opensOwner;
+        }
     }
 
     /**
@@ -573,7 +621,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 // this page contains some footnote citations
                 // add the footnote separator width
                 actualWidth += footnoteSeparatorLength.getOpt();
-                if (actualWidth + allFootnotes <= getLineWidth(activeNode.line)) {
+                if (actualWidth + allFootnotes <= getLineWidth(activeNode)) {
                     // there is enough space to insert all footnotes:
                     // add the whole allFootnotes length
                     actualWidth += allFootnotes;
@@ -585,7 +633,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                              pageNode, elementIndex))
                             || newFootnotes)
                            && (footnoteSplit = getFootnoteSplit(
-                               pageNode, getLineWidth(activeNode.line) - actualWidth,
+                               pageNode, getLineWidth(activeNode) - actualWidth,
                                 canDeferOldFN)) > 0) {
                     // it is allowed to break or even defer footnotes if either:
                     //  - there are new footnotes in the last piece of content, and
@@ -615,7 +663,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         } else {
             // there are no footnotes
         }
-        int diff = getLineWidth(activeNode.line) - actualWidth;
+        int diff = getLineWidth(activeNode) - actualWidth;
         if (autoHeight && diff < 0) {
             //getLineWidth() for auto-height parts return 0 so the diff will be negative
             return 0; //...but we don't want to shrink in this case. Stick to optimum.
@@ -955,9 +1003,27 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                  node = (KnuthPageNode) node.next) {
                 if (node.insertedFootnotes < totalFootnotesLength) {
                     // layout remaining footnote bodies
-                    createFootnotePages(node);
+                    createOwnedFootnotePages(node);
                 }
             }
+        }
+    }
+
+    /**
+     * Hook page-master-by-content (fop/CR-017): creates the pages holding only footnote bodies, which take the
+     * owner of the page before them, not the part in force at the end of the list.
+     */
+    private void createOwnedFootnotePages(KnuthPageNode lastNode) {
+        if (pageProvider != null && pageProvider.getOwnership().isActive()
+                && lastNode.previous instanceof KnuthPageNode) {
+            lastNode.pageOwner = ((KnuthPageNode) lastNode.previous).pageOwner;
+            lastNode.opensOwner = false;
+        }
+        creatingFootnotePages = true;
+        try {
+            createFootnotePages(lastNode);
+        } finally {
+            creatingFootnotePages = false;
         }
     }
 
@@ -966,7 +1032,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         insertedFootnotesLength = lastNode.insertedFootnotes;
         footnoteListIndex = lastNode.footnoteListIndex;
         footnoteElementIndex = lastNode.footnoteElementIndex;
-        int availableBPD = getLineWidth(lastNode.line);
+        int availableBPD = getLineWidth(lastNode);
         int split = 0;
         KnuthPageNode prevNode = lastNode;
 
@@ -998,7 +1064,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 removeNode(prevNode.line, prevNode);
 
                 prevNode = node;
-                availableBPD = getLineWidth(node.line);
+                availableBPD = getLineWidth(node);
             }
         }
         // create the last node
@@ -1132,9 +1198,13 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             } else {
                 firstElementIndex++;
             }
-            insertPageBreakAsFirst(new PageBreakPosition(this.topLevelLM, bestActiveNode.position,
+            PageBreakPosition pbp = new PageBreakPosition(this.topLevelLM, bestActiveNode.position,
                     firstListIndex, firstElementIndex, ((KnuthPageNode) bestActiveNode).footnoteListIndex,
-                    ((KnuthPageNode) bestActiveNode).footnoteElementIndex, ratio, difference));
+                    ((KnuthPageNode) bestActiveNode).footnoteElementIndex, ratio, difference);
+            // hook page-master-by-content: the owner of the part ending here, from the node that started it
+            pbp.pageOwner = previousPageNode.pageOwner;
+            pbp.opensOwner = previousPageNode.opensOwner;
+            insertPageBreakAsFirst(pbp);
         }
     }
 
@@ -1176,6 +1246,20 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     /** @return the associated top-level formatting object. */
     public FObj getFObj() {
         return topLevelLM.getFObj();
+    }
+
+    /**
+     * The height of the part starting at a node: of its page under the part of the page-sequence owning
+     * it where there is one (hook page-master-by-content), else as {@link #getLineWidth(int)}.
+     * @param node the node the part starts at
+     * @return the available height
+     */
+    protected int getLineWidth(KnuthNode node) {
+        if (pageProvider != null && node instanceof KnuthPageNode && ((KnuthPageNode) node).pageOwner != null) {
+            KnuthPageNode pageNode = (KnuthPageNode) node;
+            return pageProvider.getAvailableBPD(node.line, pageNode.pageOwner, pageNode.opensOwner);
+        }
+        return getLineWidth(node.line);
     }
 
     /** {@inheritDoc} */

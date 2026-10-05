@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: a test of hook page-master-by-content (fop/CR-017). -->
+<testcase>
+  <info>
+    <p>
+      The second part's masters differ between odd pages (40pt top margin) and even ones (70pt): the pages it owns
+      alternate with their numbers, and each page's height is its own master's.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+<fo:layout-master-set><fo:simple-page-master master-name="A" page-width="300pt" page-height="200pt" margin-top="10pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="1" column-gap="10pt"/></fo:simple-page-master><fo:simple-page-master master-name="B" page-width="300pt" page-height="200pt" margin-top="40pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="1" column-gap="10pt"/></fo:simple-page-master><fo:simple-page-master master-name="Bf" page-width="300pt" page-height="200pt" margin-top="60pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="1" column-gap="10pt"/></fo:simple-page-master><fo:simple-page-master master-name="Co" page-width="300pt" page-height="200pt" margin-top="40pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="1" column-gap="10pt"/></fo:simple-page-master><fo:simple-page-master master-name="Ce" page-width="300pt" page-height="200pt" margin-top="70pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="1" column-gap="10pt"/></fo:simple-page-master><fo:simple-page-master master-name="Cb" page-width="300pt" page-height="200pt" margin-top="100pt" margin-bottom="10pt" margin-left="10pt" margin-right="10pt"><fo:region-body column-count="1" column-gap="10pt"/></fo:simple-page-master><fo:page-sequence-master master-name="psmA"><fo:repeatable-page-master-alternatives><fo:conditional-page-master-reference master-reference="A"/></fo:repeatable-page-master-alternatives></fo:page-sequence-master><fo:page-sequence-master master-name="psmB"><fo:repeatable-page-master-alternatives><fo:conditional-page-master-reference master-reference="Bf" page-position="first"/><fo:conditional-page-master-reference master-reference="B"/></fo:repeatable-page-master-alternatives></fo:page-sequence-master><fo:page-sequence-master master-name="psmC"><fo:repeatable-page-master-alternatives><fo:conditional-page-master-reference master-reference="Cb" blank-or-not-blank="blank"/><fo:conditional-page-master-reference master-reference="Co" odd-or-even="odd"/><fo:conditional-page-master-reference master-reference="Ce" odd-or-even="even"/></fo:repeatable-page-master-alternatives></fo:page-sequence-master></fo:layout-master-set>
+<fo:page-sequence master-reference="psmA"><fo:flow flow-name="xsl-region-body" font-size="10pt" line-height="12pt"><fo:block fox:page-sequence-master-reference="psmA"><fo:block>a1</fo:block><fo:block>a2</fo:block><fo:block>a3</fo:block><fo:block>a4</fo:block><fo:block>a5</fo:block><fo:block>a6</fo:block><fo:block>a7</fo:block><fo:block>a8</fo:block><fo:block>a9</fo:block><fo:block>a10</fo:block><fo:block>a11</fo:block><fo:block>a12</fo:block><fo:block>a13</fo:block><fo:block>a14</fo:block><fo:block>a15</fo:block><fo:block>a16</fo:block><fo:block>a17</fo:block><fo:block>a18</fo:block><fo:block>a19</fo:block><fo:block>a20</fo:block></fo:block><fo:block fox:page-sequence-master-reference="psmC"><fo:block>c1</fo:block><fo:block>c2</fo:block><fo:block>c3</fo:block><fo:block>c4</fo:block><fo:block>c5</fo:block><fo:block>c6</fo:block><fo:block>c7</fo:block><fo:block>c8</fo:block><fo:block>c9</fo:block><fo:block>c10</fo:block><fo:block>c11</fo:block><fo:block>c12</fo:block><fo:block>c13</fo:block><fo:block>c14</fo:block><fo:block>c15</fo:block><fo:block>c16</fo:block><fo:block>c17</fo:block><fo:block>c18</fo:block><fo:block>c19</fo:block><fo:block>c20</fo:block><fo:block>c21</fo:block><fo:block>c22</fo:block><fo:block>c23</fo:block><fo:block>c24</fo:block><fo:block>c25</fo:block><fo:block>c26</fo:block><fo:block>c27</fo:block><fo:block>c28</fo:block><fo:block>c29</fo:block><fo:block>c30</fo:block><fo:block>c31</fo:block><fo:block>c32</fo:block><fo:block>c33</fo:block><fo:block>c34</fo:block><fo:block>c35</fo:block><fo:block>c36</fo:block><fo:block>c37</fo:block><fo:block>c38</fo:block><fo:block>c39</fo:block><fo:block>c40</fo:block><fo:block>c41</fo:block><fo:block>c42</fo:block><fo:block>c43</fo:block><fo:block>c44</fo:block><fo:block>c45</fo:block><fo:block>c46</fo:block><fo:block>c47</fo:block><fo:block>c48</fo:block><fo:block>c49</fo:block><fo:block>c50</fo:block><fo:block>c51</fo:block><fo:block>c52</fo:block><fo:block>c53</fo:block><fo:block>c54</fo:block><fo:block>c55</fo:block><fo:block>c56</fo:block><fo:block>c57</fo:block><fo:block>c58</fo:block><fo:block>c59</fo:block><fo:block>c60</fo:block></fo:block></fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <eval expected="7" xpath="count(//pageViewport)"/>
+    <eval expected="A" xpath="(//pageViewport)[1]/@simple-page-master-name"/>
+    <eval expected="A" xpath="(//pageViewport)[2]/@simple-page-master-name"/>
+    <eval expected="Co" xpath="(//pageViewport)[3]/@simple-page-master-name"/>
+    <eval expected="Ce" xpath="(//pageViewport)[4]/@simple-page-master-name"/>
+    <eval expected="Co" xpath="(//pageViewport)[5]/@simple-page-master-name"/>
+    <eval expected="Ce" xpath="(//pageViewport)[6]/@simple-page-master-name"/>
+    <eval expected="Co" xpath="(//pageViewport)[7]/@simple-page-master-name"/>
+    <eval expected="c11" xpath="((//pageViewport)[3]//word)[1]"/>
+    <eval expected="c23" xpath="((//pageViewport)[4]//word)[1]"/>
+    <eval expected="c33" xpath="((//pageViewport)[5]//word)[1]"/>
+  </checks>
+</testcase>

@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook page-master-by-content, the master the alternatives give a page without consuming a repeat
+ * (fop/CR-017). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo.pagination;
@@ -135,6 +139,38 @@ public class RepeatablePageMasterAlternatives extends FObj
 
 
         return null;
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code page-master-by-content}: the master these alternatives give a page
+     * that is not the last, without consuming a repeat, so a layout manager can ask it of any page
+     * (fop/CR-017).
+     * @param isOddPage whether the page's number is odd
+     * @param isFirstPage whether the page counts as first
+     * @param isBlankPage whether the page is blank
+     * @return the master, or null if no alternative applies
+     */
+    public SimplePageMaster getPageMasterFor(boolean isOddPage, boolean isFirstPage, boolean isBlankPage) {
+        for (ConditionalPageMasterReference cpmr : conditionalPageMasterRefs) {
+            if (cpmr.getPagePosition() != EN_LAST && cpmr.getPagePosition() != EN_ONLY
+                    && cpmr.isValid(isOddPage, isFirstPage, false, isBlankPage)) {
+                return cpmr.getMaster();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code page-master-by-content}: every master these alternatives can give
+     * (fop/CR-017).
+     * @return the masters, in the order of the conditional references
+     */
+    public List<SimplePageMaster> getAlternativeMasters() {
+        List<SimplePageMaster> masters = new ArrayList<SimplePageMaster>();
+        for (ConditionalPageMasterReference cpmr : conditionalPageMasterRefs) {
+            masters.add(cpmr.getMaster());
+        }
+        return masters;
     }
 
     public SimplePageMaster getLastPageMaster(boolean isOddPage, boolean isFirstPage, boolean isBlankPage,

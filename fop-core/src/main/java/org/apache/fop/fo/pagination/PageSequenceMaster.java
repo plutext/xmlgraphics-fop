@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook page-master-by-content, the master's sole unbounded alternatives (fop/CR-017). See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo.pagination;
@@ -137,6 +141,24 @@ public class PageSequenceMaster extends FObj {
 
     List<SubSequenceSpecifier> getSubSequenceSpecifier() {
         return Collections.unmodifiableList(subSequenceSpecifiers);
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code page-master-by-content}: this master's alternatives, where it is
+     * exactly one unbounded {@code fo:repeatable-page-master-alternatives}, the form whose master for a
+     * page depends on the page alone (fop/CR-017).
+     * @return the alternatives, or null if this master has any other form
+     */
+    public RepeatablePageMasterAlternatives getSoleUnboundedAlternatives() {
+        if (subSequenceSpecifiers.size() == 1
+                && subSequenceSpecifiers.get(0) instanceof RepeatablePageMasterAlternatives) {
+            RepeatablePageMasterAlternatives alternatives
+                    = (RepeatablePageMasterAlternatives) subSequenceSpecifiers.get(0);
+            if (alternatives.isInfinite()) {
+                return alternatives;
+            }
+        }
+        return null;
     }
 
     /**

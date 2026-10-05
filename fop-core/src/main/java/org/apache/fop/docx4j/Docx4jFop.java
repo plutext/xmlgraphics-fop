@@ -144,6 +144,15 @@ public final class Docx4jFop {
      */
     public static final String ASCENDER_DESCENDER = "ascender-descender";
 
+    /**
+     * {@code fox:page-sequence-master-reference} on a block-level FO in the main flow names a
+     * page-sequence-master (one unbounded repeatable-page-master-alternatives): the pages whose first line
+     * lies at or after it, up to the next such FO, take their masters from it, as a word processor takes a
+     * page's margins and header from the section owning its first line. Absent, FOP chooses masters as
+     * before (docx4j CR-031, fop/CR-017).
+     */
+    public static final String PAGE_MASTER_BY_CONTENT = "page-master-by-content";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -162,6 +171,7 @@ public final class Docx4jFop {
         caps.add(CONTINUATION_DISPLAY_ALIGN);
         caps.add(TO_UNICODE_MAP);
         caps.add(ASCENDER_DESCENDER);
+        caps.add(PAGE_MASTER_BY_CONTENT);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 
