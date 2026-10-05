@@ -1,6 +1,7 @@
 # CR-018: header and footer extents measured in FOP
 
-Status: PROPOSED 2026-10-05; design and estimate, not started. Revised the same day after two reviews (§8); the second found it ready to start. Registry key `fop/CR-018`. Capability
+Status: IMPLEMENTED 2026-10-05 on branch `CR-018-measured-region-extents` (7ae4c950a, §9); gate pending, not merged.
+Designed and revised the same day after two reviews (§8). Registry key `fop/CR-018`. Capability
 `measured-region-extents`. A docx4j hook (Word's rule for where the body starts, which FO leaves to the producer),
 so not upstream-bound. Requested by the docx4j session for docx4j CR-031 phase 5, the companion hook at the end of
 CR-031 §4.2b, which Jason asked it to take up with CR-031's carried-over items. Gated separately from CR-017, since
@@ -262,3 +263,60 @@ It confirmed:
 - suppressing retrieval also keeps `bindMarker` from cloning marker subtrees;
 - the constructor overloads;
 - the estimate of four to five days.
+
+## 9. Implementation, 2026-10-05
+
+Branch `CR-018-measured-region-extents`, cut from `2.11-docx4j.5` at 44b7cf5a6; the change is 7ae4c950a. The full
+build passes on it: the fop-core suite gives 3840 tests and 0 failures, and checkstyle and spotbugs are clean.
+
+It is §3 as designed, with these differences, each found while building it:
+- **`getLastPageIPD` still makes its page directly.** It reads the body's width, which measured extents do not
+  change in the supported writing modes. So `PageProvider`'s one page-making method serves `cacheNextPage` and
+  `getFreshPageBPD`. The measuring page itself is made with `new Page(` in the layout manager, so a measurement
+  never asks for itself.
+- **`StaticContentLayoutManager` has no event change.** The muted broadcaster (`FOUserAgent.setEventsMuted`, which
+  returns the previous state) silences its region-overflow event with the rest. Its one change is the scratch
+  block, used whenever it is given one.
+- **The mode short-circuits four methods, not three, and marker retrieval.** `addIDToPage` registers an id as well
+  as `associateLayoutManagerID` and `notifyEndOfLayout`. Nothing else in the layout managers registers an id or a
+  reference. The other registrations are the page-sequence's own id, an external document's, and the area tree
+  handler's document-level ones (bookmarks and the like), none of which static content reaches.
+- **The cache** holds each master's extents, both regions together, in a map `PageProvider` clears with its other
+  per-sequence state.
+- **The unsupported case.** A master in another writing mode or at a nonzero reference-orientation gets a log
+  warning when it is measured (so once per master and page-sequence), and its stated extents. A region with its
+  own nonzero reference-orientation keeps its stated extent without a warning.
+
+What building it found:
+- **Without the mode, a link into a header fails the rendering.** An `fo:basic-link` to an id in a header resolves
+  to the measuring page, which is never rendered and has no key, and writing the area tree throws ("No page key
+  set on the PageViewport"). So the mode prevents a failure, not only a wrong page number.
+- **Within one page-sequence, a master is first measured while the page breaker runs**, before any of the
+  sequence's pages reach the area tree. There, retrieval left on would find no marker either, so test 9 as §5
+  describes it could not tell the mode from its absence. The mode decides where earlier pages are already in the
+  area tree: a marker from an earlier page-sequence under `retrieve-boundary="document"`, which test 9 now uses,
+  or, by reading the code, a master first used after the sequence's content pages, as a blank page's is.
+
+**Tests.**
+
+| §5 | test |
+|---|---|
+| 1, 4, 5 | `measured-region-extents_header.xml` |
+| 2 | `measured-region-extents_footer.xml` |
+| 3 | `measured-region-extents_parts.xml` |
+| 6 | `measured-region-extents_absolute.xml` |
+| 7 | the layout suite, unchanged |
+| 8 | `measured-region-extents_page-fields.xml`; events in `MeasuredRegionExtentsTestCase`, since a layout test can check that an event occurs, not how often |
+| 9 | `measured-region-extents_retrieve-marker.xml`, the header's marker retrieved from an earlier page-sequence |
+| 10 | `measured-region-extents_id.xml`, a link as well as a citation |
+| 11 | `measured-region-extents_blank.xml` |
+
+Every layout test fails without the change. With the change and the measuring mode switched off, the id test
+cannot write its area tree and the retrieve-marker test measures two lines where it should measure one. With the
+broadcaster not muted, `MeasuredRegionExtentsTestCase` counts four line overflows where FOP reports three.
+`Docx4jHooksTestCase` counts 17 capabilities.
+
+**The gate** is the docx4j session's, as §7 describes. First the snapshot without the attribute: nothing moves.
+Then docx4j writes the attribute and drops its pre-pass where the capability is present. Each master's extents
+should equal the pre-pass's to the point, except where the pre-pass's doctored copy differs from the real header.
+Render time is measured, and nothing else should move.
