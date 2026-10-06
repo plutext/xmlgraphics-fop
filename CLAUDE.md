@@ -221,7 +221,8 @@ fallback), #111 FOP-3342 (shared default langsys), #112 FOP-3343 (kerning flag),
 spacing on the DP path), #114 FOP-3346 (selector drift), #115 FOP-2918 (surrogate pair), #116 FOP-3345
 (ToUnicode for substituted glyphs, stacked on #114 and #109), #117 FOP-3347 (format characters); and from
 before, #106 FOP-3328 and #107 FOP-3330. Since then: #118 FOP-2349 (`fop/CR-010`, stacked on #113), #119 FOP-1896
-(`fop/CR-015`), #120 FOP-3348 and #121 FOP-3349 (`fop/CR-011`, items 36 and 37), #122 FOP-3350 (`fop/CR-012`'s page
+(`fop/CR-015`), #120 FOP-3348 and #121 FOP-3349 (`fop/CR-011`, items 36 and 37; both merged to Apache `main`
+2026-10-05, the first of ours to land), #122 FOP-3350 (`fop/CR-012`'s page
 label; the page-number-zero option itself is not sent, Apache keeping to XSL). This session posts to ASF JIRA
 directly since 2026-10-05, on Jason's OK per item (see the memory note). The drafts under `docs/upstream/` are stamped with both numbers.
 If a reviewer asks for changes, work in the worktree at `../fop-upstream-wt`; when #114 and #109 merge,
@@ -252,7 +253,9 @@ rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits p
      Both are fixed on `2.11-docx4j.4` as `fop/CR-011` (merged 2026-10-04): 36's cause was a nested
      block's positions being wrapped twice when line breaking reran, and 37 was a null guard in the
      overflow report. Filed 2026-10-05: FOP-3348 (36, related to FOP-1912) and FOP-3349 (37), pull requests
-     #120 and #121.
+     #120 and #121, both merged to Apache `main` 2026-10-05. That `main` also carries FOP-3331, which puts a
+     block-container float in the flow (`docs/upstream/float-blockcontainer-in-flow.txt`, not filed): do not merge
+     `main` into the fork without fixing or reverting it, and gate the merge (CR-020 §6).
    - 20, 21 and 24 did not reproduce from their descriptions; they need docx4j's FO with its workaround
      off.
 4. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
