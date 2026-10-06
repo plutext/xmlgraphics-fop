@@ -125,3 +125,17 @@ against `trunk` in `../fop-upstream-wt` once the numbers exist; the float code i
   FOP ignores it on blocks; the docx4j session confirmed `clear="both"` makes no difference. With this change a
   table beside a float keeps its own width and may overlap the float; that is the FO's geometry, not a crash.
 - 561's 393pt band leaving page 15's lines unnarrowed: a third shape, not yet reproduced here.
+
+## 8. Gates (the docx4j session)
+
+**b170, 2026-10-07, PASS on the fix alone.** r14 (this branch at 850f8a8c5, the jar of §5) against b169 on r13,
+cand84 both sides, no text-box band: one document moves and nothing breaks.
+- 5075, in real2 and real-c2 alike: 0.7660 to 0.9362. Its one float is a floating table's band. On r13 the EPS
+  table after it went to page 2 (Word's page 1 has 42 lines; r13's had 27); on r14 page 1 has 43 lines and page
+  2 has 5, Word's distribution. Its stray four-line page 3 is there as before.
+- No other document moved in the four corpora, no probe moved, no render error on either renderer. The
+  scoreboard reads line parity and pages, so "unchanged" is at that resolution, not a pixel compare.
+- r14 also carries b467cdb37 (the hooks' warnings as FOP events, on `2.11-docx4j.5` since r13): nothing moved
+  for it either.
+
+Next there: b172, the text-box band back on, on r14, reading the `vml-box-beside` probes, 561 and 10855.
