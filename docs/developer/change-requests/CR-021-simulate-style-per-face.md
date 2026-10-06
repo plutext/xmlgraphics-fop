@@ -1,7 +1,8 @@
 # CR-021: simulated italic and bold as Word draws them, per face
 
-Status: IMPLEMENTED 2026-10-07 on branch `CR-021-simulate-style-per-face`, off `2.11-docx4j.5` at fed4a1830; the change
-is eb003c325. Full CI build: 3860 tests, 0 failures, checkstyle and spotbugs clean. Gate pending (renderer r15, §5). Taken
+Status: DONE 2026-10-07, gated PASS by the docx4j session (§9) and merged to `2.11-docx4j.5` by fast-forward
+(dbe0b7cf2; the change is eb003c325); unreleased. Full CI build: 3860 tests, 0 failures, checkstyle and spotbugs
+clean.
 by Jason the same day, to ship in `2.11-docx4j.5`. Registry key `fop/CR-021`. Capability `simulate-style-per-face`
 (§3.3). A fix, not a hook: FOP's `simulate-style` is wrong for any face that is already italic or bold, and its
 stroke is right at one size only. So it is upstream-bound (§6), and the code is the same on Apache `main`.
@@ -101,4 +102,18 @@ decompressed content stream:
 - on Carlito-Bold: `1 0 0.3333 -1 ... Tm` and no `Tr`: sheared, not stroked.
 
 Before the change all three were `2 Tr 0.31543 w` and sheared.
+
+## 9. Gate (the docx4j session), 2026-10-07
+
+Renderer r15, the jar of eb003c325 outside `~/.m2` (`~/fop-renderers/r15-CR-021-eb003c325/`, sha256 c5312afe...),
+read with `movers.py`, which shows moves under 0.02 line parity that the score log's list hides.
+- **(a) b174, docx4j unchanged, against b173 on r13: PASS.** The only mover is 5075, +8 lines in real2 and
+  real-c2, which is CR-020's (r15 carries it, r13 does not), as in its own gate b170; no render errors. In 2065's
+  traces every simulated bold is stroked at size / 35 (11, 13, 16, 22, 38.4 and 48pt), and the 13pt bold italic
+  is still the sheared regular face, docx4j declaring the regular file.
+- **(b) b175, docx4j declaring the italic file for (italic, bold) under `simulate-style-per-face`, against b174.**
+  The drawing is Word's: the probe's bold italic lines are Calibri-LightItalic, unsheared, stroked at 1/35 em,
+  and 2065's "Összeállítás:" likewise. But 13265 loses 5 lines (1.0000 to 0.9836), nothing else moving: the
+  italic face's advances lack Word's synthetic-bold spread (about 0.02pt a glyph), as b162 found. That spread is
+  docx4j's to model, so its declaration change is held until it carries it. CR-021 itself passes.
 

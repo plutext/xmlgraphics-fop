@@ -195,7 +195,10 @@ to 0.9622. 561 is docx4j's: Figure C's box is positioned relative to a paragraph
 page 14, so the box is drawn at y 1070, off the page, where Word keeps it on page 15 with the text beside it; a
 positioned box needs a page-fit rule in docx4j first (page parity 0.9078 to 0.8656). So the band stays out of
 docx4j for now, for 10855's `clear` (FOP) and 561's page fit (docx4j), and nothing on this branch changes for
-this gate. Recorded on the docx4j side in the Enterprise register.
+this gate. Recorded on the docx4j side in the Enterprise register. *Corrected 2026-10-07 by the docx4j session*
+(Enterprise 25ac4be), reading b172 with `movers.py`, which shows moves the score log's list hides: the
+`vml-box-beside` probes moved in the score too, portrait 0.8667 to 1.0000 and landscape 0.8000 to 1.0000; the rest
+of b172 stands (10855 -3 lines, to Word's 9 pages; 561 -6).
 
 ## 9. A flag bit shared with the artifact flag, 2026-10-07
 

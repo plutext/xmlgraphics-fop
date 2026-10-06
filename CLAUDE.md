@@ -207,8 +207,9 @@ in FOP, hook `measured-region-extents`, for docx4j CR-031 phase 5), gated PASS a
 from a review of `.5` (CR-017 §13, CR-018 §10), the hooks' warnings as FOP events (b467cdb37), and `fop/CR-020`
 (side floats, Enterprise CR-001 items 44 and 45, capability `side-float-edges`), gated PASS together in r14 and
 merged 2026-10-07 (ff8b5ce05); `fop/CR-019` (ActualText per cluster) proposed, §9 answered, not to be started
-until Jason says; the first item after `.5` ships is honouring `clear` after a side float (CR-020 §7); eighteen
-capabilities; draft notes in
+until Jason says; `fop/CR-021` (simulated italic and bold per face, Enterprise CR-001 item 46, capability
+`simulate-style-per-face`), gated PASS and merged 2026-10-07 (dbe0b7cf2); the first item after `.5` ships is
+honouring `clear` after a side float (CR-020 §7); nineteen capabilities; draft notes in
 `docs/release-notes/2.11-docx4j.5.md`.
 `2.11-docx4j.2` (2026-10-02) and `2.11-docx4j.1` (2026-09-25, tagged at `2f5030172`) are the earlier
 releases; `.3` never shipped. `docs/developer/releasing.md` is the runbook and records what each release
