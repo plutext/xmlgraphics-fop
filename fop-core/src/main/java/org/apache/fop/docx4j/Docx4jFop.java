@@ -178,6 +178,14 @@ public final class Docx4jFop {
      */
     public static final String SIDE_FLOAT_EDGES = "side-float-edges";
 
+    /**
+     * A font entry with {@code simulate-style} synthesises a style as Word does, per face: an italic triplet is
+     * sheared only where the face's italic angle is 0, a bold one stroked only where the face's weight class is
+     * below 700, and the stroke is 1/35 em, not a fixed 0.31543pt. So a family's italic face can be declared for
+     * its bold italic and is drawn emboldened, not slanted twice (Enterprise CR-001 item 46, fop/CR-021).
+     */
+    public static final String SIMULATE_STYLE_PER_FACE = "simulate-style-per-face";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -200,6 +208,7 @@ public final class Docx4jFop {
         caps.add(PAGE_NUMBER_RESTART);
         caps.add(MEASURED_REGION_EXTENTS);
         caps.add(SIDE_FLOAT_EDGES);
+        caps.add(SIMULATE_STYLE_PER_FACE);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 
