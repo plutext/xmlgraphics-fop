@@ -367,3 +367,5 @@ branch `CR-017-018-review`:
 - **A master may be measured one page early** (CR-017 §13, the page past a list's end). The measurement depends on
   no page's content, retrieving no marker and registering nothing, so the extents are the same.
 
+Gated with `fop/CR-020` in renderer r14 (b170, 2026-10-07, against r13): nothing moved but 5075, CR-020's own
+mover, so these changes moved nothing (CR-020 §8).

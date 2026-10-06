@@ -1,8 +1,13 @@
 # CR-020: a side float ends at the break before the first line below its foot, keeps the space there, and never ends inside a table
 
-Status: IMPLEMENTED 2026-10-07 on branch `CR-020-float-edge-space` (from `2.11-docx4j.5` at 09c7bc857), not
-merged, not gated. The fop-core suite passes on the branch (3853 tests, 0 failures; checkstyle clean), and the
-new layout test fails without the change. Registry key `fop/CR-020`. A fix, not a hook, so upstream-bound: two
+Status: IMPLEMENTED 2026-10-07 on branch `CR-020-float-edge-space`, gated PASS by the docx4j session (b170, and
+b172 for the text-box band; §8), not merged. The branch was cut at 09c7bc857, the head of `CR-017-018-review`,
+not of `2.11-docx4j.5` (still e0361ee62): the review session's commits were made on that branch, checked out in
+the shared tree, as if on `.5`. So this branch also carries the review fixes and the hooks' warnings as events
+(00cd6a23e, b467cdb37: CR-017 §13, CR-018 §10) and the CR-016 §7 and CR-019 documents, and a merge brings them
+too. The fop-core suite passes on the branch (3853 tests, 0 failures; checkstyle clean), and the new layout test
+fails without the change. The full CI build, re-run by the fork session on c38749555 before a merge: 3855 tests,
+0 failures, checkstyle and spotbugs clean. Registry key `fop/CR-020`. A fix, not a hook, so upstream-bound: two
 JIRA drafts, `docs/upstream/float-edge-after-space.txt` and `docs/upstream/float-edge-inside-table.txt`, not
 filed. No capability: docx4j has no workaround on either item, and the fix changes nothing unless a side
 float's end falls at a space or inside a table.
@@ -144,8 +149,9 @@ cand84 both sides, no text-box band: one document moves and nothing breaks.
   2 has 5, Word's distribution. Its stray four-line page 3 is there as before.
 - No other document moved in the four corpora, no probe moved, no render error on either renderer. The
   scoreboard reads line parity and pages, so "unchanged" is at that resolution, not a pixel compare.
-- r14 also carries b467cdb37 (the hooks' warnings as FOP events, on `2.11-docx4j.5` since r13): nothing moved
-  for it either.
+- r14 also carries 00cd6a23e and b467cdb37 (the review fixes and the hooks' warnings as FOP events, CR-017 §13
+  and CR-018 §10), which are on this branch's base, not on `2.11-docx4j.5` and not in r13 (3e5381d6f): nothing
+  moved for them either.
 
 **b172, 2026-10-07, the text-box band back on, on r14, against b170: the fix does what it should.** No render
 error in any corpus (on r13 the band made 10855 throw). The six `vml-box-beside` probes match Word line for

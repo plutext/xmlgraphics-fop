@@ -636,3 +636,5 @@ and the rest on CR-018's (its §10). Each was checked against the code. On branc
   review found no harm, and neither did this check. With CR-018, a master can be measured slightly before its
   first real use, which gives the same extents. Left as it is.
 
+Gated with `fop/CR-020` in renderer r14 (b170, 2026-10-07, against r13): nothing moved but 5075, CR-020's own
+mover, so these changes moved nothing (CR-020 §8).
