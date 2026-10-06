@@ -173,12 +173,42 @@ that ignores ActualText reads what it reads today. Every renderer other than PDF
   marks, an Indic line and an Arabic line. Word's PDF gives the target extraction text per cluster. Yes, please
   write it; it is also the sample for test 5's four readers.
 
+**Measured by the docx4j session, 2026-10-07** (four corpora, 450 distinct documents; base plus combining-mark
+clusters counted from the docx text, `w:t` only, hidden text not excluded):
+- Cyrillic: 2 documents, 310 clusters (3489 has 309 decomposed й as и + U+0306; 3310 has 1). Bengali: 1 document
+  (11334), 27. Syriac: 1 document (11334), 4. Devanagari: 1 document (394), 4. Latin, Greek, Arabic and Hebrew: none;
+  Arabic text totals 93 characters in 3 documents. The corpora are European.
+- No run in any corpus asks for ligatures, so docx4j's `-ccmp` covers every precomposed Latin, Greek and Cyrillic
+  letter there (147,074 Latin, 20,228 Cyrillic, 8,511 Greek).
+- Text layers against Word's (mark-bearing words, NFC): 3489 agrees, its 309 decomposed й in order; 394 has one
+  mis-order, "है," read as ह , ै (U+0939 U+002C U+0948), the vowel sign after the comma, where Word reads "है" (the
+  mechanism is not read yet: `DefaultScriptProcessor` moves a mark before its base, not after a following glyph,
+  so this is something else to read when implementing); 11334 differs on many words, but Word's own text layer
+  is wrong there too (Bengali "রাখনেে"), so Word is no reference for logical order on that document.
+- So one confirmed instance in the corpora, and the file-size risk of tier A is negligible on this sample. The
+  real exposure is non-European documents, which these corpora do not hold. Per-document detail is in the docx4j
+  session's scratchpad.
+
+**The probe**, `actualtext-clusters.docx` (docx4j a7b598481, on the share at `X:\fidelity\corpus\`, indexed in
+`corpus.txt`; awaiting Jason's Word run). Fourteen cases, each on the line after a Calibri label: L1 to L3 Latin
+precomposed, decomposed and mixed in Cambria; L4 and L5 Latin decomposed in Calibri and Times New Roman; L6
+Vietnamese stacked marks; L7 and L8 Greek precomposed and decomposed; L9 Cyrillic decomposed (3489's shape); L10
+and L11 Devanagari in Nirmala UI with a pre-base vowel sign, a conjunct and 394's "है,"; L12 Bengali with pre-base
+and two-part vowel signs and a precomposed য়; L13 Arabic with harakat and lam-alef; L14 Hebrew with niqqud.
+docx4j's render on r13 (cand79) already shows the shapes this CR is for: L2, L3, L6 and L8 read marks ahead of
+their base ("r ́esumé", "σ ́ημερα"); L10 and L11 the pre-base i-matra first ("िहन्दी") and "ह,ै"; L12 the
+precomposed য় split with its nukta first ("কোথা ়য"); L13 and L14 marks displaced. L1, L7 and L9 read right. Two
+docx4j-side findings came with it, recorded in the Enterprise register (8c055aa): a span holding a mark keeps
+`ccmp`, so a precomposed é in it is decomposed and mis-ordered too (L3; the gap 3e05db3af leaves, which this CR
+closes); and Carlito, standing in for Calibri, has no combining marks, so FOP draws its missing glyph (L4).
+
 ## 7. Gate (the docx4j session's)
 
 ActualText changes only the text layer, so a pass is: page rasters identical on every document; the harness's
 scores unmoved (it pairs by PDFBox's position sort, which already reads these clusters right); and a new
 stream-order extraction check (`pdftotext` and `mutool`) on the affected documents and the probe reading each
-cluster in logical order. Also recorded: PDF size before and after per affected document, and the probe's
+cluster in logical order. The target is the source text in logical order; Word's PDF is the check where it
+agrees, and not the reference where it is wrong itself (11334's Bengali, §6). Also recorded: PDF size before and after per affected document, and the probe's
 extraction on the four readers.
 
 ## 8. Upstream
