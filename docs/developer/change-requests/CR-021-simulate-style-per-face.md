@@ -117,3 +117,10 @@ read with `movers.py`, which shows moves under 0.02 line parity that the score l
   italic face's advances lack Word's synthetic-bold spread (about 0.02pt a glyph), as b162 found. That spread is
   docx4j's to model, so its declaration change is held until it carries it. CR-021 itself passes.
 
+  *Corrected 2026-10-07 by the docx4j session:* 13265's -5 was not the synthetic-bold spread. Its bold italic is
+  Book Antiqua, which Word draws in the real BookAntiqua-BoldItalic face, and docx4j's `MicrosoftFonts.xml`
+  listed only Book Antiqua's regular file (the only one of its 91 entries missing faces), so docx4j treated it as
+  a family without a bold face and sent its bold italic down the simulate path. With the entry fixed, 13265 is
+  on Word's lines again (304 of 305). docx4j gates the entry fix, then the italic-file declaration on top of it.
+  CR-021's PASS is unaffected.
+
