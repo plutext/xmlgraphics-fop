@@ -98,11 +98,19 @@ before). It fails on `2.11-docx4j.5` without the change and passes with it; the 
 
 ## 5. docx4j
 
-No docx4j change is needed; the fix reaches docx4j's documents through the fork. The `FLOAT_RESTART` hand-off
-is in `FlowLayoutManager.getNextKnuthElements(context, alignment, restartPosition, restartLM)`; if docx4j's
-`WordFlowLayoutManager` overrides that method, the space-before half of item 44 (step 4 of §2) does not reach
-its path, and the other three steps do. The docx4j session should say which. The gate: the `vml-box-beside`
-probes and 561, 10855 with `textBesideBand` back on, against b167; rasters elsewhere unchanged.
+No docx4j change is needed; the fix reaches docx4j's documents through the fork. The docx4j session checked its
+managers against the diff (2026-10-07): `WordFlowLayoutManager` overrides only the two-argument
+`getNextKnuthElements`, calling super, so the restart form and the `FLOAT_RESTART` hand-off are inherited;
+`WordBlockLayoutManager` overrides only `initialize()` and `createNextChildLMs()`, so the `BlockLayoutManager` and
+`BlockStackingLayoutManager` changes are inherited; `WordListItemLayoutManager` overrides the restart form but
+calls super first; `WordLineLayoutManager` is a copy of `LineLayoutManager`, which this change does not touch (a
+later revision touching it would need porting there). Enterprise CR-001 items 44 and 45 name this branch and
+the drafts; 45 is marked as item 20 reproduced.
+
+The gate (docx4j session): renderer r14 built from this branch at 850f8a8c5, a fop-core jar outside `~/.m2` at
+`~/fop-renderers/r14-CR-020-850f8a8c5/docx4j-fo-renderer-core-2.11-docx4j.5-SNAPSHOT.jar` (sha256 9b4022960f1e...),
+with `textBesideBand` back on, the corpora and probes against b169 on r13: the `vml-box-beside` probes, 561 and
+10855 read; everything else checked for unchanged rasters.
 
 ## 6. Upstream
 
