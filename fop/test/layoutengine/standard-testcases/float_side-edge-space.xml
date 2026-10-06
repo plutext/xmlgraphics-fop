@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: a side float's edge at a space between paragraphs, and inside a table (fop/CR-020). -->
+<testcase>
+  <info>
+    <p>
+      A side float 20pt tall anchored in a 16pt heading line. First sequence: the heading's space-after carries
+      the next paragraph's first line below the float's foot, so that line is full width, and the space is kept.
+      Second: the same with the space on the next paragraph as space-before. Third: a 20pt heading line reaches
+      the foot itself, and the space after it is still kept. Fourth: a 40pt float reaching into a table, which
+      cannot be laid out again from a row: the float ends after the table, and the paragraph after it is full
+      width. Fifth: no space, so the first line after the heading overlaps the float and is narrowed, as before.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:layout-master-set><fo:simple-page-master master-name="A4" page-width="595pt" page-height="842pt" margin="72pt"><fo:region-body/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="10pt"><fo:float float="left"><fo:block-container width="300pt" height="20pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:block>a0 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 </fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block><fo:float float="left"><fo:block-container width="300pt" height="20pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:block space-before="10pt">b0 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 </fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block line-height="20pt" space-after="10pt"><fo:float float="left"><fo:block-container width="300pt" height="20pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:block>c0 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 </fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="14pt">
+<fo:block space-after="10pt"><fo:float float="right"><fo:block-container width="300pt" height="40pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:table table-layout="fixed" width="200pt" border-collapse="collapse"><fo:table-column column-width="200pt"/><fo:table-body><fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>cell1</fo:block></fo:table-cell></fo:table-row><fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>cell2</fo:block></fo:table-cell></fo:table-row><fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>cell3</fo:block></fo:table-cell></fo:table-row><fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>cell4</fo:block></fo:table-cell></fo:table-row><fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>cell5</fo:block></fo:table-cell></fo:table-row></fo:table-body></fo:table>
+<fo:block>d0 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 </fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block><fo:float float="left"><fo:block-container width="300pt" height="20pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:block>e0 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 </fo:block>
+</fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <eval expected="5" xpath="count(//pageViewport)"/>
+    <!-- 1: the line after the space is full width, below the float; the space is kept -->
+    <eval expected="451000" xpath="//word[.='a0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="10000" xpath="((//pageViewport)[1]//word[.='Heading'])[1]/ancestor::block[1]/@space-after"/>
+    <!-- 2: the same with space-before on the paragraph after the float -->
+    <eval expected="451000" xpath="//word[.='b0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="10000" xpath="//word[.='b0']/ancestor::block[1]/@space-before"/>
+    <!-- 3: the heading line reaches the foot itself; the space after it is still kept -->
+    <eval expected="451000" xpath="//word[.='c0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="10000" xpath="((//pageViewport)[3]//word[.='Heading'])[1]/ancestor::block[1]/@space-after"/>
+    <!-- 4: a float into a table: laid out, five rows, the paragraph after the table full width -->
+    <eval expected="5" xpath="count((//pageViewport)[4]//word[starts-with(., 'cell')])"/>
+    <eval expected="451000" xpath="//word[.='d0']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 5: no space: the line after the heading overlaps the float and is narrowed, as before -->
+    <eval expected="151000" xpath="//word[.='e0']/ancestor::lineArea[1]/@ipd"/>
+  </checks>
+</testcase>

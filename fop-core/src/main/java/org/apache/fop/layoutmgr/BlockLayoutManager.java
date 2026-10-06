@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: a block read again after a side float's edge keeps its resolved space-before
+ * (fop/CR-020). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -109,7 +113,10 @@ public class BlockLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
     @Override
     public List<ListElement> getNextKnuthElements(LayoutContext context, int alignment, Stack lmStack,
             Position restartPosition, LayoutManager restartAtLM) {
+        // read again after a side float's edge: the space-before resolved in the list before is kept (fop/CR-020)
+        MinOptMax keptSpaceBefore = context.isFloatRestart() ? effSpaceBefore : null;
         resetSpaces();
+        effSpaceBefore = keptSpaceBefore;
         return super.getNextKnuthElements(
                 context, alignment, lmStack, restartPosition, restartAtLM);
     }

@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the FLOAT_RESTART flag, a block read again after a side float's edge keeping its resolved
+ * space-before (fop/CR-020). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -49,6 +53,13 @@ public final class LayoutContext {
     public static final int LAST_AREA = 0x08;
 
     public static final int RESOLVE_LEADING_SPACE = 0x10;
+
+    /**
+     * The element list is being read again from a block after a side float's edge (fop/CR-020). The
+     * float's edge is no break in the flow, so the block's space-before, resolved in the list before,
+     * is kept and not emitted again. Set by the page breaker for the restarted block only.
+     */
+    public static final int FLOAT_RESTART = 0x20;
 
     private static final int TREAT_AS_ARTIFACT = 0x20;
 
@@ -314,6 +325,14 @@ public final class LayoutContext {
     /** @return true if resolve leading space is set */
     public boolean resolveLeadingSpace() {
         return ((this.flags & RESOLVE_LEADING_SPACE) != 0);
+    }
+
+    /**
+     * @return whether the element list is being read again from a block after a side float's edge
+     * (fop/CR-020)
+     */
+    public boolean isFloatRestart() {
+        return ((this.flags & FLOAT_RESTART) != 0);
     }
 
     /** @param space trailing space */

@@ -17,7 +17,9 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook page-master-by-content, a page's height asked for with the part of the page-sequence that
- * owns it, carried on the node that starts it (fop/CR-017). See README.md, "Changes from Apache FOP 2.11". */
+ * owns it, carried on the node that starts it (fop/CR-017); and a side float ends at the break before the first
+ * line lying below its foot, the space between paragraphs counted, and not inside a table, which cannot be read
+ * again from there (fop/CR-020). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -111,6 +113,8 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     private boolean handlingStartOfFloat;
     private boolean handlingEndOfFloat;
     private int floatHeight;
+    /** The content height at the float's edge, up to the first box below the float (fop/CR-020). */
+    private int floatEdgeWidth;
     private KnuthNode bestFloatEdgeNode;
     private FloatPosition floatPosition;
     private int previousFootnoteListIndex = -2;
@@ -439,6 +443,22 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         }
     }
 
+    /** The content height as if the break were just before the next box, as forceNode measures a node. */
+    private int widthUpToNextBox(int elementIdx) {
+        int width = totalWidth;
+        for (int i = elementIdx; i < par.size(); i++) {
+            KnuthElement tempElement = getElement(i);
+            if (tempElement.isBox()) {
+                break;
+            } else if (tempElement.isGlue()) {
+                width += tempElement.getWidth();
+            } else if (tempElement.isForcedBreak() && i != elementIdx) {
+                break;
+            }
+        }
+        return width;
+    }
+
     /**
      * Overridden to consider penalties with value {@link KnuthElement#INFINITE}
      * as legal break-points, if the current keep-context allows this
@@ -562,8 +582,67 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 //nop
             }
         }
+        boolean edgeDeferred = false;
+        if (floatHeight != 0) {
+            // A side float ends at the first legal break after which the content lies wholly below the
+            // float's foot: the content height before the break plus the glue up to the next box, the space
+            // between two paragraphs included. Without this, a space carrying the next line below the foot
+            // left that line laid out beside the float, since only handleBox tested the foot. The height at
+            // the edge is kept for deactivateNode, so the content after the float starts below that space
+            // (fop/CR-020).
+            int edgeWidth = widthUpToNextBox(elementIdx);
+            if (!handlingEndOfFloat && edgeWidth >= floatHeight) {
+                handlingEndOfFloat = true;
+            }
+            if (handlingEndOfFloat) {
+                floatEdgeWidth = edgeWidth;
+                // The content after the edge is read again from the layout manager there, which a table
+                // cannot do (it is not restartable): a break inside one is not the edge, which waits for the
+                // first legal break after it. The rows below the float keep the table's width, which the
+                // table set once for all its rows, so nothing is drawn differently (fop/CR-020).
+                LayoutManager inside = nonRestartableLMOfNextBox(elementIdx);
+                edgeDeferred = inside != null && inside == nonRestartableLMOfPreviousBox(elementIdx);
+            }
+        }
+        if (edgeDeferred) {
+            handlingEndOfFloat = false;
+        }
         super.considerLegalBreak(element, elementIdx);
+        if (edgeDeferred) {
+            handlingEndOfFloat = true;
+        }
         newFootnotes = false;
+    }
+
+    private LayoutManager nonRestartableLMOfNextBox(int elementIdx) {
+        for (int i = elementIdx; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox()) {
+                return nonRestartableLM(e.getPosition());
+            }
+        }
+        return null;
+    }
+
+    private LayoutManager nonRestartableLMOfPreviousBox(int elementIdx) {
+        for (int i = elementIdx - 1; i >= 0; i--) {
+            KnuthElement e = getElement(i);
+            if (e.isBox()) {
+                return nonRestartableLM(e.getPosition());
+            }
+        }
+        return null;
+    }
+
+    /** The outermost layout manager in a position's chain that cannot be restarted, or null. */
+    private static LayoutManager nonRestartableLM(Position position) {
+        for (Position p = position; p != null; p = p.getPosition()) {
+            LayoutManager lm = p.getLM();
+            if (lm != null && !lm.isRestartable()) {
+                return lm;
+            }
+        }
+        return null;
     }
 
     /** {@inheritDoc} */
@@ -1426,7 +1505,8 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     protected void deactivateNode(KnuthNode node, int line) {
         super.deactivateNode(node, line);
         if (handlingEndOfFloat) {
-            floatHeight = totalWidth;
+            // the height at the edge, the glue before the next box included (fop/CR-020)
+            floatHeight = Math.max(totalWidth, floatEdgeWidth);
         }
     }
 

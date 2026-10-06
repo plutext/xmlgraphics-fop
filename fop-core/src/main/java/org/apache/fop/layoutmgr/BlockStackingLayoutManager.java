@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: a block read again after a side float's edge keeps its resolved space-before
+ * and emits none (fop/CR-020). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -405,7 +409,13 @@ public abstract class BlockStackingLayoutManager extends AbstractLayoutManager
     protected void addFirstVisibleMarks(List<ListElement> elements,
             LayoutContext context, int alignment) {
         if (!firstVisibleMarkServed) {
-            addKnuthElementsForSpaceBefore(elements, alignment);
+            if (context.isFloatRestart()) {
+                // read again after a side float's edge: the space-before was resolved in the list before,
+                // and the edge is no break, so it is kept as resolved and not emitted again (fop/CR-020)
+                context.setFlags(LayoutContext.FLOAT_RESTART, false);
+            } else {
+                addKnuthElementsForSpaceBefore(elements, alignment);
+            }
             context.updateKeepWithPreviousPending(getKeepWithPrevious());
         }
         addKnuthElementsForBorderPaddingBefore(elements, !firstVisibleMarkServed);

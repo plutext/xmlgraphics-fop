@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook page-master-by-content, each page made for the part of the page-sequence that owns it
- * (fop/CR-017). See README.md, "Changes from Apache FOP 2.11". */
+ * (fop/CR-017); and the space between paragraphs at a side float's edge is kept, the edge being no break in the
+ * flow (fop/CR-020). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -180,8 +181,21 @@ public class PageBreaker extends AbstractBreaker {
             pageProvider.setStartOfNextElementList(pslm.getCurrentPageNum(), pslm.getCurrentPV()
                     .getCurrentSpan().getCurrentFlowIndex(), this.spanAllActive);
         }
-        int next = super.getNextBlockList(childLC, nextSequenceStartsOn, positionAtIPDChange,
-                restartLM, firstElements);
+        // a list read again from a block after a side float's edge: that block keeps the space-before the
+        // list before resolved, since the edge is no break in the flow (fop/CR-020)
+        boolean floatRestart = handlingFloat() && positionAtIPDChange != null;
+        if (floatRestart) {
+            childLC.setFlags(LayoutContext.FLOAT_RESTART, true);
+        }
+        int next;
+        try {
+            next = super.getNextBlockList(childLC, nextSequenceStartsOn, positionAtIPDChange,
+                    restartLM, firstElements);
+        } finally {
+            if (floatRestart) {
+                childLC.setFlags(LayoutContext.FLOAT_RESTART, false);
+            }
+        }
         ownPagesOfNewList();
         return next;
     }
@@ -947,6 +961,18 @@ public class PageBreaker extends AbstractBreaker {
         // The following is needed by SpaceResolver.performConditionalsNotification()
         // further down as there may be important Position elements in the element list trailer
         int notificationEndElementIndex = endElementIndex;
+        // A float's edge is no break in the flow: the content goes on below the float on the same page, so
+        // the space between the paragraph beside the float and the one below it is kept, not discarded as
+        // at a page break. The notification runs to the last glue before the next box, which tells the edge's
+        // break position it is no break and resolves that space (fop/CR-020).
+        for (int i = endElementIndex + 1; i < effectiveList.size(); i++) {
+            KnuthElement le = (KnuthElement) effectiveList.get(i);
+            if (le.isBox() || le.isForcedBreak()) {
+                break;
+            } else if (le.isGlue()) {
+                notificationEndElementIndex = i;
+            }
+        }
 
         // ignore the last elements added by the
         // PageSequenceLayoutManager
