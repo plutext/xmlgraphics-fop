@@ -1,0 +1,55 @@
+JIRA draft, NOT POSTED. fop/CR-021, Enterprise CR-001 §6.6 item 46. Reproduced on Apache main at 5be8c69b6
+(2026-10-07): the same code as the fork's before the change (PDFPainter.startSimulateStyle). Branch
+FOP-simulate-style-per-face in ../fop-upstream-wt (8cf0e671a), one commit on main; the fop-core suite gives 3679
+tests and 0 failures, and checkstyle is clean. Rename the branch and the commit's FOP-NNNN once filed. Component
+renderer/pdf, Affects 2.11 and main, Bug, Minor. The text from "Summary" on is what would be posted.
+
+Summary
+-------
+simulate-style slants an italic face again and strokes a bold face again, and its stroke width does not scale
+with the font size
+
+Description
+-----------
+A font entry with simulate-style="true" makes FOP synthesise the style a triplet asks for from the face the entry
+registers: PDFPainter.startSimulateStyle strokes a triplet of weight 700 (2 Tr) with a 0.31543pt line, and shears
+a triplet of style italic by 0.3333 in the text matrix. It decides from the entry's flag and the triplet alone,
+never from the face, although FOP has the face's italic angle (post table) and weight class (OS/2) in CustomFont.
+So:
+
+- an italic face registered for a bold italic triplet, as a family with an italic face and no bold one needs, is
+  slanted a second time on top of its own slant;
+- a bold face registered for a bold italic triplet, as a family with a bold face and no bold italic one needs, is
+  stroked a second time;
+- the stroke is a fixed 0.31543pt whatever the size, which is about right at 11pt only: at 22pt it is half the
+  weight it should be, at 8pt about 40% too heavy.
+
+Configuration and FO (Carlito, 24pt):
+
+{noformat}
+<font simulate-style="true" embed-url="file:///usr/share/fonts/carlito/Carlito-Italic.ttf"><font-triplet name="ItalFace" style="italic" weight="bold"/></font>
+<font simulate-style="true" embed-url="file:///usr/share/fonts/carlito/Carlito-Regular.ttf"><font-triplet name="RegFace" style="italic" weight="bold"/></font>
+<font simulate-style="true" embed-url="file:///usr/share/fonts/carlito/Carlito-Bold.ttf"><font-triplet name="BoldFace" style="italic" weight="bold"/></font>
+
+<fo:flow flow-name="xsl-region-body" font-size="24pt" font-style="italic" font-weight="bold">
+  <fo:block font-family="ItalFace">Italic face</fo:block>
+  <fo:block font-family="RegFace">Regular face</fo:block>
+  <fo:block font-family="BoldFace">Bold face</fo:block>
+</fo:flow>
+{noformat}
+
+On main, the content stream draws all three the same way: 2 Tr 0.31543 w, and 1 0 0.3333 -1 ... Tm. The italic
+face is slanted twice and the bold face stroked twice.
+
+Fix (pull request to follow)
+----------------------------
+In PDFPainter.startSimulateStyle and endSimulateStyle: shear an italic triplet only where the face's italic angle
+is 0; stroke a bold triplet only where the face's weight class is below 700 (an unknown weight, 0, counts as not
+bold, as now); and stroke at the font size / 35. A stroke of 1/35 em is what Microsoft Word draws for a synthetic
+bold, measured at 7.92 to 48pt in Word's own PDFs, and at 11.04pt it is the present 0.31543. Word also never
+shears a face that is already italic, and its synthetic italic is the same 0.3333 shear FOP uses.
+
+Measured on main with the change, the FO above: the italic face 2 Tr 0.68571 w and 1 0 0 -1 ... Tm (stroked,
+not slanted again); the regular face stroked and sheared; the bold face sheared, not stroked. Only the painted
+glyphs change, never layout. PDFPainterTestCase gains three cases (the italic face, the bold face, the stroke at
+22.08pt), each failing before. The fop-core suite passes (3679 tests) and checkstyle is clean.
