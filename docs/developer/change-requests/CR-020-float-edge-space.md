@@ -144,8 +144,15 @@ Branches in `../fop-upstream-wt`, on `main` at 5be8c69b6:
   `float_edge-after-space.xml` (plain-block floats); 3682 tests, 0 failures, checkstyle clean. It carries
   `FLOAT_RESTART` on its own bit (§9).
 
-Both tests fail without their change. The commits say `FOP-NNNN` until the issues are filed; the branches are
-then renamed for their numbers.
+Both tests fail without their change.
+
+**Filed 2026-10-07, at Jason's word** (posted as jharrop by the fork session): FOP-3354 (item 45) and FOP-3355
+(item 44), related, both affecting 2.11 and `main`. Measured on 2.11 too: the fork's 2.11-docx4j.1 jar, whose float
+code is Apache 2.11's, narrows the line (x 297.3), loses the space (94.6) and throws. Branches renamed `FOP-3354`
+(912b5cbaa) and `FOP-3355` (e72977640, stacked), trees identical to the ones built. Pull requests
+[#123](https://github.com/apache/xmlgraphics-fop/pull/123) and [#124](https://github.com/apache/xmlgraphics-fop/pull/124),
+#124 stacked on #123, to be rebased to its one commit when #123 merges. FOP-3331's regression filed as FOP-3353,
+"is broken by" FOP-3331.
 
 ## 7. Not addressed
 

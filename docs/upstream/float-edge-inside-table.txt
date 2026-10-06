@@ -1,4 +1,6 @@
-JIRA draft, NOT POSTED. fop/CR-020, Enterprise CR-001 §6.6 item 45 (the signature item 20 recorded in 2026-09).
+JIRA, POSTED 2026-10-07 by the fork session as jharrop, at Jason's word: FOP-3354 (https://issues.apache.org/jira/browse/FOP-3354),
+the text from "Summary" on in JIRA markup, one line per paragraph; pull request https://github.com/apache/xmlgraphics-fop/pull/123
+(branch FOP-3354, text in ../fop-upstream-prs/FOP-3354.md). fop/CR-020, Enterprise CR-001 §6.6 item 45 (the signature item 20 recorded in 2026-09).
 Reproduced on Apache main at 5be8c69b6 (2026-10-07). Branch FOP-float-edge-inside-table in ../fop-upstream-wt
 (b310a36ff), one commit on main; the fop-core suite gives 3679 tests and 0 failures, and checkstyle is clean.
 Reproduction: docs/developer/repro/float-edge-inside-table.fo (the fork's form, a block-container float; on main

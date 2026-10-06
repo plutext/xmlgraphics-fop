@@ -1,4 +1,5 @@
-JIRA draft, NOT POSTED. A regression on Apache main from FOP-3331, found by the fork session 2026-10-07 while
+JIRA, POSTED 2026-10-07 by the fork session as jharrop, at Jason's word: FOP-3353 (https://issues.apache.org/jira/browse/FOP-3353),
+linked "is broken by" FOP-3331; the text from "Summary" on in JIRA markup, one line per paragraph. No pull request. A regression on Apache main from FOP-3331, found by the fork session 2026-10-07 while
 reproducing fop/CR-020's two float defects on main. Not in 2.11 or in the fork: it arrives with the next merge of
 main into 2.11-docx4j.N. Committed docx4j puts an fo:block in every side float, which is unaffected (the docx4j
 session's correction of a first claim that its floats were block-containers); a text-box band placing a

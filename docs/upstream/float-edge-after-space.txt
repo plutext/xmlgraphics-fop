@@ -1,4 +1,6 @@
-JIRA draft, NOT POSTED. fop/CR-020, Enterprise CR-001 §6.6 item 44. Reproduced on Apache main at 5be8c69b6
+JIRA, POSTED 2026-10-07 by the fork session as jharrop, at Jason's word: FOP-3355 (https://issues.apache.org/jira/browse/FOP-3355),
+the text from "Summary" on in JIRA markup, one line per paragraph; pull request https://github.com/apache/xmlgraphics-fop/pull/124, stacked on #123
+(branch FOP-3355, text in ../fop-upstream-prs/FOP-3355.md). fop/CR-020, Enterprise CR-001 §6.6 item 44. Reproduced on Apache main at 5be8c69b6
 (2026-10-07). Branch FOP-float-edge-after-space in ../fop-upstream-wt (74185c37f), stacked on
 FOP-float-edge-inside-table (both touch PageBreakingAlgorithm.considerLegalBreak); the fop-core suite gives 3682
 tests and 0 failures, and checkstyle is clean. Reproduction: docs/developer/repro/float-edge-after-space.fo (the
