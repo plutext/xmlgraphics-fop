@@ -171,6 +171,13 @@ public final class Docx4jFop {
      */
     public static final String MEASURED_REGION_EXTENTS = "measured-region-extents";
 
+    /**
+     * A side float ends at the break before the first line lying wholly below its foot, the space there counted
+     * and kept, and its end never falls inside a table, where FOP threw (Enterprise CR-001 items 44 and 45,
+     * fop/CR-020). Content set beside a float, as docx4j's text-box band is, depends on it.
+     */
+    public static final String SIDE_FLOAT_EDGES = "side-float-edges";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -192,6 +199,7 @@ public final class Docx4jFop {
         caps.add(PAGE_MASTER_BY_CONTENT);
         caps.add(PAGE_NUMBER_RESTART);
         caps.add(MEASURED_REGION_EXTENTS);
+        caps.add(SIDE_FLOAT_EDGES);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

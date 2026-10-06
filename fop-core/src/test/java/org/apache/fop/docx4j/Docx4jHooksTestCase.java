@@ -57,7 +57,8 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.PAGE_MASTER_BY_CONTENT));
         assertTrue(Docx4jFop.has(Docx4jFop.PAGE_NUMBER_RESTART));
         assertTrue(Docx4jFop.has(Docx4jFop.MEASURED_REGION_EXTENTS));
-        assertEquals(17, Docx4jFop.capabilities().size());
+        assertTrue(Docx4jFop.has(Docx4jFop.SIDE_FLOAT_EDGES));
+        assertEquals(18, Docx4jFop.capabilities().size());
     }
 
     @Test

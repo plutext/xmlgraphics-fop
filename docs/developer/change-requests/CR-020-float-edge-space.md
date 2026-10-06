@@ -9,8 +9,10 @@ too. The fop-core suite passes on the branch (3853 tests, 0 failures; checkstyle
 fails without the change. The full CI build, re-run by the fork session on c38749555 before a merge: 3855 tests,
 0 failures, checkstyle and spotbugs clean. Registry key `fop/CR-020`. A fix, not a hook, so upstream-bound: two
 JIRA drafts, `docs/upstream/float-edge-after-space.txt` and `docs/upstream/float-edge-inside-table.txt`, not
-filed. No capability: docx4j has no workaround on either item, and the fix changes nothing unless a side
-float's end falls at a space or inside a table.
+filed. The fix changes nothing unless a side float's end falls at a space or inside a table. Capability
+`side-float-edges`, added 2026-10-07 at the docx4j session's request: docx4j has no workaround on either item, but
+its text-box band, which sets content beside a float, depends on both (without item 45's fix a table after the
+band crashes FOP), so it gates the band on the capability rather than on the version.
 
 Requested by the docx4j session (docx4j-13) on 2026-10-07, two findings measured there on r13 and reproduced
 here on plain FOP without docx4j's layout managers:
