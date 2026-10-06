@@ -166,3 +166,17 @@ page 14, so the box is drawn at y 1070, off the page, where Word keeps it on pag
 positioned box needs a page-fit rule in docx4j first (page parity 0.9078 to 0.8656). So the band stays out of
 docx4j for now, for 10855's `clear` (FOP) and 561's page fit (docx4j), and nothing on this branch changes for
 this gate. Recorded on the docx4j side in the Enterprise register.
+
+## 9. A flag bit shared with the artifact flag, 2026-10-07
+
+Found by the fork session while porting the change to Apache `main`: `LayoutContext.FLOAT_RESTART` was `0x20`, the bit
+of the private `TREAT_AS_ARTIFACT`, in the same `flags` field. So setting the one set the other. By reading, no path
+crossed today: `FLOAT_RESTART` is set and read while element lists are built, on contexts made fresh for each child
+(`LayoutContext.newInstance` in `FlowLayoutManager` and `BlockStackingLayoutManager`), and the artifact flag is set
+and read while areas are added (repeated table headers and footers in tagged PDF). But `offspringOf` copies the
+artifact bit to a child, and any later code that crossed the phases would have marked content after a float's
+edge as an artifact, out of the structure tree, or dropped a repeated header's spaces. `FLOAT_RESTART` is now
+`0x40`, a bit of its own. `LayoutContextFlagsTestCase` checks the two are independent and fails without the change.
+The float tests and the full build pass (3857 tests, 0 failures, checkstyle and spotbugs clean). Nothing docx4j
+renders moves; tagged output, which docx4j's users need, is where it could have.
+

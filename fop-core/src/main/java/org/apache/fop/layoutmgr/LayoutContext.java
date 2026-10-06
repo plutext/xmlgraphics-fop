@@ -59,7 +59,7 @@ public final class LayoutContext {
      * float's edge is no break in the flow, so the block's space-before, resolved in the list before,
      * is kept and not emitted again. Set by the page breaker for the restarted block only.
      */
-    public static final int FLOAT_RESTART = 0x20;
+    public static final int FLOAT_RESTART = 0x40;
 
     private static final int TREAT_AS_ARTIFACT = 0x20;
 
