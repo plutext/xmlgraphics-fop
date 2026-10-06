@@ -122,8 +122,17 @@ against `trunk` in `../fop-upstream-wt` once the numbers exist; the float code i
 - A float anchored inside a table cell: the *start* of the float restarts inside the table and would fail the
   same way. Not measured; docx4j does not write it.
 - `clear` on the block after a float, which would place a table below the float's foot rather than beside it.
-  FOP ignores it on blocks; the docx4j session confirmed `clear="both"` makes no difference. With this change a
-  table beside a float keeps its own width and may overlap the float; that is the FO's geometry, not a crash.
+  FOP ignores it on blocks; the docx4j session confirmed on r14 that `clear` on an `fo:table`, and on a block
+  wrapped round it, changes nothing (rows at 106/121/136 against a 60pt float in four variants). With this
+  change a table beside a float keeps its own width and may overlap the float; that is the FO's geometry, not
+  a crash, and it is what 10855 now shows (gate b172, §8): its rubric table starts right below the heading at
+  121.82 and is drawn over the text box, where Word puts it below the box at 155.35. **Follow-up requested by
+  the docx4j session (low priority):** honour `clear` on a block-level FO after a side float, or never let a
+  table share lines with a side float. The recommendation from here is `clear`: it is the XSL property for
+  exactly this (§7.19.2, on the FO that must not sit beside the float), it leaves a table beside a float where
+  the FO allows it, and it is the shape upstream can take; a "never beside" rule would be the fork's own. Its own
+  CR when Jason takes it up; docx4j would then set `clear` on a table that follows a band and keep the band for
+  10855, and until then makes no band where a table follows the anchor paragraph.
 - 561's 393pt band leaving page 15's lines unnarrowed: a third shape, not yet reproduced here.
 
 ## 8. Gates (the docx4j session)
@@ -138,4 +147,13 @@ cand84 both sides, no text-box band: one document moves and nothing breaks.
 - r14 also carries b467cdb37 (the hooks' warnings as FOP events, on `2.11-docx4j.5` since r13): nothing moved
   for it either.
 
-Next there: b172, the text-box band back on, on r14, reading the `vml-box-beside` probes, 561 and 10855.
+**b172, 2026-10-07, the text-box band back on, on r14, against b170: the fix does what it should.** No render
+error in any corpus (on r13 the band made 10855 throw). The six `vml-box-beside` probes match Word line for
+line: each heading beside its box at 83.20 (Word 83.30), Pa's at x 388.00 (Word 388.70), and the paragraph after
+each box no longer narrowed one line too many (Pa: Word's 4 lines; r13 had 5). 10855 at Word's 9 pages (from
+10), its heading at Word's 81.38, but its rubric table drawn over the text box (above, §7): line parity 0.9693
+to 0.9622. 561 is docx4j's: Figure C's box is positioned relative to a paragraph docx4j lays out near the foot of
+page 14, so the box is drawn at y 1070, off the page, where Word keeps it on page 15 with the text beside it; a
+positioned box needs a page-fit rule in docx4j first (page parity 0.9078 to 0.8656). So the band stays out of
+docx4j for now, for 10855's `clear` (FOP) and 561's page fit (docx4j), and nothing on this branch changes for
+this gate. Recorded on the docx4j side in the Enterprise register.
