@@ -202,6 +202,44 @@ docx4j-side findings came with it, recorded in the Enterprise register (8c055aa)
 `ccmp`, so a precomposed é in it is decomposed and mis-ordered too (L3; the gap 3e05db3af leaves, which this CR
 closes); and Carlito, standing in for Calibri, has no combining marks, so FOP draws its missing glyph (L4).
 
+**Four readers on the probe, before any ActualText (docx4j session, 2026-10-07).** Word 16.0.20430.20118's PDF
+(tagged, and carrying no `/ActualText` at all) against docx4j cand79 on r13; each line compared NFC against the
+source; readers pdftotext 26.07.0 (position-sorted), mutool 1.28.0, PDFBox 3.0.8 (`PDFTextStripper` defaults),
+pdf.js 4.8.69 (`getTextContent`). "spaces": only whitespace differs; WRONG: wrong or misordered characters.
+
+| case | Word | docx4j on r13 |
+|---|---|---|
+| L1 Latin precomposed | ok ok ok ok | ok ok ok ok |
+| L2 Latin decomposed, Cambria | spaces ok ok ok | WRONG ×4 |
+| L3 Latin mixed | spaces ok ok ok | WRONG WRONG ok WRONG |
+| L4 Calibri (Carlito) | ok ok ok spaces | WRONG ×4 (the missing glyph, docx4j's) |
+| L5 Times New Roman | ok ok ok spaces | WRONG WRONG ok WRONG |
+| L6 Vietnamese | ok ok ok spaces | WRONG ×4 |
+| L7 Greek precomposed | ok ×4 | ok ×4 |
+| L8 Greek decomposed | spaces ok ok ok | WRONG WRONG ok WRONG |
+| L9 Cyrillic decomposed, TNR | ok ok ok spaces | ok ×4 |
+| L10, L11 Devanagari | WRONG ×4 | WRONG ×4 |
+| L12 Bengali | WRONG ×4 | WRONG WRONG ok WRONG |
+| L13 Arabic | WRONG ×4 | WRONG ×4 |
+| L14 Hebrew | WRONG ×4 | WRONG ×4 |
+
+What it shows:
+- Word draws decomposed Latin, Greek and Cyrillic as precomposed glyphs in logical order, and every reader gets
+  them (pdftotext and pdf.js put spaces inside words).
+- docx4j's decomposed lines read mark first (mutool, L2: "caf́e ŕesuḿe näive ̊Alborg"). PDFBox repairs most by
+  merging diacritics by position, which is why the harness never saw it.
+- Word's own text layer has wrong characters, not only wrong order, for Devanagari ("यि" for "यह", "क्षहिय" for
+  "क्षत्रिय"), Bengali ("বাাংলা" for "বাংলা") and Arabic; its Hebrew is nearly right in mutool and pdf.js (the holam
+  before the vav). docx4j has the right characters in visual order (Devanagari "िहन्दी" and "ैह"; Bengali's nukta
+  before য; Hebrew's points before their letters; Arabic right in mutool apart from lam-alef read as "ال").
+- So §7's target, the source text in logical order, stands, and Word is no check for Indic or Arabic. With
+  ActualText, docx4j would read right on L2 to L6, L8 and L10 to L14, which is better than Word on the Indic and
+  Arabic lines. Recorded on the docx4j side in the Enterprise register, `causes/mark-first-text-layer.md`
+  (45ed04f); the per-case compare scripts are in that session's scratchpad, for the gate.
+
+These readings are of today's streams. They are the baseline for the gate, not the measurement of how each reader
+handles a nested `ActualText` span: that is test 5, on a hand-edited sample, before the gate.
+
 ## 7. Gate (the docx4j session's)
 
 ActualText changes only the text layer, so a pass is: page rasters identical on every document; the harness's
@@ -230,8 +268,8 @@ Jason's OK on the text, per the memory note.
    state the size cost and offer either.
 4. **Tagged PDF.** Confirmed by reading the specification, not by a checker. veraPDF is not installed on the
    docx4j side (2026-10-07); running one tagged sample through it needs it installed, which is Jason's call.
-5. **Readers.** Which four to measure: poppler, mupdf, pdf.js and PDFium as in CR-002 §10.2, plus PDFBox in the
-   suite. Any reader docx4j's users name?
+5. *Answered 2026-10-07:* the four the docx4j session read the probe with, pdftotext, mutool, PDFBox and pdf.js
+   (§6), with PDFium added for test 5 if it is to hand, since CR-002 §10.2 found it the odd one out.
 6. *Answered 2026-10-07:* a capability is wanted, `actual-text-clusters` (§3.4).
 7. *Answered 2026-10-07:* `FOPAreaTreeHelper` does not read `<word>`; `Paginate` counts the characters inside
    `<word>` and `<space>` and ignores attributes. So the clusters go on `<word>` as an attribute (§3.3, step 2).
