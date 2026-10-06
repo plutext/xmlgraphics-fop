@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:layout-master-set><fo:simple-page-master master-name="A4" page-width="595pt" page-height="842pt" margin="72pt"><fo:region-body/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body">
+<fo:block font-family="Times" font-size="12pt" line-height="16pt" space-after="10pt"><!-- fop/CR-020, Enterprise CR-001 item 44: the second paragraph's first line is narrowed although it lies below the float's foot (y 92); with space-after="0pt" the overlapping line is narrowed, which is right --><fo:float float="left"><fo:block-container width="300pt" height="20pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:block font-family="Times" font-size="12pt" line-height="16pt">word0 word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12 word13 word14 word15 word16 word17 word18 word19 word20 word21 word22 word23 word24 word25 word26 word27 word28 word29</fo:block>
+</fo:flow></fo:page-sequence></fo:root>

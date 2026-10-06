@@ -21,3 +21,16 @@ Not reproduced from their descriptions (variants tried, none fails): item 20's N
 (`initialColumns.size() == columnCount - 1` in `BalancingColumnBreakingAlgorithm.getInitialBreaks`, which
 fails when the balanced content has no legal break past the ideal column length). Each needs the FO
 docx4j wrote with its workaround off.
+
+Added 2026-10-07 (fop/CR-020), from the docx4j session's findings, both fixed on branch `CR-020-float-edge-space`:
+
+- `float-edge-after-space.fo` (Enterprise CR-001 §6.6 item 44): a 20pt side float in a 16pt heading line with
+  `space-after="10pt"`, then a paragraph. The float's foot is at y 92; the paragraph's first line (98 to 114) is
+  laid out beside the float at x 372 instead of 72, because `PageBreakingAlgorithm.handleBox` alone tested the
+  foot and glue never did. With the fix the line is full width and the 10pt space is kept; before, a float edge
+  falling on a paragraph boundary also discarded the space, as at a page break.
+- `float-edge-inside-table.fo` (item 45, which is item 20's signature reproduced: `NoSuchElementException` from
+  `LMiter.next` in `PageBreaker.handleFloatLayout`): a 40pt float outlasting a 14pt heading and its 10pt
+  space, then a five-row table. The float's end fell between rows, and the re-layout from there asked the
+  table's layout manager, which is not restartable, for a child it has no more of. With the fix the float ends
+  at the first legal break after the table.

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:layout-master-set><fo:simple-page-master master-name="A4" page-width="595pt" page-height="842pt" margin="72pt"><fo:region-body/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body">
+<fo:block font-family="Times" font-size="12pt" line-height="14pt" space-after="10pt"><!-- fop/CR-020, Enterprise CR-001 item 45: the 40pt float outlasts the heading and its space, so the float's end falls inside the table and FOP throws NoSuchElementException on the re-layout --><fo:float float="right"><fo:block-container width="300pt" height="40pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:table table-layout="fixed" width="200pt" border-collapse="collapse"><fo:table-column column-width="200pt"/><fo:table-body><fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>cell 1</fo:block></fo:table-cell></fo:table-row><fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>cell 2</fo:block></fo:table-cell></fo:table-row><fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>cell 3</fo:block></fo:table-cell></fo:table-row><fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>cell 4</fo:block></fo:table-cell></fo:table-row><fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>cell 5</fo:block></fo:table-cell></fo:table-row></fo:table-body></fo:table>
+<fo:block>after</fo:block>
+</fo:flow></fo:page-sequence></fo:root>
