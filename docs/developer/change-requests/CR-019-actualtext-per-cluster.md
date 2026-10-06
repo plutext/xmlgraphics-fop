@@ -1,9 +1,10 @@
 # CR-019: ActualText per cluster, so a PDF reader gets the right text where the glyphs do not spell it
 
-Status: PROPOSED 2026-10-07; design and estimate, not started. Registry key `fop/CR-019`. A fix, not a hook: FOP's
-text layer is wrong for any reader that reads the content stream in order, whoever produced the FO. So it is
-upstream-bound (§8), and done twice as CLAUDE.md has it: a `FOP-####` branch against `trunk`, and the fork's. No
-capability unless the docx4j side wants one for its gate (§9, open question 6). Requested by Jason through the
+Status: PROPOSED 2026-10-07; design and estimate, not started. Registry key `fop/CR-019` (entry added to
+`tasks.yaml` by the docx4j session, uncommitted there). Capability `actual-text-clusters` (§3.4). A fix, not a
+hook: FOP's text layer is wrong for any reader that reads the content stream in order, whoever produced the FO.
+So it is upstream-bound (§8), and done twice as CLAUDE.md has it: a `FOP-####` branch against `trunk`, and the
+fork's. Requested by Jason through the
 docx4j session (docx4j-13, 2026-10-07), as the follow-up fop/CR-002 §10.2 named and fop/CR-016 §7 recommended.
 
 **Enterprise CR-001 §6.6 items that bear on it.** Item 30 (CR-002: a ligature's ToUnicode), whose §10.2 left the
@@ -90,9 +91,11 @@ written: a glyph seen with one meaning at paint time can be seen with another la
 1. **Layout.** `TextLayoutManager` retains associations (`retainAssociations` true). After the mapping, the
    clusters of the word are computed once, in code-point indices into the mapped text, and only those that
    qualify under the tier are kept: for each, start, glyph count and source text. A word with none carries null.
-2. **Area tree.** `WordArea` gains the cluster list, with a constructor overload; `XMLRenderer` writes it as a
-   child element or attribute of `<word>` and `AreaTreeParser` reads it, so the area-tree round trip (the
-   770-case parser test) keeps it.
+2. **Area tree.** `WordArea` gains the cluster list, with a constructor overload; `XMLRenderer` writes it as an
+   attribute of `<word>`, never as character data or a child element, and `AreaTreeParser` reads it, so the
+   area-tree round trip (the 770-case parser test) keeps it. docx4j's `Paginate` counts every character inside
+   `<word>` and `<space>` and ignores attributes, and its export-fo tests read `<word>` by `getTextContent()`
+   (docx4j session, 2026-10-07), so an attribute is the one safe shape there.
 3. **Intermediate format.** `IFRenderer.TextUtil` concatenates the clusters of the words it buffers, offsetting
    each by the buffered text before it, and passes them to a new `IFPainter.drawText` overload taking them.
    `AbstractIFPainter` gives the overload a default that drops the clusters and calls the old one, so the PS,
@@ -107,13 +110,19 @@ written: a glyph seen with one meaning at paint time can be seen with another la
    hyphenated word in accessibility mode), no cluster spans are written inside it: the outer replacement covers
    the whole sequence, and a nested one would be meaningless.
 
-### 3.4 Off switch
+### 3.4 Capability
+
+`Docx4jFop.ACTUAL_TEXT_CLUSTERS = "actual-text-clusters"`, so docx4j's gate expects logical stream order only
+where the renderer writes ActualText (asked for by the docx4j session, 2026-10-07; it gates every fork change
+through `FopCapabilities`). The FO is unchanged; the capability only says the renderer does this.
+
+### 3.5 Off switch
 
 A renderer option, `actual-text` in the PDF renderer configuration (and `FOUserAgent` or the renderer config
 object, whichever the PDF renderer options use), default on. A producer that wants the smaller file can turn it
 off. Upstream may prefer default off; the branch for the pull request can carry the opposite default (§8).
 
-### 3.5 Unchanged
+### 3.6 Unchanged
 
 Ink, byte for byte: the glyphs, their positions and the `TJ` arithmetic are the same; only `BDC`/`EMC` operators
 and the breaks between `TJ` arrays are added. ToUnicode: CR-002, CR-006 and CR-016 stay as they are, and a reader
@@ -189,15 +198,16 @@ Jason's OK on the text, per the memory note.
    restriction would only be caution.
 3. **Default of the off switch.** On in the fork. For upstream, on or off is Apache's call; the pull request can
    state the size cost and offer either.
-4. **Tagged PDF.** Confirmed by reading the specification, not by a checker; is veraPDF available on the docx4j
-   side for one tagged sample?
+4. **Tagged PDF.** Confirmed by reading the specification, not by a checker. veraPDF is not installed on the
+   docx4j side (2026-10-07); running one tagged sample through it needs it installed, which is Jason's call.
 5. **Readers.** Which four to measure: poppler, mupdf, pdf.js and PDFium as in CR-002 §10.2, plus PDFBox in the
    suite. Any reader docx4j's users name?
-6. **A capability.** None is needed for the FO. If docx4j's gate wants to know whether the renderer writes
-   ActualText, so the stream-order check expects logical order only where it is, a capability `actual-text`
-   in `Docx4jFop` costs a line; say if wanted.
-7. **The area-tree path.** docx4j's `FOPAreaTreeHelper` and `Paginate` read the area tree XML; the cluster data
-   on `<word>` is extra content there. Is anything on that side strict about `<word>`'s shape?
+6. *Answered 2026-10-07:* a capability is wanted, `actual-text-clusters` (§3.4).
+7. *Answered 2026-10-07:* `FOPAreaTreeHelper` does not read `<word>`; `Paginate` counts the characters inside
+   `<word>` and `<space>` and ignores attributes. So the clusters go on `<word>` as an attribute (§3.3, step 2).
+
+The docx4j session's lean on 1, for Jason to weigh: tier A first, since it is what the corpus measurements can
+test, and tier B waits on the reachability count. Questions 1 to 3 are Jason's.
 
 ## 10. Estimate
 
