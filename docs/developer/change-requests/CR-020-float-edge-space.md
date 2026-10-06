@@ -1,11 +1,11 @@
 # CR-020: a side float ends at the break before the first line below its foot, keeps the space there, and never ends inside a table
 
 Status: DONE 2026-10-07, gated PASS by the docx4j session (b170, and b172 for the text-box band; §8) and merged to
-`2.11-docx4j.5` by fast-forward (ff8b5ce05); unreleased; upstream JIRAs drafted, not filed. The branch was cut at 09c7bc857, the head of `CR-017-018-review`,
-not of `2.11-docx4j.5` (still e0361ee62): the review session's commits were made on that branch, checked out in
-the shared tree, as if on `.5`. So this branch also carries the review fixes and the hooks' warnings as events
-(00cd6a23e, b467cdb37: CR-017 §13, CR-018 §10) and the CR-016 §7 and CR-019 documents, and a merge brings them
-too. The fop-core suite passes on the branch (3853 tests, 0 failures; checkstyle clean), and the new layout test
+`2.11-docx4j.5` by fast-forward (ff8b5ce05); unreleased; upstream JIRAs drafted, not filed. The branch was cut
+at 09c7bc857, the head of `CR-017-018-review`, not of `2.11-docx4j.5` (then e0361ee62): the review session's
+commits were made on that branch, checked out in the shared tree, as if on `.5`. So this branch also carried the
+review fixes and the hooks' warnings as events (00cd6a23e, b467cdb37: CR-017 §13, CR-018 §10) and the CR-016 §7
+and CR-019 documents, and the merge brought them too. The fop-core suite passes on the branch (3853 tests, 0 failures; checkstyle clean), and the new layout test
 fails without the change. The full CI build, re-run by the fork session on c38749555 before a merge: 3855 tests,
 0 failures, checkstyle and spotbugs clean. Registry key `fop/CR-020`. A fix, not a hook, so upstream-bound: two
 JIRA drafts, `docs/upstream/float-edge-after-space.txt` and `docs/upstream/float-edge-inside-table.txt`, not
