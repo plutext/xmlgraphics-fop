@@ -1,6 +1,10 @@
-JIRA draft, NOT POSTED. For Jason to file (or to OK for posting from here), fop/CR-020, Enterprise CR-001 §6.6
-item 45 (the signature item 20 recorded in 2026-09 and could not reproduce). Component: layout/page. Affects:
-2.11 and main (measured on the fork at 09c7bc857). Reproduction: docs/developer/repro/float-edge-inside-table.fo.
+JIRA draft, NOT POSTED. fop/CR-020, Enterprise CR-001 §6.6 item 45 (the signature item 20 recorded in 2026-09).
+Reproduced on Apache main at 5be8c69b6 (2026-10-07). Branch FOP-float-edge-inside-table in ../fop-upstream-wt
+(b310a36ff), one commit on main; the fop-core suite gives 3679 tests and 0 failures, and checkstyle is clean.
+Reproduction: docs/developer/repro/float-edge-inside-table.fo (the fork's form, a block-container float; on main
+since FOP-3331 a block-container float is put in the flow, see float-blockcontainer-in-flow.txt, so the FO below
+uses a plain block). Rename the branch and the commit's FOP-NNNN once filed. The text from "Summary" on is what
+would be posted.
 
 Summary
 -------
@@ -11,36 +15,43 @@ Description
 When a side float outlasts the paragraph it is anchored in and the content beside it continues into an
 fo:table, the float's end falls between two rows. PageBreaker.handleFloatLayout then reads the element list
 again from that break (FlowLayoutManager.getNextKnuthElements with a restart position inside the table).
-TableLayoutManager is not restartable (isRestartable() is false, as for the IPD-change restart, which checks
-it through AbstractBreaker.containsNonRestartableLM); the generic restart in
-BlockStackingLayoutManager.getNextKnuthElements pops the table's child layout manager off the stack and
-asks setCurrentChildLM for it, and the table's child iterator, already exhausted, throws:
+TableLayoutManager cannot be restarted (isRestartable() is false, as AbstractBreaker.containsNonRestartableLM
+checks for the IPD-change restart); the generic restart in BlockStackingLayoutManager.getNextKnuthElements asks
+setCurrentChildLM for the table's child layout manager, and the table's child iterator, already exhausted,
+throws:
 
 java.util.NoSuchElementException
     at org.apache.fop.layoutmgr.LMiter.next(LMiter.java:69)
+    at org.apache.fop.layoutmgr.LMiter.next(LMiter.java:27)
     at org.apache.fop.layoutmgr.AbstractLayoutManager.setCurrentChildLM(AbstractLayoutManager.java:132)
     at org.apache.fop.layoutmgr.BlockStackingLayoutManager.getNextKnuthElements(BlockStackingLayoutManager.java:278)
     at org.apache.fop.layoutmgr.FlowLayoutManager.getNextChildElements(FlowLayoutManager.java:225)
-    at org.apache.fop.layoutmgr.PageBreaker.getNextKnuthElements(PageBreaker.java:334)
-    at org.apache.fop.layoutmgr.AbstractBreaker.getNextBlockList(AbstractBreaker.java:746)
-    at org.apache.fop.layoutmgr.PageBreaker.handleFloatLayout(PageBreaker.java:898)
+    at org.apache.fop.layoutmgr.FlowLayoutManager.addChildElements(FlowLayoutManager.java:148)
+    at org.apache.fop.layoutmgr.FlowLayoutManager.getNextKnuthElements(FlowLayoutManager.java:121)
+    at org.apache.fop.layoutmgr.PageBreaker.getNextKnuthElements(PageBreaker.java:270)
+    at org.apache.fop.layoutmgr.AbstractBreaker.getNextBlockList(AbstractBreaker.java:723)
+    at org.apache.fop.layoutmgr.PageBreaker.getNextBlockList(PageBreaker.java:179)
+    at org.apache.fop.layoutmgr.PageBreaker.handleFloatLayout(PageBreaker.java:822)
 
-No output is produced. Minimal FO (A4, 72pt margins):
+No output is produced. Minimal FO (A4, 72pt margins, Times 12pt):
 
-<fo:block font-family="Times" font-size="12pt" line-height="14pt" space-after="10pt"><fo:float float="right"><fo:block-container width="300pt" height="40pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
-<fo:table table-layout="fixed" width="200pt" border-collapse="collapse"><fo:table-column column-width="200pt"/><fo:table-body>
-  five of: <fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>cell N</fo:block></fo:table-cell></fo:table-row>
-</fo:table-body></fo:table>
+<fo:block line-height="14pt" space-after="10pt"><fo:float float="right"><fo:block line-height="40pt"
+  padding-start="200pt">BOX</fo:block></fo:float>Heading</fo:block>
+<fo:table table-layout="fixed" width="200pt" border-collapse="collapse"><fo:table-column column-width="200pt"/>
+  <fo:table-body>five of: <fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>cell N</fo:block>
+  </fo:table-cell></fo:table-row></fo:table-body></fo:table>
 <fo:block>after</fo:block>
 
-The 40pt float outlasts the heading's 14pt line and its 10pt space; the float's end falls after the second
-row. clear="both" on the table makes no difference.
+The 40pt float outlasts the heading's 14pt line and its 10pt space, so its end falls after the second row.
+clear="both" on the table makes no difference.
 
-Fix (patch to follow)
----------------------
-PageBreakingAlgorithm.considerLegalBreak: a legal break whose previous and next boxes lie inside the same
-non-restartable layout manager is not taken as the float's edge; the edge waits for the first legal break
-after it. The rows below the float keep the table's width, which the table set once for all its rows, so
-nothing is drawn differently from a re-layout at the row, and the paragraph after the table is read again at
-full width. Measured: five rows at the table's width, "after" full width below the table. Layout engine test:
-float_side-edge-space.xml (fourth sequence). The fop-core suite passes (3853 tests).
+Fix (pull request to follow)
+----------------------------
+PageBreakingAlgorithm.considerLegalBreak: a legal break between two boxes of the same layout manager that cannot
+be restarted is not taken as the float's edge; the edge waits for the first legal break after it. The rows below
+the float keep the table's width, which the table set once for all its rows, so nothing is drawn differently from
+a re-layout at the row, and the block after the table is laid out at full width.
+
+Measured on main with the change: the FO above lays out, five rows at the table's width, "after" at full width
+below the table. Layout engine test float_edge-inside-table.xml, which threw before. The fop-core suite passes
+(3679 tests) and checkstyle is clean.

@@ -1,6 +1,10 @@
-JIRA draft, NOT POSTED. For Jason to file (or to OK for posting from here), fop/CR-020, Enterprise CR-001 §6.6
-item 44. Component: layout/page. Affects: 2.11 and main (measured on the fork at 09c7bc857, which is main after
-2.11 plus the fork's fixes; the float code is unchanged upstream). Reproduction: docs/developer/repro/float-edge-after-space.fo.
+JIRA draft, NOT POSTED. fop/CR-020, Enterprise CR-001 §6.6 item 44. Reproduced on Apache main at 5be8c69b6
+(2026-10-07). Branch FOP-float-edge-after-space in ../fop-upstream-wt (74185c37f), stacked on
+FOP-float-edge-inside-table (both touch PageBreakingAlgorithm.considerLegalBreak); the fop-core suite gives 3682
+tests and 0 failures, and checkstyle is clean. Reproduction: docs/developer/repro/float-edge-after-space.fo (the
+fork's form, a block-container float; on main since FOP-3331 a block-container float is put in the flow, see
+float-blockcontainer-in-flow.txt, so the FO below uses a plain block). Rename the branch and the commit's
+FOP-NNNN once filed. The text from "Summary" on is what would be posted.
 
 Summary
 -------
@@ -16,36 +20,35 @@ added to the accumulated height (BreakingAlgorithm.handleGlueAt) but never runs 
 foot falls in the space between two paragraphs, the next paragraph's first line is still laid out beside the
 float, although it lies wholly below it.
 
-Minimal FO (A4, 72pt margins):
+Minimal FO (A4, 72pt margins, Times 12pt):
 
-<fo:block font-family="Times" font-size="12pt" line-height="16pt" space-after="10pt"><fo:float float="left"><fo:block-container width="300pt" height="20pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
-<fo:block font-family="Times" font-size="12pt" line-height="16pt">word0 word1 ... word29</fo:block>
+<fo:block line-height="16pt" space-after="10pt"><fo:float float="left"><fo:block line-height="20pt"
+  padding-end="200pt">BOX</fo:block></fo:float>Heading</fo:block>
+<fo:block line-height="16pt">word0 word1 ... word29</fo:block>
 
-The float's foot is at y 92pt. The second paragraph's first line spans 98 to 114 and is set at x 372
-(narrowed by the float's 300pt); it should be at x 72. With space-after="0pt" the line overlaps the float
-(88 to 104) and is narrowed, which is right, and the next line is not.
+The float's foot is at y 92pt. The second paragraph's first line spans 98 to 114, wholly below it, and is set
+at x 297.3, narrowed by the float; it should be at x 72.
 
-A second defect at the same edge: when the edge falls on a paragraph boundary (a 20pt heading line, so the line
-itself reaches the foot), the space-after of the paragraph beside the float is lost. The next paragraph starts
-at 92, not 102. PageBreaker.addAreasForFloats notifies the SpaceResolver of the edge as a break
-(performConditionalsNotification with the edge penalty as the end), so the conditional space is discarded as
-at a page break, and the restarted list begins at the next box. The space-before of the paragraph after the
-float is lost the same way: the restarted block is reset and its leading space resolved as at the start of a
-page.
+A second defect at the same edge: when the edge falls on a paragraph boundary (line-height="20pt" on the heading,
+so its line itself reaches the foot), the heading's space-after is lost and the next paragraph starts at 92, not
+102. PageBreaker.addAreasForFloats notifies the SpaceResolver of the edge as a break
+(performConditionalsNotification with the edge penalty as the end), so the conditional space is discarded as at
+a page break, and the restarted list begins at the next box. The space-before of the paragraph after the float
+is lost the same way: the restarted block is reset and its leading space resolved as at the start of a page.
 
-Fix (patch to follow)
----------------------
-1. PageBreakingAlgorithm.considerLegalBreak: at a legal break while a float is in force, the float ends if the
-   content height before the break plus the glue up to the next box (as forceNode measures a node) reaches
-   the float's height; that height is what deactivateNode records as the float's effective height, so the
-   content after the float starts below the space.
+Fix (pull request to follow)
+----------------------------
+1. PageBreakingAlgorithm.considerLegalBreak: while a float is in force, the float ends at a legal break if the
+   content height before it plus the glue up to the next box (as forceNode measures a node) reaches the float's
+   height; deactivateNode records that height as the float's, so the content after it starts below the space.
 2. PageBreaker.addAreasForFloats: the SpaceResolver notification runs to the last glue before the next box, so
    the edge's break position is told it is no break and the space between the paragraphs is resolved and kept.
-3. A block the list is read again from after the edge keeps the space-before resolved in the list before and
-   emits none (a LayoutContext flag set by PageBreaker for that block only, read in
-   BlockStackingLayoutManager.addFirstVisibleMarks and BlockLayoutManager).
+3. The block the list is read again from after the edge keeps the space-before resolved in the list before and
+   emits none: a LayoutContext.FLOAT_RESTART flag (a bit of its own), set by PageBreaker and handed by
+   FlowLayoutManager to that block only, read in BlockStackingLayoutManager.addFirstVisibleMarks and
+   BlockLayoutManager.
 
-Measured after: the first line after the space is at x 72, y 98; the space is kept with space-after, with
-space-before, and with both (the larger of the two, as the resolver gives); a page beside and after the float
-fills to the same last line as before (754pt top, 770 bottom). Layout engine test:
-float_side-edge-space.xml. The fop-core suite passes (3853 tests).
+Measured on main with the change: the first line after the space at x 72, y 98; with the heading line reaching
+the foot, the next paragraph at 102, the space kept; the space kept as space-before too. Layout engine test
+float_edge-after-space.xml, whose first check fails before. The fop-core suite passes (3682 tests) and
+checkstyle is clean.

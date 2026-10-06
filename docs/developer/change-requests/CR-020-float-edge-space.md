@@ -121,8 +121,26 @@ with `textBesideBand` back on, the corpora and probes against b169 on r13: the `
 
 ## 6. Upstream
 
-Two JIRAs, one per defect, drafted and not filed; posting needs Jason's OK on the text. Branch `FOP-####`
-against `trunk` in `../fop-upstream-wt` once the numbers exist; the float code is the same on Apache `main`.
+Two JIRAs, one per defect, drafted and not filed; posting needs Jason's OK on the text.
+
+**Reproduced on Apache `main` at 5be8c69b6, 2026-10-07** (the fork session). `main` had moved six commits past
+`trunk`, among them our FOP-3348 and FOP-3349 (merged 2026-10-05) and FOP-3331, which changes float layout. Both
+defects reproduce there, with a plain-block float: the line after the space narrowed (x 297.3, not 72), the
+space lost at a boundary (next line at 94.6, not 104.6), and `NoSuchElementException` for a float ending in a
+table. But the fork's block-container reproductions no longer show item 44 on `main`: since FOP-3331 (744281b1e)
+a float whose content is an `fo:block-container` is placed in the flow, text below it, a regression of its own,
+drafted as `docs/upstream/float-blockcontainer-in-flow.txt`. It is not in the fork; it would come with the next
+merge of `main`, and docx4j's floats are block-containers.
+
+Branches in `../fop-upstream-wt`, on `main` at 5be8c69b6:
+- `FOP-float-edge-inside-table` (b310a36ff): item 45 alone, test `float_edge-inside-table.xml`; fop-core 3679
+  tests, 0 failures, checkstyle clean.
+- `FOP-float-edge-after-space` (74185c37f), stacked on it since both change `considerLegalBreak`: item 44, test
+  `float_edge-after-space.xml` (plain-block floats); 3682 tests, 0 failures, checkstyle clean. It carries
+  `FLOAT_RESTART` on its own bit (§9).
+
+Both tests fail without their change. The commits say `FOP-NNNN` until the issues are filed; the branches are
+then renamed for their numbers.
 
 ## 7. Not addressed
 
