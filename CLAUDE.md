@@ -203,8 +203,11 @@ regression `fop/CR-002` introduced in `.2`), gated PASS and merged 2026-10-05, a
 `fop/CR-017` (page masters chosen by the content a page starts with, hook `page-master-by-content`, for docx4j
 CR-031 phase 2) and `fop/CR-017.2` (its restart step, hook `page-number-restart`, for phase 3, with the first-page
 fix of CR-017 §12), all gated PASS and merged 2026-10-05; and `fop/CR-018` (header and footer extents measured
-in FOP, hook `measured-region-extents`, for docx4j CR-031 phase 5), gated PASS and merged 2026-10-06;
-seventeen capabilities; draft notes in
+in FOP, hook `measured-region-extents`, for docx4j CR-031 phase 5), gated PASS and merged 2026-10-06; the fixes
+from a review of `.5` (CR-017 §13, CR-018 §10), the hooks' warnings as FOP events (b467cdb37), and `fop/CR-020`
+(side floats, Enterprise CR-001 items 44 and 45, capability `side-float-edges`), gated PASS together in r14 and
+merged 2026-10-07 (ff8b5ce05); `fop/CR-019` (ActualText per cluster) proposed, its §9 open; eighteen
+capabilities; draft notes in
 `docs/release-notes/2.11-docx4j.5.md`.
 `2.11-docx4j.2` (2026-10-02) and `2.11-docx4j.1` (2026-09-25, tagged at `2f5030172`) are the earlier
 releases; `.3` never shipped. `docs/developer/releasing.md` is the runbook and records what each release

@@ -1,7 +1,7 @@
 # CR-020: a side float ends at the break before the first line below its foot, keeps the space there, and never ends inside a table
 
-Status: IMPLEMENTED 2026-10-07 on branch `CR-020-float-edge-space`, gated PASS by the docx4j session (b170, and
-b172 for the text-box band; §8), not merged. The branch was cut at 09c7bc857, the head of `CR-017-018-review`,
+Status: DONE 2026-10-07, gated PASS by the docx4j session (b170, and b172 for the text-box band; §8) and merged to
+`2.11-docx4j.5` by fast-forward (ff8b5ce05); unreleased; upstream JIRAs drafted, not filed. The branch was cut at 09c7bc857, the head of `CR-017-018-review`,
 not of `2.11-docx4j.5` (still e0361ee62): the review session's commits were made on that branch, checked out in
 the shared tree, as if on `.5`. So this branch also carries the review fixes and the hooks' warnings as events
 (00cd6a23e, b467cdb37: CR-017 §13, CR-018 §10) and the CR-016 §7 and CR-019 documents, and a merge brings them
