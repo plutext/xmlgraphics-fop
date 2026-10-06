@@ -139,7 +139,8 @@ against `trunk` in `../fop-upstream-wt` once the numbers exist; the float code i
   exactly this (§7.19.2, on the FO that must not sit beside the float), it leaves a table beside a float where
   the FO allows it, and it is the shape upstream can take; a "never beside" rule would be the fork's own. Its own
   CR when Jason takes it up; docx4j would then set `clear` on a table that follows a band and keep the band for
-  10855, and until then makes no band where a table follows the anchor paragraph.
+  10855, and until then makes no band where a table follows the anchor paragraph. **Decided by Jason,
+  2026-10-07:** honour `clear`, as the first item after `2.11-docx4j.5` ships, in a CR of its own.
 - 561's 393pt band leaving page 15's lines unnarrowed: a third shape, not yet reproduced here.
 
 ## 8. Gates (the docx4j session)

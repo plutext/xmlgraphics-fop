@@ -1,6 +1,7 @@
 # CR-019: ActualText per cluster, so a PDF reader gets the right text where the glyphs do not spell it
 
-Status: PROPOSED 2026-10-07; design and estimate, not started. Registry key `fop/CR-019` (entry added to
+Status: PROPOSED 2026-10-07; design and estimate, not started; §9's questions answered by Jason the same day, and
+implementation waits on his word. Registry key `fop/CR-019` (entry added to
 `tasks.yaml` by the docx4j session, uncommitted there). Capability `actual-text-clusters` (§3.4). A fix, not a
 hook: FOP's text layer is wrong for any reader that reads the content stream in order, whoever produced the FO.
 So it is upstream-bound (§8), and done twice as CLAUDE.md has it: a `FOP-####` branch against `trunk`, and the
@@ -276,6 +277,15 @@ Jason's OK on the text, per the memory note.
 
 The docx4j session's lean on 1, for Jason to weigh: tier A first, since it is what the corpus measurements can
 test, and tier B waits on the reachability count. Questions 1 to 3 are Jason's.
+
+**Answered by Jason, 2026-10-07, as recommended:**
+1. Tier A first; tier B once the reachability count sizes it.
+2. No restriction by script: the rule depends on how glyphs map to characters, not on the script.
+3. On in the fork; the pull request offers it off by default upstream, with the size cost stated.
+4. Tagged and PDF/UA output matters to docx4j's users. So the tests include a tagged sample checked by a PDF/UA
+   validator (veraPDF), which is to be installed before the work starts, and the gate covers tagged output.
+
+Not to be started yet (Jason): the design stands as answered, and implementation waits on his word.
 
 ## 10. Estimate
 
