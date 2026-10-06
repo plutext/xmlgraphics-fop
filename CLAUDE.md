@@ -254,8 +254,10 @@ rebase `FOP-3345` to its one commit. `trunk` is at `upstream/main`, 92 commits p
      block's positions being wrapped twice when line breaking reran, and 37 was a null guard in the
      overflow report. Filed 2026-10-05: FOP-3348 (36, related to FOP-1912) and FOP-3349 (37), pull requests
      #120 and #121, both merged to Apache `main` 2026-10-05. That `main` also carries FOP-3331, which puts a
-     block-container float in the flow (`docs/upstream/float-blockcontainer-in-flow.txt`, not filed): do not merge
-     `main` into the fork without fixing or reverting it, and gate the merge (CR-020 §6).
+     float whose own child is an `fo:block-container` in the flow (`docs/upstream/float-blockcontainer-in-flow.txt`,
+     not filed). Committed docx4j wraps float content in an `fo:block`, which is unaffected, but a returning
+     text-box band would not be: fix or revert it in the fork with the merge of `main`, and gate the merge
+     (CR-020 §6).
    - 20, 21 and 24 did not reproduce from their descriptions; they need docx4j's FO with its workaround
      off.
 4. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a

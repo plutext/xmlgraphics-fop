@@ -130,7 +130,12 @@ space lost at a boundary (next line at 94.6, not 104.6), and `NoSuchElementExcep
 table. But the fork's block-container reproductions no longer show item 44 on `main`: since FOP-3331 (744281b1e)
 a float whose content is an `fo:block-container` is placed in the flow, text below it, a regression of its own,
 drafted as `docs/upstream/float-blockcontainer-in-flow.txt`. It is not in the fork; it would come with the next
-merge of `main`, and docx4j's floats are block-containers.
+merge of `main`. *Corrected the same day:* this first said docx4j's floats are block-containers. The docx4j
+session corrected it: committed docx4j puts an `fo:block` in every side float (`fo:float` > `fo:block` > a band
+table or an external graphic), and only the withdrawn text-box band put a block-container straight in the float.
+Measured on `main`: a block-container or a table wrapped in an `fo:block` inside the float keeps the text beside
+it (x 172), and only a block-container that is the float's own child goes in the flow. So committed docx4j output
+should not move; the merge is still to be gated.
 
 Branches in `../fop-upstream-wt`, on `main` at 5be8c69b6:
 - `FOP-float-edge-inside-table` (b310a36ff): item 45 alone, test `float_edge-inside-table.xml`; fop-core 3679
