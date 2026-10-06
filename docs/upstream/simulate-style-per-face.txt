@@ -1,4 +1,7 @@
-JIRA draft, NOT POSTED. fop/CR-021, Enterprise CR-001 §6.6 item 46. Reproduced on Apache main at 5be8c69b6
+JIRA, POSTED 2026-10-07 by the fork session as jharrop, at Jason's word: FOP-3356
+(https://issues.apache.org/jira/browse/FOP-3356), related to FOP-2810 and FOP-3023; the text from "Summary" on in JIRA
+markup, one line per paragraph. Pull request https://github.com/apache/xmlgraphics-fop/pull/125 (branch FOP-3356,
+b8bf9b155; text in ../fop-upstream-prs/FOP-3356.md). fop/CR-021, Enterprise CR-001 §6.6 item 46. Reproduced on Apache main at 5be8c69b6
 (2026-10-07): the same code as the fork's before the change (PDFPainter.startSimulateStyle). Branch
 FOP-simulate-style-per-face in ../fop-upstream-wt (8cf0e671a), one commit on main; the fop-core suite gives 3679
 tests and 0 failures, and checkstyle is clean. Rename the branch and the commit's FOP-NNNN once filed. Component

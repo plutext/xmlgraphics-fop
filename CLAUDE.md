@@ -84,7 +84,7 @@ session routed an edit to the wrong peer on that inference, is why.
 - The upstream-facing branches are one fix each, cut against Apache `main`, named for their JIRA:
   `FOP-3328` and `FOP-packed-glyph-bboxes` (FOP-3330), whose pull requests #106 and #107 are open, and,
   cut 2026-10-03, `FOP-2918` and `FOP-3339` to `FOP-3347`. `FOP-3345` is stacked on `FOP-3346` and
-  `FOP-3340`. Cut 2026-10-07 on `main` at 5be8c69b6: `FOP-3354`, and `FOP-3355` stacked on it. The older names `FOP-cjk-radical-tounicode`, `FOP-empty-glyph-not-composite` and
+  `FOP-3340`. Cut 2026-10-07 on `main` at 5be8c69b6: `FOP-3354`, `FOP-3355` stacked on it, and `FOP-3356`. The older names `FOP-cjk-radical-tounicode`, `FOP-empty-glyph-not-composite` and
   `FOP-surrogate-pair-word-split` were deleted on 2026-10-03 (local only, never pushed; their commits
   are in `FOP-3340`, `FOP-3339` and `FOP-2918`). The branches are worked on in a
   worktree at `../fop-upstream-wt`; the pull request texts are in `../fop-upstream-prs/`. On Apache
@@ -225,7 +225,7 @@ before, #106 FOP-3328 and #107 FOP-3330. Since then: #118 FOP-2349 (`fop/CR-010`
 (`fop/CR-015`), #120 FOP-3348 and #121 FOP-3349 (`fop/CR-011`, items 36 and 37; both merged to Apache `main`
 2026-10-05, the first of ours to land), #122 FOP-3350 (`fop/CR-012`'s page
 label; the page-number-zero option itself is not sent, Apache keeping to XSL), and, 2026-10-07, #123 FOP-3354 and
-#124 FOP-3355 (`fop/CR-020`, items 45 and 44; #124 stacked on #123). FOP-3353 (filed 2026-10-07, no pull request)
+#124 FOP-3355 (`fop/CR-020`, items 45 and 44; #124 stacked on #123), and #125 FOP-3356 (`fop/CR-021`, item 46). FOP-3353 (filed 2026-10-07, no pull request)
 reports a regression on `main` from FOP-3331: a float whose own child is a block-container is put in the flow. This session posts to ASF JIRA
 directly since 2026-10-05, on Jason's OK per item (see the memory note). The drafts under `docs/upstream/` are stamped with both numbers.
 If a reviewer asks for changes, work in the worktree at `../fop-upstream-wt`; when #114 and #109 merge,

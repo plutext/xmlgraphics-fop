@@ -86,8 +86,13 @@ position, not stroke.
 
 ## 6. Upstream
 
-Apache `main` has the same code (`PDFPainter` lines 612 to 626 at 5be8c69b6). A JIRA and a pull request against
-`main`, on Jason's OK of the text, after the gate.
+Apache `main` has the same code (`PDFPainter` lines 612 to 626 at 5be8c69b6), and Apache 2.11 too. Reproduced on
+`main` with the Carlito configuration of §8: all three faces stroked at 0.31543 and sheared. **Filed 2026-10-07 at
+Jason's word** (posted as jharrop): [FOP-3356](https://issues.apache.org/jira/browse/FOP-3356), affecting 2.11 and
+`main`, related to FOP-2810 (simulate-style in `drawTextWithDP`) and FOP-3023 (the `0 Tr` reset); pull request
+[#125](https://github.com/apache/xmlgraphics-fop/pull/125) from branch `FOP-3356` (b8bf9b155, one commit on `main`
+at 5be8c69b6): fop-core 3679 tests, 0 failures, checkstyle clean; on `main` with it, §8's output. Draft in
+`docs/upstream/simulate-style-per-face.txt`.
 
 ## 7. Estimate
 
