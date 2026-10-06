@@ -112,3 +112,52 @@ spot-checked have identical ink on every page. The docx4j fidelity baseline is n
   is `ActualText` per cluster (CR-002 §10.2).
 - Cambria's `hyphen` glyph is shared by U+2010 and U+002D, and ToUnicode gives `-` (ledger8 A4). That is CR-006's
   family, not this change.
+
+## 7. Follow-up, 2026-10-07: the mark-first stream order, and docx4j's `-ccmp`
+
+Review requested by the docx4j session (docx4j-13) of its commit 3e05db3af, at Jason's word; its measurements are
+quoted as it reported them (renderer r13 = 7ae4c950a, which carries this CR).
+
+**What this CR leaves.** Each glyph's ToUnicode entry is right, but the glyphs stand in the content stream mark
+first. `DefaultScriptProcessor.reorderCombiningMarks` (step 5 of `GlyphMapping.processWordMapping`) moves a mark
+that has a GPOS x-placement ahead of its base in the mapped sequence, and the painter emits glyphs in that order.
+2065's running head "Médiafigyelés" on r13: M (gid 42) at 0, U+0301 (gid 20) at 13.288, e (gid 12) at 8.965.
+`pdftotext` and `mutool` read in stream order and give "Ḿediafigyeĺes"; PDFBox sorts by position and reads it
+right, which is why the docx4j harness had paired it. The order is FOP's, not this CR's: before CR-016 the same
+stream read wrong in a different way.
+
+**Why the order is load-bearing.** `MarkToBaseSubtable.position` (`GlyphPositioningTable`, line 764) gives the mark
+`baseAnchor - markAnchor` as its x-placement and subtracts nothing for the base's advance. That lands the mark
+correctly only when it is painted at the base's origin, before the base. The Khmer branch (line 772), where the
+script processor keeps marks after their base, is the exception that subtracts the base's width. Emitting marks
+after their bases is therefore not a change to the reorder step alone: it is a change to the mark-to-base,
+mark-to-ligature and mark-to-mark arithmetic, and to every renderer that consumes the adjustments. Not
+recommended, and not a plausible upstream patch.
+
+**docx4j's workaround (3e05db3af, 2026-10-06, unpushed).** `RunFontSelector` writes `fox:gsub-features="-liga -ccmp"`
+(hook `gsub-features`, fop/CR-001) on a span of Latin, Greek, Cyrillic or Common characters that carries no
+combining mark of its own (`noComposition`); a span with a mark keeps `ccmp`, which is the risk Enterprise CR-001
+§6.6 item 42 named; runs that ask for ligatures are unchanged; off switch
+`docx4j.convert.out.fo.simpleScriptCcmp=true`. This supersedes "docx4j workaround: none" in item 42.
+Measured by the docx4j session, gate b160 against b159 on r13, four corpora and the probes: no line, page or probe
+moved; the seven Cambria documents' text layers hold no combining marks (8371 had 7,799; 6693 769; 6195 175; 2065
+107; 3236 34; 11126 8; 299 7). The ink changes at the accents: Cambria now draws the precomposed glyph, which is
+what Word draws (é in 2065; ή on 8371 page 4 as one glyph, gid 603 in Word's subset), instead of base plus a
+GPOS-placed mark (8371 page 4 about 12,300 pixels at 300 dpi; 6693 page 2 181; 2065 page 3 anti-aliasing only).
+
+**Fork review of the workaround: acceptable.** What it rests on, read in this tree:
+- FOP maps characters to glyphs through the cmap before GSUB runs, and its own pre-cmap decomposition
+  (`CharNormalize`) covers Indic two-part vowels only. So with `ccmp` off, a precomposed letter with a cmap entry
+  reaches the painter as one glyph, one character, in order. A precomposed letter without a cmap entry was not
+  helped by `ccmp` before either, so nothing is lost there.
+- What remains mark first: a span that carries a combining mark of its own, and every other script. Those keep this
+  CR's per-glyph ToUnicode and FOP's order.
+- The risk I can name: a font whose `ccmp` does something on plain letters other than decompose them (composing a
+  sequence, or substituting a form). None of the corpus's faces is known to; the off switch covers one that does.
+
+**Fork-side options, and the recommendation: none now.** Reversing the stream order is rejected above. A
+renderer-side rule of "no `ccmp` on simple scripts unless the text has marks" would put the producer's knowledge of
+Word at the wrong layer, where the `gsub-features` hook already lets the producer say it per span; recomposing
+base plus mark to the cmap's precomposed glyph after GSUB would be a substitution stage that overrides the font's
+own tables. Neither is upstreamable. The fork item that makes extraction order-independent for what remains is
+`ActualText` per cluster, CR-002 §10.2's follow-up, which is also the shape upstream could take.
