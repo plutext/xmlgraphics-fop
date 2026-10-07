@@ -1,0 +1,29 @@
+JIRA text, NOT filed. Found 2026-10-08 on the fork (fop/CR-022 §3.5, Enterprise CR-001 §6.6 item 47) on corpus
+document 4083 and reproduced on Apache main 5be8c69b6 with the FO below (docs/upstream/repro/FOP-edge-walked-past.fo;
+the float's block-container wrapped in an fo:block, since main's FOP-3331 otherwise puts the float in the flow,
+FOP-3353). Branch FOP-edge-walked-past in ../fop-upstream-wt (279f7a133), one commit on main, independent of
+FOP-3355/FOP-3354; layout test float_edge-walked-past.xml fails on main and passes with the change. Fixed on the fork
+in bf3a5d41c (merged to 2.11-docx4j.6). To be filed only on Jason's word, Bug, Minor, component layout/unqualified,
+Affects 2.11 and main.
+
+Summary
+-------
+A side float's edge is walked past when the page's adjustment ratio there is within the threshold: the lines beside
+a tall float are spread down the page and the narrowing continues onto the next page
+
+Description
+-----------
+While a side float is being handled, the breaking algorithm is meant to end at the float's start or edge: PageBreakingAlgorithm deactivates every node at each legal break ({{handlingFloat()}}) and {{handleFloat}} is reached when no node stays active. But a node is only kept from being activated again when the page cannot break at that break. Where the page's adjustment ratio at the edge lies within the threshold, {{activateNode}} activates a node, every later legal break deactivates the nodes before it, and the page's forced break becomes {{bestFloatEdgeNode}}, wherever that falls. On a nearly empty page the ratio at the edge is out of range, the node is forced at once and the edge is right, which is why the layout tests never saw it; the edge is passed over when enough content and stretch lie between the float's anchor and its foot.
+Reproducer, attached: a 480pt fo:float anchored in a one-line heading, then forty short paragraphs with {{space-before.minimum="4pt" space-before.optimum="8pt" space-before.maximum="60pt"}}. On main at 5be8c69b6:
+{noformat}
+page 1: 11 lines, all beside the float, spread over the page by the stretch (flow bpd 698pt)
+page 2: 19 lines, the first 11 still beside a float that is not there
+page 3: 17 lines, full width
+{noformat}
+With {{space-before="8pt"}} (no stretch) the same FO is right: page 1 has 22 lines beside the float and 9 full width, page 2 is full width. The difference is only the ratio at the edge.
+On a document converted from Word (docx4j's corpus 4083, where a table pushed the edge down a page with stretchable space), the edge landed inside a table 316pt below the float's foot.
+
+Fix
+---
+{{PageBreakingAlgorithm.activateNode}}, overridden: while a float is being handled, the node that would be activated at the legal break under consideration is recorded as {{bestFloatEdgeNode}} instead (with the glue up to the next box counted, as {{forceNode}} counts it) and nothing is activated, so the algorithm ends at the edge whatever the page's ratio there. A break the page cannot take still reaches {{createForcedNodes}}, which records the edge as before. One field holds the break's element index for the duration of {{considerLegalBreak}}.
+Layout test float_edge-walked-past.xml: two pages, 22 lines beside the float and 9 full width on the first, none narrowed on the second; fails on main (three pages).

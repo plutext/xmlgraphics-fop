@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:layout-master-set><fo:simple-page-master master-name="A4" page-width="595pt" page-height="842pt" margin="72pt"><fo:region-body/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="10pt" keep-with-next="always"><fo:float float="left"><fo:block><fo:block-container width="300pt" height="40pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:block></fo:float>Heading</fo:block>
+<fo:block keep-together.within-page="always">k0 k1 k2 k3 k4 k5 k6 k7 k8 k9 k10 k11 k12 k13 k14 k15 k16 k17 k18 k19 k20 k21 k22 k23 k24 k25 k26 k27 k28 k29 k30 k31 k32 k33 k34 k35 k36 k37 k38 k39 k40 k41 k42 k43 k44 k45 k46 k47 k48 k49 k50 k51 k52 k53 k54 k55 k56 k57 k58 k59</fo:block>
+<fo:block space-before="8pt">q0_0 q0_1 q0_2 q0_3 q0_4 q0_5 q0_6 q0_7 q0_8 q0_9 q0_10 q0_11 q0_12 q0_13 q0_14 q0_15 q0_16 q0_17 q0_18 q0_19 q0_20 q0_21 q0_22 q0_23</fo:block>
+<fo:block space-before="8pt">q1_0 q1_1 q1_2 q1_3 q1_4 q1_5 q1_6 q1_7 q1_8 q1_9 q1_10 q1_11 q1_12 q1_13 q1_14 q1_15 q1_16 q1_17 q1_18 q1_19 q1_20 q1_21 q1_22 q1_23</fo:block>
+<fo:block space-before="8pt">q2_0 q2_1 q2_2 q2_3 q2_4 q2_5 q2_6 q2_7 q2_8 q2_9 q2_10 q2_11 q2_12 q2_13 q2_14 q2_15 q2_16 q2_17 q2_18 q2_19 q2_20 q2_21 q2_22 q2_23</fo:block>
+</fo:flow></fo:page-sequence>
+</fo:root>

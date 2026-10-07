@@ -1,0 +1,22 @@
+JIRA text, NOT filed. Found 2026-10-08 on the fork (fop/CR-022 §3.5, Enterprise CR-001 §6.6 item 47) on corpus
+document 4083 and reproduced on Apache main 5be8c69b6 with the FO below (docs/upstream/repro/FOP-edge-under-keep.fo;
+the float's block-container wrapped in an fo:block, see FOP-3353). Branch FOP-edge-under-keep in ../fop-upstream-wt
+(f277f5a13), one commit on main, independent of FOP-3355/FOP-3354 and of the walked-past change; layout test
+float_edge-under-keep.xml fails on main and passes with the change. Fixed on the fork in bf3a5d41c (merged to
+2.11-docx4j.6). To be filed only on Jason's word, Bug, Minor, component layout/unqualified, Affects 2.11 and main.
+
+Summary
+-------
+A side float's edge is never taken at a break a keep forbids as a page break, so every line of a kept paragraph is
+set beside the float
+
+Description
+-----------
+While a side float is being handled, a legal break ends the breaking algorithm as the float's start or edge, which is no page break. But {{PageBreakingAlgorithm.elementCanEndLine}} rejects a keep's infinite penalty ({{KnuthPenalty.INFINITE}}, 1000) of class page where the page cannot end, and {{considerLegalBreak}}'s node loop breaks out before deactivating anything, so no edge node is made there and the algorithm walks on to the first break the page may take, however far below the float's foot.
+Reproducer, attached: a 40pt fo:float anchored in a one-line heading with {{keep-with-next="always"}}, then a ten-line paragraph with {{keep-together.within-page="always"}} and three plain paragraphs. The float's foot lies in the kept paragraph's first line. On main at 5be8c69b6 all ten lines of the kept paragraph are set beside the float (11 narrowed lines in all, the heading included); the edge is the first break after the paragraph. With the change one line is beside the float and nine are full width (2 narrowed lines).
+On a document converted from Word (docx4j's corpus 4083, whose headings carry keep-with-next and keep-together), no break after a float's anchor was ever offered as the edge; together with the walked-past edge (separate issue) the "edge" was a forced break inside a table.
+
+Fix
+---
+{{PageBreakingAlgorithm.elementCanEndLine}} returns true while a float is being handled: the node loop then runs at a kept break too, deactivates the nodes and, where the break is the edge, records the edge node. Keeps still govern page breaks, which are decided in the pass after the float, where no float is being handled.
+Layout test float_edge-under-keep.xml: one page, two lines beside the float (the heading and the kept paragraph's first), the paragraph's second line full width, flow 210pt; fails on main (11 lines beside).
