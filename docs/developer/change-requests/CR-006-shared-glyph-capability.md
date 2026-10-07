@@ -6,6 +6,12 @@ behaviour changes, so no fork gate; docx4j's own gate for flipping its default f
 Registry key `fop/CR-006`. Not upstream-bound: the fix it names is
 (FOP-3340, branch `FOP-3340`, apache/xmlgraphics-fop#109); the capability is the fork's.
 
+Upstream review: Joao Goncalves asked on FOP-3340 (2026-10-06) for an FO on it and on every other ticket. Answered
+2026-10-08, comment 18124629, with two FOs under `docs/upstream/repro/`: `FOP-3340-shared-glyph.fo` (Aegean600 from the
+test tree maps U+2019 and U+02BC to one glyph, so `it’s` extracts as `itʼs` on `main` 5be8c69b6 and as written on branch
+`FOP-3340`) and `FOP-3340-cjk-radical.fo` (the description's Source Han Sans CN case). The comment also points FOP-3354,
+FOP-3355 and FOP-2918 at their layout tests and promises an FO on each remaining font ticket.
+
 Enterprise CR-001 §6.6 item 26.
 
 ## 1. What the fix promises
