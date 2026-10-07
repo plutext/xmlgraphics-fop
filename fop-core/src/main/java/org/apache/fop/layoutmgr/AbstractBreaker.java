@@ -665,8 +665,9 @@ public abstract class AbstractBreaker {
                 }
                 // the part after a side float's edge forced by clear starts at the float's foot (fop/CR-022)
                 int floatClearance = takeFloatClearance();
+                int spaceBeforeClearance = childLC.getSpaceBefore();
                 if (floatClearance > 0) {
-                    childLC.setSpaceBefore(childLC.getSpaceBefore() + floatClearance);
+                    childLC.setSpaceBefore(spaceBeforeClearance + floatClearance);
                 }
 
                 // Handle SpaceHandling(Break)Positions, see SpaceResolver!
@@ -674,6 +675,10 @@ public abstract class AbstractBreaker {
                         notificationEndElementIndex, lastBreak);
                 // Add areas now!
                 addAreas(new KnuthPossPosIter(effectiveList, startElementIndex, endElementIndex + 1), childLC);
+                if (floatClearance > 0) {
+                    // the context is shared by the parts: the clearance is this part's only (fop/CR-022)
+                    childLC.setSpaceBefore(spaceBeforeClearance);
+                }
             } else {
                 // no content for this part
                 handleEmptyContent();

@@ -122,6 +122,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     /** The content height at the float's edge, up to the first box below the float (fop/CR-020). */
     private int floatEdgeWidth;
     private int floatClearance; // fop/CR-022
+    private int edgeElementIdx = -1; // fop/CR-022: the legal break under consideration while a float is on
     private KnuthNode bestFloatEdgeNode;
     private FloatPosition floatPosition;
     private int previousFootnoteListIndex = -2;
@@ -450,6 +451,48 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         }
     }
 
+    /**
+     * While a float is being handled, a legal break that is the float's edge ends the algorithm there: the node
+     * that would be activated is recorded as the edge node instead, and nothing stays active. Before this, an
+     * edge at a break the page could also take (its ratio within the threshold) was passed over, every later
+     * break deactivated the nodes before it, and the edge became the forced break at the page's end, inside
+     * whatever was there: a table in corpus document 4083, where the deferral of fop/CR-020 then left no edge
+     * node and handleFloat threw NullPointerException (fop/CR-022 §3.5). A break the page cannot take at all
+     * (too long or too short) still reaches createForcedNodes, which records the edge as before.
+     */
+    @Override
+    protected void activateNode(KnuthNode node, int difference, double r, double demerits, int fitnessClass,
+            int availableShrink, int availableStretch) {
+        if (handlingFloat() && edgeElementIdx >= 0) {
+            int[] glue = glueUpToNextBox(edgeElementIdx);
+            if (bestFloatEdgeNode == null || demerits <= bestFloatEdgeNode.totalDemerits) {
+                bestFloatEdgeNode = createNode(edgeElementIdx, node.line + 1, fitnessClass, totalWidth + glue[0],
+                        totalStretch + glue[1], totalShrink + glue[2], r, availableShrink, availableStretch,
+                        difference, demerits, node);
+            }
+            return;
+        }
+        super.activateNode(node, difference, r, demerits, fitnessClass, availableShrink, availableStretch);
+    }
+
+    /** The width, stretch and shrink of the glue from the break up to the next box, as forceNode counts them. */
+    private int[] glueUpToNextBox(int elementIdx) {
+        int[] glue = new int[3];
+        for (int i = elementIdx; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox()) {
+                break;
+            } else if (e.isGlue()) {
+                glue[0] += e.getWidth();
+                glue[1] += e.getStretch();
+                glue[2] += e.getShrink();
+            } else if (e.isForcedBreak() && i != elementIdx) {
+                break;
+            }
+        }
+        return glue;
+    }
+
     /** The content height as if the break were just before the next box, as forceNode measures a node. */
     private int widthUpToNextBox(int elementIdx) {
         int width = totalWidth;
@@ -590,6 +633,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             }
         }
         boolean edgeDeferred = false;
+        edgeElementIdx = elementIdx;
         if (floatHeight != 0) {
             // A side float ends at the first legal break after which the content lies wholly below the
             // float's foot: the content height before the break plus the glue up to the next box, the space
@@ -601,7 +645,8 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             // A block-level FO whose clear names the float's side must not sit beside it: the break before its
             // first box is the float's edge too, and deactivateNode keeps the float's foot as the height the
             // content after the edge starts at, so the FO is laid out below the float (fop/CR-022).
-            if (!handlingEndOfFloat && (edgeWidth >= floatHeight || clearsFloatAtNextBox(elementIdx))) {
+            if (!handlingEndOfFloat && (edgeWidth >= floatHeight || clearsFloatAtNextBox(elementIdx)
+                    || startsNonRestartableThePageCannotHold(elementIdx, edgeWidth))) {
                 handlingEndOfFloat = true;
             }
             if (handlingEndOfFloat) {
@@ -620,7 +665,16 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         super.considerLegalBreak(element, elementIdx);
         if (edgeDeferred) {
             handlingEndOfFloat = true;
+            if (activeNodeCount == 0 && bestFloatEdgeNode == null) {
+                // a forced break inside the table, made with float handling off: no edge can be taken here (a
+                // table is not restarted from a row) and none was taken before it. The float is given up and the
+                // page breaks here; the lines after keep the width they were set to beside the float (fop/CR-022)
+                log.warn("A side float whose edge falls inside a table the page cannot hold: the float is given up"
+                        + " at the page break inside the table, and the lines after it keep their narrowed width.");
+                disableFloatHandling();
+            }
         }
+        edgeElementIdx = -1;
         newFootnotes = false;
     }
 
@@ -668,6 +722,31 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             }
         }
         return false;
+    }
+
+    /**
+     * Whether the next box starts a non-restartable layout manager (a table's) whose elements would carry the
+     * content past the end of the page while the float is on. The edge is then taken here, before the table, and
+     * the table starts at the float's foot (the clearance) and breaks across the page as any table does. Deferring
+     * the edge into such a table (fop/CR-020) ended in a forced break inside it made with float handling off, no
+     * edge node, and a NullPointerException in handleFloat (corpus document 4083, 2026-10-08; fop/CR-022 §3.5).
+     */
+    private boolean startsNonRestartableThePageCannotHold(int elementIdx, int edgeWidth) {
+        LayoutManager starting = nonRestartableLMOfNextBox(elementIdx);
+        if (starting == null || starting == nonRestartableLMOfPreviousBox(elementIdx)) {
+            return false;
+        }
+        int extent = 0;
+        for (int i = elementIdx; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox() && nonRestartableLM(e.getPosition()) != starting) {
+                break;
+            }
+            if (e.isBox() || e.isGlue()) {
+                extent += e.getWidth();
+            }
+        }
+        return edgeWidth + extent > lineWidth;
     }
 
     private static int clearOf(FObj fo) {
@@ -742,6 +821,13 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     /** {@inheritDoc} */
     @Override
     protected boolean elementCanEndLine(KnuthElement element, int line, int difference) {
+        if (handlingFloat()) {
+            // While a side float is being handled, a legal break ends the algorithm as the float's start or
+            // edge, which is no page break: a keep's infinite penalty (keep-together, keep-with-next; INFINITE
+            // is 1000) must not stop the node loop here, or nothing is deactivated, no edge node is made, and
+            // the algorithm walks on to the next unkept break, inside whatever follows (fop/CR-022 §3.5).
+            return true;
+        }
         if (!(element.isPenalty()) || pageProvider == null) {
             return true;
         } else {

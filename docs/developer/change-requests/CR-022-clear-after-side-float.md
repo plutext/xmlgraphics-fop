@@ -1,7 +1,8 @@
 # CR-022: honour `clear` on a block-level FO after a side float
 
 Status: IN PROGRESS 2026-10-08, on branch `CR-022-clear-after-side-float` off `2.11-docx4j.6`; measured on the command
-line (§4); full `fop-core` suite 3864 tests, 0 failures, 4 skipped, checkstyle clean (§5); the docx4j gate pending (§9). Registry key `fop/CR-022`. Capability
+line (§4); full `fop-core` suite 3864 tests, 0 failures, 4 skipped, checkstyle clean (§5), rerun after the §3.5 fixes; the
+docx4j gate pending (§9, r17). Registry key `fop/CR-022`. Capability
 `clear-after-side-float` (§3.4). Decided by Jason on 2026-10-07 as the first item after `2.11-docx4j.5` shipped
 (CR-020 §7), and started on his word on 2026-10-08.
 
@@ -87,6 +88,41 @@ change: `PageBreakingAlgorithm.initialize` already counts the restarted content 
 and ignores it, so docx4j may write it unconditionally; the capability tells docx4j whether writing it will keep a
 table off a text-box band, and so whether the band may be made where a table follows.
 
+### 3.5 Three defects of the edge search, found on corpus document 4083
+
+The docx4j session's gate b182 on the released `.5` hit `NullPointerException` in `PageBreakingAlgorithm.handleFloat`
+(`bestFloatEdgeNode` null) on 4083 once docx4j floated four of its tables; reproducer `~/fidelity-cr030/repro/
+float-edge-npe-4083.fo` (the whole document; its `docx4j:` extension attributes stripped to run on the command line,
+fonts falling back). Stock Apache `main` at 5be8c69b6 fails earlier on the same FO with FOP-3354's
+`NoSuchElementException`, so the fork reaches a defect `main` cannot. Traced on 2026-10-08 with temporary logging of
+every legal break of the float passes; three mechanisms, each fixed here:
+
+1. **The edge is found and walked past.** `handleFloat` is reached only when no node stays active. At the edge
+   break the node loop deactivates every node (`handlingFloat()`), but if the page's adjustment ratio there lies
+   within the threshold, `activateNode` re-activates one and the algorithm walks on, deactivating everything at
+   each later break, until a break the page cannot take forces a node, which becomes the "edge" wherever it falls:
+   in 4083 inside the second table, 316pt below the foot. On a nearly empty page the ratio is out of range, the node
+   is forced at once and the edge is right, which is why the layout tests never saw it. Now
+   `PageBreakingAlgorithm.activateNode` records the node as `bestFloatEdgeNode` instead of activating it while a
+   float is being handled, so the algorithm ends at the edge whatever the page's ratio there.
+2. **A keep hides the edge.** `elementCanEndLine` rejects a penalty of `INFINITE` (which is 1000) of class page
+   where the page cannot end, and the node loop breaks out before deactivating anything. 4083's anchor paragraphs
+   carry `keep-together.within-page="always"` and `keep-with-next="always"`, so no break after the anchor was ever
+   offered as the edge, which is no page break and which keeps have nothing to say about. While a float is being
+   handled, `elementCanEndLine` now returns true.
+3. **A deferred edge at a forced break.** With the edge deferred into a table (CR-020), a too-long break inside the
+   table runs `createForcedNodes` with float handling switched off, so it makes a `lastTooLong` node and no edge
+   node, and `handleFloat` then dereferences null. Two guards: at the break before a non-restartable FO whose
+   elements would carry the content past the page's end, the edge is taken there and the table starts at the
+   float's foot by the clearance of §3.3, breaking across the page as any table does
+   (`startsNonRestartableThePageCannotHold`); and if a deferred break still leaves no active node and no edge
+   node, the float is given up at the page break with a warning, the lines after keeping their narrowed width,
+   rather than throwing. The second guard did not fire on 4083 once the first two mechanisms were fixed.
+
+The three together: 4083 renders, 10 pages, no exception; the warnings left are the command line's font
+fallbacks. With the first fix alone the edge is right but the keep still hid it; with the first two the table case
+was reached twice and given up; with all three nothing is given up.
+
 ## 4. Measured on the command line (plain fork, no docx4j)
 
 `clear.fo` (six page sequences; the FO is the layout test's), read from the area tree and from the PDF with
@@ -101,6 +137,7 @@ wide and anchored in the heading's line.
 | D. right float, `clear="right"` | beside, 151pt | block at 40pt, 451pt wide |
 | E. no `clear` | beside, 151pt | unchanged |
 | H. 60pt float; a paragraph with no `clear`, then `clear="both"` | both beside (26 and 42pt) | first beside at 26pt, 151pt; the cleared block at 60pt, 451pt |
+| I. 40pt float, then a table of 60 rows the page cannot hold, no `clear` | rows beside the float from 26pt; on `.5` and before, a 4083-shaped document threw | the table at 40pt, 683.5pt of it on the page, the rest on the next page with no second clearance; `i-after` full width |
 
 The clearance shows in the area tree as a block of height 14pt (A, B, D) or 18pt (H) and no width between the
 heading and the cleared FO, as `display-align` produces. The flow's height on page 1 goes from 90pt (16 + 10 + 48 +
@@ -108,8 +145,8 @@ heading and the cleared FO, as `display-align` produces. The flow's height on pa
 
 ## 5. Tests
 
-- `fop/test/layoutengine/standard-testcases/float_clear.xml`: the six cases above, 16 checks (line widths, line
-  counts, flow heights, the kept space-after). Green.
+- `fop/test/layoutengine/standard-testcases/float_clear.xml`: the seven cases above, 21 checks (line widths, line
+  counts, flow heights, the kept space-after, the clearance block once and not on the next page). Green.
 - `float_side-edge-space.xml` (CR-020's): green, the edge logic there unchanged.
 - `Docx4jHooksTestCase` and `Docx4jFopTestCase`: twenty capabilities.
 - Full `fop-core` suite: 3864 tests, 0 failures, 0 errors, 4 skipped; checkstyle 0 findings (2026-10-08).
@@ -137,10 +174,14 @@ Jason's word.
   nothing consumes it, in FOP and here.
 - A float whose foot lies past the end of the page: `floatHeight` is clamped to the page, so a cleared FO goes to the
   page's end and the next page. Not measured.
+- A float whose anchor lies inside a table, and a table the page cannot hold that no legal break precedes at all
+  (a keep of class line or auto, which `handlePenaltyAt` never offers): the last-resort guard of §3.5 applies, the
+  float given up at the page break with a warning. Not measured; 4083 did not reach it.
 - A cleared FO inside the float's own anchor paragraph, or inside a table cell beside a float: the first is the
   list-head case (nothing clears), the second not measured.
 - Both-sides wrap and the offset float (docx4j CR-032 §4.2) are `fop/CR-023`, not this.
 
 ## 9. Gate (the docx4j session)
 
-Pending: renderer r16 from this branch, against b180 (docx4j 17.3.1's code on `2.11-docx4j.5`).
+Pending: renderer r17 from this branch (r16, before §3.5, superseded), against b180 (docx4j 17.3.1's code on
+`2.11-docx4j.5`).

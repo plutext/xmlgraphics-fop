@@ -253,7 +253,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    it (10855's rubric table at Word's 155.35 with the band restored; 0 movers with it withheld), queued behind docx4j
    CR-032 phase 1's gates (2026-10-08); the band for 10855's shape is the docx4j session's own step first. On PASS: merge to
    `2.11-docx4j.6` by fast-forward, release notes, §6.6 item 45's text updated (the Enterprise file is Jason's; check
-   `git status` first), the registry text sent. The three recorded float NPE reproducers (items 20, 36, 37) render on
+   `git status` first), the registry text sent. Found on the way (2026-10-08, the docx4j session's gate b182 on 4083, CR-022
+   §3.5) and fixed on the branch: the edge search walked past an edge on a page within its adjustment range, never offered
+   a kept break as the edge (INFINITE is 1000), and threw NullPointerException in handleFloat when a deferred edge met a
+   forced break inside a table; a table the page cannot hold now starts at the float's foot. r16 is superseded by the jar
+   after these fixes (r17); §6.6 item 47 to be written for it. The three recorded float NPE reproducers (items 20, 36, 37) render on
    this build with `-ea`, told to the docx4j session for its br-anchor decline.
 3. *`fop/CR-023`, after CR-022: the offset float and both-sides wrap for docx4j CR-032 (floating tables)*. Jason confirmed
    D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
