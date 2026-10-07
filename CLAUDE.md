@@ -247,9 +247,12 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
 2. *Honour `clear` after a side float*, `fop/CR-022`: IN PROGRESS 2026-10-08 on branch `CR-022-clear-after-side-float`
    (Jason's yes to start, 2026-10-08). `clear` on `fo:block`, `fo:block-container`, `fo:table`, `fo:list-block` ends a side
    float on its side at the break before the FO, and the FO starts at the float's foot (the clearance through the
-   layout context's space-before, as display-align does). Capability `clear-after-side-float`, the twentieth. Measured
-   on the command line (CR-022 §4), layout test `float_clear.xml` green; the full suite, checkstyle, the jar for the
-   docx4j gate (r16) and its reading are next. The three recorded float NPE reproducers (items 20, 36, 37) render on
+   layout context's space-before, as display-align does). Capability `clear-after-side-float`, the twentieth. Committed
+   0fc1fd40e on the branch: measured on the command line (CR-022 §4), layout test `float_clear.xml`, full suite 3864/0,
+   checkstyle clean. The jar is at `~/fop-renderers/r16-CR-022-0fc1fd40e/` (sha256 03f2949a...); the docx4j session gates
+   it (10855's rubric table at Word's 155.35 with the band restored; 0 movers with it withheld). On PASS: merge to
+   `2.11-docx4j.6` by fast-forward, release notes, §6.6 item 45's text updated (the Enterprise file is Jason's; check
+   `git status` first), the registry text sent. The three recorded float NPE reproducers (items 20, 36, 37) render on
    this build with `-ea`, told to the docx4j session for its br-anchor decline.
 3. *`fop/CR-023`, after CR-022: the offset float and both-sides wrap for docx4j CR-032 (floating tables)*. Jason confirmed
    D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
