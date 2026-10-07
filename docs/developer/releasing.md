@@ -181,6 +181,24 @@ numbered staging repositories like `orgdocx4j-1095`.
 - The next development version is `2.11-docx4j.5-SNAPSHOT`, on branch `2.11-docx4j.5`, cut from the
   release commit and added to CI's branch list.
 
+## Proven by the fourth release, 2.11-docx4j.5 on 2026-10-07
+
+- **Released by Jason from the pushed branch** at the version commit `724e92d1c`, which changes the `revision`
+  and the `<scm>` lines and nothing else; CI was green on it (run 37591001572). The release notes were still
+  marked draft at that commit and were closed on the next branch, so a reader of the tag finds the draft
+  wording; the content is the same.
+- **Tagged after deploying, not before**: `v2.11-docx4j.5`, annotated, was created at `724e92d1c` once Central
+  served the artifacts. The tag names what was built, since that commit is the only one at the release
+  version, but this is the second time the runbook's order was not kept. Tag first.
+- **Verified from Central after publication**: the five artifacts, each with sources, javadoc, `.asc`, `.md5`
+  and `.sha1` (the parent a pom only). The core manifest's `Implementation-Version` is `2.11-docx4j.5`; the
+  published poms carry no property reference and no parent element; `Docx4jFop` in the published core names
+  the four capabilities new in `.5` (`page-number-zero`, `measured-region-extents`, `side-float-edges`,
+  `simulate-style-per-face`). Core jar sha256
+  `dff5ffe1b3ef5425a20f6fe392729e9c69faa86c11c163e175a46b3cf11f2af3`.
+- The next development version is `2.11-docx4j.6-SNAPSHOT`, on branch `2.11-docx4j.6`, cut from the
+  release commit and added to CI's branch list.
+
 ## Two things that look wrong and are not
 
 **The published pom lists fewer dependencies than the module's own pom.** For the core

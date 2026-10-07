@@ -1,7 +1,7 @@
 # docx4j-fo-renderer: Apache FOP's own CI (build, checkstyle, spotbugs), on the fork's branch.
 #
-# Keep these branch lists in step with the fork's branch, named in CLAUDE.md. 2.11-docx4j.5
-# is where work happens; the others are frozen (2.11-docx4j.3 never shipped; 2.11-docx4j.4,
+# Keep these branch lists in step with the fork's branch, named in CLAUDE.md. 2.11-docx4j.6
+# is where work happens; the others are frozen (2.11-docx4j.3 never shipped; 2.11-docx4j.5, 2.11-docx4j.4,
 # 2.11-docx4j.2 and docx4j-2.11 identify releases) and are listed only so an accidental push there is still checked. A stale list here fails
 # silently: no runs at all reads the same as no failures.
 
@@ -10,9 +10,9 @@ name: Java CI with Maven
 on:
   workflow_dispatch:
   push:
-    branches: [ "2.11-docx4j.5", "2.11-docx4j.4", "2.11-docx4j.3", "2.11-docx4j.2", "docx4j-2.11" ]
+    branches: [ "2.11-docx4j.6", "2.11-docx4j.5", "2.11-docx4j.4", "2.11-docx4j.3", "2.11-docx4j.2", "docx4j-2.11" ]
   pull_request:
-    branches: [ "2.11-docx4j.5", "2.11-docx4j.4", "2.11-docx4j.3", "2.11-docx4j.2", "docx4j-2.11" ]
+    branches: [ "2.11-docx4j.6", "2.11-docx4j.5", "2.11-docx4j.4", "2.11-docx4j.3", "2.11-docx4j.2", "docx4j-2.11" ]
 
 jobs:
   build:
