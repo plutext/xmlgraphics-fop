@@ -248,24 +248,34 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    (`fop/CR-022`). FOP ignores `clear` on block-level FOs; 10855's rubric table is drawn over its text box
    (CR-020 §7, XSL 1.1 §7.19.2, §6.6 item 45's text). With it and docx4j's page-fit rule (561), docx4j's text-box
    band can return, gated on `side-float-edges`. Unsized.
-3. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
+3. *Two side-float hooks for docx4j CR-032 (floating tables), after CR-022*: docx4j CR-032 §4.2, relayed by the docx4j session
+   2026-10-08 as Jason's decision D2 there, to be confirmed by him in this session before starting. `float-offset`
+   (`fox:float-offset` on `fo:float`: the intrusion into the line boxes begins N pt below the anchor line's top, the lines
+   between keep the full ipd; today docx4j writes Word's tblpY as padding-top and the anchor paragraph's lines above the
+   table are narrowed, probe table-floating 0.6875) and `float-band` (a float of ipd >= the column: a line with content goes
+   below its foot, an empty paragraph's line box is laid beside it and consumes the band, as Word lays empties behind a
+   full-width table; 184 of 208 corpus floating tables are full width). Serves §6.6 item 8 (no floating tables) and item
+   44's register cause textbox-wide-no-text-beside. The band's semantics wait on docx4j's phase 0 Word probes (nine, on the
+   share, awaiting Jason's run) and on the docx4j session's measurement of FOP today with a column-wide float; do not design
+   it before those readings arrive. Its own CR, `fop/CR-023`.
+4. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
    off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
    says.
-4. *Merging Apache `main`* into the fork, which this file asks for now that FOP-3348 and FOP-3349 have landed:
+5. *Merging Apache `main`* into the fork, which this file asks for now that FOP-3348 and FOP-3349 have landed:
    `main` at 5be8c69b6 also carries FOP-3331's float regression (FOP-3353: a float whose own child is a
    block-container goes in the flow). Fix or revert it in the fork with the merge, and gate the merge. Committed
    docx4j wraps float content in an `fo:block`, which is unaffected. Also check Apache's FOP-3352 (`GlyfTable`,
    empty glyphs) against our #108 (FOP-3339).
-5. *Upstream pull requests*: on a reviewer's request, work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
+6. *Upstream pull requests*: on a reviewer's request, work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
    and #109 merge, and `FOP-3355` when #123 merges.
-6. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
+7. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
    private-use code point in ToUnicode (CR-002 §10.2; ActualText per cluster is the follow-up); a format
    character the font has no glyph for is still lost (CR-007 §4); the position-adjustments paint path
    indexes its adjustments by UTF-16 unit, wrong after a supplementary character (CR-005, noted to the
    docx4j session); FOP embeds a single-byte TrueType font whole (`PDFFactory.makeFontFile`), moot for
    docx4j since it retired its `+noliga` twin under the fork; per-font `advanced="false"` is ignored by
    FOP's stock font collection (CR-003 §10).
-7. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
+8. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
    and P2-3 small and clean; P2-4, P2-6, P2-7 inert; the structure-tree half of P2-5 superseded by
    FOP-3165 and FOP-3283 in Apache `main`).
 
