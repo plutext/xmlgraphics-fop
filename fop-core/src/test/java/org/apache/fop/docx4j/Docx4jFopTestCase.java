@@ -46,5 +46,6 @@ public class Docx4jFopTestCase {
         }
         assertTrue(Docx4jFop.has(Docx4jFop.PAIR_TABLE));
         assertTrue(Docx4jFop.has(Docx4jFop.SHARED_GLYPH_TOUNICODE));
+        assertTrue(Docx4jFop.has(Docx4jFop.CLEAR_AFTER_SIDE_FLOAT));
     }
 }

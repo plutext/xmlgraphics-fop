@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the clear property is read on this block-level FO, so that a side float ends before it and its
+ * content starts at the float's foot (fop/CR-022). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo.flow.table;
@@ -64,6 +68,7 @@ public class Table extends TableFObj implements ColumnNumberManagerHolder, Break
     private LengthPairProperty borderSeparation;
     private int breakAfter;
     private int breakBefore;
+    private int clear; // fop/CR-022
     private LengthRangeProperty inlineProgressionDimension;
     private KeepProperty keepTogether;
     private KeepProperty keepWithNext;
@@ -131,6 +136,7 @@ public class Table extends TableFObj implements ColumnNumberManagerHolder, Break
         borderSeparation = pList.get(PR_BORDER_SEPARATION).getLengthPair();
         breakAfter = pList.get(PR_BREAK_AFTER).getEnum();
         breakBefore = pList.get(PR_BREAK_BEFORE).getEnum();
+        clear = pList.get(PR_CLEAR).getEnum(); // fop/CR-022
         inlineProgressionDimension = pList.get(PR_INLINE_PROGRESSION_DIMENSION).getLengthRange();
         keepTogether = pList.get(PR_KEEP_TOGETHER).getKeep();
         keepWithNext = pList.get(PR_KEEP_WITH_NEXT).getKeep();
@@ -484,6 +490,14 @@ public class Table extends TableFObj implements ColumnNumberManagerHolder, Break
     /** @return the "break-before" FO trait. */
     public int getBreakBefore() {
         return breakBefore;
+    }
+
+    /**
+     * The clear property: which side's floats this FO must not sit beside (fop/CR-022).
+     * @return EN_START, EN_END, EN_BOTH or EN_NONE
+     */
+    public int getClear() {
+        return clear;
     }
 
     /** @return the "keep-with-next" FO trait.  */

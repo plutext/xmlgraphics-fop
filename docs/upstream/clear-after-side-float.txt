@@ -1,0 +1,38 @@
+JIRA text, NOT filed. Fork change fop/CR-022 (Enterprise CR-001 item 45's text, CR-020 §7). An extension of XSL's
+clear to block-level FOs, so an Improvement, not a Bug; to be measured on Apache main before filing (the fork's
+edge logic of FOP-3355 and FOP-3354 is not on main, so an upstream branch stacks on #124 and #123), and filed only
+on Jason's word.
+
+Project:          FOP
+Issue Type:       Improvement
+Affects Version:  2.11 and main
+Component:        layout/unqualified
+
+Summary
+-------
+A block-level FO with clear="both" (or the float's side) is still set beside a side float; honour clear on
+fo:block, fo:block-container, fo:table and fo:list-block as the edge of the float
+
+Description
+-----------
+FOP's property maker accepts clear on any FO and fo:float binds it, but nothing in the layout reads it. A table or
+paragraph that must not sit beside a side float has no way to say so: it is set in the narrowed lines beside the
+float, and a table keeps its own width there and is drawn over the float. XSL 1.1 gives clear to fo:float only; CSS
+gives it to every block-level box, with clearance: the box's before edge is moved to the foot of the floats on the
+named side. That is what a word processor does with a table following a wrapped text box, and what a converter from
+one needs.
+
+Reproducer: a 40pt fo:float float="left" anchored in a one-line paragraph with space-after="10pt", followed by
+<fo:block clear="both"> of three lines. On main the block's first line is beside the float at 26pt, narrowed; with
+the change the block starts at the float's foot, 40pt, full width. Six cases in the layout test float_clear.xml:
+a block and a table cleared, clear on the other side (no effect), a right float with clear="right", no clear (as
+before), and a paragraph beside the float before the cleared block (stays beside).
+
+Change
+------
+Block, BlockContainer, Table and ListBlock bind PR_CLEAR. In PageBreakingAlgorithm.considerLegalBreak, in the pass
+where a float is on, a legal break whose next box starts an FO with clear on the float's side is the float's edge
+(the side read from the page sequence's intrusion adjustments; the FO starts there when a layout manager in the
+box's position chain carrying clear is absent from the previous box's chain). deactivateNode keeps the float's foot
+as the effective height and the difference as a clearance, which PageBreaker hands to AbstractBreaker.addAreas for
+the first part after the edge as the layout context's space-before, the path display-align uses.

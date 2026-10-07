@@ -19,7 +19,9 @@
  * Apache FOP 2.11: hook page-master-by-content, a page's height asked for with the part of the page-sequence that
  * owns it, carried on the node that starts it (fop/CR-017); and a side float ends at the break before the first
  * line lying below its foot, the space between paragraphs counted, and not inside a table, which cannot be read
- * again from there (fop/CR-020). See README.md, "Changes from Apache FOP 2.11". */
+ * again from there (fop/CR-020); and a block-level FO whose clear names the side a float is on ends the float at the
+ * break before it, its content starting at the float's foot (fop/CR-022). See README.md, "Changes from Apache FOP
+ * 2.11". */
 
 /* $Id$ */
 
@@ -35,6 +37,10 @@ import org.apache.commons.logging.LogFactory;
 
 import org.apache.fop.fo.Constants;
 import org.apache.fop.fo.FObj;
+import org.apache.fop.fo.flow.Block;
+import org.apache.fop.fo.flow.BlockContainer;
+import org.apache.fop.fo.flow.ListBlock;
+import org.apache.fop.fo.flow.table.Table;
 import org.apache.fop.layoutmgr.AbstractBreaker.FloatPosition;
 import org.apache.fop.layoutmgr.AbstractBreaker.PageBreakPosition;
 import org.apache.fop.layoutmgr.WhitespaceManagementPenalty.Variant;
@@ -115,6 +121,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     private int floatHeight;
     /** The content height at the float's edge, up to the first box below the float (fop/CR-020). */
     private int floatEdgeWidth;
+    private int floatClearance; // fop/CR-022
     private KnuthNode bestFloatEdgeNode;
     private FloatPosition floatPosition;
     private int previousFootnoteListIndex = -2;
@@ -591,7 +598,10 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             // the edge is kept for deactivateNode, so the content after the float starts below that space
             // (fop/CR-020).
             int edgeWidth = widthUpToNextBox(elementIdx);
-            if (!handlingEndOfFloat && edgeWidth >= floatHeight) {
+            // A block-level FO whose clear names the float's side must not sit beside it: the break before its
+            // first box is the float's edge too, and deactivateNode keeps the float's foot as the height the
+            // content after the edge starts at, so the FO is laid out below the float (fop/CR-022).
+            if (!handlingEndOfFloat && (edgeWidth >= floatHeight || clearsFloatAtNextBox(elementIdx))) {
                 handlingEndOfFloat = true;
             }
             if (handlingEndOfFloat) {
@@ -619,6 +629,90 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             KnuthElement e = getElement(i);
             if (e.isBox()) {
                 return nonRestartableLM(e.getPosition());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Whether the next box after the break starts a block-level FO whose clear names the side the current float
+     * is on (fop/CR-022). The FO starts there when a layout manager in the box's position chain carrying clear is
+     * absent from the previous box's chain; at the head of the list there is no previous box and nothing clears.
+     */
+    private boolean clearsFloatAtNextBox(int elementIdx) {
+        if (!(topLevelLM instanceof PageSequenceLayoutManager)) {
+            return false;
+        }
+        PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) topLevelLM;
+        boolean floatAtStart = pslm.getStartIntrusionAdjustment() > 0;
+        boolean floatAtEnd = pslm.getEndIntrusionAdjustment() > 0;
+        if (!floatAtStart && !floatAtEnd) {
+            return false;
+        }
+        Position previous = positionOfPreviousBox(elementIdx);
+        if (previous == null) {
+            return false;
+        }
+        for (Position p = positionOfNextBox(elementIdx); p != null; p = nextInChain(p)) {
+            LayoutManager lm = p.getLM();
+            if (lm == null) {
+                continue;
+            }
+            int clear = clearOf(lm.getFObj());
+            if (clear == Constants.EN_NONE || chainHasLM(previous, lm)) {
+                continue;
+            }
+            if (clear == Constants.EN_BOTH || (clear == Constants.EN_START && floatAtStart)
+                    || (clear == Constants.EN_END && floatAtEnd)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static int clearOf(FObj fo) {
+        if (fo instanceof Block) {
+            return ((Block) fo).getClear();
+        } else if (fo instanceof Table) {
+            return ((Table) fo).getClear();
+        } else if (fo instanceof BlockContainer) {
+            return ((BlockContainer) fo).getClear();
+        } else if (fo instanceof ListBlock) {
+            return ((ListBlock) fo).getClear();
+        }
+        return Constants.EN_NONE;
+    }
+
+    /** The position wrapped by this one, or null at the end of the chain: a TableContentPosition returns itself. */
+    private static Position nextInChain(Position p) {
+        Position next = p.getPosition();
+        return (next == p) ? null : next;
+    }
+
+    private static boolean chainHasLM(Position position, LayoutManager lm) {
+        for (Position p = position; p != null; p = nextInChain(p)) {
+            if (p.getLM() == lm) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Position positionOfNextBox(int elementIdx) {
+        for (int i = elementIdx; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox()) {
+                return e.getPosition();
+            }
+        }
+        return null;
+    }
+
+    private Position positionOfPreviousBox(int elementIdx) {
+        for (int i = elementIdx - 1; i >= 0; i--) {
+            KnuthElement e = getElement(i);
+            if (e.isBox()) {
+                return e.getPosition();
             }
         }
         return null;
@@ -1488,6 +1582,11 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         return floatHeight;
     }
 
+    /** The space between a float's edge forced by clear and the float's foot, else 0 (fop/CR-022). */
+    protected int getFloatClearance() {
+        return floatClearance;
+    }
+
     protected boolean handlingStartOfFloat() {
         return handlingStartOfFloat;
     }
@@ -1505,8 +1604,12 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     protected void deactivateNode(KnuthNode node, int line) {
         super.deactivateNode(node, line);
         if (handlingEndOfFloat) {
-            // the height at the edge, the glue before the next box included (fop/CR-020)
-            floatHeight = Math.max(totalWidth, floatEdgeWidth);
+            // the height at the edge, the glue before the next box included (fop/CR-020), and never above
+            // the float's foot, which an edge forced by clear lies before: the difference is the clearance the
+            // content after the edge is laid out below (fop/CR-022)
+            int edge = Math.max(totalWidth, floatEdgeWidth);
+            floatClearance = Math.max(0, floatHeight - edge);
+            floatHeight = Math.max(floatHeight, edge);
         }
     }
 

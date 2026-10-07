@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: the clear property on a block-level FO after a side float (fop/CR-022). -->
+<testcase>
+  <info>
+    <p>
+      A 40pt side float anchored in a one-line 16pt heading with 10pt space-after. First sequence: the next block
+      has clear="both", so it starts at the float's foot (40pt), full width, instead of beside the float at 26pt.
+      Second: the same with an fo:table. Third: clear="end" against a left float changes nothing. Fourth: a right
+      float and clear="right". Fifth: no clear, so the first line is beside the float and narrowed, as before.
+      Sixth: a paragraph beside a 60pt float, then a block with clear="both", which starts at 60pt.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:layout-master-set><fo:simple-page-master master-name="A4" page-width="595pt" page-height="842pt" margin="72pt"><fo:region-body/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="10pt"><fo:float float="left"><fo:block-container width="300pt" height="40pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:block clear="both">a0 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 </fo:block>
+<fo:block>a1 after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="10pt"><fo:float float="left"><fo:block-container width="300pt" height="40pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:table clear="both" table-layout="fixed" width="200pt" border-collapse="collapse"><fo:table-column column-width="200pt"/><fo:table-body><fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>b1</fo:block></fo:table-cell></fo:table-row><fo:table-row><fo:table-cell border="0.5pt solid"><fo:block>b2</fo:block></fo:table-cell></fo:table-row></fo:table-body></fo:table>
+<fo:block>b3 after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="10pt"><fo:float float="left"><fo:block-container width="300pt" height="40pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:block clear="end">c0 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 </fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="10pt"><fo:float float="right"><fo:block-container width="300pt" height="40pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:block clear="right">d0 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 </fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="10pt"><fo:float float="left"><fo:block-container width="300pt" height="40pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:block>e0 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 </fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="10pt"><fo:float float="left"><fo:block-container width="300pt" height="60pt"><fo:block font-size="0.1pt" line-height="0pt"/></fo:block-container></fo:float>Heading</fo:block>
+<fo:block>h0 beside</fo:block>
+<fo:block clear="both">h1 w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 </fo:block>
+</fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <eval expected="6" xpath="count(//pageViewport)"/>
+    <!-- 1: the cleared block is full width and at the float's foot: heading 16 + space 10 + 14 of clearance -->
+    <eval expected="451000" xpath="//word[.='a0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="2" xpath="count(//word[.='a0']/ancestor::block[1]//lineArea)"/>
+    <eval expected="88000" xpath="(//pageViewport)[1]//flow/@bpd"/>
+    <eval expected="10000" xpath="((//pageViewport)[1]//word[.='Heading'])[1]/ancestor::block[1]/@space-after"/>
+    <!-- 2: so is the table (its own width); flow = 40 + 33 + 16 -->
+    <eval expected="89000" xpath="(//pageViewport)[2]//flow/@bpd"/>
+    <eval expected="451000" xpath="//word[.='b3']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 3: clear on the side the float is not on changes nothing: the first line is beside the float -->
+    <eval expected="151000" xpath="//word[.='c0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="74000" xpath="(//pageViewport)[3]//flow/@bpd"/>
+    <!-- 4: a right float and clear="right" -->
+    <eval expected="451000" xpath="//word[.='d0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="72000" xpath="(//pageViewport)[4]//flow/@bpd"/>
+    <!-- 5: without clear, as before -->
+    <eval expected="151000" xpath="//word[.='e0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="74000" xpath="(//pageViewport)[5]//flow/@bpd"/>
+    <!-- 6: the paragraph before the cleared one stays beside the float; the cleared one starts at 60: 26 + 16 + 18 -->
+    <eval expected="151000" xpath="//word[.='h0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="451000" xpath="//word[.='h1']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="92000" xpath="(//pageViewport)[6]//flow/@bpd"/>
+  </checks>
+</testcase>

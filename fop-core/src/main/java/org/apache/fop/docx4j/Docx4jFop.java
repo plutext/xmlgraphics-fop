@@ -186,6 +186,15 @@ public final class Docx4jFop {
      */
     public static final String SIMULATE_STYLE_PER_FACE = "simulate-style-per-face";
 
+    /**
+     * The {@code clear} property on a block-level FO ({@code fo:block}, {@code fo:block-container}, {@code fo:table},
+     * {@code fo:list-block}) is honoured after a side float: an FO whose clear names the float's side ends the float
+     * at the break before it and is laid out below the float's foot, full width, where Apache FOP reads clear on
+     * {@code fo:float} only and sets the FO beside the float (fop/CR-022; Enterprise CR-001 item 45's text, CR-020 §7).
+     * docx4j writes it on a table that follows a text box's band.
+     */
+    public static final String CLEAR_AFTER_SIDE_FLOAT = "clear-after-side-float";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -209,6 +218,7 @@ public final class Docx4jFop {
         caps.add(MEASURED_REGION_EXTENTS);
         caps.add(SIDE_FLOAT_EDGES);
         caps.add(SIMULATE_STYLE_PER_FACE);
+        caps.add(CLEAR_AFTER_SIDE_FLOAT);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

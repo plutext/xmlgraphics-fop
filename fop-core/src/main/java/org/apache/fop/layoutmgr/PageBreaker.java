@@ -17,8 +17,9 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook page-master-by-content, each page made for the part of the page-sequence that owns it
- * (fop/CR-017); and the space between paragraphs at a side float's edge is kept, the edge being no break in the
- * flow (fop/CR-020). See README.md, "Changes from Apache FOP 2.11". */
+ * (fop/CR-017); the space between paragraphs at a side float's edge is kept, the edge being no break in the
+ * flow (fop/CR-020); and the content after an edge forced by clear is laid out at the float's foot (fop/CR-022).
+ * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -60,6 +61,7 @@ public class PageBreaker extends AbstractBreaker {
     private boolean handlingEndOfFloat;
     private int floatHeight;
     private int floatYOffset;
+    private int pendingFloatClearance; // fop/CR-022
 
     private List<ListElement> relayedFootnotesList;
     private List<Integer> relayedLengthList;
@@ -866,6 +868,14 @@ public class PageBreaker extends AbstractBreaker {
         return (handlingStartOfFloat || handlingEndOfFloat);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected int takeFloatClearance() {
+        int clearance = pendingFloatClearance;
+        pendingFloatClearance = 0;
+        return clearance;
+    }
+
     public int getOffsetDueToFloat() {
         handlingEndOfFloat = false;
         return floatHeight + floatYOffset;
@@ -1030,6 +1040,8 @@ public class PageBreaker extends AbstractBreaker {
                 pslm.setStartIntrusionAdjustment(0);
                 int effectiveFloatHeight = alg.getFloatHeight();
                 pslm.recordEndOfFloat(effectiveFloatHeight);
+                // an edge forced by clear lies above the foot: the next part starts below it (fop/CR-022)
+                pendingFloatClearance = alg.getFloatClearance();
             }
             if (alg.handlingFloat()) {
                 PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();

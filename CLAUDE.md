@@ -244,27 +244,20 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    Enterprise §6.6 items 38 to 42 and 44 to 46 all record the release. Its harness's fork profile is
    `2.11-docx4j.6-SNAPSHOT`. One thing it learnt: on `.5` the FO carries placeholder region extents plus
    `fox:extent="measured"`, so two of its tests that read the pre-pass extents now force the pre-pass.
-2. *Honour `clear` after a side float*: Jason's first item now that `.5` has shipped (2026-10-07), its own CR
-   (`fop/CR-022`). FOP ignores `clear` on block-level FOs; 10855's rubric table is drawn over its text box
-   (CR-020 §7, XSL 1.1 §7.19.2, §6.6 item 45's text). With it and docx4j's page-fit rule (561), docx4j's text-box
-   band can return, gated on `side-float-edges`. Unsized.
-3. *Two side-float hooks for docx4j CR-032 (floating tables), after CR-022*: docx4j CR-032 §4.2, relayed by the docx4j session
-   2026-10-08 as Jason's decision D2 there, to be confirmed by him in this session before starting. `float-offset`
-   (`fox:float-offset` on `fo:float`: the intrusion into the line boxes begins N pt below the anchor line's top, the lines
-   between keep the full ipd; today docx4j writes Word's tblpY as padding-top and the anchor paragraph's lines above the
-   table are narrowed, probe table-floating 0.6875) and `float-band` (a float of ipd >= the column: a line with content goes
-   below its foot, an empty paragraph's line box is laid beside it and consumes the band, as Word lays empties behind a
-   full-width table; 184 of 208 corpus floating tables are full width). Serves §6.6 item 8 (no floating tables) and item
-   44's register cause textbox-wide-no-text-beside. The band's semantics wait on docx4j's phase 0 Word probes (nine, on the
-   share, awaiting Jason's run). The docx4j session's measurement of FOP today (2026-10-08, Apache 2.11 and .5 identical;
-   its FOs under its scratchpad `floatband/`): a float as wide as the column gives the lines beside it ipd 0; an empty block
-   beside it is a zero-ipd line that consumes the band (Word's behaviour for the empties, so the dominant corpus case already
-   works); a block with text beside it is laid at ipd 0 too, one word per line overflowing to the right ("exceed the available
-   area" warning), where Word puts the text below the table. So float-band reduces to: beside a float, a line whose content
-   does not fit the remaining ipd is deferred to the first line position after the float's foot at full ipd; a line with no
-   content keeps today's zero-ipd line; a minimum-fit threshold may be a parameter if phase 0 shows Word has one. Whether
-   float-offset counts from the paragraph's top (with space-before) or its first line is phase 0 case 4. Its own CR,
-   `fop/CR-023`; not designed before the phase 0 readings.
+2. *Honour `clear` after a side float*, `fop/CR-022`: IN PROGRESS 2026-10-08 on branch `CR-022-clear-after-side-float`
+   (Jason's yes to start, 2026-10-08). `clear` on `fo:block`, `fo:block-container`, `fo:table`, `fo:list-block` ends a side
+   float on its side at the break before the FO, and the FO starts at the float's foot (the clearance through the
+   layout context's space-before, as display-align does). Capability `clear-after-side-float`, the twentieth. Measured
+   on the command line (CR-022 §4), layout test `float_clear.xml` green; the full suite, checkstyle, the jar for the
+   docx4j gate (r16) and its reading are next. The three recorded float NPE reproducers (items 20, 36, 37) render on
+   this build with `-ea`, told to the docx4j session for its br-anchor decline.
+3. *`fop/CR-023`, after CR-022: the offset float and both-sides wrap for docx4j CR-032 (floating tables)*. Jason confirmed
+   D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
+   settled it: `float-offset` stands (`fox:float-offset` on `fo:float`: the intrusion begins N pt below the top of the
+   anchor block, space-before included; the lines that fit in the gap are full width above the float), `float-band` is
+   WITHDRAWN (Word does not lay empty paragraphs behind a full-width table; FOP's zero-ipd lines beside a column-wide
+   float already match Word for the narrower case), and the second half is both-sides wrap, §6.6 item 10, for this
+   session to size: Word runs text down both sides of a centred float, with no minimum width. Serves §6.6 item 8.
 4. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
    off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
    says.

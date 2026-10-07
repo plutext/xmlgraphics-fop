@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the first part laid out after a side float's edge forced by clear starts at the float's foot
+ * (fop/CR-022). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -549,6 +553,15 @@ public abstract class AbstractBreaker {
      * @param originalList original Knuth element list
      * @param effectiveList effective Knuth element list (after adjustments)
      */
+    /**
+     * The space the first part laid out after a side float's edge forced by clear is pushed down by, so that it
+     * starts at the float's foot; 0 where no such edge was just taken. Consumed once (fop/CR-022).
+     * @return the clearance in millipoints
+     */
+    protected int takeFloatClearance() {
+        return 0;
+    }
+
     protected void addAreas(PageBreakingAlgorithm alg, int partCount,
             BlockSequence originalList, BlockSequence effectiveList) {
         addAreas(alg, 0, partCount, originalList, effectiveList);
@@ -649,6 +662,11 @@ public abstract class AbstractBreaker {
                     childLC.setSpaceBefore(pbp.difference / 2);
                 } else if (pbp.difference != 0 && displayAlign == Constants.EN_AFTER) {
                     childLC.setSpaceBefore(pbp.difference);
+                }
+                // the part after a side float's edge forced by clear starts at the float's foot (fop/CR-022)
+                int floatClearance = takeFloatClearance();
+                if (floatClearance > 0) {
+                    childLC.setSpaceBefore(childLC.getSpaceBefore() + floatClearance);
                 }
 
                 // Handle SpaceHandling(Break)Positions, see SpaceResolver!

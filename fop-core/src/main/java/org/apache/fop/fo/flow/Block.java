@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the clear property is read on this block-level FO, so that a side float ends before it and its
+ * content starts at the float's foot (fop/CR-022). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo.flow;
@@ -63,6 +67,7 @@ public class Block extends FObjMixed implements BreakPropertySet,
     private CommonRelativePosition commonRelativePosition;
     private int breakAfter;
     private int breakBefore;
+    private int clear; // fop/CR-022
     private Color color;
     private int hyphenationKeep;
     private Numeric hyphenationLadderCount;
@@ -115,6 +120,7 @@ public class Block extends FObjMixed implements BreakPropertySet,
 
         breakAfter = pList.get(PR_BREAK_AFTER).getEnum();
         breakBefore = pList.get(PR_BREAK_BEFORE).getEnum();
+        clear = pList.get(PR_CLEAR).getEnum(); // fop/CR-022
         color = pList.get(PR_COLOR).getColor(getUserAgent());
         hyphenationKeep = pList.get(PR_HYPHENATION_KEEP).getEnum();
         hyphenationLadderCount = pList.get(PR_HYPHENATION_LADDER_COUNT).getNumeric();
@@ -186,6 +192,14 @@ public class Block extends FObjMixed implements BreakPropertySet,
     /** @return the "break-before" trait. */
     public int getBreakBefore() {
         return breakBefore;
+    }
+
+    /**
+     * The clear property: which side's floats this FO must not sit beside (fop/CR-022).
+     * @return EN_START, EN_END, EN_BOTH or EN_NONE
+     */
+    public int getClear() {
+        return clear;
     }
 
     /** @return the "hyphenation-ladder-count" trait.  */
