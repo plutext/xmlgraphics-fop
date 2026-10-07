@@ -256,8 +256,15 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    below its foot, an empty paragraph's line box is laid beside it and consumes the band, as Word lays empties behind a
    full-width table; 184 of 208 corpus floating tables are full width). Serves §6.6 item 8 (no floating tables) and item
    44's register cause textbox-wide-no-text-beside. The band's semantics wait on docx4j's phase 0 Word probes (nine, on the
-   share, awaiting Jason's run) and on the docx4j session's measurement of FOP today with a column-wide float; do not design
-   it before those readings arrive. Its own CR, `fop/CR-023`.
+   share, awaiting Jason's run). The docx4j session's measurement of FOP today (2026-10-08, Apache 2.11 and .5 identical;
+   its FOs under its scratchpad `floatband/`): a float as wide as the column gives the lines beside it ipd 0; an empty block
+   beside it is a zero-ipd line that consumes the band (Word's behaviour for the empties, so the dominant corpus case already
+   works); a block with text beside it is laid at ipd 0 too, one word per line overflowing to the right ("exceed the available
+   area" warning), where Word puts the text below the table. So float-band reduces to: beside a float, a line whose content
+   does not fit the remaining ipd is deferred to the first line position after the float's foot at full ipd; a line with no
+   content keeps today's zero-ipd line; a minimum-fit threshold may be a parameter if phase 0 shows Word has one. Whether
+   float-offset counts from the paragraph's top (with space-before) or its first line is phase 0 case 4. Its own CR,
+   `fop/CR-023`; not designed before the phase 0 readings.
 4. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
    off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
    says.
