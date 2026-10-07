@@ -256,8 +256,10 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    `git status` first), the registry text sent. Found on the way (2026-10-08, the docx4j session's gate b182 on 4083, CR-022
    §3.5) and fixed on the branch: the edge search walked past an edge on a page within its adjustment range, never offered
    a kept break as the edge (INFINITE is 1000), and threw NullPointerException in handleFloat when a deferred edge met a
-   forced break inside a table; a table the page cannot hold now starts at the float's foot. r16 is superseded by the jar
-   after these fixes (r17); §6.6 item 47 to be written for it. The three recorded float NPE reproducers (items 20, 36, 37) render on
+   forced break inside a table; a table the page cannot hold now starts at the float's foot. Committed bf3a5d41c (full suite
+   3864/0 again); the jar for the gate is r17 at `~/fop-renderers/r17-CR-022-bf3a5d41c/` (sha256 b81a343b...), r16
+   superseded; §6.6 item 47 written and committed in the Enterprise file (ba52a7b). 4083's reproducer FO is the docx4j
+   session's, under `~/fidelity-cr030/repro/`. The three recorded float NPE reproducers (items 20, 36, 37) render on
    this build with `-ea`, told to the docx4j session for its br-anchor decline.
 3. *`fop/CR-023`, after CR-022: the offset float and both-sides wrap for docx4j CR-032 (floating tables)*. Jason confirmed
    D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
