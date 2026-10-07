@@ -185,93 +185,70 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-03, at hand-over. Read Enterprise CR-001 §6.6 before proposing anything, as the
+Last updated 2026-10-07, before a `/clear`. Read Enterprise CR-001 §6.6 before proposing anything, as the
 section above says.
 
-**State.** `2.11-docx4j.4` is on Maven Central (2026-10-04), tagged `v2.11-docx4j.4` at `75f9b0262`. It is
-Apache `main` after 2.11 plus the fork's fixes (`fop/CR-009`), with `fop/CR-008`, `fop/CR-010` and
-`fop/CR-011`; `docs/release-notes/2.11-docx4j.4.md` says what each does. docx4j 17.3.0 still depends on
-`2.11-docx4j.2`; the docx4j session scores the released `.4` before docx4j's pom moves to it (17.3.1).
-Work continues on branch `2.11-docx4j.5`, snapshot `2.11-docx4j.5-SNAPSHOT`, cut from the release commit;
-unreleased on it: `fop/CR-012` (page numbered 0, hook `page-number-zero`) and `fop/CR-013` (a table cell's
-continuation parts, hook `continuation-display-align`), both gated PASS 2026-10-04, and `fop/CR-014` (a symbol
-font's ToUnicode text from its configuration, hook `to-unicode-map`) and `fop/CR-015` (Enterprise CR-001
-item 40: a positive OS/2 typo descender, and the 0/0 ascender and descender of a font without `d` and `p`
-glyphs; capability `ascender-descender`; FOP-1896, pull request #119 from branch `FOP-1896`), both gated PASS and merged
-2026-10-05; and `fop/CR-016` (item 42: a decomposition's glyphs each publish their piece, correcting a
-regression `fop/CR-002` introduced in `.2`), gated PASS and merged 2026-10-05, and pushed to #116 as 696830652; and
-`fop/CR-017` (page masters chosen by the content a page starts with, hook `page-master-by-content`, for docx4j
-CR-031 phase 2) and `fop/CR-017.2` (its restart step, hook `page-number-restart`, for phase 3, with the first-page
-fix of CR-017 §12), all gated PASS and merged 2026-10-05; and `fop/CR-018` (header and footer extents measured
-in FOP, hook `measured-region-extents`, for docx4j CR-031 phase 5), gated PASS and merged 2026-10-06; the fixes
-from a review of `.5` (CR-017 §13, CR-018 §10), the hooks' warnings as FOP events (b467cdb37), and `fop/CR-020`
-(side floats, Enterprise CR-001 items 44 and 45, capability `side-float-edges`), gated PASS together in r14 and
-merged 2026-10-07 (ff8b5ce05); `fop/CR-019` (ActualText per cluster) proposed, §9 answered, not to be started
-until Jason says; `fop/CR-021` (simulated italic and bold per face, Enterprise CR-001 item 46, capability
-`simulate-style-per-face`), gated PASS and merged 2026-10-07 (dbe0b7cf2); the first item after `.5` ships is
-honouring `clear` after a side float (CR-020 §7); nineteen capabilities; draft notes in
-`docs/release-notes/2.11-docx4j.5.md`.
-`2.11-docx4j.2` (2026-10-02) and `2.11-docx4j.1` (2026-09-25, tagged at `2f5030172`) are the earlier
-releases; `.3` never shipped. `docs/developer/releasing.md` is the runbook and records what each release
-proved.
+**State.** `2.11-docx4j.4` is on Maven Central (2026-10-04), tagged `v2.11-docx4j.4` at `75f9b0262`;
+`docs/release-notes/2.11-docx4j.4.md` says what it carries. docx4j 17.3.0 depends on `2.11-docx4j.2`. Work is on
+branch `2.11-docx4j.5` (snapshot `2.11-docx4j.5-SNAPSHOT`), **local only: it has never been pushed to origin**
+(checked 2026-10-07); pushing and releasing wait on Jason. Unreleased on it, all gated PASS by the docx4j session
+and merged, each with its CR under `docs/developer/change-requests/` and an entry in
+`docs/release-notes/2.11-docx4j.5.md`:
+- `fop/CR-012` (page numbered 0, hook `page-number-zero`) and `fop/CR-013` (`continuation-display-align`);
+- `fop/CR-014` (`to-unicode-map`), `fop/CR-015` (item 40, `ascender-descender`), `fop/CR-016` (item 42, a
+  decomposition's ToUnicode, correcting `fop/CR-002`'s regression);
+- `fop/CR-017` (`page-master-by-content`) and `fop/CR-017.2` (`page-number-restart`), for docx4j CR-031 phases 2
+  and 3; `fop/CR-018` (`measured-region-extents`, phase 5);
+- the review of `.5` (CR-017 §13, CR-018 §10) and the hooks' warnings as FOP events of `BlockLevelEventProducer`;
+- `fop/CR-020` (side floats, items 44 and 45, `side-float-edges`), with the `FLOAT_RESTART` bit fix (CR-020 §9);
+- `fop/CR-021` (simulated italic and bold per face, item 46, `simulate-style-per-face`).
 
-**Upstream.** Every fix has a JIRA and an open pull request on apache/xmlgraphics-fop, cut against Apache
-`main` on a branch named for its number, each measured on `main` and passing the full suite and
-checkstyle (2026-10-03): #108 FOP-3339 (empty glyph), #109 FOP-3340 (radical), #110 FOP-3341 (lookup
-fallback), #111 FOP-3342 (shared default langsys), #112 FOP-3343 (kerning flag), #113 FOP-3344 (letter
-spacing on the DP path), #114 FOP-3346 (selector drift), #115 FOP-2918 (surrogate pair), #116 FOP-3345
-(ToUnicode for substituted glyphs, stacked on #114 and #109), #117 FOP-3347 (format characters); and from
-before, #106 FOP-3328 and #107 FOP-3330. Since then: #118 FOP-2349 (`fop/CR-010`, stacked on #113), #119 FOP-1896
-(`fop/CR-015`), #120 FOP-3348 and #121 FOP-3349 (`fop/CR-011`, items 36 and 37; both merged to Apache `main`
-2026-10-05, the first of ours to land), #122 FOP-3350 (`fop/CR-012`'s page
+Nineteen capabilities. `fop/CR-019` (ActualText per cluster) is designed and waits on Jason. `2.11-docx4j.2`
+(2026-10-02) and `2.11-docx4j.1` (2026-09-25, tagged at `2f5030172`) are the earlier releases; `.3` never shipped.
+`docs/developer/releasing.md` is the runbook and records what each release proved.
+
+**Upstream.** Every fix has a JIRA and an open pull request on apache/xmlgraphics-fop, cut against Apache `main` on
+a branch named for its number, each measured on `main` and passing the full suite and checkstyle (2026-10-03): #108
+FOP-3339 (empty glyph), #109 FOP-3340 (radical), #110 FOP-3341 (lookup fallback), #111 FOP-3342 (shared default
+langsys), #112 FOP-3343 (kerning flag), #113 FOP-3344 (letter spacing on the DP path), #114 FOP-3346 (selector
+drift), #115 FOP-2918 (surrogate pair), #116 FOP-3345 (ToUnicode for substituted glyphs, stacked on #114 and #109),
+#117 FOP-3347 (format characters); and from before, #106 FOP-3328 and #107 FOP-3330. Since then: #118 FOP-2349
+(`fop/CR-010`, stacked on #113), #119 FOP-1896 (`fop/CR-015`), #120 FOP-3348 and #121 FOP-3349 (`fop/CR-011`, items
+36 and 37; both merged to Apache `main` 2026-10-05, the first of ours to land), #122 FOP-3350 (`fop/CR-012`'s page
 label; the page-number-zero option itself is not sent, Apache keeping to XSL), and, 2026-10-07, #123 FOP-3354 and
-#124 FOP-3355 (`fop/CR-020`, items 45 and 44; #124 stacked on #123), and #125 FOP-3356 (`fop/CR-021`, item 46). FOP-3353 (filed 2026-10-07, no pull request)
-reports a regression on `main` from FOP-3331: a float whose own child is a block-container is put in the flow. This session posts to ASF JIRA
-directly since 2026-10-05, on Jason's OK per item (see the memory note). The drafts under `docs/upstream/` are stamped with both numbers.
-If a reviewer asks for changes, work in the worktree at `../fop-upstream-wt`; when #114 and #109 merge,
-rebase `FOP-3345` to its one commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/main`
-(5be8c69b6, 2026-10-07).
+#124 FOP-3355 (`fop/CR-020`, items 45 and 44; #124 stacked on #123), and #125 FOP-3356 (`fop/CR-021`, item 46).
+FOP-3353 (filed 2026-10-07, no pull request) reports a regression on `main` from FOP-3331: a float whose own child
+is a block-container is put in the flow. This session posts to ASF JIRA directly since 2026-10-05, on Jason's OK per
+item (see the memory note). The drafts under `docs/upstream/` are stamped with both numbers. If a reviewer asks for
+changes, work in the worktree at `../fop-upstream-wt`; when #114 and #109 merge, rebase `FOP-3345` to its one
+commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/main` (5be8c69b6, 2026-10-07).
 
-**Open, in the order I would take them.**
-1. *`fop/CR-008` (FOP-2918's bidi levels) is on `2.11-docx4j.4` (from `.3`), gated PASS 2026-10-03.* It found that
-   #115 is half the fix: the low surrogate's placeholder must also take its character's bidi class
-   (CR-008 §2), or a neutral outside the BMP inside right-to-left text still cuts the run. The gate
-   showed docx4j documents reach the defect (an assertion under `-ea`, wrong order without). Part 2 is
-   on #115 since 2026-10-03 (b401de0d9, green on `main`; body item 7 and a comment).
-   FOP's bidi class table predating Unicode 6.1 is now Enterprise CR-001 item 35 (no corpus reach).
-2. *Apache `main` is merged* into `2.11-docx4j.4` (2026-10-03, `fop/CR-009`, merge 4d6c9d981): full build
-   green, not gated. FOP-3311 and FOP-3326 are reverted (unreleased xmlgraphics-commons API); hook
-   `rule-style-int` added; `gsub-features` is property id 296. `fop/CR-010` (item 16's width fix,
-   capability `letter-space-width`) is on the branch too (ab8fcaa48), not yet installed. Its upstream
-   branch is `FOP-2349` (FOP-2349 upstream, open since 2014; comment posted 2026-10-03), stacked on
-   `FOP-3344`; pull request #118 open since 2026-10-03. The docx4j
-   session's gate on the merge with CR-010: PASS on all five steps (CR-009 §10). The corpora and probes
-   are unchanged against 2.11-docx4j.2; on the bare merge, without CR-010, 51 documents regressed.
-   Releasable as 2.11-docx4j.4 when Jason says. The per-file change
-   notices still say "derived from Apache FOP 2.11"; a mechanical pass is open.
-3. *The bounded pass over §6.6 items 18, 20, 21, 24, 25 (2026-10-03, no code changed).*
-   - 25 is not a FOP defect: XSL 1.1 §6.4.15 gives `fo:region-before` no indent properties (closed in §6.6).
-   - 18 is conformant FOP (conditional space discarded at a reference area's end) against Word's rule:
-     a docx4j hook in `PageBreakingAlgorithm.computeDifference`, as Enterprise CR-001 sketched, by reading.
-   - Two float crashes reproduce on `main` too (`docs/developer/repro/`), now §6.6 items 36 and 37.
-     Both are fixed on `2.11-docx4j.4` as `fop/CR-011` (merged 2026-10-04): 36's cause was a nested
-     block's positions being wrapped twice when line breaking reran, and 37 was a null guard in the
-     overflow report. Filed 2026-10-05: FOP-3348 (36, related to FOP-1912) and FOP-3349 (37), pull requests
-     #120 and #121, both merged to Apache `main` 2026-10-05. That `main` also carries FOP-3331, which puts a
-     float whose own child is an `fo:block-container` in the flow (`docs/upstream/float-blockcontainer-in-flow.txt`,
-     not filed). Committed docx4j wraps float content in an `fo:block`, which is unaffected, but a returning
-     text-box band would not be: fix or revert it in the fork with the merge of `main`, and gate the merge
-     (CR-020 §6).
-   - 20, 21 and 24 did not reproduce from their descriptions; they need docx4j's FO with its workaround
-     off.
-4. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
+**Open, in order.**
+1. *Release `.5`*, on Jason's word: push `2.11-docx4j.5`; the docx4j session's release-candidate run (it reads a
+   jar from `~/fop-renderers/`, see below, or Jason installs); then `docs/developer/releasing.md`. Then cut
+   `2.11-docx4j.6` and add it to `.github/workflows/maven.yml`.
+2. *Honour `clear` after a side float*: Jason's first item after `.5` ships (2026-10-07), its own CR
+   (`fop/CR-022`). FOP ignores `clear` on block-level FOs; 10855's rubric table is drawn over its text box
+   (CR-020 §7, XSL 1.1 §7.19.2, §6.6 item 45's text). With it and docx4j's page-fit rule (561), docx4j's text-box
+   band can return, gated on `side-float-edges`. Unsized.
+3. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
+   off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
+   says.
+4. *Merging Apache `main`* into the fork, which this file asks for now that FOP-3348 and FOP-3349 have landed:
+   `main` at 5be8c69b6 also carries FOP-3331's float regression (FOP-3353: a float whose own child is a
+   block-container goes in the flow). Fix or revert it in the fork with the merge, and gate the merge. Committed
+   docx4j wraps float content in an `fo:block`, which is unaffected. Also check Apache's FOP-3352 (`GlyfTable`,
+   empty glyphs) against our #108 (FOP-3339).
+5. *Upstream pull requests*: on a reviewer's request, work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
+   and #109 merge, and `FOP-3355` when #123 merges.
+6. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
    private-use code point in ToUnicode (CR-002 §10.2; ActualText per cluster is the follow-up); a format
    character the font has no glyph for is still lost (CR-007 §4); the position-adjustments paint path
    indexes its adjustments by UTF-16 unit, wrong after a supplementary character (CR-005, noted to the
    docx4j session); FOP embeds a single-byte TrueType font whole (`PDFFactory.makeFontFile`), moot for
    docx4j since it retired its `+noliga` twin under the fork; per-font `advanced="false"` is ignored by
    FOP's stock font collection (CR-003 §10).
-5. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
+7. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
    and P2-3 small and clean; P2-4, P2-6, P2-7 inert; the structure-tree half of P2-5 superseded by
    FOP-3165 and FOP-3283 in Apache `main`).
 
@@ -293,6 +270,13 @@ rebase `FOP-3345` to its one commit; when #123 merges, rebase `FOP-3355` likewis
   Ask him in this session before a push or a pull request.
 - The measurement tools from 2026-09-30 to 2026-10-03 are saved at `~/fop-session-tools/` (font-level
   harness, script-list parser, glyph-step readers, samples); the memory note points there.
+- A gate needs no install: copy the jar the full build made (`fop-core/target/docx4j-fo-renderer-core-*.jar`)
+  to `~/fop-renderers/rNN-CR-NNN-<commit>/`, check it with `javap -constants`, and give the docx4j session the
+  path and sha256 (r14, r15). An install into `~/.m2` is only for docx4j's own builds and tests.
+- Before filing upstream, `git fetch upstream` and reproduce on Apache's current `main`, not on reading: on
+  2026-10-07 `main` had moved six commits, and FOP-3331 had changed floats under CR-020's drafts.
+- The working tree is shared with other fork sessions: `git branch --show-current` before every commit and every
+  statement naming a branch (the memory note on it).
 
 **Be honest about the fork.** Gated against Apache FOP, the measured fidelity difference was nil until
 CR-003; since then the gates show real movement toward Word (kerning and ligatures for Calibri text,
@@ -300,8 +284,9 @@ Arabic shaping in DejaVu Sans, letter spacing painted), each recorded with its s
 its losses. docx4j 17.3.0 made the fork the default on the gated fixes and the hooks. Do not oversell
 it; I did, twice, about P2-8.
 
-**Upstream is not something to plan around.** Apache has 32 open pull requests (twelve of them ours), the
-oldest from 2018, and runs no CI on requests from forks. A fix the fork needs, the fork carries.
+**Upstream is not something to plan around.** Apache has 40 open pull requests (twenty of them ours, the oldest
+#12; 2026-10-07) and runs no CI on requests from forks, though it merged two of ours, FOP-3348 and FOP-3349, on
+2026-10-05. A fix the fork needs, the fork carries.
 
 **The peers.** docx4j has more than one session; `ListAgents` shows them. The one that runs the
 fidelity gate holds Enterprise CR-001 and usually `tasks.yaml`; send it text rather than editing either
