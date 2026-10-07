@@ -244,24 +244,15 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    Enterprise §6.6 items 38 to 42 and 44 to 46 all record the release. Its harness's fork profile is
    `2.11-docx4j.6-SNAPSHOT`. One thing it learnt: on `.5` the FO carries placeholder region extents plus
    `fox:extent="measured"`, so two of its tests that read the pre-pass extents now force the pre-pass.
-2. *Honour `clear` after a side float*, `fop/CR-022`: IN PROGRESS 2026-10-08 on branch `CR-022-clear-after-side-float`
-   (Jason's yes to start, 2026-10-08). `clear` on `fo:block`, `fo:block-container`, `fo:table`, `fo:list-block` ends a side
-   float on its side at the break before the FO, and the FO starts at the float's foot (the clearance through the
-   layout context's space-before, as display-align does). Capability `clear-after-side-float`, the twentieth. Committed
-   0fc1fd40e on the branch: measured on the command line (CR-022 §4), layout test `float_clear.xml`, full suite 3864/0,
-   checkstyle clean. The jar is at `~/fop-renderers/r16-CR-022-0fc1fd40e/` (sha256 03f2949a...); the docx4j session gates
-   it (10855's rubric table at Word's 155.35 with the band restored; 0 movers with it withheld), queued behind docx4j
-   CR-032 phase 1's gates (2026-10-08); the band for 10855's shape is the docx4j session's own step first. On PASS: merge to
-   `2.11-docx4j.6` by fast-forward, release notes, §6.6 item 45's text updated (the Enterprise file is Jason's; check
-   `git status` first), the registry text sent. Found on the way (2026-10-08, the docx4j session's gate b182 on 4083, CR-022
-   §3.5) and fixed on the branch: the edge search walked past an edge on a page within its adjustment range, never offered
-   a kept break as the edge (INFINITE is 1000), and threw NullPointerException in handleFloat when a deferred edge met a
-   forced break inside a table; a table the page cannot hold now starts at the float's foot. Committed bf3a5d41c (full suite
-   3864/0 again); the jar for the gate is r17 at `~/fop-renderers/r17-CR-022-bf3a5d41c/` (sha256 b81a343b...), r16
-   superseded; §6.6 item 47 written and committed in the Enterprise file (ba52a7b). Gate first half PASS 2026-10-08 (b186b: band
-   withheld, 0 movers, nothing worse than b180); the second half comes with the docx4j session's text-box step. 4083's reproducer FO is the docx4j
-   session's, under `~/fidelity-cr030/repro/`. The three recorded float NPE reproducers (items 20, 36, 37) render on
-   this build with `-ea`, told to the docx4j session for its br-anchor decline.
+2. *`fop/CR-022`, `clear` after a side float: DONE 2026-10-08*, gated PASS (b186b: band withheld, 0 movers; b191: band
+   restored and `clear` on the table after it, 10855 at Word's 9 pages with its rubric table 1.4pt from Word's y, the
+   text-box probes 1.0000) and merged to `2.11-docx4j.6` by fast-forward; unreleased, in `docs/release-notes/2.11-docx4j.6.md`.
+   Capability `clear-after-side-float`, the twentieth. With it, CR-022 §3.5: three defects of the float edge search found
+   on 4083 (the edge walked past on a page within its ratio, a kept break never offered as the edge, a deferred edge at a
+   forced break inside a table throwing), §6.6 item 47; 4083 renders. Upstream not sent: `clear` on block-level FOs is an
+   extension of XSL (draft `docs/upstream/clear-after-side-float.txt`, Jason's call); the edge-search fixes are Apache's
+   defects too and would stack on FOP-3355 and FOP-3354 (not drafted yet). The docx4j side commits follow its second gate
+   on the released `.5`.
 3. *`fop/CR-023`, after CR-022: the offset float and both-sides wrap for docx4j CR-032 (floating tables)*. Jason confirmed
    D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
    settled it: `float-offset` stands (`fox:float-offset` on `fo:float`: the intrusion begins N pt below the top of the

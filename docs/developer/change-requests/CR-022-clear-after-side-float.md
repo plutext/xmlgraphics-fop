@@ -1,8 +1,7 @@
 # CR-022: honour `clear` on a block-level FO after a side float
 
-Status: IN PROGRESS 2026-10-08, on branch `CR-022-clear-after-side-float` off `2.11-docx4j.6`; measured on the command
-line (§4); full `fop-core` suite 3864 tests, 0 failures, 4 skipped, checkstyle clean (§5), rerun after the §3.5 fixes; the
-docx4j gate pending (§9, r17). Registry key `fop/CR-022`. Capability
+Status: DONE 2026-10-08, gated PASS by the docx4j session (§9: b186b and b191 on r17) and merged to `2.11-docx4j.6` by
+fast-forward; unreleased. Full `fop-core` suite 3864 tests, 0 failures, 4 skipped, checkstyle clean. Registry key `fop/CR-022`. Capability
 `clear-after-side-float` (§3.4). Decided by Jason on 2026-10-07 as the first item after `2.11-docx4j.5` shipped
 (CR-020 §7), and started on his word on 2026-10-08.
 
@@ -183,13 +182,20 @@ Jason's word.
 
 ## 9. Gate (the docx4j session)
 
-Renderer r17 (bf3a5d41c; r16, before §3.5, superseded). First half, 2026-10-08, PASS: with the text-box band withheld
+Renderer r17 (bf3a5d41c; r16, before §3.5, superseded). First half, gate b186b, 2026-10-08, PASS: with the text-box band withheld
 as today and docx4j unchanged (cand100, CR-032 phase 1), b186b against the same docx4j on the released `.5` is 0 movers
 over the four corpora and the 260 probes, no render error beyond the pre-existing ones, no document worse than b180
 except docx4j's own three phase 1 residuals (3229, 7490, 1616, identical on both renderers); the scoreboard names
 `2.11-docx4j.6-SNAPSHOT` with twenty hooks. So `clear` is inert where no float is on, and the §3.5 changes to where
-edges fall move nothing on the corpora as docx4j writes them today. Second half (10855 at 155.35 with the band restored
-and `clear` written) comes with the docx4j session's text-box step; b189 (the any-room float rule on r17 against b182)
+edges fall move nothing on the corpora as docx4j writes them today. Second half, gate b191 on r17, PASS: with the text-box band restored on `side-float-edges` and `clear` written on
+the table after it, 10855 goes to Word's 9 pages (+2 lines, 0.9740 to 0.9787), its rubric heading at 71.0 against
+Word's 72.3 and the rubric table starting at 146.8 against Word's 148.2 below the box, where r14 had drawn it over the
+box at 121.82 (the 155.35 of §6 was CR-020's reading of a different word; the docx4j session measured the first row's
+word at 148.2 in Word's PDF, so the pass is "at Word's y to within 1.4pt"); the two vml-box-beside probes go to 1.0000,
+all six headings beside their boxes; nothing else moves but 561, docx4j's own off-page box. docx4j's side: a wide
+wrapped box with at least 72pt beside it keeps its band by an empty `fo:float`, only on `side-float-edges`; a table
+whose anchor paragraph follows the box's gets `clear` on its wrapper block, the band's side, on `clear-after-side-float`,
+else the band is withheld where a table follows, as before. The b189 run b189 (the any-room float rule on r17 against b182)
 said (2026-10-08) that it was not: on r17 against the same build on `.5`, nothing moves but 4083, which now renders
 (0.0 to 0.8795, 11 pages); 6705, 1616, 9832, 8236 and 14776 are identical on both, so their losses (6705 240 lines
 matched against 249 before the float, 1616 747 against 758, 9832 47 against 58) are FOP's line breaking beside a
