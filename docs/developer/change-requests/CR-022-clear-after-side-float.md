@@ -190,7 +190,12 @@ except docx4j's own three phase 1 residuals (3229, 7490, 1616, identical on both
 `2.11-docx4j.6-SNAPSHOT` with twenty hooks. So `clear` is inert where no float is on, and the §3.5 changes to where
 edges fall move nothing on the corpora as docx4j writes them today. Second half (10855 at 155.35 with the band restored
 and `clear` written) comes with the docx4j session's text-box step; b189 (the any-room float rule on r17 against b182)
-will say whether §3.5's first defect was behind b182's sliver losses on 6705, 1616, 9832 and 8236.
+said (2026-10-08) that it was not: on r17 against the same build on `.5`, nothing moves but 4083, which now renders
+(0.0 to 0.8795, 11 pages); 6705, 1616, 9832, 8236 and 14776 are identical on both, so their losses (6705 240 lines
+matched against 249 before the float, 1616 747 against 758, 9832 47 against 58) are FOP's line breaking beside a
+narrow float, a word that does not fit overflowing where Word moves it below the float: `fop/CR-023`'s half, real and
+separate from this CR. 4083 on r17 matches 270 lines against 275 with its tables in the flow: its three remaining
+floats' offsets narrow the lines above them, the `float-offset` case.
 
 A first run of the gate was void: the aggregate `docx4j-fo-renderer-2.11-docx4j.5.jar` from Central has no classes but a
 manifest `Class-Path` naming its sibling core jar, which the JVM appends right after it, ahead of a core-only drop. A

@@ -268,7 +268,10 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    anchor block, space-before included; the lines that fit in the gap are full width above the float), `float-band` is
    WITHDRAWN (Word does not lay empty paragraphs behind a full-width table; FOP's zero-ipd lines beside a column-wide
    float already match Word for the narrower case), and the second half is both-sides wrap, §6.6 item 10, for this
-   session to size: Word runs text down both sides of a centred float, with no minimum width. Serves §6.6 item 8. The
+   session to size: Word runs text down both sides of a centred float, with no minimum width. Serves §6.6 item 8. Back
+   in from the band's withdrawal, measured (b189, 2026-10-08): a line whose content does not fit beside a narrow float
+   overflows where Word moves the word below the float (6705, 1616, 9832, 8236, 14776 lose 1 to 11 lines on `.5` and r17
+   alike), so "defer a line that does not fit to the float's foot" is CR-023's other half, separate from CR-022. The
    clearest corpus case for float-offset (docx4j session, phase 1, 2026-10-08): 4083's table, tblpY 51pt at the page's left
    edge; floated from its first line, FOP cuts the question above it into a column beside the table (-2 lines, a garbled
    page) where Word runs those lines full width and puts the table below them. docx4j guards that shape (an offset over a
