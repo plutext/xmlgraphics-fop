@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- Run from the root of an xmlgraphics-fop checkout: the fonts are the ones in its test tree. -->
+<!-- Fonts from FOP's own test tree. Copy to the root of an xmlgraphics-fop checkout and run from there. -->
 <fop version="1.0">
   <font-base>fop/test/resources/fonts/ttf/</font-base>
   <renderers>
@@ -7,6 +7,8 @@
       <fonts>
         <font embed-url="Aegean600.ttf"><font-triplet name="Aegean600" style="normal" weight="normal"/></font>
         <font embed-url="DejaVuLGCSerif.ttf"><font-triplet name="DejaVuLGCSerif" style="normal" weight="normal"/></font>
+        <font embed-url="DejaVuLGCSerif.ttf" kerning="false"><font-triplet name="DejaVuLGCSerif-nokern" style="normal" weight="normal"/></font>
+        <font embed-url="AndroidEmoji.ttf"><font-triplet name="AndroidEmoji" style="normal" weight="normal"/></font>
       </fonts>
     </renderer>
   </renderers>

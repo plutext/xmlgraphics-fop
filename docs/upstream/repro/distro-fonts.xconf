@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!-- Carlito and DejaVu Sans as Linux distributions package them (both OFL); adjust the paths. -->
+<fop version="1.0"><renderers><renderer mime="application/pdf"><fonts>
+<font embed-url="file:///usr/share/fonts/carlito/Carlito-Regular.ttf"><font-triplet name="Carlito" style="normal" weight="normal"/></font>
+<font embed-url="file:///usr/share/fonts/TTF/DejaVuSans.ttf"><font-triplet name="DejaVu Sans" style="normal" weight="normal"/></font>
+</fonts></renderer></renderers></fop>

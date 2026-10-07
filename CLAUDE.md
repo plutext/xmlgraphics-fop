@@ -222,11 +222,14 @@ drift), #115 FOP-2918 (surrogate pair), #116 FOP-3345 (ToUnicode for substituted
 label; the page-number-zero option itself is not sent, Apache keeping to XSL), and, 2026-10-07, #123 FOP-3354 and
 #124 FOP-3355 (`fop/CR-020`, items 45 and 44; #124 stacked on #123), and #125 FOP-3356 (`fop/CR-021`, item 46).
 Review began: Joao Goncalves (committer) merged #120 and #121 as the two with layout tests, closed FOP-3339 as a duplicate of
-his FOP-3352 (his fix guards the last glyph only, ours any empty glyph; the crash case is his), and asked on FOP-3340, FOP-3346,
-FOP-3347 and FOP-3350 for an FO, on FOP-3340 "for all the other tickets". Answered 2026-10-08 (comments 18124627 to 18124630,
-reproducers in `docs/upstream/repro/`, verified on `main` 5be8c69b6); the remaining font tickets are promised an FO each, with
-the test-tree fonts where they serve (FOP-3341, FOP-3342, FOP-3343, FOP-3344, FOP-3345, FOP-2349) and Carlito, Noto or a variable
-Noto otherwise (FOP-3356, FOP-1896, FOP-3328); FOP-3330 gets none. #108 is to be closed with a note.
+his FOP-3352 (his fix guards the last glyph only, ours any empty glyph; the crash case is his; #108 closed 2026-10-08 with a note
+offering the general form as a follow-up), and asked on FOP-3340, FOP-3346, FOP-3347 and FOP-3350 for an FO, on FOP-3340 "for all
+the other tickets". Answered 2026-10-08 on every ticket that can have one (comments 18124627 to 18124630 and 18124651 to 18124660;
+the FOs, configs and a README under `docs/upstream/repro/`), each verified on `main` 5be8c69b6 and on its fix branch: test-tree fonts
+for FOP-3343, FOP-3344, FOP-2349, FOP-1896; Carlito or DejaVu Sans for FOP-3341, FOP-3342, FOP-3345, FOP-3356 (DejaVuLGCSerif's
+DFLT script carries liga and kern, so it cannot show the first two); the variable Noto for FOP-3328. FOP-3350 has no FO in stock
+FOP, FOP-3330 none to give. Two things learnt: #113 alone makes a letter-spaced word overprint the next (FOP-2349's half), so #113
+and #118 belong together; and FOP-3342's 2.11 measurement for language="ro" does not hold on `main`, untraced.
 FOP-3353 (filed 2026-10-07, no pull request) reports a regression on `main` from FOP-3331: a float whose own child
 is a block-container is put in the flow. This session posts to ASF JIRA directly since 2026-10-05, on Jason's OK per
 item (see the memory note). The drafts under `docs/upstream/` are stamped with both numbers. If a reviewer asks for
@@ -253,8 +256,7 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    block-container goes in the flow). Fix or revert it in the fork with the merge, and gate the merge. Committed
    docx4j wraps float content in an `fo:block`, which is unaffected. Also check Apache's FOP-3352 (`GlyfTable`,
    empty glyphs) against our #108 (FOP-3339).
-5. *Upstream pull requests*: the FOs promised on the remaining font tickets (above), then close #108; on a reviewer's request,
-   work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
+5. *Upstream pull requests*: on a reviewer's request, work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
    and #109 merge, and `FOP-3355` when #123 merges.
 6. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
    private-use code point in ToUnicode (CR-002 §10.2; ActualText per cluster is the follow-up); a format

@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<fop version="1.0"><renderers><renderer mime="application/pdf"><fonts>
+<font embed-url="file:///path/to/NotoSans-VF.ttf"><font-triplet name="Noto Sans VF" style="normal" weight="normal"/></font>
+</fonts></renderer></renderers></fop>

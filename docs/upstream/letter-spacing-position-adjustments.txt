@@ -5,6 +5,8 @@ Found 2026-09-30 by the docx4j session on its corpus (Enterprise CR-001 §6.6 it
 33), reproduced and fixed the same day on the fork's branch CR-005-letter-spacing-dp
 (fop/CR-005), to be cut against trunk as FOP-3344. Present in main:
 PDFPainter.drawTextWithDP is unchanged there.
+FO reproducer posted 2026-10-08 as comment 18124654 (Joao Goncalves' request of 2026-10-06 for an FO on every ticket): FOP-3344-letter-spacing-dp.fo (DejaVuLGCSerif, fop-test-fonts.xconf),
+under docs/upstream/repro/, verified on Apache main 5be8c69b6 and on branch FOP-3344.
 
 Project:          FOP
 Issue Type:       Bug

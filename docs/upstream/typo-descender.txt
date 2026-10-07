@@ -12,6 +12,8 @@ required a negative hhea descender, which none of the 2,547 fonts measured needs
 https://github.com/apache/xmlgraphics-fop/pull/119, opened 2026-10-05 at Jason's word, with this comment
 (the text in ../fop-upstream-prs/FOP-1896.md). Fork change fop/CR-015 (Enterprise CR-001 §6.6 item 40).
 Jason approved posting this comment with the pull request on 2026-10-05.
+FO reproducer posted 2026-10-08 as comment 18124659 (Joao Goncalves' request of 2026-10-06 for an FO on every ticket): FOP-1896-ascender-descender.fo (AndroidEmoji and Noto Sans Devanagari, FOP-1896-fonts.xconf),
+under docs/upstream/repro/, verified on Apache main 5be8c69b6 and on branch FOP-1896.
 
 Comment
 -------

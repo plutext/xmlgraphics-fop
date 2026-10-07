@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- AndroidEmoji from FOP's test tree (copy this file to the root of a checkout and run from there) and Noto Sans Devanagari (OFL; adjust the path). -->
+<fop version="1.0">
+  <font-base>fop/test/resources/fonts/ttf/</font-base>
+  <renderers><renderer mime="application/pdf"><fonts>
+    <font embed-url="AndroidEmoji.ttf"><font-triplet name="AndroidEmoji" style="normal" weight="normal"/></font>
+    <font embed-url="file:///usr/share/fonts/noto/NotoSansDevanagari-Regular.ttf"><font-triplet name="Noto Sans Devanagari" style="normal" weight="normal"/></font>
+  </fonts></renderer></renderers>
+</fop>

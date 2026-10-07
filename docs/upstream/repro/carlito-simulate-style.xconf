@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<fop version="1.0"><renderers><renderer mime="application/pdf"><fonts>
+<font simulate-style="true" embed-url="file:///usr/share/fonts/carlito/Carlito-Italic.ttf"><font-triplet name="ItalFace" style="italic" weight="bold"/></font>
+<font simulate-style="true" embed-url="file:///usr/share/fonts/carlito/Carlito-Regular.ttf"><font-triplet name="RegFace" style="italic" weight="bold"/></font>
+<font simulate-style="true" embed-url="file:///usr/share/fonts/carlito/Carlito-Bold.ttf"><font-triplet name="BoldFace" style="italic" weight="bold"/></font>
+</fonts></renderer></renderers></fop>

@@ -13,6 +13,8 @@ pull request is to be titled FOP-2349. Fork change
 fop/CR-010 (Enterprise CR-001 §6.6 item 16). Branch FOP-2349 in ../fop-upstream-wt (7bbc3c2e7), STACKED ON
 FOP-3344 (pull request #113), on Apache main at ab5d6eba6; pull request
 https://github.com/apache/xmlgraphics-fop/pull/118, opened 2026-10-03 at Jason's word. The text below is the draft as written before the duplicate was found.
+FO reproducer posted 2026-10-08 as comment 18124655 (Joao Goncalves' request of 2026-10-06 for an FO on every ticket): FOP-2349-letter-spacing-width.fo (DejaVuLGCSerif, fop-test-fonts.xconf; with and without -nocs),
+under docs/upstream/repro/, verified on Apache main 5be8c69b6 and on branch FOP-2349.
 
 Project:          FOP
 Issue Type:       Bug
