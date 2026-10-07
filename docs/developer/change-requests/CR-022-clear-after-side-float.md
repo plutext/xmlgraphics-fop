@@ -183,5 +183,16 @@ Jason's word.
 
 ## 9. Gate (the docx4j session)
 
-Pending: renderer r17 from this branch (r16, before §3.5, superseded), against b180 (docx4j 17.3.1's code on
-`2.11-docx4j.5`).
+Renderer r17 (bf3a5d41c; r16, before §3.5, superseded). First half, 2026-10-08, PASS: with the text-box band withheld
+as today and docx4j unchanged (cand100, CR-032 phase 1), b186b against the same docx4j on the released `.5` is 0 movers
+over the four corpora and the 260 probes, no render error beyond the pre-existing ones, no document worse than b180
+except docx4j's own three phase 1 residuals (3229, 7490, 1616, identical on both renderers); the scoreboard names
+`2.11-docx4j.6-SNAPSHOT` with twenty hooks. So `clear` is inert where no float is on, and the §3.5 changes to where
+edges fall move nothing on the corpora as docx4j writes them today. Second half (10855 at 155.35 with the band restored
+and `clear` written) comes with the docx4j session's text-box step; b189 (the any-room float rule on r17 against b182)
+will say whether §3.5's first defect was behind b182's sliver losses on 6705, 1616, 9832 and 8236.
+
+A first run of the gate was void: the aggregate `docx4j-fo-renderer-2.11-docx4j.5.jar` from Central has no classes but a
+manifest `Class-Path` naming its sibling core jar, which the JVM appends right after it, ahead of a core-only drop. A
+core-only jar is used without the aggregate jar on the classpath (the same trap, with `fop/target`'s stale copy, caught
+this session's own command-line runs of §4).

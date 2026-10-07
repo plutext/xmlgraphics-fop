@@ -258,7 +258,8 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    a kept break as the edge (INFINITE is 1000), and threw NullPointerException in handleFloat when a deferred edge met a
    forced break inside a table; a table the page cannot hold now starts at the float's foot. Committed bf3a5d41c (full suite
    3864/0 again); the jar for the gate is r17 at `~/fop-renderers/r17-CR-022-bf3a5d41c/` (sha256 b81a343b...), r16
-   superseded; §6.6 item 47 written and committed in the Enterprise file (ba52a7b). 4083's reproducer FO is the docx4j
+   superseded; §6.6 item 47 written and committed in the Enterprise file (ba52a7b). Gate first half PASS 2026-10-08 (b186b: band
+   withheld, 0 movers, nothing worse than b180); the second half comes with the docx4j session's text-box step. 4083's reproducer FO is the docx4j
    session's, under `~/fidelity-cr030/repro/`. The three recorded float NPE reproducers (items 20, 36, 37) render on
    this build with `-ea`, told to the docx4j session for its br-anchor decline.
 3. *`fop/CR-023`, after CR-022: the offset float and both-sides wrap for docx4j CR-032 (floating tables)*. Jason confirmed
@@ -314,6 +315,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
 - A gate needs no install: copy the jar the full build made (`fop-core/target/docx4j-fo-renderer-core-*.jar`)
   to `~/fop-renderers/rNN-CR-NNN-<commit>/`, check it with `javap -constants`, and give the docx4j session the
   path and sha256 (r14, r15). An install into `~/.m2` is only for docx4j's own builds and tests.
+- A core-only jar must be first on the classpath and the aggregate launcher jar (`docx4j-fo-renderer-<v>.jar`, or
+  `fop-<v>.jar` upstream) left off: that jar has no classes but a manifest `Class-Path` naming its sibling core jar,
+  which the JVM appends right after it, ahead of the drop. It voided a gate run (r17, 2026-10-08) and this session's
+  own runs the same morning, through `fop/target`'s stale core copy; check the renderer line's version and hook count
+  before reading anything.
 - Before filing upstream, `git fetch upstream` and reproduce on Apache's current `main`, not on reading: on
   2026-10-07 `main` had moved six commits, and FOP-3331 had changed floats under CR-020's drafts.
 - The working tree is shared with other fork sessions: `git branch --show-current` before every commit and every
