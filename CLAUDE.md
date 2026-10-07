@@ -228,9 +228,12 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
 
 **Open, in order.**
 1. *After the `.5` release*: Jason pushes the tag `v2.11-docx4j.5` and the branch `2.11-docx4j.6` by name (both
-   local until he does; never `--tags`). The docx4j session scores the released artifact from Central, as
-   `fop/CR-009` did for `.4`, and moves `docx4j-export-fo` to `2.11-docx4j.5`; it records the release against the
-   `.5` entries in `tasks.yaml` and CR-020 §8.
+   local until he does; never `--tags`). The docx4j side is done (2026-10-07, docx4j 2de765a77, unpushed): Central's
+   jars sha1-verified, gate b179 on them against r15 0 movers on all four corpora and the 260 probes, the reactor
+   green, `docx4j-export-fo` on `2.11-docx4j.5`, CR-020 §8, CR-031 (DONE), `tasks.yaml` (portfolio dd065e3) and
+   Enterprise §6.6 items 38 to 42 and 44 to 46 all record the release. Its harness's fork profile is
+   `2.11-docx4j.6-SNAPSHOT`. One thing it learnt: on `.5` the FO carries placeholder region extents plus
+   `fox:extent="measured"`, so two of its tests that read the pre-pass extents now force the pre-pass.
 2. *Honour `clear` after a side float*: Jason's first item now that `.5` has shipped (2026-10-07), its own CR
    (`fop/CR-022`). FOP ignores `clear` on block-level FOs; 10855's rubric table is drawn over its text box
    (CR-020 §7, XSL 1.1 §7.19.2, §6.6 item 45's text). With it and docx4j's page-fit rule (561), docx4j's text-box
