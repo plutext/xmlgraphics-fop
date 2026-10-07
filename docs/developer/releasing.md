@@ -70,11 +70,10 @@ removes that failure mode.
 ## The release
 
 1. Phase 2 and the release decision are Jason's; see docx4j CR-020 §4 and §8.
-2. Set the version by editing the `revision` property in the root pom, and nothing else:
-   `2.11-docx4j.N`, with no `-SNAPSHOT`.
-3. Tag it: `git tag -a v2.11-docx4j.N`, and make sure `<scm><tag>` names the branch. See
-   Tagging below; the `v` prefix avoids a collision with the branch name.
-4. Dry run first, which builds and signs but publishes nothing:
+2. Set the version by editing the `revision` property in the root pom, and the `<scm>` url and tag
+   so they name the branch, and nothing else: `2.11-docx4j.N`, with no `-SNAPSHOT`. Commit and push;
+   the release is built from the pushed branch, and CI should be green on that commit.
+3. Dry run first, which builds and signs but publishes nothing:
 
         export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
         mvn -Prelease clean verify -Dgpg.passphrase=…
@@ -84,14 +83,18 @@ removes that failure mode.
    binds to that same phase; CI runs it on every push, so a release built from a
    committed tree has already been analysed. Check that each of the four modules
    produced a main, a sources and a javadoc jar, each with a `.asc` beside it.
-5. Then publish:
+4. Then publish:
 
         mvn -Prelease clean deploy -Dgpg.passphrase=…
 
    `autoReleaseAfterClose` means the staging repository closes and releases without a
    visit to the web interface. Drop that flag if you would rather inspect first.
-6. Confirm the five artifacts appear, then tell the docx4j session so it can move
-   `docx4j-export-fo` off the snapshot.
+5. Confirm the five artifacts appear on Central, each with sources, javadoc, `.asc`, `.md5` and
+   `.sha1`, and that the core manifest's `Implementation-Version` is the release.
+6. Only then tag the commit the deploy was built from: `git tag -a v2.11-docx4j.N <commit>`. See
+   Tagging below; the `v` prefix avoids a collision with the branch name. Push the tag by name.
+7. Tell the docx4j session so it can score the released artifact and move `docx4j-export-fo`
+   off the snapshot. Then cut `2.11-docx4j.N+1` from the release commit (CLAUDE.md, Branches).
 
 ## Tagging
 
@@ -113,8 +116,13 @@ Pushing all tags would publish those to plutext's repository. Push the one tag b
 Tags here are unsigned. Signing one needs the key passphrase; the published artifacts are
 signed regardless, which is what a consumer verifies.
 
-`2.11-docx4j.1` was tagged after the fact, on 2026-09-26. Tag before deploying next time,
-so the tag is what you build from rather than what you reconstruct afterwards.
+**Tag after the deployment is confirmed, not before** (Jason, 2026-10-07). A tag made before the
+deploy marks a commit that may not ship: `v2.11-docx4j.2` was placed at the version commit, a test
+fix then followed, and the deploy went from the fix. Tagging once Central serves the artifacts
+marks exactly the commit that was built, and a deploy that fails leaves no tag to move. The
+version commit is the only commit at the release version, so there is nothing to reconstruct:
+`git tag -a v2.11-docx4j.N <that commit>`. This replaces the earlier rule of tagging first,
+written after `2.11-docx4j.1` was tagged a day late on 2026-09-26.
 
 ## Signing
 
@@ -187,9 +195,9 @@ numbered staging repositories like `orgdocx4j-1095`.
   and the `<scm>` lines and nothing else; CI was green on it (run 37591001572). The release notes were still
   marked draft at that commit and were closed on the next branch, so a reader of the tag finds the draft
   wording; the content is the same.
-- **Tagged after deploying, not before**: `v2.11-docx4j.5`, annotated, was created at `724e92d1c` once Central
-  served the artifacts. The tag names what was built, since that commit is the only one at the release
-  version, but this is the second time the runbook's order was not kept. Tag first.
+- **Tagged after the deployment was confirmed**: `v2.11-docx4j.5`, annotated, created at `724e92d1c` once
+  Central served the artifacts. Jason made that the rule the same day (Tagging above): the tag marks the
+  commit that was built, and nothing is tagged that did not ship.
 - **Verified from Central after publication**: the five artifacts, each with sources, javadoc, `.asc`, `.md5`
   and `.sha1` (the parent a pom only). The core manifest's `Implementation-Version` is `2.11-docx4j.5`; the
   published poms carry no property reference and no parent element; `Docx4jFop` in the published core names
