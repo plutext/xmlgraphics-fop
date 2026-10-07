@@ -190,8 +190,8 @@ section above says.
 
 **State.** `2.11-docx4j.4` is on Maven Central (2026-10-04), tagged `v2.11-docx4j.4` at `75f9b0262`;
 `docs/release-notes/2.11-docx4j.4.md` says what it carries. docx4j 17.3.0 depends on `2.11-docx4j.2`. Work is on
-branch `2.11-docx4j.5` (snapshot `2.11-docx4j.5-SNAPSHOT`), **local only: it has never been pushed to origin**
-(checked 2026-10-07); pushing and releasing wait on Jason. Unreleased on it, all gated PASS by the docx4j session
+branch `2.11-docx4j.5` (snapshot `2.11-docx4j.5-SNAPSHOT`), pushed to origin by Jason on 2026-10-07 at 3e338fb78
+(CI run 37549783047); releasing waits on him. Unreleased on it, all gated PASS by the docx4j session
 and merged, each with its CR under `docs/developer/change-requests/` and an entry in
 `docs/release-notes/2.11-docx4j.5.md`:
 - `fop/CR-012` (page numbered 0, hook `page-number-zero`) and `fop/CR-013` (`continuation-display-align`);
