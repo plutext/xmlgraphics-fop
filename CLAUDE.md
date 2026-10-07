@@ -250,7 +250,8 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    layout context's space-before, as display-align does). Capability `clear-after-side-float`, the twentieth. Committed
    0fc1fd40e on the branch: measured on the command line (CR-022 §4), layout test `float_clear.xml`, full suite 3864/0,
    checkstyle clean. The jar is at `~/fop-renderers/r16-CR-022-0fc1fd40e/` (sha256 03f2949a...); the docx4j session gates
-   it (10855's rubric table at Word's 155.35 with the band restored; 0 movers with it withheld). On PASS: merge to
+   it (10855's rubric table at Word's 155.35 with the band restored; 0 movers with it withheld), queued behind docx4j
+   CR-032 phase 1's gates (2026-10-08); the band for 10855's shape is the docx4j session's own step first. On PASS: merge to
    `2.11-docx4j.6` by fast-forward, release notes, §6.6 item 45's text updated (the Enterprise file is Jason's; check
    `git status` first), the registry text sent. The three recorded float NPE reproducers (items 20, 36, 37) render on
    this build with `-ea`, told to the docx4j session for its br-anchor decline.
@@ -260,7 +261,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    anchor block, space-before included; the lines that fit in the gap are full width above the float), `float-band` is
    WITHDRAWN (Word does not lay empty paragraphs behind a full-width table; FOP's zero-ipd lines beside a column-wide
    float already match Word for the narrower case), and the second half is both-sides wrap, §6.6 item 10, for this
-   session to size: Word runs text down both sides of a centred float, with no minimum width. Serves §6.6 item 8.
+   session to size: Word runs text down both sides of a centred float, with no minimum width. Serves §6.6 item 8. The
+   clearest corpus case for float-offset (docx4j session, phase 1, 2026-10-08): 4083's table, tblpY 51pt at the page's left
+   edge; floated from its first line, FOP cuts the question above it into a column beside the table (-2 lines, a garbled
+   page) where Word runs those lines full width and puts the table below them. docx4j guards that shape (an offset over a
+   line and a half stays in the flow) until the hook exists.
 4. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
    off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
    says.
