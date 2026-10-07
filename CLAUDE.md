@@ -193,7 +193,8 @@ as the section above says.
 **State.** `2.11-docx4j.5` is on Maven Central (2026-10-07, released by Jason from the pushed branch), tagged
 `v2.11-docx4j.5` at `724e92d1c`, the version commit; `docs/release-notes/2.11-docx4j.5.md` says what it carries and
 `docs/developer/releasing.md` what the release proved (five artifacts verified from Central, core manifest
-`2.11-docx4j.5`). docx4j 17.3.0 depends on `2.11-docx4j.2`; its next release moves to `.5`. Work is on branch
+`2.11-docx4j.5`). docx4j 17.3.1 (Maven Central, 2026-10-07, release commit 5cf47d752 on `VERSION_17_3_1`) depends on `.5`; 17.3.0
+depended on `2.11-docx4j.2`. Work is on branch
 `2.11-docx4j.6` (snapshot `2.11-docx4j.6-SNAPSHOT`), cut from the release commit. What `.5` carries, all gated PASS
 by the docx4j session, each with its CR under `docs/developer/change-requests/`:
 - `fop/CR-012` (page numbered 0, hook `page-number-zero`) and `fop/CR-013` (`continuation-display-align`);
