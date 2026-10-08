@@ -433,7 +433,10 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    docx4j-side attribute for the stock path; its own line manager already gives the box). The table header is
    accounted (second-to-last box, every break penalty's width). Apache's code, upstream-bound, not drafted.
    Probes and README: `~/fop-session-tools/2026-10-09-12301-picture-line/`. docx4j's 119pt under its own
-   managers is a different mechanism, theirs to trace. Proposed as §6.6 item 50, sent for agreement.
+   managers was its own `boundKeepChains` (a chain summed without its closing break's width, so the stepper's
+   first penalty, 178195 wide, put 729034 on the page; fixed there, cand120, gate b217), no renderer item. §6.6
+   item 50 agreed and added by the docx4j session (uncommitted there until its gate closes). Nothing for the fork
+   but the upstream draft when Jason orders it; the backlog item above is closed.
 12. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
    and P2-3 small and clean; P2-4, P2-6, P2-7 inert; the structure-tree half of P2-5 superseded by
    FOP-3165 and FOP-3283 in Apache `main`).
