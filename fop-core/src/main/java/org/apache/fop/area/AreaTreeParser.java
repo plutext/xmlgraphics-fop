@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook column-widths, the columns' widths and gaps read back on the body region and the span
+ * (fop/CR-026). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.area;
@@ -228,6 +232,19 @@ public class AreaTreeParser {
 
         private RegionViewport getCurrentRegionViewport() {
             return (RegionViewport)findAreaType(RegionViewport.class);
+        }
+
+        /** @return the space-separated integers, or an empty array for null (hook column-widths, fop/CR-026) */
+        private int[] parseInts(String text) {
+            if (text == null || text.trim().length() == 0) {
+                return new int[0];
+            }
+            String[] tokens = text.trim().split("\\s+");
+            int[] values = new int[tokens.length];
+            for (int i = 0; i < tokens.length; i++) {
+                values[i] = Integer.parseInt(tokens[i]);
+            }
+            return values;
         }
 
         private BodyRegion getCurrentBodyRegion() {
@@ -544,6 +561,10 @@ public class AreaTreeParser {
                 int columnGap = XMLUtil.getAttributeAsInt(attributes, "columnGap", 0);
                 RegionViewport rv = getCurrentRegionViewport();
                 body = new BodyRegion(FO_REGION_BODY, regionName, rv, columnCount, columnGap);
+                if (attributes.getValue("columnWidths") != null) { // hook column-widths (fop/CR-026)
+                    body.setColumnWidths(parseInts(attributes.getValue("columnWidths")),
+                            parseInts(attributes.getValue("columnGaps")));
+                }
                 transferForeignObjects(attributes, body);
                 body.setCTM(getAttributeAsCTM(attributes, "ctm"));
                 setAreaAttributes(attributes, body);
@@ -594,8 +615,14 @@ public class AreaTreeParser {
                 int ipd = XMLUtil.getAttributeAsInt(attributes, "ipd", 0);
                 int columnCount = XMLUtil.getAttributeAsInt(attributes, "columnCount", 1);
                 BodyRegion body = getCurrentBodyRegion();
-                Span span = new Span(columnCount,
-                        body.getColumnGap(), ipd);
+                Span span;
+                if (attributes.getValue("columnWidths") != null) { // hook column-widths (fop/CR-026)
+                    span = new Span(parseInts(attributes.getValue("columnWidths")),
+                            parseInts(attributes.getValue("columnGaps")), ipd);
+                } else {
+                    span = new Span(columnCount,
+                            body.getColumnGap(), ipd);
+                }
 
                 String blockDirection = attributes.getValue("block-progression-direction");
                 if (blockDirection != null) {

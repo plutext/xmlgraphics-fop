@@ -16,8 +16,8 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
- * Apache FOP 2.11: a width per column, so that the columns of a span may differ in width (fop/CR-026; section 5's
- * probe reads them from a system property). See README.md, "Changes from Apache FOP 2.11". */
+ * Apache FOP 2.11: hook column-widths, a width and a gap per column, so that the columns of a span may differ in
+ * width (fop/CR-026). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -45,6 +45,8 @@ public class Span extends Area {
     private int colCount;
     private int colGap;
     private int colWidth; // width for each normal flow, calculated value
+    private int[] colWidths; // hook column-widths (fop/CR-026): a width per column, or null for equal columns
+    private int[] colGaps; // a gap per pair of columns
     private int curFlowIdx;  // n-f-r-a currently being processed, zero-based
 
     /**
@@ -66,36 +68,35 @@ public class Span extends Area {
     /**
      * Create the normal flows for this Span
      */
-    private void createNormalFlows() {
-        flowAreas = new java.util.ArrayList<NormalFlow>(colCount);
-        colWidth = (ipd - ((colCount - 1) * colGap)) / colCount;
-        int[] probeWidths = probeColumnWidths();
-
-        for (int i = 0; i < colCount; i++) {
-            NormalFlow newFlow = new NormalFlow(probeWidths == null ? colWidth : probeWidths[i]);
-            flowAreas.add(newFlow);
-        }
+    /**
+     * Hook column-widths (fop/CR-026): a span whose columns have their own widths and gaps.
+     *
+     * @param columnWidths a width per column, millipoints
+     * @param columnGaps a gap per pair of columns, millipoints
+     * @param ipd the total ipd of the span
+     */
+    public Span(int[] columnWidths, int[] columnGaps, int ipd) {
+        addTrait(Trait.IS_REFERENCE_AREA, Boolean.TRUE);
+        this.colCount = columnWidths.length;
+        this.colGap = columnGaps.length > 0 ? columnGaps[0] : 0;
+        this.colWidths = columnWidths.clone();
+        this.colGaps = columnGaps.clone();
+        this.ipd = ipd;
+        curFlowIdx = 0;
+        createNormalFlows();
     }
 
     /**
-     * CR-026 section 5 probe only: the widths of this span's columns from the system property
-     * {@code fop.probe.columnWidths}, a comma-separated list of points, one per column, or null.
-     * To be replaced by {@code fox:column-widths} in phase A.
+     * Create the normal flows for this Span
      */
-    private int[] probeColumnWidths() {
-        String property = System.getProperty("fop.probe.columnWidths");
-        if (property == null || colCount < 2) {
-            return null;
-        }
-        String[] parts = property.split(",");
-        if (parts.length != colCount) {
-            return null;
-        }
-        int[] widths = new int[colCount];
+    private void createNormalFlows() {
+        flowAreas = new java.util.ArrayList<NormalFlow>(colCount);
+        colWidth = (ipd - ((colCount - 1) * colGap)) / colCount;
+
         for (int i = 0; i < colCount; i++) {
-            widths[i] = Math.round(Float.parseFloat(parts[i].trim()) * 1000);
+            NormalFlow newFlow = new NormalFlow(colWidths == null ? colWidth : colWidths[i]);
+            flowAreas.add(newFlow);
         }
-        return widths;
     }
 
     /**
@@ -126,13 +127,50 @@ public class Span extends Area {
     }
 
     /**
-     * Get the width of one column within this Span (CR-026: columns may differ in width).
+     * Get the width of one column within this Span (hook column-widths, fop/CR-026: columns may differ).
      *
      * @param col the zero-based column number
      * @return the width of that column
      */
     public int getColumnWidth(int col) {
         return getNormalFlow(col).getIPD();
+    }
+
+    /**
+     * Get the gap after one column (hook column-widths, fop/CR-026).
+     *
+     * @param col the zero-based column number
+     * @return the gap between that column and the next; after the last column, the last gap
+     */
+    public int getColumnGap(int col) {
+        if (colGaps != null && colGaps.length > 0) {
+            return colGaps[Math.min(col, colGaps.length - 1)];
+        }
+        return colGap;
+    }
+
+    /**
+     * Get where one column begins (hook column-widths, fop/CR-026).
+     *
+     * @param col the zero-based column number
+     * @return the column's start offset from the span's start edge, in the inline direction
+     */
+    public int getColumnStart(int col) {
+        int start = 0;
+        for (int i = 0; i < col; i++) {
+            start += getColumnWidth(i) + getColumnGap(i);
+        }
+        return start;
+    }
+
+    /** @return a width per column, or null for equal columns (hook column-widths, fop/CR-026) */
+    public int[] getColumnWidths() {
+        return colWidths;
+    }
+
+    /** @return a gap per pair of columns, or null for equal columns (hook column-widths, fop/CR-026) */
+    public int[] getColumnGaps() {
+        return colGaps;
     }
 
     /**

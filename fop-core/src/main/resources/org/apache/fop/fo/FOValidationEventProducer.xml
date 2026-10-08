@@ -38,6 +38,7 @@
   <message key="masterNotFound">The master-reference "{masterReference}" on {elementName} matches no simple-page-master or page-sequence-master.{{locator}}</message>
   <message key="illegalRegionName">The region-name "{regionName}" for {elementName} is not permitted.{{locator}}</message>
   <message key="nonZeroBorderPaddingOnRegion">Border and padding for {elementName} "{regionName}" should be '0' (See 6.4.14 in XSL 1.1); non-standard values are allowed if relaxed validation is enabled. {{locator}}</message>
+  <message key="columnWidthsIgnored">fox:column-widths "{widths}" and fox:column-gaps "{gaps}" on {elementName} are ignored and the columns laid at equal widths: {reason}.{{locator}}</message>
   <message key="columnCountErrorOnRegionBodyOverflowScroll">If overflow property is set to "scroll" on {elementName}, a column-count other than "1" may not be specified.{{locator}}</message>
   <message key="invalidFORoot">First element must be the fo:root formatting object. Found {elementName} instead. Please make sure you're producing a valid XSL-FO document.</message>
   <message key="emptyDocument">Document is empty (something might be wrong with your XSLT stylesheet).</message>

@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook column-widths, a width and a gap per column (fop/CR-026). See README.md, "Changes from Apache
+ * FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.area;
@@ -39,6 +43,8 @@ public class BodyRegion extends RegionReference {
     private Footnote footnote; // optional
     private int columnGap;
     private int columnCount;
+    private int[] columnWidths; // hook column-widths (fop/CR-026): per column, or null for equal columns
+    private int[] columnGaps; // per pair of columns
 
     /**
      * Constructor which can read traits directly
@@ -86,8 +92,66 @@ public class BodyRegion extends RegionReference {
         return getIPD() - rv.getBorderAndPaddingWidthStart() - rv.getBorderAndPaddingWidthEnd();
     }
 
+    /**
+     * The inline size of a column: with equal columns, of each; with hook column-widths (fop/CR-026), of the
+     * first.
+     * @return the first column's inline size in millipoints
+     */
     public int getColumnIPD() {
+        return getColumnWidth(0);
+    }
+
+    /**
+     * Hook column-widths (fop/CR-026): gives the columns their widths and gaps, as the fo:region-body's
+     * fox:column-widths and fox:column-gaps resolved for this page.
+     * @param widths a width per column, or null for equal columns
+     * @param gaps a gap per pair of columns, or null
+     */
+    public void setColumnWidths(int[] widths, int[] gaps) {
+        this.columnWidths = widths;
+        this.columnGaps = gaps;
+    }
+
+    /**
+     * Hook column-widths (fop/CR-026): resolves the fo:region-body's column widths against this region's
+     * content inline size, once it is set.
+     * @param rb the fo:region-body
+     */
+    public void resolveColumnWidths(RegionBody rb) {
+        int[] widths = rb.resolveColumnWidths(getContentIPD());
+        setColumnWidths(widths, widths == null ? null : rb.getColumnGaps());
+    }
+
+    /** @return a width per column, or null for equal columns (hook column-widths, fop/CR-026) */
+    public int[] getColumnWidths() {
+        return columnWidths;
+    }
+
+    /** @return a gap per pair of columns, or null for equal columns (hook column-widths, fop/CR-026) */
+    public int[] getColumnGaps() {
+        return columnGaps;
+    }
+
+    /**
+     * @param col a zero-based column
+     * @return that column's inline size in millipoints (hook column-widths, fop/CR-026)
+     */
+    public int getColumnWidth(int col) {
+        if (columnWidths != null) {
+            return columnWidths[col];
+        }
         return (getContentIPD() - (columnCount - 1) * columnGap) / columnCount;
+    }
+
+    /**
+     * @param col a zero-based column
+     * @return the gap after that column in millipoints (hook column-widths, fop/CR-026)
+     */
+    public int getColumnGap(int col) {
+        if (columnGaps != null && columnGaps.length > 0) {
+            return columnGaps[Math.min(col, columnGaps.length - 1)];
+        }
+        return columnGap;
     }
 
     /**

@@ -62,7 +62,8 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.FLOAT_OFFSET));
         assertTrue(Docx4jFop.has(Docx4jFop.FLOAT_OVERFLOW_BELOW));
         assertTrue(Docx4jFop.has(Docx4jFop.ROW_FIRST_PART_ROOM));
-        assertEquals(23, Docx4jFop.capabilities().size());
+        assertTrue(Docx4jFop.has(Docx4jFop.COLUMN_WIDTHS));
+        assertEquals(24, Docx4jFop.capabilities().size());
     }
 
     @Test

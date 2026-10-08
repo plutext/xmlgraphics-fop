@@ -220,6 +220,17 @@ public final class Docx4jFop {
      */
     public static final String ROW_FIRST_PART_ROOM = "row-first-part-room";
 
+    /**
+     * {@code fox:column-widths} and {@code fox:column-gaps} on {@code fo:region-body}: a length per column and one
+     * per pair of columns, so that the body's columns take widths of their own, as a word processor's section
+     * whose columns are not equal; each column is laid at its width through the changing-IPD restart, and the
+     * renderers step by each column's width and gap. {@code column-count} is kept, so Apache FOP lays equal
+     * columns from it. Balancing before a {@code span="all"} block is not yet unequal-aware (fop/CR-026 phase B).
+     * Lists that disagree with {@code column-count} or with the body's width are ignored with a warning
+     * ({@code columnWidthsIgnored}) and the columns stay equal (fop/CR-026; Enterprise CR-001 item 49).
+     */
+    public static final String COLUMN_WIDTHS = "column-widths";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -247,6 +258,7 @@ public final class Docx4jFop {
         caps.add(FLOAT_OFFSET);
         caps.add(FLOAT_OVERFLOW_BELOW);
         caps.add(ROW_FIRST_PART_ROOM);
+        caps.add(COLUMN_WIDTHS);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

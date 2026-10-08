@@ -1,9 +1,9 @@
 # CR-026: columns of unequal width in the region body
 
-Status: SIZING 2026-10-08, not started; Jason's word to begin. Registry key `fop/CR-026`. Enterprise CR-001 §6.6
-item 49, measured by the docx4j session on four corpus documents (10598, 6116, 1137, 11092). §5's probe of the restart
-path was run 2026-10-08 on branch `CR-026-unequal-columns`: phase A is as sized, phase B (balancing) is a week, not three
-to five days, for the reason §5 gives.
+Status: PHASE A BUILT 2026-10-08, on branch `CR-026-unequal-columns` (Jason's word to start, 2026-10-08), not yet gated;
+phase B (balancing) not started. Registry key `fop/CR-026`. Enterprise CR-001 §6.6 item 49, measured by the docx4j
+session on four corpus documents (10598, 6116, 1137, 11092). §5's probe of the restart path was run first: phase A as
+sized, phase B a week. §7 says what phase A built and measured.
 
 ## 1. The need
 
@@ -141,3 +141,29 @@ the other three their column origins; phase B settles their balancing at each sp
 
 Beyond XSL 1.1 (`column-count` and `column-gap` are the model). An extension Apache might take as `fox:`
 properties, as it took `fox:disable-column-balancing`; to offer once it works, with the layout tests.
+
+## 7. Phase A as built (2026-10-08)
+
+Capability `column-widths`, the twenty-fourth. `fox:column-widths` and `fox:column-gaps` on `fo:region-body`,
+string properties (`PR_X_COLUMN_WIDTHS` 299, `PR_X_COLUMN_GAPS` 300) parsed in `RegionBody.bind` into millipoints
+(space- or comma-separated lengths, any FOP unit): n widths for `column-count` n of at least 2, n−1 gaps, or no gaps,
+each then `column-gap`; a width must be positive, a gap not negative. Their sum is checked against the body's content
+inline size when a page is made (`Page` → `BodyRegion.resolveColumnWidths` → `RegionBody.resolveColumnWidths`), within
+a point. Any failure fires `FOValidationEventProducer.columnWidthsIgnored` (WARN, once per region-body) and the columns
+stay equal.
+
+`BodyRegion` holds the lists (`setColumnWidths`, `getColumnWidth(int)`, `getColumnGap(int)`; `getColumnIPD()` is now
+the first column's width, which is what `PageProvider`'s last-page comparisons want). `MainReference.createSpan` makes
+a `Span(int[] widths, int[] gaps, int ipd)` for a multi-column span of such a body; `Span.getColumnWidth()` is the
+current flow's width, `getColumnWidth(int)`, `getColumnGap(int)` and `getColumnStart(int)` any column's. The flow's
+inline size reaches the layout managers through `PageSequenceLayoutManager.getCurrentColumnWidth()` unchanged.
+`PageProvider.compareIPDs` returns the difference between a part's column and the next (the probe's form, §5).
+`AbstractRenderer.renderMainReference` steps by each flow's inline size and the gap after it, in both directions;
+`XMLRenderer` writes `columnWidths` and `columnGaps` on the body region and the span and `AreaTreeParser` reads them
+back. Layout test `region-body_column-widths.xml` (five sequences: the two corpus widths on one page, three columns
+over two pages, the gaps omitted, a bad sum and a bad count, with the warning's event checks).
+
+Measured as the probe was (§5): the same figures through the attributes instead of the system property, the second
+column at x=213.95pt in the PDF. Not changed: `BalancingColumnBreakingAlgorithm` (phase B); the IF and other renderers
+inherit the stepping from `AbstractRenderer`. docx4j's layout managers use none of the members touched
+(`docx4j-export-fo` reads `BodyRegion.getBPD()` only).

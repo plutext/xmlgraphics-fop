@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook column-widths, a span of columns of unequal width (fop/CR-026). See README.md, "Changes from
+ * Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.area;
@@ -60,8 +64,14 @@ public class MainReference extends Area {
             //Remove the current one if it is empty
             spanAreas.remove(spanAreas.size() - 1);
         }
-        Span newSpan = new Span(((spanAll) ? 1 : getColumnCount()),
-                getColumnGap(), parent.getContentIPD());
+        Span newSpan;
+        if (!spanAll && parent.getColumnWidths() != null) {
+            // hook column-widths (fop/CR-026): the body's columns at their own widths
+            newSpan = new Span(parent.getColumnWidths(), parent.getColumnGaps(), parent.getContentIPD());
+        } else {
+            newSpan = new Span(((spanAll) ? 1 : getColumnCount()),
+                    getColumnGap(), parent.getContentIPD());
+        }
         spanAreas.add(newSpan);
         if (wmtg != null) {
             newSpan.setWritingModeTraits(wmtg);

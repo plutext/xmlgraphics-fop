@@ -15,12 +15,18 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook column-widths, the fox:column-widths and fox:column-gaps properties (fop/CR-026). See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo.pagination;
 
 // Java
 import java.awt.Rectangle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.fop.apps.FOPException;
 import org.apache.fop.datatypes.FODimension;
@@ -32,6 +38,7 @@ import org.apache.fop.fo.Constants;
 import org.apache.fop.fo.FONode;
 import org.apache.fop.fo.PropertyList;
 import org.apache.fop.fo.properties.CommonMarginBlock;
+import org.apache.fop.fo.properties.FixedLength;
 
 /**
  * Class modelling the <a href="http://www.w3.org/TR/xsl/#fo_region-body">
@@ -42,7 +49,15 @@ public class RegionBody extends Region {
     private CommonMarginBlock commonMarginBlock;
     private Numeric columnCount;
     private Length columnGap;
+    private String columnWidthsText; // fox:column-widths (hook column-widths, fop/CR-026)
+    private String columnGapsText; // fox:column-gaps
     // End of property values
+
+    private int[] columnWidths; // fop/CR-026: per column, millipoints, or null for equal columns
+    private int[] columnGaps; // per pair of columns
+    private boolean columnWidthsWarned;
+
+    private static final Pattern LENGTH = Pattern.compile("([-+]?[0-9]*\\.?[0-9]+)\\s*([a-z]+)");
 
     /**
      * Create a RegionBody instance that is a child of the
@@ -59,6 +74,9 @@ public class RegionBody extends Region {
         commonMarginBlock = pList.getMarginBlockProps();
         columnCount = pList.get(PR_COLUMN_COUNT).getNumeric();
         columnGap = pList.get(PR_COLUMN_GAP).getLength();
+        columnWidthsText = pList.get(PR_X_COLUMN_WIDTHS).getString(); // fop/CR-026
+        columnGapsText = pList.get(PR_X_COLUMN_GAPS).getString();
+        parseColumnWidths();
 
         if ((getColumnCount() > 1) && (getOverflow() == EN_SCROLL)) {
             /* This is an error (See XSL Rec, fo:region-body description).
@@ -94,6 +112,119 @@ public class RegionBody extends Region {
      */
     public int getColumnGap() {
         return columnGap.getValue();
+    }
+
+    /**
+     * Hook column-widths (fop/CR-026): reads fox:column-widths and fox:column-gaps, a length per column and one
+     * per pair of columns, space-separated. The gaps may be absent, each gap then being column-gap. The lists
+     * must agree with column-count; otherwise they are ignored with a warning and the columns stay equal.
+     */
+    private void parseColumnWidths() {
+        columnWidths = null;
+        columnGaps = null;
+        if (isAbsent(columnWidthsText)) {
+            if (!isAbsent(columnGapsText)) {
+                warnColumnWidthsIgnored("fox:column-gaps given without fox:column-widths");
+            }
+            return;
+        }
+        int count = getColumnCount();
+        int[] widths = parseLengths(columnWidthsText);
+        if (widths == null || widths.length != count || count < 2) {
+            warnColumnWidthsIgnored("column-count is " + count + ", so " + count
+                    + " widths are needed, each a length");
+            return;
+        }
+        int[] gaps;
+        if (isAbsent(columnGapsText)) {
+            gaps = new int[count - 1];
+            java.util.Arrays.fill(gaps, getColumnGap());
+        } else {
+            gaps = parseLengths(columnGapsText);
+            if (gaps == null || gaps.length != count - 1) {
+                warnColumnWidthsIgnored("column-count is " + count + ", so " + (count - 1)
+                        + " gaps are needed, each a length");
+                return;
+            }
+        }
+        for (int w : widths) {
+            if (w <= 0) {
+                warnColumnWidthsIgnored("a width is not positive");
+                return;
+            }
+        }
+        for (int g : gaps) {
+            if (g < 0) {
+                warnColumnWidthsIgnored("a gap is negative");
+                return;
+            }
+        }
+        columnWidths = widths;
+        columnGaps = gaps;
+    }
+
+    private static boolean isAbsent(String text) {
+        return text == null || text.trim().length() == 0 || "none".equals(text.trim());
+    }
+
+    private static int[] parseLengths(String text) {
+        String[] tokens = text.trim().split("[\\s,]+");
+        int[] values = new int[tokens.length];
+        for (int i = 0; i < tokens.length; i++) {
+            Matcher m = LENGTH.matcher(tokens[i]);
+            if (!m.matches()) {
+                return null;
+            }
+            try {
+                values[i] = FixedLength.getInstance(Double.parseDouble(m.group(1)), m.group(2)).getValue();
+            } catch (RuntimeException e) {
+                return null;
+            }
+        }
+        return values;
+    }
+
+    private void warnColumnWidthsIgnored(String reason) {
+        columnWidths = null;
+        columnGaps = null;
+        if (!columnWidthsWarned) {
+            columnWidthsWarned = true;
+            getFOValidationEventProducer().columnWidthsIgnored(this, getName(), columnWidthsText,
+                    columnGapsText, reason, getLocator());
+        }
+    }
+
+    /**
+     * Hook column-widths (fop/CR-026): the widths of the body's columns for a page whose body has the given
+     * content inline size, checked once against it: the widths and gaps must sum to it within a point.
+     * @param contentIPD the body region's content inline size in millipoints
+     * @return the widths, one per column, or null for equal columns
+     */
+    public int[] resolveColumnWidths(int contentIPD) {
+        if (columnWidths == null) {
+            return null;
+        }
+        int sum = 0;
+        for (int w : columnWidths) {
+            sum += w;
+        }
+        for (int g : columnGaps) {
+            sum += g;
+        }
+        if (Math.abs(sum - contentIPD) > 1000) {
+            warnColumnWidthsIgnored("the widths and gaps sum to " + sum + "mpt where the body is " + contentIPD
+                    + "mpt wide");
+            return null;
+        }
+        return columnWidths;
+    }
+
+    /**
+     * Hook column-widths (fop/CR-026).
+     * @return the gaps between the body's columns, one per pair, or null for equal columns
+     */
+    public int[] getColumnGaps() {
+        return columnGaps;
     }
 
     /** {@inheritDoc} */

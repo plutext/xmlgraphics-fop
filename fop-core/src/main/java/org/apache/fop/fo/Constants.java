@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook gsub-features, the PR_X_GSUB_FEATURES property id.; and PR_X_CONTINUATION_DISPLAY_ALIGN
- * (hook continuation-display-align, fop/CR-013); and PR_X_FLOAT_OFFSET (hook float-offset, fop/CR-023). See
+ * (hook continuation-display-align, fop/CR-013); and PR_X_FLOAT_OFFSET (hook float-offset, fop/CR-023); and
+ * PR_X_COLUMN_WIDTHS and PR_X_COLUMN_GAPS (hook column-widths, fop/CR-026). See
  * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -844,8 +845,14 @@ public interface Constants {
     /** How far below the top of its anchor block a side float begins (hook float-offset, fop/CR-023) */
     int PR_X_FLOAT_OFFSET = 298;
 
+    /** A width per column of fo:region-body (hook column-widths, fop/CR-026) */
+    int PR_X_COLUMN_WIDTHS = 299;
+
+    /** A gap per pair of columns of fo:region-body (hook column-widths, fop/CR-026) */
+    int PR_X_COLUMN_GAPS = 300;
+
     /** Number of property constants defined */
-    int PROPERTY_COUNT = 298;
+    int PROPERTY_COUNT = 300;
 
     // compound property constants
 

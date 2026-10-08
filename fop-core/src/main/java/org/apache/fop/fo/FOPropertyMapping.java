@@ -18,7 +18,7 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook gsub-features, the fox:gsub-features property, inherited; and initial-page-number's maker,
  * which keeps 0 where the user agent allows it (fop/CR-012).; fox:continuation-display-align (fop/CR-013),
- * and fox:float-offset (fop/CR-023). See
+ * and fox:float-offset (fop/CR-023), fox:column-widths and fox:column-gaps (fop/CR-026). See
  * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -2712,6 +2712,17 @@ public final class FOPropertyMapping implements Constants {
         l.setInherited(false);
         l.setDefault("0pt");
         addPropertyMaker("fox:float-offset", l);
+
+        // fox:column-widths and fox:column-gaps on fo:region-body: a length per column and one per pair of
+        // columns, space-separated; the columns of the body then take those widths (hook column-widths, fop/CR-026)
+        m = new StringProperty.Maker(PR_X_COLUMN_WIDTHS);
+        m.setInherited(false);
+        m.setDefault("none");
+        addPropertyMaker("fox:column-widths", m);
+        m = new StringProperty.Maker(PR_X_COLUMN_GAPS);
+        m.setInherited(false);
+        m.setDefault("none");
+        addPropertyMaker("fox:column-gaps", m);
 
         // fox:auto-toggle, used only in fo:multi-switch
         m = new EnumProperty.Maker(PR_X_AUTO_TOGGLE);

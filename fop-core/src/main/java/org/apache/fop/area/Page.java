@@ -16,8 +16,9 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
- * Apache FOP 2.11: hook measured-region-extents, a page made with its header and footer extents measured
- * (fop/CR-018). See README.md, "Changes from Apache FOP 2.11". */
+ * Apache FOP 2.11: hook measured-region-extents, a page made with its header and footer extents measured (fop/CR-018);
+ * and hook column-widths, a page's body given its column widths (fop/CR-026). See README.md, "Changes from Apache FOP
+ * 2.11". */
 
 /* $Id$ */
 
@@ -155,6 +156,10 @@ public class Page extends AreaTreeObject implements Serializable {
             TraitSetter.addPadding(rr, r.getCommonBorderPaddingBackground(),
                     false, false, false, false, null);
             setRegionReferencePosition(rr, r, rvp.getViewArea());
+            if (rr instanceof BodyRegion) {
+                // hook column-widths (fop/CR-026): the body's column widths, checked against its inline size
+                ((BodyRegion) rr).resolveColumnWidths((RegionBody) r);
+            }
             rvp.setRegionReference(rr);
             setRegionViewport(r.getNameId(), rvp);
         }

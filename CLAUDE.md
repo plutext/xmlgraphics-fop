@@ -335,7 +335,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    next page behind an empty span, as Apache's own unbalanced output does. The probe code (a system property in
    `Span`) stays on the branch for phase A to replace. The docx4j session (2026-10-08): continuous sections share one
    page-sequence with `span="all"` blocks, so phase A alone serves 10598 (next-page breaks) and phase B's balancing
-   is what 6116, 1137 and 11092 need at their span blocks. Not started beyond the probe; Jason's word.
+   is what 6116, 1137 and 11092 need at their span blocks. Phase A BUILT 2026-10-08 on the branch at Jason's word
+   (CR-026 §7): `fox:column-widths` and `fox:column-gaps` on `fo:region-body`, capability `column-widths`, the
+   twenty-fourth; layout test `region-body_column-widths.xml`; the warning `columnWidthsIgnored`. Not yet gated: the
+   jar goes to the docx4j session next (rNN under `~/fop-renderers/`), with CR-026 §4's pass criteria (10598 to Word's
+   pages and its column origins; 6116, 1137, 11092 their column origins); phase B after.
 7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
    off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
    says.

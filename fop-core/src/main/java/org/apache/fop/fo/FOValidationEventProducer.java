@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook column-widths, the warning of fox:column-widths ignored (fop/CR-026). See README.md, "Changes
+ * from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo;
@@ -339,6 +343,20 @@ public interface FOValidationEventProducer extends EventProducer {
      */
     void nonZeroBorderPaddingOnRegion(Object source, String elementName, String regionName,
             boolean canRecover, Locator loc) throws ValidationException;
+
+    /**
+     * Hook column-widths (fop/CR-026): fox:column-widths or fox:column-gaps on fo:region-body cannot be applied,
+     * and the columns are laid at equal widths.
+     * @param source the event source
+     * @param elementName the name of the context node
+     * @param widths the fox:column-widths value
+     * @param gaps the fox:column-gaps value
+     * @param reason why the lists are ignored
+     * @param loc the location of the error or null
+     * @event.severity WARN
+     */
+    void columnWidthsIgnored(Object source, String elementName, String widths, String gaps, String reason,
+            Locator loc);
 
     /**
      * If overflow property is set to "scroll", a column-count other than "1" may not be specified.

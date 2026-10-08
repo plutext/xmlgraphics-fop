@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook column-widths, the columns' widths and gaps written on the body region and the span
+ * (fop/CR-026). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.render.xml;
@@ -519,6 +523,10 @@ public class XMLRenderer extends AbstractXMLRenderer {
                     addAttribute("columnGap", body.getColumnGap());
                     addAttribute("columnCount", body.getColumnCount());
                 }
+                if (body.getColumnWidths() != null) { // hook column-widths (fop/CR-026)
+                    addAttribute("columnWidths", join(body.getColumnWidths()));
+                    addAttribute("columnGaps", join(body.getColumnGaps()));
+                }
                 startElement("regionBody", atts);
                 renderBodyRegion(body);
                 endElement("regionBody");
@@ -608,6 +616,10 @@ public class XMLRenderer extends AbstractXMLRenderer {
             if (span.getColumnCount() != 1) {
                 addAttribute("columnCount", span.getColumnCount());
             }
+            if (span.getColumnWidths() != null) { // hook column-widths (fop/CR-026)
+                addAttribute("columnWidths", join(span.getColumnWidths()));
+                addAttribute("columnGaps", join(span.getColumnGaps()));
+            }
             addAreaAttributes(span);
             addTraitAttributes(span);
             startElement("span", atts);
@@ -619,6 +631,18 @@ public class XMLRenderer extends AbstractXMLRenderer {
             endElement("span");
         }
         endElement("mainReference");
+    }
+
+    /** @return the values space-separated (hook column-widths, fop/CR-026) */
+    private static String join(int[] values) {
+        StringBuilder sb = new StringBuilder();
+        for (int v : values) {
+            if (sb.length() > 0) {
+                sb.append(' ');
+            }
+            sb.append(v);
+        }
+        return sb.toString();
     }
 
     /**

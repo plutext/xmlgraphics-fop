@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook column-widths, the columns of a span stepped by their own widths and gaps (fop/CR-026). See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.render;
@@ -505,12 +509,13 @@ public abstract class AbstractRenderer
             }
             if ((level & 1) == 1) {
                 currentIPPosition += span.getIPD();
-                currentIPPosition += columnGap;
+                currentIPPosition += span.getColumnGap(0);
             }
 
             for (columnIndex = 0; columnIndex < columnCount; columnIndex++) {
 
                 NormalFlow flow = span.getNormalFlow(columnIndex);
+                columnWidth = span.getColumnWidth(columnIndex); // hook column-widths (fop/CR-026)
 
                 boolean isLeftToRight = (inlineProgressionDirection == null)
                         || (inlineProgressionDirection.getEnumValue() == Constants.EN_LR);
@@ -561,14 +566,15 @@ public abstract class AbstractRenderer
                     }
 
                     currentBPPosition = saveSpanBPPos;
+                    // each column stepped by its own width and the gap after it (hook column-widths, fop/CR-026)
                     if ((level & 1) == 1) {
                         currentIPPosition -= flow.getIPD();
-                        currentIPPosition -= columnGap;
+                        currentIPPosition -= span.getColumnGap(Math.max(columnIndex - 1, 0));
                     }
                     renderFlow(flow);
                     if ((level & 1) == 0) {
                         currentIPPosition += flow.getIPD();
-                        currentIPPosition += columnGap;
+                        currentIPPosition += span.getColumnGap(columnIndex);
                     }
                 }
             }
