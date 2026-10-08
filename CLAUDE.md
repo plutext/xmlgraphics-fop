@@ -424,7 +424,16 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    repeated header's height (the first step's box, or the penalty only) and whether the stock overflow is Apache's
    own, upstream-bound. Reproducer `~/fidelity-cr030/repro/keep-chain-table-header-12301.fo` (not redistributable);
    docx4j's register `documents/12301.md`, cause `keep-chain-table-header`; docx4j's `boundKeepChains` does not
-   reach it (its gate b216). Not a §6.6 item yet: nothing measured here.
+   reach it (its gate b216). **Measured here 2026-10-09 (Jason's word):** the stock overflow is not the table
+   header but the picture paragraph's line: `LineLayoutManager.makeLineBreakPosition` takes the half-leading of the
+   explicit 482.958pt line-height against the 8pt strut (237779 each side) as the line's space-before and -after,
+   then sizes the line to the 481.5pt graphic, so the block is 958714 for a 483156 line; the chain then fits no
+   page and FOP lays it overflowing (440pt on my page 10 with a stand-in image, their 449). XSL max-height would
+   give about 721pt, Word's exact rule 483; `line-stacking-strategy="font-height"` gives 482958 exactly (a
+   docx4j-side attribute for the stock path; its own line manager already gives the box). The table header is
+   accounted (second-to-last box, every break penalty's width). Apache's code, upstream-bound, not drafted.
+   Probes and README: `~/fop-session-tools/2026-10-09-12301-picture-line/`. docx4j's 119pt under its own
+   managers is a different mechanism, theirs to trace. Proposed as §6.6 item 50, sent for agreement.
 12. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
    and P2-3 small and clean; P2-4, P2-6, P2-7 inert; the structure-tree half of P2-5 superseded by
    FOP-3165 and FOP-3283 in Apache `main`).
