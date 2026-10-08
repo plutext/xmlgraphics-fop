@@ -265,4 +265,11 @@ b198 (docx4j as committed, r20 against r19): 1056 +2 (0.8636 to 0.9545), 1616 +3
 against b198, 3229 rendering with its pair. Phase 2 whole on r20 against b195: +34 / -8 lines; 6293 +16 to Word's pages,
 1616 +4, 1056 +2, 6131 +2; 9775 -5 (unread), 13419 -2, 4083 -1. 13419 on r21 (989280390, the refusal against the page's
 own height): still refused, rightly (§4.1); the cause docx4j's, fixed there and gated as b202 after b201 (r21 against
-r20). r21 is the gate renderer from here.
+r20). b201 (r21 against r20): 0 movers, errors unchanged, so the page-height correction costs nothing on the corpus;
+r21 is the gate renderer from here. 9775's -5 read: not the hook's. Its 15.25pt-offset float on page 2 hangs on an
+empty anchor with 14pt space-before directly after an in-flow table, and r21 draws it 15.25 below the space-before's
+start, which is Word's reference too (Word's table 15.25 below the previous table's foot); the lines come from a 15pt
+height deficit in a table higher on that page (docx4j's rows at 202, 244 and 254 against Word's 217, 259 and 270),
+which the old padding inside the float happened to cancel and the offset now exposes: a docx4j table-height cause.
+13419's docx4j fix renders it at Word's 3 pages with the address table at the page's top (49.0 against Word's 50.5);
+b202 running on r21.
