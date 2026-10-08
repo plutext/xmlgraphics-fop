@@ -194,3 +194,17 @@ column break is "too short" (r=1000), the break is found by the forced path (`cr
 and `addNode` then diverts the restarted node, demerits zeroed, to `bestNodeForIPDChange`; that gives the right
 break on the command line.
 
+**Bisected by the docx4j session (2026-10-08): the fork is clear; the fault is docx4j's managers' height of the
+column.** On r24 with the same FO: FOP's stock managers (`wordLayout=false`) give Word's columns (33/58, 31/78, 32/69,
+39/81, 8/69 against Word's 32/58, 31/79, 32/70, 39/81, 8/70) and 8 pages; docx4j's `WordLayoutManagerMaker` managers
+give 9 pages with page 3's column 2 empty, single pass or two; the measured extents are not it. Its breaker trace
+(`~/fidelity-cr030/repro/column-widths-10598-breaker.log`, the page-3 cut `-p3.log`) and the stock area tree here show
+the mechanism: page 3's first column is nearly full in every path, its lower half blank paragraphs down to the foot
+with the forced break after the last of them; the stock managers' list for the column is 795229mpt against the
+799600 column and fits, docx4j's is 808040, 8.4pt over, so the breaker's last too-short node (199, 796541) is before
+the last blank line, that line is re-laid in column 2, and the forced break ends column 2, which is XSL's answer and
+Word's once a line has spilled. The extra is at the column's head: the first line at y=76.1 in the gate's PDF, 63.8 in
+Word's, 61.5 in the stock render; a space-before or leading glue kept at the head of a restarted list is the suspect
+(FOP's `BlockLayoutManager` resets its spaces on a restart and keeps them only under the float-restart flag, CR-020).
+Sent to the docx4j session 2026-10-08 to fix on its side; r24 stands for the gate.
+
