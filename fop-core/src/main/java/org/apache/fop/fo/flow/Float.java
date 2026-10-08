@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook float-offset, the fox:float-offset property (fop/CR-023). See README.md, "Changes from
+ * Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo.flow;
@@ -24,6 +28,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 
 import org.apache.fop.apps.FOPException;
+import org.apache.fop.datatypes.Length;
 import org.apache.fop.fo.FONode;
 import org.apache.fop.fo.FObj;
 import org.apache.fop.fo.PropertyList;
@@ -39,6 +44,7 @@ public class Float extends FObj {
     private int clear;
     // End of property values
     private boolean inWhiteSpace;
+    private Length floatOffset; // fop/CR-023
     private boolean disabled;
 
     /**
@@ -55,6 +61,7 @@ public class Float extends FObj {
         super.bind(pList);
         foFloat = pList.get(PR_FLOAT).getEnum();
         clear = pList.get(PR_CLEAR).getEnum();
+        floatOffset = pList.get(PR_X_FLOAT_OFFSET).getLength(); // fop/CR-023
     }
 
     /**
@@ -92,6 +99,15 @@ public class Float extends FObj {
 
     public int getFloat() {
         return foFloat;
+    }
+
+    /**
+     * Hook float-offset (fop/CR-023): how far below the top of its anchor block, space-before included, the
+     * float begins; the lines above it keep the full width.
+     * @return the fox:float-offset length, 0pt by default
+     */
+    public Length getFloatOffset() {
+        return floatOffset;
     }
 
     public void setInWhiteSpace(boolean iws) {

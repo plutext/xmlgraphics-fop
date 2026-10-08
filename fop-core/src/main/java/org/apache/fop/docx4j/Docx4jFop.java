@@ -195,6 +195,14 @@ public final class Docx4jFop {
      */
     public static final String CLEAR_AFTER_SIDE_FLOAT = "clear-after-side-float";
 
+    /**
+     * {@code fox:float-offset} on {@code fo:float}: the float begins that far below the top of its anchor block,
+     * space-before included, and the lines above it keep the full width, as a word processor places a table
+     * a stated distance below the paragraph it is anchored to (docx4j CR-032, Enterprise CR-001 item 8;
+     * fop/CR-023 §4.1).
+     */
+    public static final String FLOAT_OFFSET = "float-offset";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -219,6 +227,7 @@ public final class Docx4jFop {
         caps.add(SIDE_FLOAT_EDGES);
         caps.add(SIMULATE_STYLE_PER_FACE);
         caps.add(CLEAR_AFTER_SIDE_FLOAT);
+        caps.add(FLOAT_OFFSET);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

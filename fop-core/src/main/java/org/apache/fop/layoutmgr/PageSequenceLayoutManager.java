@@ -457,7 +457,25 @@ public class PageSequenceLayoutManager extends AbstractPageSequenceLayoutManager
     }
 
     public void recordStartOfFloat(int fHeight, int fYOffset) {
-        pageBreaker.handleStartOfFloat(fHeight, fYOffset);
+        recordStartOfFloat(fHeight, fYOffset, 0, false);
+    }
+
+    /**
+     * As {@link #recordStartOfFloat(int, int)}, with how far below the flow's height the float was placed and
+     * whether its intrusion waits for its top (hook float-offset, fop/CR-023).
+     */
+    public void recordStartOfFloat(int fHeight, int fYOffset, int fYShift, boolean pending) {
+        pageBreaker.handleStartOfFloat(fHeight, fYOffset, fYShift, pending);
+    }
+
+    /** @return how far below the flow's height at its insertion the float being handled was placed (fop/CR-023) */
+    public int getFloatYShift() {
+        return pageBreaker.getFloatYShift();
+    }
+
+    /** @return whether a placed float's intrusion still waits for its top (hook float-offset, fop/CR-023) */
+    public boolean intrusionPending() {
+        return pageBreaker.intrusionPending();
     }
 
     public boolean handlingStartOfFloat() {

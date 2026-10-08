@@ -253,8 +253,12 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    extension of XSL (draft `docs/upstream/clear-after-side-float.txt`, Jason's call); the edge-search fixes are Apache's
    defects too and would stack on FOP-3355 and FOP-3354 (not drafted yet). The docx4j side commits follow its second gate
    on the released `.5`.
-3. *`fop/CR-023`, after CR-022: the offset float and both-sides wrap for docx4j CR-032 (floating tables)*. Jason confirmed
-   D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
+3. *`fop/CR-023`: the offset float, and a line that does not fit beside a float set below it* (docx4j CR-032 §4.2).
+   IN PROGRESS 2026-10-08 on branch `CR-023-float-offset` (Jason: start after the two upstream drafts). The design is
+   `docs/developer/change-requests/CR-023-float-offset-and-overflow.md`; the first half, `fox:float-offset`
+   (capability `float-offset`, the twenty-first), is built and measured (§4.1 as built; layout test `float_offset.xml`,
+   four cases); the second, a line that does not fit beside a float going to its foot (`float-overflow-below`), is
+   designed (§4.2) and next; both-sides wrap is sized only (§4.3). Jason confirmed D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
    settled it: `float-offset` stands (`fox:float-offset` on `fo:float`: the intrusion begins N pt below the top of the
    anchor block, space-before included; the lines that fit in the gap are full width above the float), `float-band` is
    WITHDRAWN (Word does not lay empty paragraphs behind a full-width table; FOP's zero-ipd lines beside a column-wide

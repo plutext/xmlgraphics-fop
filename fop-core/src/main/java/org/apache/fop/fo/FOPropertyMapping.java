@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook gsub-features, the fox:gsub-features property, inherited; and initial-page-number's maker,
- * which keeps 0 where the user agent allows it (fop/CR-012).; and fox:continuation-display-align (fop/CR-013). See
+ * which keeps 0 where the user agent allows it (fop/CR-012).; fox:continuation-display-align (fop/CR-013),
+ * and fox:float-offset (fop/CR-023). See
  * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -2703,6 +2704,13 @@ public final class FOPropertyMapping implements Constants {
         m.addEnum("auto", getEnumProperty(EN_AUTO, "AUTO"));
         m.setDefault("auto");
         addPropertyMaker("fox:continuation-display-align", m);
+
+        // fox:float-offset, how far below the top of its anchor block (space-before included) a side float
+        // begins; the lines above it keep the full width (hook float-offset, fop/CR-023)
+        LengthProperty.Maker l = new LengthProperty.Maker(PR_X_FLOAT_OFFSET);
+        l.setInherited(false);
+        l.setDefault("0pt");
+        addPropertyMaker("fox:float-offset", l);
 
         // fox:auto-toggle, used only in fo:multi-switch
         m = new EnumProperty.Maker(PR_X_AUTO_TOGGLE);

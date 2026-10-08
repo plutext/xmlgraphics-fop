@@ -18,7 +18,8 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook page-master-by-content, each page made for the part of the page-sequence that owns it
  * (fop/CR-017); the space between paragraphs at a side float's edge is kept, the edge being no break in the
- * flow (fop/CR-020); and the content after an edge forced by clear is laid out at the float's foot (fop/CR-022).
+ * flow (fop/CR-020); the content after an edge forced by clear is laid out at the float's foot (fop/CR-022); and
+ * hook float-offset, the float placed at its target top (fop/CR-023).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -62,6 +63,11 @@ public class PageBreaker extends AbstractBreaker {
     private int floatHeight;
     private int floatYOffset;
     private int pendingFloatClearance; // fop/CR-022
+    private int floatYShift; // fop/CR-023
+    private boolean intrusionPending; // fop/CR-023: the float is placed, its intrusion waits for its top
+    private int savedStartIntrusion; // fop/CR-023
+    private int savedEndIntrusion; // fop/CR-023
+    private int floatTopY; // fop/CR-023: the placed float's top in the page
 
     private List<ListElement> relayedFootnotesList;
     private List<Integer> relayedLengthList;
@@ -838,11 +844,58 @@ public class PageBreaker extends AbstractBreaker {
     }
 
     protected void handleStartOfFloat(int fHeight, int fYOffset) {
+        handleStartOfFloat(fHeight, fYOffset, 0, false);
+    }
+
+    /**
+     * As {@link #handleStartOfFloat(int, int)}, with how far below the flow's height the float was placed and
+     * whether its intrusion into the lines waits for its top (hook float-offset, fop/CR-023).
+     */
+    protected void handleStartOfFloat(int fHeight, int fYOffset, int fYShift, boolean pending) {
         handlingStartOfFloat = true;
         handlingEndOfFloat = false;
         floatHeight = fHeight;
         floatYOffset = fYOffset;
-        childFLM.handleFloatOn();
+        floatYShift = fYShift;
+        PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
+        floatTopY = fYOffset + fYShift;
+        if (pending) {
+            // hook float-offset (fop/CR-023): the float lies below the flow's height here; the lines up to its
+            // top keep the full width, so the intrusion the float's area set is held back until the breaking
+            // algorithm reaches the top (resolvePendingIntrusion)
+            intrusionPending = true;
+            savedStartIntrusion = pslm.getStartIntrusionAdjustment();
+            savedEndIntrusion = pslm.getEndIntrusionAdjustment();
+            pslm.setStartIntrusionAdjustment(0);
+            pslm.setEndIntrusionAdjustment(0);
+        } else {
+            intrusionPending = false;
+            childFLM.handleFloatOn();
+        }
+    }
+
+    /** @return whether a placed float's intrusion still waits for its top (hook float-offset, fop/CR-023) */
+    protected boolean intrusionPending() {
+        return intrusionPending;
+    }
+
+    /**
+     * The breaking algorithm reached the top of a placed float: the intrusion is switched on from here, and the
+     * float is handled from this height on, its foot the shift plus its height below (hook float-offset, fop/CR-023).
+     */
+    private void resolvePendingIntrusion(PageBreakingAlgorithm alg) {
+        PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
+        pslm.setStartIntrusionAdjustment(savedStartIntrusion);
+        pslm.setEndIntrusionAdjustment(savedEndIntrusion);
+        // the float's top below the flow's height here, both in the page: exact whichever block the resolved
+        // space between the blocks at this break was given to
+        int edgeY = pslm.getCurrentPV().getCurrentFlow().getBPD();
+        handleStartOfFloat(floatHeight, edgeY, Math.max(0, floatTopY - edgeY), false);
+    }
+
+    /** @return how far below the flow's height at its insertion the float being handled was placed (fop/CR-023) */
+    protected int getFloatYShift() {
+        return floatYShift;
     }
 
     protected int getFloatHeight() {
@@ -1019,20 +1072,32 @@ public class PageBreaker extends AbstractBreaker {
             // Add areas of lines, in the current page, before the float or during float
             addAreas(new KnuthPossPosIter(effectiveList, startElementIndex, endElementIndex + 1), childLC);
             // add areas for the float, if applicable
+            boolean placed = false;
             if (alg.handlingStartOfFloat()) {
                 for (int k = startElementIndex; k < endElementIndex + 1; k++) {
                     ListElement le = effectiveList.getElement(k);
                     if (le instanceof KnuthBlockBox) {
                         KnuthBlockBox kbb = (KnuthBlockBox) le;
                         for (FloatContentLayoutManager fclm : kbb.getFloatContentLMs()) {
+                            // hook float-offset (fop/CR-023): the float's top in the page, from the algorithm
+                            fclm.setTargetTop(alg.getFloatTargetTop());
                             fclm.processAreas(childLC);
                             int floatHeight = fclm.getFloatHeight();
                             int floatYOffset = fclm.getFloatYOffset();
                             PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
-                            pslm.recordStartOfFloat(floatHeight, floatYOffset);
+                            // hook float-offset (fop/CR-023): a float whose top lies below its anchor's first
+                            // line keeps the lines up to the top full width; one inside that line intrudes now
+                            int shift = fclm.getFloatYShift();
+                            pslm.recordStartOfFloat(floatHeight, floatYOffset, shift,
+                                    shift > 0 && shift >= alg.getFloatAnchorLineHeight());
+                            placed = true;
                         }
                     }
                 }
+            }
+            if (alg.handlingStartOfFloat() && intrusionPending && !placed) {
+                // no anchor in this part: the algorithm reached a placed float's top (hook float-offset, fop/CR-023)
+                resolvePendingIntrusion(alg);
             }
             if (alg.handlingEndOfFloat()) {
                 PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();

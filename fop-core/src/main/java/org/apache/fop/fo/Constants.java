@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook gsub-features, the PR_X_GSUB_FEATURES property id.; and PR_X_CONTINUATION_DISPLAY_ALIGN
- * (hook continuation-display-align, fop/CR-013). See README.md, "Changes from Apache FOP 2.11". */
+ * (hook continuation-display-align, fop/CR-013); and PR_X_FLOAT_OFFSET (hook float-offset, fop/CR-023). See
+ * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -840,8 +841,11 @@ public interface Constants {
     /** For the display-align of a table cell's continuation parts (hook continuation-display-align) */
     int PR_X_CONTINUATION_DISPLAY_ALIGN = 297;
 
+    /** How far below the top of its anchor block a side float begins (hook float-offset, fop/CR-023) */
+    int PR_X_FLOAT_OFFSET = 298;
+
     /** Number of property constants defined */
-    int PROPERTY_COUNT = 297;
+    int PROPERTY_COUNT = 298;
 
     // compound property constants
 

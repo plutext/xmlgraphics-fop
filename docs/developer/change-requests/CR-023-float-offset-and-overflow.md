@@ -88,6 +88,29 @@ trait, which the renderer adds (`AbstractRenderer.renderBlock`: `currentBPPositi
 passed on with the float's height to `recordStartOfFloat`, so that the second pass's `floatHeight` is the height
 plus the shift: the foot is where the drawn float ends.
 
+**As built (2026-10-08).** The float's area keeps its start edge at the break after its anchor box, where FOP has
+always placed it, since an edge after the anchor's first line puts the float's own break element inside the part
+being added and that line is lost; the offset is realised in two steps instead. At placement
+(`PageBreaker.addAreasForFloats`) the algorithm hands `FloatContentLayoutManager` the float's top in the page (the
+anchor block's top in list coordinates plus the offset, less the page's start), the area is given the difference
+from the flow's height as its `yOffset` trait (`top-offset` in the area tree), clamped to the page, and
+`recordStartOfFloat` carries that shift. If the shift is less than the anchor's first line (`floatAnchorLineHeight`,
+read from the list), the top falls in that line and the intrusion starts at once, the foot the height plus the
+shift. Otherwise the intrusion is held back: the page breaker zeroes the intrusion adjustments the area set, the
+next pass's lines are full width, `PageBreakingAlgorithm.initialize` takes the shift as the pending top, and the
+first legal break after which a line would cross it (`nextLineCrosses`) is a start edge; `handleFloatLayout` then
+finds no anchor in that part and `resolvePendingIntrusion` restores the adjustments and records the start again
+with the float's top less the flow's height there as the shift, exact whichever block the resolved space at the
+break was attributed to (a shift taken from list coordinates was one space off). A too-long break while the
+intrusion is pending starts it at the page's end.
+
+Measured on the command line (a marker word in the float; positions from the PDF, body top at 72pt): a 40pt float
+with a 32pt offset in a heading with 10pt space-after draws at 32pt, the heading full width, the three lines from
+26 to 74pt beside it (foot 72) and the next full; offset 0 as before; an anchor with 24pt space-before after a
+one-line paragraph draws the float at 48pt (16 + 32), inside the heading's line, which is beside it with the two
+below; a 60pt float 200pt down after seven short paragraphs draws at 200pt with all seven full width and the
+eighth beside it. CR-022's seven cases unchanged.
+
 **What docx4j writes.** `fox:float-offset` = `tblpY` on the `fo:float`, and no `padding-top` inside it; the anchor
 block keeps its own space-before, which the offset is measured from. Gated on `float-offset`.
 

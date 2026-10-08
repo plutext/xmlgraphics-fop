@@ -16,7 +16,8 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
- * Apache FOP 2.11: hook gsub-features, registering the attribute.; and continuation-display-align (fop/CR-013). See
+ * Apache FOP 2.11: hook gsub-features, registering the attribute.; and continuation-display-align (fop/CR-013),
+ * float-offset (fop/CR-023). See
  * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -60,6 +61,7 @@ public class ExtensionElementMapping extends ElementMapping {
         PROPERTY_ATTRIBUTES.add("abbreviation");
         PROPERTY_ATTRIBUTES.add("gsub-features");
         PROPERTY_ATTRIBUTES.add("continuation-display-align");
+        PROPERTY_ATTRIBUTES.add("float-offset"); // hook float-offset (fop/CR-023)
         //fox:border-*-radius-*
         PROPERTY_ATTRIBUTES.add("border-before-radius-start");
         PROPERTY_ATTRIBUTES.add("border-before-radius-end");

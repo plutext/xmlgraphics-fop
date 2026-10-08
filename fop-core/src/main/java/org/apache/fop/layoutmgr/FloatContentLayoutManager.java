@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook float-offset, the float placed at its target top below the flow's height (fop/CR-023). See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -38,6 +42,9 @@ public class FloatContentLayoutManager extends SpacedBorderedPaddedBlockLayoutMa
     private SideFloat floatContentArea;
     private int side;
     private int yOffset;
+    private final int floatOffset; // fop/CR-023: fox:float-offset
+    private int targetTop = -1; // fop/CR-023: the float's top in the page, set by the page breaker before the areas
+    private int yShift; // fop/CR-023: how far below the flow's height the float was placed
 
     /**
      * {Add info}
@@ -48,6 +55,7 @@ public class FloatContentLayoutManager extends SpacedBorderedPaddedBlockLayoutMa
         super(node);
         generatesReferenceArea = true;
         side = node.getFloat();
+        floatOffset = node.getFloatOffset() == null ? 0 : node.getFloatOffset().getValue();
     }
 
     @Override
@@ -92,6 +100,13 @@ public class FloatContentLayoutManager extends SpacedBorderedPaddedBlockLayoutMa
             lm = lm.getParent();
         }
         yOffset = lm.getParentArea(floatContentArea).getBPD();
+        // hook float-offset (fop/CR-023): the float begins at its target top, below the flow's height here
+        int lowest = lm.getContentAreaBPD() - floatContentArea.getAllocBPD();
+        int top = Math.min(targetTop, lowest);
+        yShift = (top > yOffset) ? top - yOffset : 0;
+        if (yShift > 0) {
+            floatContentArea.setYOffset(yShift);
+        }
         lm.addChildArea(floatContentArea);
         if (side == Constants.EN_END || side == Constants.EN_RIGHT) {
             lm.getPSLM().setEndIntrusionAdjustment(effectiveContentIPD);
@@ -176,6 +191,21 @@ public class FloatContentLayoutManager extends SpacedBorderedPaddedBlockLayoutMa
      */
     public int getFloatYOffset() {
         return yOffset;
+    }
+
+    /** @return fox:float-offset, how far below the top of its anchor block the float begins (fop/CR-023) */
+    public int getFloatOffset() {
+        return floatOffset;
+    }
+
+    /** @param top the float's top in the page, from the page breaker, before the areas are made (fop/CR-023) */
+    public void setTargetTop(int top) {
+        targetTop = top;
+    }
+
+    /** @return how far below the flow's height at its insertion the float was placed (fop/CR-023) */
+    public int getFloatYShift() {
+        return yShift;
     }
 
     private int getStartIndent() {

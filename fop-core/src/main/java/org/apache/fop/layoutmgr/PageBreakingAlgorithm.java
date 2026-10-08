@@ -20,8 +20,9 @@
  * owns it, carried on the node that starts it (fop/CR-017); and a side float ends at the break before the first
  * line lying below its foot, the space between paragraphs counted, and not inside a table, which cannot be read
  * again from there (fop/CR-020); and a block-level FO whose clear names the side a float is on ends the float at the
- * break before it, its content starting at the float's foot (fop/CR-022). See README.md, "Changes from Apache FOP
- * 2.11". */
+ * break before it, its content starting at the float's foot (fop/CR-022); and hook float-offset, a float's start edge
+ * at the first break after which a line would cross the float's top, `fox:float-offset` below its anchor block's top
+ * (fop/CR-023). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -122,6 +123,14 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     /** The content height at the float's edge, up to the first box below the float (fop/CR-020). */
     private int floatEdgeWidth;
     private int floatClearance; // fop/CR-022
+    /** fop/CR-023: an offset float's top in list coordinates while its intrusion waits for it, else -1. */
+    private int pendingFloatTop = -1;
+    /** fop/CR-023: the height of the anchor's first line, the one the float's area is placed before. */
+    private int floatAnchorLineHeight;
+    /** fop/CR-023: the top of the float whose start edge is being taken, in list coordinates, else -1. */
+    private int floatStartListTop = -1;
+    /** fop/CR-023: that top in the page, for the float's area; -1 for a float without an offset. */
+    private int floatTargetTop = -1;
     private int edgeElementIdx = -1; // fop/CR-022: the legal break under consideration while a float is on
     private KnuthNode bestFloatEdgeNode;
     private FloatPosition floatPosition;
@@ -281,7 +290,17 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 pslm.retrieveFootnotes(this);
             }
             if (pslm.handlingStartOfFloat()) {
-                floatHeight = Math.min(pslm.getFloatHeight(), lineWidth - pslm.getFloatYOffset());
+                if (pslm.intrusionPending()) {
+                    // hook float-offset (fop/CR-023): the float's area is placed, its top the shift below this
+                    // list's start; the lines keep the full width until one would cross it, where the
+                    // intrusion starts (considerLegalBreak, startPendingFloat)
+                    pendingFloatTop = pslm.getFloatYShift();
+                } else {
+                    // the foot is the float's height below its top, which lies the shift below the break that
+                    // started the intrusion, where this list starts (fop/CR-023)
+                    floatHeight = Math.min(pslm.getFloatHeight() + pslm.getFloatYShift(),
+                            lineWidth - pslm.getFloatYOffset());
+                }
             }
             if (pslm.handlingEndOfFloat()) {
                 totalWidth += pslm.getOffsetDueToFloat() + insertedFootnotesLength;
@@ -444,6 +463,14 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             }
         }
         if (box instanceof KnuthBlockBox && ((KnuthBlockBox) box).hasFloatAnchors()) {
+            int offset = floatOffsetOf((KnuthBlockBox) box);
+            if (offset > 0) {
+                // hook float-offset (fop/CR-023): the float's top is `offset` below the top of its anchor
+                // block, space-before included, which is the box's position less the glue just before it. The
+                // float's area is still placed at this break; its intrusion into the lines waits for the top.
+                floatStartListTop = totalWidth - glueBefore(box) + offset;
+                floatAnchorLineHeight = nextContentBoxWidth(box);
+            }
             handlingStartOfFloat = true;
         }
         if (floatHeight != 0 && totalWidth >= floatHeight) {
@@ -464,6 +491,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     protected void activateNode(KnuthNode node, int difference, double r, double demerits, int fitnessClass,
             int availableShrink, int availableStretch) {
         if (handlingFloat() && edgeElementIdx >= 0) {
+            noteFloatTargetTop(node);
             int[] glue = glueUpToNextBox(edgeElementIdx);
             if (bestFloatEdgeNode == null || demerits <= bestFloatEdgeNode.totalDemerits) {
                 bestFloatEdgeNode = createNode(edgeElementIdx, node.line + 1, fitnessClass, totalWidth + glue[0],
@@ -634,6 +662,9 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         }
         boolean edgeDeferred = false;
         edgeElementIdx = elementIdx;
+        if (pendingFloatTop >= 0 && !handlingFloat() && nextLineCrosses(elementIdx, pendingFloatTop)) {
+            startPendingFloat();
+        }
         if (floatHeight != 0) {
             // A side float ends at the first legal break after which the content lies wholly below the
             // float's foot: the content height before the break plus the glue up to the next box, the space
@@ -1639,7 +1670,12 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     protected void createForcedNodes(KnuthNode node, int line, int elementIdx, int difference, double r,
             double demerits, int fitnessClass, int availableShrink, int availableStretch, int newWidth,
             int newStretch, int newShrink) {
+        if (pendingFloatTop >= 0 && !handlingFloat() && r <= -1) {
+            // the page ends before an offset float's top: the float starts here, at the page's end (fop/CR-023)
+            startPendingFloat();
+        }
         if (handlingFloat()) {
+            noteFloatTargetTop(node);
             if (bestFloatEdgeNode == null || demerits <= bestFloatEdgeNode.totalDemerits) {
                 bestFloatEdgeNode = createNode(elementIdx, line + 1, fitnessClass, newWidth, newStretch,
                         newShrink, r, availableShrink, availableStretch, difference, demerits, node);
@@ -1666,6 +1702,81 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
 
     protected int getFloatHeight() {
         return floatHeight;
+    }
+
+    /** fop/CR-023: the largest fox:float-offset of the floats anchored in a box. */
+    private static int floatOffsetOf(KnuthBlockBox box) {
+        int offset = 0;
+        for (FloatContentLayoutManager fclm : box.getFloatContentLMs()) {
+            offset = Math.max(offset, fclm.getFloatOffset());
+        }
+        return offset;
+    }
+
+    /** The width of the first box with content after a box: the anchor's first line, for the anchor box (CR-023). */
+    private int nextContentBoxWidth(KnuthBox box) {
+        for (int i = par.indexOf(box) + 1; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox() && e.getWidth() > 0) {
+                return e.getWidth();
+            }
+        }
+        return 0;
+    }
+
+    /** @return the height of the first line of the anchor of the float whose start edge was just taken (fop/CR-023) */
+    protected int getFloatAnchorLineHeight() {
+        return floatAnchorLineHeight;
+    }
+
+    /** The glue immediately before a box in the list: the resolved space before its block (fop/CR-023). */
+    private int glueBefore(KnuthBox box) {
+        int glue = 0;
+        for (int i = par.indexOf(box) - 1; i >= 0; i--) {
+            KnuthElement e = getElement(i);
+            if (e.isBox()) {
+                break;
+            } else if (e.isGlue()) {
+                glue += e.getWidth();
+            }
+        }
+        return glue;
+    }
+
+    /** Whether the first line with content after this break would reach below the given height (fop/CR-023). */
+    private boolean nextLineCrosses(int elementIdx, int top) {
+        int bottom = totalWidth;
+        for (int i = elementIdx; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox()) {
+                if (e.getWidth() > 0) {
+                    return bottom + e.getWidth() > top;
+                }
+            } else if (e.isGlue()) {
+                bottom += e.getWidth();
+            } else if (e.isForcedBreak() && i != elementIdx) {
+                return true;
+            }
+        }
+        return true;
+    }
+
+    /** The intrusion of an offset float starts at this break (fop/CR-023). */
+    private void startPendingFloat() {
+        handlingStartOfFloat = true;
+        pendingFloatTop = -1;
+    }
+
+    /** The float's top in the page: its list height less the page's start node's (fop/CR-023). */
+    private void noteFloatTargetTop(KnuthNode pageStart) {
+        if (handlingStartOfFloat && floatStartListTop >= 0) {
+            floatTargetTop = floatStartListTop - pageStart.totalWidth;
+        }
+    }
+
+    /** @return an offset float's top in the page when its start edge was just taken, else -1 (fop/CR-023) */
+    protected int getFloatTargetTop() {
+        return floatTargetTop;
     }
 
     /** The space between a float's edge forced by clear and the float's foot, else 0 (fop/CR-022). */
