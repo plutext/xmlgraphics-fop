@@ -329,7 +329,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    with the fix, because each of its two-column stretches holds an explicit column break, so nothing balances;
    1137 because its unequal sequence's two flow children are both `span="all"` (docx4j's writer, nothing in the
    columns; 11092 asked to be checked). So the corpus has no balancing measurement yet: 11126 (its FO balances
-   82/83 here where it was 66/4) would be one if docx4j wrote its near-equal widths. Not the §3 design (trial restarts on the breaker's own managers, which a restart
+   82/83 here where it was 66/4) would be one if docx4j wrote its near-equal widths.
+   Gate so far (2026-10-08): b213 (r26 against b212) 0 movers, the regression half; the balancing half read on r27
+   with 11126's near-equal widths written: 0.9560 to 1.0000, 1 page = Word's, so docx4j lifts its 5% rule under
+   `column-balancing` (cand118). b214 (regression on r27) and b215 (cand118 across the corpus) queued; merge after
+   their lines. Not the §3 design (trial restarts on the breaker's own managers, which a restart
    inside a paragraph mutates destructively and which column 1's later `addAreas` reads): a height cap found by
    bisection (`PageBreakingAlgorithm.setBalancingCap`), each trial laying the list out column by column on a
    throwaway flow layout manager made by the maker for the same `fo:flow`, positioned where the breaker's list

@@ -408,3 +408,11 @@ of the balancing itself needs a document whose unequal stretch runs into a span 
 11126 if docx4j writes its near-equal widths (its FO balances 82 and 83 lines here, the spanning table on page 1,
 where r25 gave 66 and 4 with the table on page 2), or a probe document.
 
+**Gate, first readings (the docx4j session, 2026-10-08).** b213 (cand117 on r26 against b212 on r25): 0 movers on
+the four corpora, probes identical, errors unchanged, the regression half. The balancing half on r27 with 11126's
+near-equal widths written (cand116, no 5% rule): 11126 from 0.9560 to 1.0000 line parity, 1 page = Word's, no
+overflow events, 91 Word lines to our 90; 5639 and 330, the other near-equal losers of b210, unchanged from b212.
+So docx4j lifts its 5% rule where the renderer advertises `column-balancing` (cand118). Queued: b214 (cand117 on
+r27 against b213, the regression half on r27) and b215 (cand118 on r27 against b214, the balancing half across the
+corpus); the merge waits for them.
+
