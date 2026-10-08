@@ -322,9 +322,14 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
 6. *`fop/CR-026`, columns of unequal width in the region body* (§6.6 item 49, the docx4j session's measurement on
    10598, 6116, 1137 and 11092, 2026-10-08): PHASE A DONE 2026-10-08, gated PASS (b211 on r24, b212 on r25 0 movers)
    and merged to `2.11-docx4j.6` by fast-forward. **Phase B BUILT 2026-10-08 on branch `CR-026-balancing` (cut
-   from `2.11-docx4j.6` at 1c992e216), commit 1d6dd8be6, capability `column-balancing`, the twenty-fifth; r26 at
-   `~/fop-renderers/r26-CR-026-1d6dd8be6/` (sha256 a9ea261b...) handed to the docx4j session (docx4j-25) with the
-   pass criteria; gate pending.** Not the §3 design (trial restarts on the breaker's own managers, which a restart
+   from `2.11-docx4j.6` at 1c992e216), commits 1d6dd8be6 and 0d14ae993, capability `column-balancing`, the
+   twenty-fifth; r27 at `~/fop-renderers/r27-CR-026-0d14ae993/` (sha256 7b24023d...) handed to the docx4j session
+   (docx4j-25); gate pending.** r26's reading (CR-026 §9, end): 6116, 1137 and 11092 identical to r25. 6116 because
+   a list beginning at a `break-before="column"` block was re-read as the break alone (fixed in 0d14ae993) and,
+   with the fix, because each of its two-column stretches holds an explicit column break, so nothing balances;
+   1137 because its unequal sequence's two flow children are both `span="all"` (docx4j's writer, nothing in the
+   columns; 11092 asked to be checked). So the corpus has no balancing measurement yet: 11126 (its FO balances
+   82/83 here where it was 66/4) would be one if docx4j wrote its near-equal widths. Not the §3 design (trial restarts on the breaker's own managers, which a restart
    inside a paragraph mutates destructively and which column 1's later `addAreas` reads): a height cap found by
    bisection (`PageBreakingAlgorithm.setBalancingCap`), each trial laying the list out column by column on a
    throwaway flow layout manager made by the maker for the same `fo:flow`, positioned where the breaker's list
