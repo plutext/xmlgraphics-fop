@@ -62,6 +62,12 @@ public class RowFirstPartRoomTestCase {
     private static final String CELL_END = "</fo:block></fo:table-cell>";
 
     private static String fo(int bodyHeight, String thirteenthRow) {
+        return fo(bodyHeight, thirteenthRow, "");
+    }
+
+    /** @param cellAttributes further attributes on every cell, such as a retained padding-before */
+    private static String fo(int bodyHeight, String thirteenthRow, String cellAttributes) {
+        String cellStart = CELL_START.replace("<fo:table-cell ", "<fo:table-cell " + cellAttributes);
         StringBuilder sb = new StringBuilder("<fo:root xmlns:fo=\"http://www.w3.org/1999/XSL/Format\">"
                 + "<fo:layout-master-set><fo:simple-page-master master-name=\"p\" page-width=\"595pt\""
                 + " page-height=\"" + (bodyHeight + 144) + "pt\" margin=\"72pt\"><fo:region-body/>"
@@ -70,13 +76,13 @@ public class RowFirstPartRoomTestCase {
                 + "<fo:table table-layout=\"fixed\" width=\"451pt\" border-collapse=\"collapse\">"
                 + "<fo:table-column column-width=\"451pt\"/><fo:table-body>");
         for (int i = 0; i < 12; i++) {
-            sb.append("<fo:table-row>").append(CELL_START).append("r").append(i).append(CELL_END)
+            sb.append("<fo:table-row>").append(cellStart).append("r").append(i).append(CELL_END)
                     .append("</fo:table-row>");
         }
-        sb.append("<fo:table-row>").append(CELL_START).append(thirteenthRow).append(CELL_END)
+        sb.append("<fo:table-row>").append(cellStart).append(thirteenthRow).append(CELL_END)
                 .append("</fo:table-row>");
         for (int i = 0; i < 3; i++) {
-            sb.append("<fo:table-row>").append(CELL_START).append("after").append(i).append(CELL_END)
+            sb.append("<fo:table-row>").append(cellStart).append("after").append(i).append(CELL_END)
                     .append("</fo:table-row>");
         }
         return sb.append("</fo:table-body></fo:table></fo:flow></fo:page-sequence></fo:root>").toString();
@@ -142,6 +148,18 @@ public class RowFirstPartRoomTestCase {
         String fo = fo(252, threeLines());
         assertEquals("13:r0..A1 6:word..after2", firstWords(linesPerPage(fo, false)));
         assertEquals("13:r0..A1 6:word..after2", firstWords(linesPerPage(fo, true)));
+    }
+
+    /**
+     * A retained padding-before (a word processor's for a continued row) is carved out of the first part's box into
+     * the break's width by the stepper; the margin is added to that width, not combined with it, or the rule is lost.
+     */
+    @Test
+    public void testRetainedPaddingBeforeDoesNotHideTheRule() throws Exception {
+        String retain = "padding-before.conditionality=\"retain\" ";
+        assertEquals("13:r0..A1 6:word..after2", firstWords(linesPerPage(fo(251, threeLines(), retain), false)));
+        assertEquals("12:r0..r11 7:A1..after2", firstWords(linesPerPage(fo(251, threeLines(), retain), true)));
+        assertEquals("13:r0..A1 6:word..after2", firstWords(linesPerPage(fo(252, threeLines(), retain), true)));
     }
 
     @Test

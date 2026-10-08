@@ -244,11 +244,15 @@ public class TableStepper {
                 // split, though it does not draw them: a word processor refuses to start a row at a page's foot
                 // whose first line would fit only without the cell's bottom margin, and splits it after that
                 // line where the margin fits too. The width of the break counts only if the break is taken
-                // here (fop/CR-025; off unless the user agent asks, FOUserAgent.setRowFirstPartRoom).
+                // here (fop/CR-025; off unless the user agent asks, FOUserAgent.setRowFirstPartRoom). Added to
+                // the break's width, not combined with it: the width already carved out of the box (the trailing
+                // and leading padding and borders of a split) is the first part's drawn height, and the margin is
+                // room beyond it.
+                int givenUp = 0;
                 for (Object activeCell0 : activeCells) {
-                    effPenaltyLen = Math.max(effPenaltyLen,
-                            ((ActiveCell) activeCell0).getAfterSpaceGivenUpAtSplit());
+                    givenUp = Math.max(givenUp, ((ActiveCell) activeCell0).getAfterSpaceGivenUpAtSplit());
                 }
+                effPenaltyLen += givenUp;
             }
             firstBreakInRow = false;
             TableHFPenaltyPosition penaltyPos = new TableHFPenaltyPosition(getTableLM());

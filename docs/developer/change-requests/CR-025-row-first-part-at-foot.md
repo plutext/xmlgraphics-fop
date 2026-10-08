@@ -1,8 +1,8 @@
 # CR-025: a table row's first part at a page's foot has room for the margin it gives up
 
 Status: IN PROGRESS 2026-10-08, on branch `CR-025-row-first-part` off `2.11-docx4j.6` (after `fop/CR-023`, 3339fc1cf);
-measured on the command line (§4); the full `fop-core` suite 3873/0 and checkstyle clean at 7fa106f12; the jar r22
-(`~/fop-renderers/r22-CR-025-7fa106f12/`, sha256 3c5be21d...) handed to the docx4j gate 2026-10-08 (§8). Registry key `fop/CR-025`.
+measured on the command line (§4); r22 (7fa106f12, suite 3873/0) failed the gate on 11657, the margin hidden behind a
+retained padding-before (§3); r23 adds it instead, suite 3874/0 and checkstyle clean, handed to the gate 2026-10-08 (§8). Registry key `fop/CR-025`.
 Hook `row-first-part-room` (`FOUserAgent.setRowFirstPartRoom`, off by default), the twenty-third capability. Enterprise CR-001 §6.6 item 48. Found by the docx4j session on
 corpus document 11657 (2026-10-08, gates b205 and b206), reproduced here with a probe on the fork and on Apache
 `main` 5be8c69b6. Started on Jason's word ("let's do this row rule now").
@@ -38,7 +38,12 @@ width). So the first `BreakElement` inside a row (`TableStepper`, `firstBreakInR
 and in `switchToNextRow`, cleared after the first break element of the row, and only while the row is not finished)
 is given the largest, over the row's active cells, of what the cell would give up at a split:
 `ActiveCell.getAfterSpaceGivenUpAtSplit()`, the normal after padding and border (`bpAfterNormal`) less the trailing
-ones (`bpAfterTrailing`). A page break at that element then needs the first line plus the margin to fit; a break
+ones (`bpAfterTrailing`), added to the break's width. Added, not combined by `max`: the stepper already carves a
+split's cost out of the first part's box into the break's width (`penaltyOrGlueLen`, the trailing padding and border
+plus the continuation's leading ones, `ActiveCell.getRemainingLength()`), so box plus width is the first part's drawn
+height and the margin is room beyond it. The first build (r22) took the larger of the two, and a retained
+padding-before, which docx4j writes on every cell (Word's for a continued row), made the carved-out width larger
+than the margin and hid it: the gate read 11657's row 54 still split (§8). A page break at that element then needs the first line plus the margin to fit; a break
 anywhere else is as before, the row's later parts and its end unchanged, and the first part, when the row is split
 there, is still drawn without the margin, which is Word's drawing too. A row with one line, or one its widows and
 orphans keep from splitting, has no break inside it and needed its whole height already.
@@ -64,13 +69,19 @@ at 250.25pt; with the padding-after and the border-after at 251.94pt.
 
 Apache `main` 5be8c69b6 (the worktree's jar): the "before" column.
 
+With `padding-before.conditionality="retain"` on every cell, as docx4j writes it, and with the reproducer's other
+features together (a repeated `fo:table-header`, a 0.48pt `border-bottom` only, `display-align="after"` with
+`fox:continuation-display-align="before"`, four cells of which one splits), the same: moved whole on 251 to 251.9pt,
+split from 252pt, once the margin was added to the break's width rather than combined with it (r22 split the retained
+case at 251 like the renderer without the rule).
+
 ## 5. Tests
 
 - `RowFirstPartRoomTestCase` (`layoutmgr/table`): the probe as a Java test, each case rendered with the switch off
-  and on (a layout-engine test case cannot set the user agent); three tests, the first run of the rule on by default
-  having failed `table_empty-cells.xml`.
+  and on (a layout-engine test case cannot set the user agent); four tests, the fourth the retained padding-before
+  that hid the rule in r22; the first run of the rule on by default having failed `table_empty-cells.xml`.
 - `Docx4jHooksTestCase`: twenty-three capabilities.
-- The full `fop-core` suite 3873/0, checkstyle clean (7fa106f12).
+- The full `fop-core` suite 3874/0, checkstyle clean (r23).
 
 ## 6. docx4j
 
@@ -85,4 +96,9 @@ row's first part must have. It is a word processor's rule, the fork's; not sent.
 
 ## 8. Gate (the docx4j session)
 
-r22 handed over 2026-10-08 with §6's pass criteria and the registry text; pending.
+r22 handed over 2026-10-08 with §6's pass criteria and the registry text. The docx4j session (2026-10-08): with the
+switch confirmed on both user agents of its two-pass render, 11657's row 54 did not move: page 30 still ended with
+its first line at 546.22pt, box foot 549.3 against the body foot 549.8, page 31 opening with the continuation. Its
+FO as rendered is at `~/fidelity-cr030/repro/row-first-part-11657.fo` (this machine only). Reproduced here on the
+probe with the FO's cell shape: the retained padding-before (§3, §4). r23 with the margin added to the break's width
+handed over; its gates pending.

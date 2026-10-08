@@ -313,7 +313,10 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    full suite 3873/0 and checkstyle clean at 7fa106f12; jar r22 (`~/fop-renderers/r22-CR-025-7fa106f12/`) handed to
    the docx4j gate 2026-10-08 with CR-025 §6's pass criteria; §6.6 item 48 written (Enterprise 3c9cfa0, c0460d7). On
    PASS: merge to `2.11-docx4j.6` by fast-forward, docx4j sets `FOUserAgent.setRowFirstPartRoom(true)` on the hook.
-   The rule: a row
+   r22 failed the gate: 11657's row 54 did not move, because the margin was combined by `max` with the width the
+   stepper carves out of the first part's box for a split's cost, and docx4j's retained padding-before made that
+   width the larger (CR-025 §3); reproduced on the probe with a retained padding-before, the margin is now added to
+   the width, r23 to the gate. The rule: a row
    that would start at a page's foot without room for its first line plus the cell's bottom margin goes
    to the next page (Word's rule; the docx4j session, 2026-10-08, measured on 11657: 2393 one-line rows, 28-twip cell
    margins, 0.5pt borders, a body foot at 549.8pt; Word stops page 30 at row 53 where row 54's first line would end at
