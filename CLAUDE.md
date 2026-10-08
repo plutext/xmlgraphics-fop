@@ -271,7 +271,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    separately). Both fixed in 2f5db13ff (full suite 3870/0, checkstyle clean; `float_offset.xml` eight cases): r20 at
    `~/fop-renderers/r20-CR-023-2f5db13ff/` (sha256 c6054c41...) handed to the gate 2026-10-08, b197 (r19, docx4j's
    interim: single floats and bands with the offset, 6293 +16 to Word's pages, 6131 +2, 1616 +1, 9775 -5, 4083 -1) its
-   baseline. docx4j's side is committed on VERSION_17_3_2 gated on float-offset; fop/CR-023 is in the registry. On PASS: merge to `2.11-docx4j.6` by fast-forward,
+   baseline. docx4j's side is committed on VERSION_17_3_2 gated on float-offset; fop/CR-023 is in the registry.
+   Gates b198 and b199 on r20 (2026-10-08): phase 2 whole +34/-8 lines against the renderer-alone control, 6293 +16, the
+   pair probe 0.70 to 0.92, 3229 and 3640 right; one regression, 13419 -2 and a page, the page-end refusal firing on a
+   page whose first-page master differs: the check now uses the page's own height (r21 after the suite). 9775 -5 unread
+   by the docx4j session. b200 (picture and framePr floats on float-offset) running. On PASS: merge to `2.11-docx4j.6` by fast-forward,
    release notes closed, §6.6 item 8 narrowed in the Enterprise file (Jason's; `git status` first). Jason confirmed D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
    settled it: `float-offset` stands (`fox:float-offset` on `fo:float`: the intrusion begins N pt below the top of the
    anchor block, space-before included; the lines that fit in the gap are full width above the float), `float-band` is

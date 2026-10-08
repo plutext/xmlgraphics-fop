@@ -1784,8 +1784,9 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
 
     /** Whether the page starting at the node cannot hold an offset float below its anchor (fop/CR-023). */
     private boolean pageCannotHoldFloat(KnuthNode pageStart) {
+        // the page's own height (a first page's master may differ; hook page-master-by-content), not the nominal
         return handlingStartOfFloat && !handlingEndOfFloat && floatStartListTop >= 0 && floatFitsAnEmptyPage
-                && floatStartListBottom - pageStart.totalWidth > lineWidth;
+                && floatStartListBottom - pageStart.totalWidth > getLineWidth(pageStart);
     }
 
     /** fop/CR-023: the largest fox:float-offset of the floats anchored in a box. */

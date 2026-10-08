@@ -129,7 +129,10 @@ intrusion is pending starts it at the page's end.
   as usual; with no edge node, `BreakingAlgorithm`'s loop (`floatEdgeFound`, a one-line hook) runs its ordinary
   recovery instead of `handleFloat`, restarting from the last too-short break, which is the one before the anchor,
   and `restartFrom` clears the float's start so the anchor box is handled again on the next page. A float that would
-  not fit an empty page either is not refused (it is placed and clamped, as before). Measured: after 38 lines, an
+  not fit an empty page either is not refused (it is placed and clamped, as before). The page's own height is the
+  measure (`getLineWidth(node)`, which honours a first page's master and `page-master-by-content`), not the
+  algorithm's nominal width: gate b198 found 13419 refused, a 2.25pt-offset table 64pt tall anchored near the foot
+  of a page whose first-page master differs, where r19 had drawn it within the body (r21). Measured: after 38 lines, an
   anchor with a 60pt offset and a 60pt float breaks the page before it and starts the next page with the float 60pt
   down and the anchor's lines full width above; the same anchor with a float that fits (20pt offset, 40pt) stays,
   the float at 628pt. On r19, 4083's two such floats were carried to the next page's top split from their anchors
