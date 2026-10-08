@@ -209,8 +209,9 @@ by the docx4j session, each with its CR under `docs/developer/change-requests/`:
 - `fop/CR-021` (simulated italic and bold per face, item 46, `simulate-style-per-face`).
 
 Nineteen capabilities in `.5`; twenty-four on `2.11-docx4j.6`, which carries, unreleased and all gated PASS: `fop/CR-022`
-(`clear-after-side-float`), the three edge-search fixes, `fop/CR-023` (`float-offset`, `float-overflow-below`) and
-`fop/CR-025` (`row-first-part-room`), each in `docs/release-notes/2.11-docx4j.6.md`; the branch and its commits are
+(`clear-after-side-float`), the three edge-search fixes, `fop/CR-023` (`float-offset`, `float-overflow-below`),
+`fop/CR-025` (`row-first-part-room`) and `fop/CR-026` phase A (`column-widths`), each in
+`docs/release-notes/2.11-docx4j.6.md`; the branch and its commits are
 local until Jason pushes. `fop/CR-019` (ActualText per cluster) is designed and waits on Jason. `2.11-docx4j.4`
 (2026-10-04, at `75f9b0262`), `2.11-docx4j.2` (2026-10-02) and `2.11-docx4j.1` (2026-09-25, tagged at `2f5030172`)
 are the earlier releases; `.3` never shipped. `docs/developer/releasing.md` is the runbook and records what each
