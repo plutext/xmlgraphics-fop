@@ -189,7 +189,12 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-08, after `fop/CR-026` phase B passed its gate (r27) and merged. Read Enterprise CR-001 §6.6 before proposing
+Last updated 2026-10-09, release of `2.11-docx4j.6` in preparation: the docx4j session wants nothing more first
+(its read of the release code, b218 = cand120 on r27 against b215: one mover, 12301 +5, its own keep-chain change;
+r27's baseline is now b218); the CI-equivalent build (package, checkstyle, spotbugs) is clean on the branch head; the
+version commit waits on Jason's word, the runbook from there; after Central serves the artifacts, send the docx4j
+session the coordinates and sha256 for its read before docx4j's export-fo bump, close the release note, cut
+`2.11-docx4j.7`. Read Enterprise CR-001 §6.6 before proposing
 anything, as the section above says.
 
 **State.** `2.11-docx4j.5` is on Maven Central (2026-10-07, released by Jason from the pushed branch), tagged
