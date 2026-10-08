@@ -1,8 +1,9 @@
 # CR-023: the offset float, and a line that does not fit beside a float set below it
 
-Status: IN PROGRESS 2026-10-08, on branch `CR-023-float-offset` off `2.11-docx4j.6` (after `fop/CR-022`, 13a3fbec7):
-both halves built and measured (§4.1 and §4.2 as built); full `fop-core` suite 3870 tests, 0 failures, 4 skipped,
-checkstyle clean; the docx4j gate pending (§9).
+Status: DONE 2026-10-08, gated PASS by the docx4j session (§9: b196 to b202 on r19 to r21) and merged to `2.11-docx4j.6`
+by fast-forward; unreleased. The code is 989280390; full `fop-core` suite 3870 tests, 0 failures, 4 skipped, checkstyle
+clean. Both halves built and measured (§4.1 and §4.2 as built); `float-overflow-below` measured inert on docx4j's tables
+and kept for pictures (§9).
 Registry key `fop/CR-023`. Two hooks for docx4j CR-032 (floating tables as Word lays them), §4.2 of that CR as
 revised after its phase 0 Word probes (2026-10-08, commit cae13d3d1 and after), decided by Jason as D2 there and
 confirmed in this session on 2026-10-08. Enterprise CR-001 §6.6 item 8 (no floating tables), and item 10 for the
@@ -228,7 +229,7 @@ behaviour, and no worse than overflowing the column); draft when measured, Jason
 
 ## 9. Gate (the docx4j session)
 
-Pending on the corpora: r19 (5afcfc657; r18, with the reference at the resolved gap, superseded). The probes on r19
+PASS. r19 (5afcfc657; r18, with the reference at the resolved gap, superseded), then r20 and r21. The probes on r19
 (the docx4j session, 2026-10-08): `table-floating`'s float lands at Word's y (its cell text 183.5 against 184.5) with the
 anchor paragraph's five lines full width and the next paragraph at 188.0 against 189.1, 36 of 37 lines equal, from
 0.6875; `table-floating-offset-sides` cases 1 to 3 at 179.5 against 180.4, case 2's next paragraph 266.8 against 267.8.
@@ -272,4 +273,8 @@ start, which is Word's reference too (Word's table 15.25 below the previous tabl
 height deficit in a table higher on that page (docx4j's rows at 202, 244 and 254 against Word's 217, 259 and 270),
 which the old padding inside the float happened to cancel and the offset now exposes: a docx4j table-height cause.
 13419's docx4j fix renders it at Word's 3 pages with the address table at the page's top (49.0 against Word's 50.5);
-b202 running on r21.
+b202 (the 13419 fix on r21 against b201): 13419 +1 and to Word's 3 pages, the address table at the page's top (49.0
+against Word's 50.5); nothing else moved. b200 (anchored pictures and framePr floats on `float-offset`): 11741 +23 to
+Word's pages, 2189 +2. That closes the round: the fork's baseline is b202 on r21, the released `.5`'s b194. docx4j
+carries the work in three commits behind the `float-offset` capability (single floats, pairs, text-box bands, anchored
+pictures, framePr floats), and the 2.11-docx4j.6 release is Jason's call.

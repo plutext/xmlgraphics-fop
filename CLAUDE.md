@@ -253,8 +253,9 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    extension of XSL (draft `docs/upstream/clear-after-side-float.txt`, Jason's call); the edge-search fixes are Apache's
    defects too and would stack on FOP-3355 and FOP-3354 (not drafted yet). The docx4j side commits follow its second gate
    on the released `.5`.
-3. *`fop/CR-023`: the offset float, and a line that does not fit beside a float set below it* (docx4j CR-032 §4.2).
-   IN PROGRESS 2026-10-08 on branch `CR-023-float-offset` (Jason: start after the two upstream drafts). The design is
+3. *`fop/CR-023`: the offset float, and a line that does not fit beside a float set below it* (docx4j CR-032 §4.2):
+   DONE 2026-10-08, gated PASS (b196 to b202 on r19 to r21; the fork's baseline b202 on r21) and merged to `2.11-docx4j.6`
+   by fast-forward, the code at 989280390; unreleased. Was in progress on branch `CR-023-float-offset`. The design is
    `docs/developer/change-requests/CR-023-float-offset-and-overflow.md`; the first half, `fox:float-offset`
    (capability `float-offset`, the twenty-first), is built and measured (§4.1 as built; layout test `float_offset.xml`,
    four cases, committed 1760e33c2); the second, a line that does not fit beside a float set at its foot
