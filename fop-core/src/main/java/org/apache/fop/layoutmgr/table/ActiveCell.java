@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the after padding and border a cell gives up at a split, for the row's first part (fop/CR-025).
+ * See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr.table;
@@ -360,6 +364,17 @@ class ActiveCell {
      *
      * @return the step for this cell's first legal break
      */
+    /**
+     * The after padding and border this cell would give up if its row were split after the step under
+     * consideration: the normal ones less the trailing ones kept at a split. A row's first part at a page's foot must
+     * have room for them though it does not draw them, as a word processor refuses to start a row whose first line
+     * would fit only without its cell's bottom margin (fop/CR-025).
+     * @return the length in millipoints, 0 or more
+     */
+    int getAfterSpaceGivenUpAtSplit() {
+        return Math.max(0, bpAfterNormal - bpAfterTrailing);
+    }
+
     int getFirstStep() {
         log.debug(this + ": min first step = " + nextStep.totalLength);
         return nextStep.totalLength;

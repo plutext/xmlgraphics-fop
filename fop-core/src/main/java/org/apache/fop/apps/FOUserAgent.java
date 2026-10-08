@@ -17,8 +17,9 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook page-number-zero, an option to number a page 0 (fop/CR-012); and hook
- * measured-region-extents, events muted while a header or footer is measured (fop/CR-018). See README.md, "Changes
- * from Apache FOP 2.11". */
+ * measured-region-extents, events muted while a header or footer is measured (fop/CR-018); and hook
+ * row-first-part-room, a table row's first part at a page's foot needing room for its bottom margin (fop/CR-025). See
+ * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -568,6 +569,31 @@ public class FOUserAgent {
      */
     public boolean isPageNumberZeroAllowed() {
         return pageNumberZeroAllowed;
+    }
+
+    /** Hook row-first-part-room (fop/CR-025): see {@link #setRowFirstPartRoom(boolean)}. */
+    private boolean rowFirstPartRoom;
+
+    /**
+     * docx4j-fo-renderer hook {@code row-first-part-room}: whether a table row's first part at a page's foot must
+     * have room for the after padding and border its cells give up at the split, though it does not draw them. A
+     * word processor refuses to start a row whose first line would fit only without the cell's bottom margin and
+     * moves the row whole to the next page, where it starts a row whose first line fits with the margin and may
+     * split it after that line; XSL says nothing of the room a first part needs, and FOP by default starts the row
+     * wherever the first line alone fits. Off by default (fop/CR-025).
+     *
+     * @param room true to require the room
+     */
+    public void setRowFirstPartRoom(boolean room) {
+        this.rowFirstPartRoom = room;
+    }
+
+    /**
+     * docx4j-fo-renderer hook {@code row-first-part-room}: see {@link #setRowFirstPartRoom(boolean)}.
+     * @return true if a row's first part must have room for the margin it gives up at a split
+     */
+    public boolean isRowFirstPartRoom() {
+        return rowFirstPartRoom;
     }
 
     /** Hook measured-region-extents: whether events are being dropped, not reported. */

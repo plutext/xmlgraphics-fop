@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: a row's first part must have room for the after padding and border its cells give up at a split
+ * (fop/CR-025). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr.table;
@@ -61,6 +65,8 @@ public class TableStepper {
     private int activeRowIndex;
 
     private boolean rowFinished;
+    /** fop/CR-025: whether the next break element is the first inside the current row. */
+    private boolean firstBreakInRow;
 
     /** Cells spanning the current row. */
     private List<ActiveCell> activeCells = new LinkedList<>();
@@ -186,6 +192,8 @@ public class TableStepper {
         LinkedList<ListElement> returnList = new LinkedList<>();
         int laststep = 0;
         int step = getFirstStep();
+        firstBreakInRow = true;
+        boolean firstPartRoom = getTableLM().getTable().getUserAgent().isRowFirstPartRoom(); // fop/CR-025
         do {
             int maxRemainingHeight = getMaxRemainingHeight();
             int penaltyOrGlueLen = step + maxRemainingHeight - totalHeight;
@@ -231,6 +239,18 @@ public class TableStepper {
             }
 
             int effPenaltyLen = Math.max(0, penaltyOrGlueLen);
+            if (firstPartRoom && firstBreakInRow && !rowFinished) {
+                // A row's first part must have room for the after padding and border its cells give up at a
+                // split, though it does not draw them: a word processor refuses to start a row at a page's foot
+                // whose first line would fit only without the cell's bottom margin, and splits it after that
+                // line where the margin fits too. The width of the break counts only if the break is taken
+                // here (fop/CR-025; off unless the user agent asks, FOUserAgent.setRowFirstPartRoom).
+                for (Object activeCell0 : activeCells) {
+                    effPenaltyLen = Math.max(effPenaltyLen,
+                            ((ActiveCell) activeCell0).getAfterSpaceGivenUpAtSplit());
+                }
+            }
+            firstBreakInRow = false;
             TableHFPenaltyPosition penaltyPos = new TableHFPenaltyPosition(getTableLM());
             if (bodyType == TableRowIterator.BODY) {
                 if (!getTableLM().getTable().omitHeaderAtBreak()) {
@@ -500,6 +520,7 @@ public class TableStepper {
      * activeCells the cells starting on the next row.
      */
     private void switchToNextRow() {
+        firstBreakInRow = true; // fop/CR-025
         activeRowIndex++;
         if (log.isTraceEnabled()) {
             log.trace("Switching to row " + (activeRowIndex + 1));

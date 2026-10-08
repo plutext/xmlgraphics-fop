@@ -305,8 +305,13 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    `BreakingAlgorithm.getLineWidth(int line)` is the hook, the line areas already take a width per line) with an obstacle
    registry and page-anchored objects as virtual floats, about two weeks; phase B a line in segments, two to three; §6.6
    items 10 and 11. Not started; his ordering against the `.6` release and the merge of Apache `main`.
-5. *A table row that would start at a page's foot without room for its first line plus the cell's bottom margin goes
-   to the next page* (Word's rule; the docx4j session, 2026-10-08, measured on 11657: 2393 one-line rows, 28-twip cell
+5. *`fop/CR-025`, a table row at a page's foot needs room for its bottom margin*: IN PROGRESS 2026-10-08 on branch
+   `CR-025-row-first-part` (Jason: "let's do this row rule now"). Reproduced with a probe on the fork and on Apache
+   `main`; the first break element inside a row carries the after padding and border its cells give up at a split
+   (`TableStepper`, `ActiveCell`), off by default as a hook, `FOUserAgent.setRowFirstPartRoom(true)` (on by default it
+   failed Apache's `table_empty-cells.xml`), capability `row-first-part-room`, the twenty-third; `RowFirstPartRoomTestCase`; the suite running, then the jar (r22) to the docx4j gate. The rule: a row
+   that would start at a page's foot without room for its first line plus the cell's bottom margin goes
+   to the next page (Word's rule; the docx4j session, 2026-10-08, measured on 11657: 2393 one-line rows, 28-twip cell
    margins, 0.5pt borders, a body foot at 549.8pt; Word stops page 30 at row 53 where row 54's first line would end at
    549.3 plus the 1.44pt margin, FOP sets that line and continues the row on page 31). Not `padding-after.conditionality=
    "retain"` (gate b206: 11657 -55 lines, 12363 -8), since Word drops the bottom margin where a long cell's first part

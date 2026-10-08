@@ -211,6 +211,15 @@ public final class Docx4jFop {
      */
     public static final String FLOAT_OVERFLOW_BELOW = "float-overflow-below";
 
+    /**
+     * A table row's first part at a page's foot must have room for the after padding and border its cells give up
+     * at the split, though it does not draw them: a row whose first line would fit only without the cell's bottom
+     * margin goes whole to the next page, as a word processor lays it, where FOP started it and split after the
+     * line. Off by default, since Apache's own tests measure a row's first part without the margin; the producer
+     * turns it on with {@code FOUserAgent.setRowFirstPartRoom(true)} (fop/CR-025; Enterprise CR-001 item 48).
+     */
+    public static final String ROW_FIRST_PART_ROOM = "row-first-part-room";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -237,6 +246,7 @@ public final class Docx4jFop {
         caps.add(CLEAR_AFTER_SIDE_FLOAT);
         caps.add(FLOAT_OFFSET);
         caps.add(FLOAT_OVERFLOW_BELOW);
+        caps.add(ROW_FIRST_PART_ROOM);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 
