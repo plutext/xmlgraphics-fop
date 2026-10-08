@@ -189,7 +189,7 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-08, after `fop/CR-026` phase B was built and handed to the gate (r26). Read Enterprise CR-001 §6.6 before proposing
+Last updated 2026-10-08, after `fop/CR-026` phase B passed its gate (r27) and merged. Read Enterprise CR-001 §6.6 before proposing
 anything, as the section above says.
 
 **State.** `2.11-docx4j.5` is on Maven Central (2026-10-07, released by Jason from the pushed branch), tagged
@@ -208,9 +208,9 @@ by the docx4j session, each with its CR under `docs/developer/change-requests/`:
 - `fop/CR-020` (side floats, items 44 and 45, `side-float-edges`), with the `FLOAT_RESTART` bit fix (CR-020 §9);
 - `fop/CR-021` (simulated italic and bold per face, item 46, `simulate-style-per-face`).
 
-Nineteen capabilities in `.5`; twenty-four on `2.11-docx4j.6` (twenty-five on branch `CR-026-balancing`, phase B, unmerged), which carries, unreleased and all gated PASS: `fop/CR-022`
+Nineteen capabilities in `.5`; twenty-five on `2.11-docx4j.6`, which carries, unreleased and all gated PASS: `fop/CR-022`
 (`clear-after-side-float`), the three edge-search fixes, `fop/CR-023` (`float-offset`, `float-overflow-below`),
-`fop/CR-025` (`row-first-part-room`) and `fop/CR-026` phase A (`column-widths`), each in
+`fop/CR-025` (`row-first-part-room`) and `fop/CR-026` phases A and B (`column-widths`, `column-balancing`), each in
 `docs/release-notes/2.11-docx4j.6.md`; the branch and its commits are
 local until Jason pushes. `fop/CR-019` (ActualText per cluster) is designed and waits on Jason. `2.11-docx4j.4`
 (2026-10-04, at `75f9b0262`), `2.11-docx4j.2` (2026-10-02) and `2.11-docx4j.1` (2026-09-25, tagged at `2f5030172`)
@@ -321,19 +321,19 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    (−55) where a strict same-page pairing rises 4012 to 5347 lines; an open harness question, not the fork's.
 6. *`fop/CR-026`, columns of unequal width in the region body* (§6.6 item 49, the docx4j session's measurement on
    10598, 6116, 1137 and 11092, 2026-10-08): PHASE A DONE 2026-10-08, gated PASS (b211 on r24, b212 on r25 0 movers)
-   and merged to `2.11-docx4j.6` by fast-forward. **Phase B BUILT 2026-10-08 on branch `CR-026-balancing` (cut
-   from `2.11-docx4j.6` at 1c992e216), commits 1d6dd8be6 and 0d14ae993, capability `column-balancing`, the
-   twenty-fifth; r27 at `~/fop-renderers/r27-CR-026-0d14ae993/` (sha256 7b24023d...) handed to the docx4j session
-   (docx4j-25); gate pending.** r26's reading (CR-026 §9, end): 6116, 1137 and 11092 identical to r25. 6116 because
+   and merged to `2.11-docx4j.6` by fast-forward. **Phase B DONE 2026-10-08: built on branch `CR-026-balancing`
+   (commits 1d6dd8be6 and 0d14ae993, capability `column-balancing`, the twenty-fifth), gated PASS on r27 (b214 0
+   movers; b215, docx4j writing near-equal widths under the capability: 11126 to 1.0000 and Word's page, 6116 +65,
+   394 +50, all at Word's page counts, nothing else moved) and merged to `2.11-docx4j.6` by fast-forward; the
+   fork's baseline for later gates is b215 on r27. §6.6 item 49 text sent to the docx4j session (its file was open
+   there). Still open: the registry entry's status, the Enterprise item's wording landing.** r26's reading (CR-026 §9, end): 6116, 1137 and 11092 identical to r25. 6116 because
    a list beginning at a `break-before="column"` block was re-read as the break alone (fixed in 0d14ae993) and,
    with the fix, because each of its two-column stretches holds an explicit column break, so nothing balances;
    1137 because its unequal sequence's two flow children are both `span="all"` (docx4j's writer, nothing in the
    columns; 11092 asked to be checked). So the corpus has no balancing measurement yet: 11126 (its FO balances
    82/83 here where it was 66/4) would be one if docx4j wrote its near-equal widths.
-   Gate so far (2026-10-08): b213 (r26 against b212) 0 movers, the regression half; the balancing half read on r27
-   with 11126's near-equal widths written: 0.9560 to 1.0000, 1 page = Word's, so docx4j lifts its 5% rule under
-   `column-balancing` (cand118). b214 (regression on r27) and b215 (cand118 across the corpus) queued; merge after
-   their lines. Not the §3 design (trial restarts on the breaker's own managers, which a restart
+   Gate (2026-10-08): b213 (r26 against b212) 0 movers; 11126 read on r27 with its near-equal widths 0.9560 to
+   1.0000, so docx4j lifted its 5% rule under `column-balancing` (cand118, 824a384d6); b214 and b215 as above. Not the §3 design (trial restarts on the breaker's own managers, which a restart
    inside a paragraph mutates destructively and which column 1's later `addAreas` reads): a height cap found by
    bisection (`PageBreakingAlgorithm.setBalancingCap`), each trial laying the list out column by column on a
    throwaway flow layout manager made by the maker for the same `fo:flow`, positioned where the breaker's list

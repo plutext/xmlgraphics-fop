@@ -1,8 +1,9 @@
 # CR-026: columns of unequal width in the region body
 
 Status: PHASE A DONE 2026-10-08, gated PASS (b211 on r24; b212 on r25, 0 movers) and merged to `2.11-docx4j.6` by
-fast-forward, unreleased. PHASE B BUILT 2026-10-08 on branch `CR-026-balancing` (§9: the balancing before a
-`span="all"` block, capability `column-balancing`), not yet gated. Registry key `fop/CR-026`. Enterprise CR-001 §6.6
+fast-forward, unreleased. PHASE B DONE 2026-10-08 (§9: the balancing before a `span="all"` block, capability
+`column-balancing`), gated PASS (b214 0 movers; b215 11126, 6116 and 394 up to Word's page counts) and merged to
+`2.11-docx4j.6` by fast-forward, unreleased. Registry key `fop/CR-026`. Enterprise CR-001 §6.6
 item 49, measured by the docx4j session on four corpus documents (10598, 6116, 1137, 11092). §7 says what phase A
 built, §8 how it was gated, §9 what phase B built and how.
 ## 1. The need
@@ -415,4 +416,14 @@ overflow events, 91 Word lines to our 90; 5639 and 330, the other near-equal los
 So docx4j lifts its 5% rule where the renderer advertises `column-balancing` (cand118). Queued: b214 (cand117 on
 r27 against b213, the regression half on r27) and b215 (cand118 on r27 against b214, the balancing half across the
 corpus); the merge waits for them.
+
+**Gate PASS, both halves (the docx4j session, 2026-10-08).** b214 (cand117, docx4j's HEAD without the lifted rule,
+on r27 against b213 on r26): 0 movers, probes and errors unchanged. b215 (cand118, the 5% rule lifted where the
+renderer advertises `column-balancing`, so near-equal widths are written) against b214: three movers, all up and all
+at Word's page counts: 11126 +4 lines (0.9560 to 1.0000), 6116 +65 (0.6773 to 0.8663), 394 +50 (0.4798 to 0.7688);
+nothing else moved, probes and errors unchanged. So the balancing has three corpus measurements: 6116's near-equal
+divisions were among those the 5% rule had held to `column-count`, which is why r26 and r27 had left it alone.
+docx4j's side committed (824a384d6, `FopCapabilities.COLUMN_BALANCING` and the rule lifted under it; rules §7
+f769d0494), gated on the capability; the fork's baseline for later gates is b215 on r27. Merged to `2.11-docx4j.6`
+by fast-forward.
 
