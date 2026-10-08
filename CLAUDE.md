@@ -86,7 +86,9 @@ session routed an edit to the wrong peer on that inference, is why.
 - The upstream-facing branches are one fix each, cut against Apache `main`, named for their JIRA:
   `FOP-3328` and `FOP-packed-glyph-bboxes` (FOP-3330), whose pull requests #106 and #107 are open, and,
   cut 2026-10-03, `FOP-2918` and `FOP-3339` to `FOP-3347`. `FOP-3345` is stacked on `FOP-3346` and
-  `FOP-3340`. Cut 2026-10-07 on `main` at 5be8c69b6: `FOP-3354`, `FOP-3355` stacked on it, and `FOP-3356`. The older names `FOP-cjk-radical-tounicode`, `FOP-empty-glyph-not-composite` and
+  `FOP-3340`. Cut 2026-10-07 on `main` at 5be8c69b6: `FOP-3354`, `FOP-3355` stacked on it, and `FOP-3356`. Cut 2026-10-08:
+  `FOP-3353` (pull request #126), and `FOP-edge-walked-past` and `FOP-edge-under-keep` (unfiled, CR-022 §3.5's two
+  defects of Apache's own). The older names `FOP-cjk-radical-tounicode`, `FOP-empty-glyph-not-composite` and
   `FOP-surrogate-pair-word-split` were deleted on 2026-10-03 (local only, never pushed; their commits
   are in `FOP-3340`, `FOP-3339` and `FOP-2918`). The branches are worked on in a
   worktree at `../fop-upstream-wt`; the pull request texts are in `../fop-upstream-prs/`. On Apache
@@ -230,8 +232,9 @@ for FOP-3343, FOP-3344, FOP-2349, FOP-1896; Carlito or DejaVu Sans for FOP-3341,
 DFLT script carries liga and kern, so it cannot show the first two); the variable Noto for FOP-3328. FOP-3350 has no FO in stock
 FOP, FOP-3330 none to give. Two things learnt: #113 alone makes a letter-spaced word overprint the next (FOP-2349's half), so #113
 and #118 belong together; and FOP-3342's 2.11 measurement for language="ro" does not hold on `main`, untraced.
-FOP-3353 (filed 2026-10-07, no pull request) reports a regression on `main` from FOP-3331: a float whose own child
-is a block-container is put in the flow. This session posts to ASF JIRA directly since 2026-10-05, on Jason's OK per
+FOP-3353 (filed 2026-10-07) reports a regression on `main` from FOP-3331: a float whose own child is a block-container is
+put in the flow; pull request #126 (2026-10-08, branch `FOP-3353` at 57cc8a40b, the in-flow test against the width
+available to the float) fixes it, its JIRA comment waiting on Jason's OK. This session posts to ASF JIRA directly since 2026-10-05, on Jason's OK per
 item (see the memory note). The drafts under `docs/upstream/` are stamped with both numbers. If a reviewer asks for
 changes, work in the worktree at `../fop-upstream-wt`; when #114 and #109 merge, rebase `FOP-3345` to its one
 commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/main` (5be8c69b6, 2026-10-07).
