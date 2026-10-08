@@ -350,7 +350,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    keeps Apache's drop until it is settled. r24 stands. Corpus reading b210 against b209 (CR-026 §8): 10598 +203 to
    0.7527, 394 +49, 6116 +25; losses routed on docx4j's side (cand117, b211 running: table where the stretch fits a
    page, widths only where columns differ by more than 5%); 11126's 25 overflow events on near-equal widths are the
-   one open item for the fork, its FO asked of the docx4j session. On PASS: merge to `2.11-docx4j.6` by
+   one open item for the fork, found and fixed (a list read again after a column boundary keeps its span,
+   `LayoutContext.restoreSpan`; layout test `region-body_column-widths_span.xml`; a balancing guard tried first
+   failed `basic_link_to_last_page` and is out). Gate PASS on r24, b211 (cand117 against b209: 10598 +203 to
+   0.7527 at 9 pages, 6116 +14 at Word's 5, nothing else moved; docx4j's side committed 5eb37c818); r25 with the
+   fix goes for a confirmation run. On PASS: merge to `2.11-docx4j.6` by
    fast-forward, the release note's "Gate: pending" closed, §6.6 item 49 narrowed in the Enterprise file (Jason's;
    `git status` first). Phase B after.
 7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered

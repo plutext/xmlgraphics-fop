@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: the FLOAT_RESTART flag, a block read again after a side float's edge keeping its resolved
- * space-before (fop/CR-020). See README.md, "Changes from Apache FOP 2.11". */
+ * space-before (fop/CR-020).; and hook column-widths, the span of a list read again restored
+ * (fop/CR-026). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -545,6 +546,18 @@ public final class LayoutContext {
     public int getCurrentSpan() {
         return (currentSpan == Constants.NOT_SET)
                 ? Constants.EN_NONE : currentSpan;
+    }
+
+    /**
+     * Hook column-widths (fop/CR-026): makes the given span the current one with no change pending, for a list
+     * read again from inside the content of the list before (a restart at an inline-size change between columns
+     * of unequal width): {@link #signalSpanChange(int)} with {@code NOT_SET} would make the span the list before
+     * ended on current, though the content read again is still in the span it was.
+     * @param span the span of the content read again (EN_NONE or EN_ALL)
+     */
+    public void restoreSpan(int span) {
+        this.currentSpan = span;
+        this.nextSpan = Constants.NOT_SET;
     }
 
     /**

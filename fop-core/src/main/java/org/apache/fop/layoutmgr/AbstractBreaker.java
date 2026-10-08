@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: the first part laid out after a side float's edge forced by clear starts at the float's foot
- * (fop/CR-022). See README.md, "Changes from Apache FOP 2.11". */
+ * (fop/CR-022).; and hook column-widths, a list read again keeping its span
+ * (fop/CR-026). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -742,7 +743,15 @@ public abstract class AbstractBreaker {
             List<ListElement> firstElements) {
         updateLayoutContext(childLC);
         //Make sure the span change signal is reset
+        int spanOfListBefore = childLC.getCurrentSpan();
         childLC.signalSpanChange(Constants.NOT_SET);
+        if (positionAtIPDChange != null || firstElements != null) {
+            // A list read again from inside the list before (an inline-size change between columns of unequal
+            // width, hook column-widths, fop/CR-026): its content is still in the span the list before was, not
+            // the span that list ended on; left pending, the flow reported a span change on the first block read
+            // again and returned nothing, and the page breaker opened a new span on the page for every block.
+            childLC.restoreSpan(spanOfListBefore);
+        }
 
         BlockSequence blockList;
         List<ListElement> returnedList;

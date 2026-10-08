@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: hook column-widths, a span="all" block after a column boundary (fop/CR-026 section 8). -->
+<testcase>
+  <info>
+    <p>
+      Columns of unequal width (265.65pt and 260.95pt with a 12pt gap on a 538.6pt body), seventy one-line blocks
+      that overflow the first column, then a span="all" block and five more blocks. The restart at the column
+      boundary used to make the span signal report a change on the first block read again, so the flow returned
+      nothing and the page breaker opened a new two-column span on the page for every remaining block (thirty
+      spans and as many body-overflow events on a corpus document). Now the first column holds 66 lines, the
+      second the remaining 4, and the span="all" block follows: page 1 carries the columns' span and the empty
+      span-all span, page 2 the block and the five after it (the columns before a span="all" block are not yet
+      balanced for unequal widths, CR-026 phase B). The equal-columns control is laid the same way by Apache FOP.
+    </p>
+  </info>
+  <fo>
+    <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"
+        font-family="Helvetica" font-size="10pt" line-height="12pt">
+      <fo:layout-master-set>
+        <fo:simple-page-master master-name="p" page-width="595.3pt" page-height="841.9pt" margin-top="28.35pt" margin-bottom="14.2pt" margin-left="28.35pt" margin-right="28.35pt">
+          <fo:region-body column-count="2" column-gap="12pt" fox:column-widths="265.65pt 260.95pt" fox:column-gaps="12pt"/>
+        </fo:simple-page-master>
+      </fo:layout-master-set>
+      <fo:page-sequence master-reference="p">
+        <fo:flow flow-name="xsl-region-body">
+      <fo:block>S1 short line</fo:block>
+      <fo:block>S2 short line</fo:block>
+      <fo:block>S3 short line</fo:block>
+      <fo:block>S4 short line</fo:block>
+      <fo:block>S5 short line</fo:block>
+      <fo:block>S6 short line</fo:block>
+      <fo:block>S7 short line</fo:block>
+      <fo:block>S8 short line</fo:block>
+      <fo:block>S9 short line</fo:block>
+      <fo:block>S10 short line</fo:block>
+      <fo:block>S11 short line</fo:block>
+      <fo:block>S12 short line</fo:block>
+      <fo:block>S13 short line</fo:block>
+      <fo:block>S14 short line</fo:block>
+      <fo:block>S15 short line</fo:block>
+      <fo:block>S16 short line</fo:block>
+      <fo:block>S17 short line</fo:block>
+      <fo:block>S18 short line</fo:block>
+      <fo:block>S19 short line</fo:block>
+      <fo:block>S20 short line</fo:block>
+      <fo:block>S21 short line</fo:block>
+      <fo:block>S22 short line</fo:block>
+      <fo:block>S23 short line</fo:block>
+      <fo:block>S24 short line</fo:block>
+      <fo:block>S25 short line</fo:block>
+      <fo:block>S26 short line</fo:block>
+      <fo:block>S27 short line</fo:block>
+      <fo:block>S28 short line</fo:block>
+      <fo:block>S29 short line</fo:block>
+      <fo:block>S30 short line</fo:block>
+      <fo:block>S31 short line</fo:block>
+      <fo:block>S32 short line</fo:block>
+      <fo:block>S33 short line</fo:block>
+      <fo:block>S34 short line</fo:block>
+      <fo:block>S35 short line</fo:block>
+      <fo:block>S36 short line</fo:block>
+      <fo:block>S37 short line</fo:block>
+      <fo:block>S38 short line</fo:block>
+      <fo:block>S39 short line</fo:block>
+      <fo:block>S40 short line</fo:block>
+      <fo:block>S41 short line</fo:block>
+      <fo:block>S42 short line</fo:block>
+      <fo:block>S43 short line</fo:block>
+      <fo:block>S44 short line</fo:block>
+      <fo:block>S45 short line</fo:block>
+      <fo:block>S46 short line</fo:block>
+      <fo:block>S47 short line</fo:block>
+      <fo:block>S48 short line</fo:block>
+      <fo:block>S49 short line</fo:block>
+      <fo:block>S50 short line</fo:block>
+      <fo:block>S51 short line</fo:block>
+      <fo:block>S52 short line</fo:block>
+      <fo:block>S53 short line</fo:block>
+      <fo:block>S54 short line</fo:block>
+      <fo:block>S55 short line</fo:block>
+      <fo:block>S56 short line</fo:block>
+      <fo:block>S57 short line</fo:block>
+      <fo:block>S58 short line</fo:block>
+      <fo:block>S59 short line</fo:block>
+      <fo:block>S60 short line</fo:block>
+      <fo:block>S61 short line</fo:block>
+      <fo:block>S62 short line</fo:block>
+      <fo:block>S63 short line</fo:block>
+      <fo:block>S64 short line</fo:block>
+      <fo:block>S65 short line</fo:block>
+      <fo:block>S66 short line</fo:block>
+      <fo:block>S67 short line</fo:block>
+      <fo:block>S68 short line</fo:block>
+      <fo:block>S69 short line</fo:block>
+      <fo:block>S70 short line</fo:block>
+      <fo:block span="all" font-weight="bold">SPAN ALL heading</fo:block>
+      <fo:block>T1 text after</fo:block>
+      <fo:block>T2 text after</fo:block>
+      <fo:block>T3 text after</fo:block>
+      <fo:block>T4 text after</fo:block>
+      <fo:block>T5 text after</fo:block>
+        </fo:flow>
+      </fo:page-sequence>
+    </fo:root>
+  </fo>
+  <checks>
+    <eval expected="2" xpath="count(//pageViewport)"/>
+    <eval expected="2" xpath="count(//pageViewport[@nr=1]//span)"/>
+    <eval expected="66" xpath="count(//pageViewport[@nr=1]//span[1]/flow[1]//lineArea)"/>
+    <eval expected="4" xpath="count(//pageViewport[@nr=1]//span[1]/flow[2]//lineArea)"/>
+    <eval expected="265650" xpath="//pageViewport[@nr=1]//span[1]/flow[1]/@ipd"/>
+    <eval expected="260950" xpath="//pageViewport[@nr=1]//span[1]/flow[2]/@ipd"/>
+    <eval expected="SPAN ALL heading" xpath="//pageViewport[@nr=2]//span[1]/flow[1]//lineArea[1]//text"/>
+    <eval expected="5" xpath="count(//pageViewport[@nr=2]//span[2]/flow[1]//lineArea)"/>
+  </checks>
+</testcase>

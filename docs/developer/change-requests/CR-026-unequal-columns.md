@@ -163,6 +163,16 @@ inline size reaches the layout managers through `PageSequenceLayoutManager.getCu
 back. Layout test `region-body_column-widths.xml` (five sequences: the two corpus widths on one page, three columns
 over two pages, the gaps omitted, a bad sum and a bad count, with the warning's event checks).
 
+One fix found by the gate's corpus reading (§8, 11126): a list read again after an inline-size change between
+columns keeps its span (`AbstractBreaker.getNextBlockList` restores it with `LayoutContext.restoreSpan` after the
+reset of the span signal, which had made the span the list before ended on current, so the flow reported a span
+change on the first block read again, returned nothing, and the page breaker opened a new two-column span on the
+page for every remaining block: thirty spans and as many body-overflow events on 11126). Layout test
+`region-body_column-widths_span.xml` (seventy one-line blocks overflowing the first column, then a `span="all"`
+block: 66 and 4 lines in the columns, the block on page 2, two spans on page 1). A guard that laid a list
+restarted in a later column unbalanced instead of redoing it (`getStartingPartIndexForLastPage` −1, §5) was tried
+and withdrawn: it was not the loop, and Apache's last-page redo relies on that path (`basic_link_to_last_page`).
+
 Measured as the probe was (§5): the same figures through the attributes instead of the system property, the second
 column at x=213.95pt in the PDF. Not changed: `BalancingColumnBreakingAlgorithm` (phase B); the IF and other renderers
 inherit the stepping from `AbstractRenderer`. docx4j's layout managers use none of the members touched
@@ -261,4 +271,30 @@ crossing that boundary (`neareq-table.fo` with the tools) paginates as equal col
 continuing into the narrower column at its old width, the known limit, a 4.7pt overhang) and no overflow events, so
 11126 carries something else; its FO and the event key are asked of the docx4j session (a table written at an
 absolute width that no longer fits the narrower column is the guess).
+
+**11126's loop, found and fixed (2026-10-08).** Its FO (`~/fidelity-cr030/repro/column-widths-11126.fo`) has a
+two-column section whose content overflows the first column and then a `span="all"` block (the 480pt table). At the
+restart in column 2 the breaker's reset of the span signal (`signalSpanChange(NOT_SET)`) made the span the list
+before ended on, ALL, the current one, though the content read again is still in the columns; the flow then
+reported a span change NONE on the first block read again and returned nothing, the breaker took NONE for the next
+list's start and opened a new two-column span on the same page, and so on for every remaining block: thirty spans,
+thirty body-overflow events, a second page. Reduced to `over-span-70.fo` (seventy one-line blocks over a 66-line
+column, then a span="all" block; `fit-span.fo`, which fits the column, did not loop). Fixed by restoring the span of
+the list before on a restart (`LayoutContext.restoreSpan`); a guard in `redoLayout` for a restart point before the
+list's start (§5's −1) was tried first, was not the loop, failed Apache's `basic_link_to_last_page`, and is out:
+11126 renders without events, the reduced case lays 66 and 4 lines and the block on page
+2, 10598 is unchanged. Layout test `region-body_column-widths_span.xml`. The hook page-master-by-content was
+suspected first (its warning differed between the equal and the widths run) and cleared by a render without it.
+
+**Gate PASS on r24, b211 (the docx4j session, 2026-10-08), by §4 as far as phase A reaches.** cand117 (widths only
+where the stretch stays in the flow and the columns differ by more than 5%, the one-row table kept where it fits a
+page) against b209: 10598 +203 lines (0.2128 to 0.7527, 10 pages to 9 against Word's 8, its right column at x=210
+as Word's), 6116 +14 (0.6366 to 0.6773, at Word's 5 pages), nothing else moved, probes and errors unchanged. 1137
+and 11092 carry their widths (80.85 / 335.8pt and 174.95 / 208.25pt) and are unmoved: the balancing before their
+span="all" blocks, phase B. Two limits in docx4j's rules §7: 10598's ninth page is the three blanks at the column
+foot (3.9pt over, Word fits them; open on its side); and a run of continuous sections is one page-sequence with one
+master set, so it carries one set of widths (6116's nine divisions get the one section's widths the sequence was
+built from), a docx4j refinement to write them per part master when phase B makes it worth measuring. docx4j's side
+is committed (5eb37c818, docs d98317526), gated on `column-widths`. r24 passed before the fix above; r25
+carries it for a confirmation run (0 movers expected on the four, 11126 with the widths forced without events).
 
