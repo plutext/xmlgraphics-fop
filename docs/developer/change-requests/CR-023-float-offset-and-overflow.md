@@ -244,4 +244,11 @@ of the hook and one finding against the overflow rule:
    and 14776 land exactly where b182 had them (240, 747, 47, 54 and 110 lines), since a line set at the float's foot
    re-flows with its paragraph where Word's in-flow table simply precedes the paragraphs, and the line events climb as
    before. docx4j keeps the 2in bound and does not use the capability for tables; it may still serve pictures.
-b197 (docx4j's interim build on r19 against b195) reads the rest.
+b197 (docx4j's interim build on r19 against b195: single floats and text-box bands with the offset, pairs padded, the
+2in bound kept): 6293 +16 to Word's 9 pages, 6131 +2, 1616 +1; 9775 -5 and 4083 -1 (the page-end case); the probes as
+before. r20 (2f5db13ff) read on the four documents before its gate: 3229 renders its twelve pages with its pair offset;
+4083 at Word's 11 pages with the B.2 table back under its question on page 2; 3640's paragraph back in the body (its
+"Comparativement" line at 549.0 against Word's 550.0, where r19 drew it into the footer region at the page's foot, a
+shape that arises only with docx4j's fonts and line counts); 9775 at 2 pages. Gates b198 (docx4j as committed, pairs
+padded, r20 against r19), b199 (the pair guard dropped) and b200 (anchored-picture and framePr floats given
+`fox:float-offset` for their padding-top, gated on `float-offset`, with the picture floats' overflow rule read) follow.
