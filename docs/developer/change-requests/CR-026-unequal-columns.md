@@ -208,3 +208,22 @@ Word's, 61.5 in the stock render; a space-before or leading glue kept at the hea
 (FOP's `BlockLayoutManager` resets its spaces on a restart and keeps them only under the float-restart flag, CR-020).
 Sent to the docx4j session 2026-10-08 to fix on its side; r24 stands for the gate.
 
+**Measured further (2026-10-08): the head of page 3's column 1 holds the blank paragraph that spilled past column 2
+of page 2, which FOP's stock restart loses and docx4j's managers keep.** At the page-2 boundary both paths break at
+the last too-short node one blank line before the forced break (docx4j's node 230 at 792028 with the next at 803527
+against the 799600 column; stock 141 at 788721, next 800220), both laying the text column about 11pt taller than
+Word, where the blank fits. Reduced probes (`spill2-text.fo`, `spill2-blank.fo`, `pagewidth-*.fo` with the tools):
+sixty one-line blocks fill column 1, one more block spills, then a block with `break-before="column"`. A text spill is
+laid at the head of column 2 and the break honoured, the next block opening page 2's column 1 (XSL's answer); a blank
+`<fo:block> </fo:block>` spill is dropped and the break consumed as the restarted list's start condition, the next
+block opening column 2. The same at Apache's own page-width change with `break-before="page"`: the text spill gets a
+page of its own, the blank spill vanishes. So Apache's changing-IPD restart loses a blank one-line block at the
+restart, a defect that under equal columns never ran and under unequal columns runs at every column boundary;
+docx4j's paragraph shape (a line's leading in a glue after the break possibility, not in the box) keeps the blank,
+and its path consumes the break too, so the blank costs page 3's column 1 the 8.4pt that spills the labels' last
+line. Neither path is Word's, whose shorter text column holds the blank. Not changed in the fork for now: keeping the
+blank would be XSL-correct and would move the stock output away from Word on this document; it is Apache's own
+behaviour, recorded here with the probes, for upstream if it matters. Asked of the docx4j session: which paragraph
+carries each `w:br type="column"` (an empty paragraph holding the break mapped to an 11.5pt block is the mapping to
+look at), and the line pitch that makes the column 11pt taller than Word's, §6.6 territory rather than columns.
+
