@@ -47,6 +47,7 @@ import org.apache.fop.fo.flow.table.Table;
 import org.apache.fop.layoutmgr.AbstractBreaker.FloatPosition;
 import org.apache.fop.layoutmgr.AbstractBreaker.PageBreakPosition;
 import org.apache.fop.layoutmgr.WhitespaceManagementPenalty.Variant;
+import org.apache.fop.layoutmgr.inline.FloatLayoutManager;
 import org.apache.fop.layoutmgr.inline.LineLayoutManager;
 import org.apache.fop.traits.MinOptMax;
 import org.apache.fop.util.ListUtil;
@@ -130,10 +131,16 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     private int pendingFloatTop = -1;
     /** fop/CR-023: the height of the anchor's first line, the one the float's area is placed before. */
     private int floatAnchorLineHeight;
+    /** fop/CR-023: the anchor block's top, in list coordinates, for the floats whose start edge is being taken. */
+    private int floatAnchorListTop = -1;
+    /** fop/CR-023: the foot of the offset float whose start edge is being taken, in list coordinates. */
+    private int floatStartListBottom;
+    /** fop/CR-023: whether that float, with its offset, fits a page of its own; if not, no page is refused for it. */
+    private boolean floatFitsAnEmptyPage;
     /** fop/CR-023: the top of the float whose start edge is being taken, in list coordinates, else -1. */
     private int floatStartListTop = -1;
-    /** fop/CR-023: that top in the page, for the float's area; -1 for a float without an offset. */
-    private int floatTargetTop = -1;
+    /** fop/CR-023: the anchor block's top in the page when an offset float's start edge is taken; -1 otherwise. */
+    private int floatAnchorTopInPage = -1;
     private int edgeElementIdx = -1; // fop/CR-022: the legal break under consideration while a float is on
     private KnuthNode bestFloatEdgeNode;
     private FloatPosition floatPosition;
@@ -473,9 +480,12 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 // where the resolved gap before the box also holds the previous block's space-after (a word
                 // processor measures from the anchor's own spacing; the docx4j session's probes, 2026-10-08).
                 // The float's area is still placed at this break; its intrusion into the lines waits for the top.
-                floatStartListTop = totalWidth - Math.min(glueBefore(box), anchorSpaceBefore((KnuthBlockBox) box))
-                        + offset;
+                int anchorTop = totalWidth - Math.min(glueBefore(box), anchorSpaceBefore((KnuthBlockBox) box));
+                floatAnchorListTop = anchorTop;
+                floatStartListTop = anchorTop + offset;
                 floatAnchorLineHeight = nextContentBoxWidth(box);
+                floatStartListBottom = anchorTop + floatBottomOf((KnuthBlockBox) box);
+                floatFitsAnEmptyPage = floatBottomOf((KnuthBlockBox) box) <= lineWidth;
             }
             handlingStartOfFloat = true;
         }
@@ -607,6 +617,13 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     /** {@inheritDoc} */
     @Override
     protected int restartFrom(KnuthNode restartingNode, int currentIndex) {
+        if (handlingStartOfFloat && bestFloatEdgeNode == null) {
+            // the float's start was refused (createForcedNodes): the anchor box is handled again from the restart
+            handlingStartOfFloat = false;
+            floatStartListTop = -1;
+            floatAnchorListTop = -1;
+            floatStartListBottom = 0;
+        }
 
         int returnValue = super.restartFrom(restartingNode, currentIndex);
         newFootnotes = false;
@@ -668,8 +685,15 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         }
         boolean edgeDeferred = false;
         edgeElementIdx = elementIdx;
-        if (pendingFloatTop >= 0 && !handlingFloat() && nextLineCrosses(elementIdx, pendingFloatTop)) {
-            startPendingFloat();
+        if (pendingFloatTop >= 0 && !handlingFloat() && !insideNonRestartable(elementIdx)) {
+            // the intrusion cannot start inside a table, which is not restarted from a row (CR-020): a table
+            // starting at this break that reaches the float's top takes the start here, before it
+            LayoutManager starting = nonRestartableLMOfNextBox(elementIdx);
+            if (nextLineCrosses(elementIdx, pendingFloatTop)
+                    || (starting != null && widthUpToNextBox(elementIdx) + nonRestartableExtent(elementIdx, starting)
+                            > pendingFloatTop)) {
+                startPendingFloat();
+            }
         }
         if (floatHeight != 0) {
             // A side float ends at the first legal break after which the content lies wholly below the
@@ -774,6 +798,11 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         if (starting == null || starting == nonRestartableLMOfPreviousBox(elementIdx)) {
             return false;
         }
+        return edgeWidth + nonRestartableExtent(elementIdx, starting) > lineWidth;
+    }
+
+    /** The height of the elements of a non-restartable layout manager starting after this break (CR-022, CR-023). */
+    private int nonRestartableExtent(int elementIdx, LayoutManager starting) {
         int extent = 0;
         for (int i = elementIdx; i < par.size(); i++) {
             KnuthElement e = getElement(i);
@@ -784,7 +813,13 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 extent += e.getWidth();
             }
         }
-        return edgeWidth + extent > lineWidth;
+        return extent;
+    }
+
+    /** Whether this break lies inside a non-restartable layout manager, a table's (fop/CR-023). */
+    private boolean insideNonRestartable(int elementIdx) {
+        LayoutManager inside = nonRestartableLMOfNextBox(elementIdx);
+        return inside != null && inside == nonRestartableLMOfPreviousBox(elementIdx);
     }
 
     /**
@@ -916,6 +951,13 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     protected int computeDifference(KnuthNode activeNode, KnuthElement element,
                                     int elementIndex) {
         KnuthPageNode pageNode = (KnuthPageNode) activeNode;
+        if (handlingStartOfFloat && !handlingEndOfFloat && floatStartListTop >= 0 && floatFitsAnEmptyPage
+                && floatStartListBottom - pageNode.totalWidth > getLineWidth(activeNode)) {
+            // hook float-offset (fop/CR-023): at an offset float's start edge, a page that cannot hold the
+            // float below its anchor is too long here, so the page breaks before the anchor and the anchor
+            // and its float start the next page together, as a word processor keeps them
+            return -getLineWidth(activeNode) - 1;
+        }
         int actualWidth = totalWidth - pageNode.totalWidth;
         int footnoteSplit;
         boolean canDeferOldFN;
@@ -1692,9 +1734,17 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     protected void createForcedNodes(KnuthNode node, int line, int elementIdx, int difference, double r,
             double demerits, int fitnessClass, int availableShrink, int availableStretch, int newWidth,
             int newStretch, int newShrink) {
-        if (pendingFloatTop >= 0 && !handlingFloat() && r <= -1) {
+        if (pendingFloatTop >= 0 && !handlingFloat() && r <= -1 && !insideNonRestartable(elementIdx)) {
             // the page ends before an offset float's top: the float starts here, at the page's end (fop/CR-023)
             startPendingFloat();
+        }
+        if (handlingFloat() && r <= -1 && pageCannotHoldFloat(node)) {
+            // hook float-offset (fop/CR-023): a page that cannot hold the float below its anchor is no start for
+            // it; the node is too long as usual, and with no edge the algorithm restarts from the last too-short
+            // break, the one before the anchor, where the anchor is handled again on the next page
+            super.createForcedNodes(node, line, elementIdx, difference, r, demerits, fitnessClass, availableShrink,
+                    availableStretch, newWidth, newStretch, newShrink);
+            return;
         }
         if (handlingFloat()) {
             noteFloatTargetTop(node);
@@ -1726,6 +1776,18 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         return floatHeight;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected boolean floatEdgeFound() {
+        return bestFloatEdgeNode != null;
+    }
+
+    /** Whether the page starting at the node cannot hold an offset float below its anchor (fop/CR-023). */
+    private boolean pageCannotHoldFloat(KnuthNode pageStart) {
+        return handlingStartOfFloat && !handlingEndOfFloat && floatStartListTop >= 0 && floatFitsAnEmptyPage
+                && floatStartListBottom - pageStart.totalWidth > lineWidth;
+    }
+
     /** fop/CR-023: the largest fox:float-offset of the floats anchored in a box. */
     private static int floatOffsetOf(KnuthBlockBox box) {
         int offset = 0;
@@ -1749,6 +1811,17 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     /** @return the height of the first line of the anchor of the float whose start edge was just taken (fop/CR-023) */
     protected int getFloatAnchorLineHeight() {
         return floatAnchorLineHeight;
+    }
+
+    /** The lowest foot of the floats anchored in a box, below the anchor block's top: offset plus height (CR-023). */
+    private static int floatBottomOf(KnuthBlockBox box) {
+        int bottom = 0;
+        for (FloatContentLayoutManager fclm : box.getFloatContentLMs()) {
+            int height = fclm.getParent() instanceof FloatLayoutManager
+                    ? ((FloatLayoutManager) fclm.getParent()).getFloatContentHeight() : 0;
+            bottom = Math.max(bottom, fclm.getFloatOffset() + height);
+        }
+        return bottom;
     }
 
     /** The anchor block's own space-before (its optimum), for the floats anchored in a box (fop/CR-023). */
@@ -1801,16 +1874,16 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         pendingFloatTop = -1;
     }
 
-    /** The float's top in the page: its list height less the page's start node's (fop/CR-023). */
+    /** The anchor block's top in the page: its list height less the page's start node's (fop/CR-023). */
     private void noteFloatTargetTop(KnuthNode pageStart) {
         if (handlingStartOfFloat && floatStartListTop >= 0) {
-            floatTargetTop = floatStartListTop - pageStart.totalWidth;
+            floatAnchorTopInPage = floatAnchorListTop - pageStart.totalWidth;
         }
     }
 
-    /** @return an offset float's top in the page when its start edge was just taken, else -1 (fop/CR-023) */
-    protected int getFloatTargetTop() {
-        return floatTargetTop;
+    /** @return the anchor block's top in the page when an offset float's start edge was just taken, else -1 */
+    protected int getFloatAnchorTopInPage() {
+        return floatAnchorTopInPage;
     }
 
     /** The space between a float's edge forced by clear and the float's foot, else 0 (fop/CR-022). */

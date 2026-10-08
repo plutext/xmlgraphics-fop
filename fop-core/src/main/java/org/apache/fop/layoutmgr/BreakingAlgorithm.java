@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook float-offset, the ordinary recovery when a float's edge was refused (fop/CR-023). See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -558,7 +562,7 @@ public abstract class BreakingAlgorithm {
                     elementIndex, previousIsBox, allowedBreaks).isBox();
 
             if (activeNodeCount == 0) {
-                if (handlingFloat()) {
+                if (handlingFloat() && floatEdgeFound()) {
                     return handleFloat();
                 }
                 if (getIPDdifference() != 0) {
@@ -1461,6 +1465,16 @@ public abstract class BreakingAlgorithm {
     /** @return the alignment for the last line/part */
     public int getAlignmentLast() {
         return this.alignmentLast;
+    }
+
+    /**
+     * Whether a float's edge node exists when no node stays active while a float is being handled; when not,
+     * the ordinary recovery runs instead of handleFloat (an offset float the page cannot hold below its anchor
+     * breaks the page before the anchor, fop/CR-023).
+     * @return true unless the subclass says otherwise
+     */
+    protected boolean floatEdgeFound() {
+        return true;
     }
 
     protected boolean handlingFloat() {

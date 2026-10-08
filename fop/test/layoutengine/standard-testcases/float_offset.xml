@@ -31,7 +31,13 @@
       down, with eight short paragraphs: the first seven are full width above it, the eighth beside it. Fifth: the
       paragraph before the anchor has 12pt space-after and the anchor no space-before; the offset counts from the
       anchor's own space-before only, so the float's top is at 16 + 12 + 32 = 60pt, not 48 (the docx4j session's
-      probes against Word, 2026-10-08).
+      probes against Word, 2026-10-08). Sixth: two floats on one anchor, offsets 32 and 120pt, 40pt tall each: each is
+      drawn at its own offset and the lines from the first's top to the second's foot (26 to 160pt) are beside them, as
+      one float; before, the second's restart from inside a table threw NoSuchElementException on a corpus document.
+      Seventh: after 38 lines, an anchor whose 60pt offset float 60pt tall would end past the page's foot (608 + 120 >
+      698): the page breaks before the anchor, and anchor and float start the next page together, the float 60pt down
+      with the anchor's lines full width above it. Eighth: the same anchor with a float that fits (20pt offset, 40pt
+      tall, foot at 668): the page does not break, the float at 628pt.
     </p>
   </info>
   <fo>
@@ -67,10 +73,100 @@
 <fo:block space-after="10pt"><fo:float float="left" fox:float-offset="32pt"><fo:block-container width="300pt" height="40pt"><fo:block font-size="8pt" line-height="8pt">FLOATTOP</fo:block></fo:block-container></fo:float>Heading</fo:block>
 <fo:block>e0 e1 e2 e3 e4 e5 e6 e7 e8 e9 e10 e11 e12 e13 e14 e15 e16 e17 e18 e19 e20 e21 e22 e23 e24 e25 e26 e27 e28 e29 e30 e31 e32 e33 e34 e35 e36 e37 e38 e39</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="10pt"><fo:float float="left" fox:float-offset="32pt"><fo:block-container width="300pt" height="40pt"><fo:block font-size="8pt" line-height="8pt">FLOATONE</fo:block></fo:block-container></fo:float><fo:float float="left" fox:float-offset="120pt"><fo:block-container width="300pt" height="40pt"><fo:block font-size="8pt" line-height="8pt">FLOATTWO</fo:block></fo:block-container></fo:float>Heading</fo:block>
+<fo:block>p0 p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17 p18 p19 p20 p21 p22 p23 p24 p25 p26 p27 p28 p29 p30 p31 p32 p33 p34 p35 p36 p37 p38 p39 p40 p41 p42 p43 p44 p45 p46 p47 p48 p49 p50 p51 p52 p53 p54 p55 p56 p57 p58 p59</fo:block>
+<fo:block>p-after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>f0</fo:block>
+<fo:block>f1</fo:block>
+<fo:block>f2</fo:block>
+<fo:block>f3</fo:block>
+<fo:block>f4</fo:block>
+<fo:block>f5</fo:block>
+<fo:block>f6</fo:block>
+<fo:block>f7</fo:block>
+<fo:block>f8</fo:block>
+<fo:block>f9</fo:block>
+<fo:block>f10</fo:block>
+<fo:block>f11</fo:block>
+<fo:block>f12</fo:block>
+<fo:block>f13</fo:block>
+<fo:block>f14</fo:block>
+<fo:block>f15</fo:block>
+<fo:block>f16</fo:block>
+<fo:block>f17</fo:block>
+<fo:block>f18</fo:block>
+<fo:block>f19</fo:block>
+<fo:block>f20</fo:block>
+<fo:block>f21</fo:block>
+<fo:block>f22</fo:block>
+<fo:block>f23</fo:block>
+<fo:block>f24</fo:block>
+<fo:block>f25</fo:block>
+<fo:block>f26</fo:block>
+<fo:block>f27</fo:block>
+<fo:block>f28</fo:block>
+<fo:block>f29</fo:block>
+<fo:block>f30</fo:block>
+<fo:block>f31</fo:block>
+<fo:block>f32</fo:block>
+<fo:block>f33</fo:block>
+<fo:block>f34</fo:block>
+<fo:block>f35</fo:block>
+<fo:block>f36</fo:block>
+<fo:block>f37</fo:block>
+<fo:block><fo:float float="left" fox:float-offset="60pt"><fo:block-container width="300pt" height="60pt"><fo:block font-size="8pt" line-height="8pt">FLOATTOP</fo:block></fo:block-container></fo:float>Anchor</fo:block>
+<fo:block>g0 g1 g2 g3 g4 g5 g6 g7 g8 g9 g10 g11 g12 g13 g14 g15 g16 g17 g18 g19</fo:block>
+<fo:block>g-after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>f0</fo:block>
+<fo:block>f1</fo:block>
+<fo:block>f2</fo:block>
+<fo:block>f3</fo:block>
+<fo:block>f4</fo:block>
+<fo:block>f5</fo:block>
+<fo:block>f6</fo:block>
+<fo:block>f7</fo:block>
+<fo:block>f8</fo:block>
+<fo:block>f9</fo:block>
+<fo:block>f10</fo:block>
+<fo:block>f11</fo:block>
+<fo:block>f12</fo:block>
+<fo:block>f13</fo:block>
+<fo:block>f14</fo:block>
+<fo:block>f15</fo:block>
+<fo:block>f16</fo:block>
+<fo:block>f17</fo:block>
+<fo:block>f18</fo:block>
+<fo:block>f19</fo:block>
+<fo:block>f20</fo:block>
+<fo:block>f21</fo:block>
+<fo:block>f22</fo:block>
+<fo:block>f23</fo:block>
+<fo:block>f24</fo:block>
+<fo:block>f25</fo:block>
+<fo:block>f26</fo:block>
+<fo:block>f27</fo:block>
+<fo:block>f28</fo:block>
+<fo:block>f29</fo:block>
+<fo:block>f30</fo:block>
+<fo:block>f31</fo:block>
+<fo:block>f32</fo:block>
+<fo:block>f33</fo:block>
+<fo:block>f34</fo:block>
+<fo:block>f35</fo:block>
+<fo:block>f36</fo:block>
+<fo:block>f37</fo:block>
+<fo:block><fo:float float="left" fox:float-offset="20pt"><fo:block-container width="300pt" height="40pt"><fo:block font-size="8pt" line-height="8pt">FLOATTOP</fo:block></fo:block-container></fo:float>Anchor</fo:block>
+<fo:block>h0 h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
-    <eval expected="5" xpath="count(//pageViewport)"/>
+    <eval expected="9" xpath="count(//pageViewport)"/>
     <!-- 1: the heading full width, the float 32pt down, three lines beside it -->
     <eval expected="451000" xpath="//word[.='Heading'][1]/ancestor::lineArea[1]/@ipd"/>
     <eval expected="32000" xpath="(//pageViewport)[1]//flow/block[@positioning='absolute']/@top-offset"/>
@@ -99,5 +195,20 @@
     <eval expected="151000" xpath="//word[.='e0']/ancestor::lineArea[1]/@ipd"/>
     <eval expected="3" xpath="count((//pageViewport)[5]//lineArea[@ipd='151000'])"/>
     <eval expected="451000" xpath="//word[.='e21']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 6: two floats on one anchor, each at its own offset, the lines beside them from the first top to the lowest foot -->
+    <eval expected="2" xpath="count((//pageViewport)[6]//flow/block[@positioning='absolute'])"/>
+    <eval expected="32000" xpath="((//pageViewport)[6]//flow/block[@positioning='absolute'])[1]/@top-offset"/>
+    <eval expected="120000" xpath="((//pageViewport)[6]//flow/block[@positioning='absolute'])[2]/@top-offset"/>
+    <eval expected="9" xpath="count((//pageViewport)[6]//lineArea[@ipd='151000'])"/>
+    <eval expected="451000" xpath="//word[.='p57']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 7: the float does not fit below its anchor on the page: anchor and float go to the next page together -->
+    <eval expected="38" xpath="count((//pageViewport)[7]//lineArea)"/>
+    <eval expected="0" xpath="count((//pageViewport)[7]//flow/block[@positioning='absolute'])"/>
+    <eval expected="451000" xpath="(//pageViewport)[8]//word[.='Anchor']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="60000" xpath="(//pageViewport)[8]//flow/block[@positioning='absolute']/@top-offset"/>
+    <eval expected="451000" xpath="//word[.='g-after']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 8: a float that fits stays with its anchor on the page -->
+    <eval expected="20000" xpath="(//pageViewport)[9]//flow/block[@positioning='absolute']/@top-offset"/>
+    <eval expected="151000" xpath="//word[.='h0']/ancestor::lineArea[1]/@ipd"/>
   </checks>
 </testcase>

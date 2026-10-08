@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook float-offset, the float content's height before its areas are made (fop/CR-023). See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr.inline;
@@ -25,6 +29,7 @@ import java.util.List;
 import org.apache.fop.fo.flow.Float;
 import org.apache.fop.layoutmgr.FloatContentLayoutManager;
 import org.apache.fop.layoutmgr.InlineKnuthSequence;
+import org.apache.fop.layoutmgr.KnuthElement;
 import org.apache.fop.layoutmgr.KnuthPossPosIter;
 import org.apache.fop.layoutmgr.KnuthSequence;
 import org.apache.fop.layoutmgr.LayoutContext;
@@ -81,6 +86,23 @@ public class FloatLayoutManager extends InlineStackingLayoutManager {
         while (posIter.hasNext()) {
             posIter.next();
         }
+    }
+
+    /**
+     * The height of the float's content, from its elements, before its areas are made: for the page breaking to
+     * know whether an offset float fits the page below its anchor (hook float-offset, fop/CR-023).
+     * @return the content's height in millipoints, 0 before the elements exist
+     */
+    public int getFloatContentHeight() {
+        int height = 0;
+        if (floatContentKnuthElements != null) {
+            for (ListElement e : floatContentKnuthElements) {
+                if (e instanceof KnuthElement && (e.isBox() || e.isGlue())) {
+                    height += ((KnuthElement) e).getWidth();
+                }
+            }
+        }
+        return height;
     }
 
     public void processAreas(LayoutContext context) {

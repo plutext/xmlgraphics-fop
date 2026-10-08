@@ -1078,19 +1078,28 @@ public class PageBreaker extends AbstractBreaker {
                     ListElement le = effectiveList.getElement(k);
                     if (le instanceof KnuthBlockBox) {
                         KnuthBlockBox kbb = (KnuthBlockBox) le;
+                        // hook float-offset (fop/CR-023): each float's top in the page is the anchor block's top
+                        // plus its own offset; the floats of one anchor are handled as one, from the first top
+                        // to the lowest foot, and a float whose top lies below the anchor's first line keeps the
+                        // lines up to the top full width, one inside that line intrudes now
+                        int anchorTop = alg.getFloatAnchorTopInPage();
+                        int firstShift = -1;
+                        int lowestFoot = 0;
+                        int yOffset = 0;
                         for (FloatContentLayoutManager fclm : kbb.getFloatContentLMs()) {
-                            // hook float-offset (fop/CR-023): the float's top in the page, from the algorithm
-                            fclm.setTargetTop(alg.getFloatTargetTop());
+                            fclm.setTargetTop(anchorTop >= 0 && fclm.getFloatOffset() > 0
+                                    ? anchorTop + fclm.getFloatOffset() : -1);
                             fclm.processAreas(childLC);
-                            int floatHeight = fclm.getFloatHeight();
-                            int floatYOffset = fclm.getFloatYOffset();
-                            PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
-                            // hook float-offset (fop/CR-023): a float whose top lies below its anchor's first
-                            // line keeps the lines up to the top full width; one inside that line intrudes now
                             int shift = fclm.getFloatYShift();
-                            pslm.recordStartOfFloat(floatHeight, floatYOffset, shift,
-                                    shift > 0 && shift >= alg.getFloatAnchorLineHeight());
+                            firstShift = firstShift < 0 ? shift : Math.min(firstShift, shift);
+                            lowestFoot = Math.max(lowestFoot, shift + fclm.getFloatHeight());
+                            yOffset = fclm.getFloatYOffset();
                             placed = true;
+                        }
+                        if (placed) {
+                            PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
+                            pslm.recordStartOfFloat(lowestFoot - firstShift, yOffset, firstShift,
+                                    firstShift > 0 && firstShift >= alg.getFloatAnchorLineHeight());
                         }
                     }
                 }

@@ -112,6 +112,29 @@ with the float's top less the flow's height there as the shift, exact whichever 
 break was attributed to (a shift taken from list coordinates was one space off). A too-long break while the
 intrusion is pending starts it at the page's end.
 
+**After gate b196 (2026-10-08, §9).** Three more pieces, each measured on the command line and in the layout test:
+- *A pending intrusion never starts inside a table.* The start edge of the pending intrusion fell on a break inside
+  a table on 3229 (two floats on one anchor), and the restart from a row threw `NoSuchElementException` as item 45's
+  did; `considerLegalBreak` and the forced-break trigger now skip breaks inside a non-restartable manager, and a
+  table starting at a break whose extent reaches the float's top starts the intrusion there, before it, as
+  CR-020 and CR-022 treat the end edge.
+- *Several floats on one anchor.* A line's floats share one anchor box. Each float's target top is now the
+  anchor block's top plus its own offset (`getFloatAnchorTopInPage`), and the floats of one anchor are recorded as
+  one, from the first top to the lowest foot: with offsets 32 and 120pt the floats draw at 32 and 120 and the lines
+  from 26 to 160pt are beside them. The intrusion's width is the last float's, as FOP's own two-float handling has
+  it. docx4j writes no offset for a pair until it has read the shape (§9).
+- *A float the page cannot hold below its anchor goes to the next page with its anchor.* At the float's start edge,
+  `createForcedNodes` refuses the edge from a page start that cannot hold the float's foot (the content height from
+  `FloatLayoutManager.getFloatContentHeight`, the elements being made before the areas), making the node too long
+  as usual; with no edge node, `BreakingAlgorithm`'s loop (`floatEdgeFound`, a one-line hook) runs its ordinary
+  recovery instead of `handleFloat`, restarting from the last too-short break, which is the one before the anchor,
+  and `restartFrom` clears the float's start so the anchor box is handled again on the next page. A float that would
+  not fit an empty page either is not refused (it is placed and clamped, as before). Measured: after 38 lines, an
+  anchor with a 60pt offset and a 60pt float breaks the page before it and starts the next page with the float 60pt
+  down and the anchor's lines full width above; the same anchor with a float that fits (20pt offset, 40pt) stays,
+  the float at 628pt. On r19, 4083's two such floats were carried to the next page's top split from their anchors
+  (−10 lines, a page lost).
+
 Measured on the command line (a marker word in the float; positions from the PDF, body top at 72pt): a 40pt float
 with a 32pt offset in a heading with 10pt space-after draws at 32pt, the heading full width, the three lines from
 26 to 74pt beside it (foot 72) and the next full; offset 0 as before; an anchor with 24pt space-before after a
@@ -169,7 +192,7 @@ and 54pt a page on the two probes, and the sliver cases of §1.2 once a word can
 
 ## 5. Tests
 
-- Layout tests `float_offset.xml` (four cases, 20 checks: the lines above the float full width; the float drawn at
+- Layout tests `float_offset.xml` (eight cases, 36 checks: the pair and the page-end cases added after b196; the lines above the float full width; the float drawn at
   the offset, `top-offset` in the area tree; the foot honoured; an offset of 0 unchanged; an anchor with space-before)
   and `float_overflow-below.xml` (three cases, 11 checks: a word that does not fit beside a 300pt float goes below it
   with the rest of its paragraph; a word wider than the column stays; no float unchanged). Both green.
@@ -191,8 +214,9 @@ behaviour, and no worse than overflowing the column); draft when measured, Jason
 ## 8. Not addressed
 
 - A negative offset (Word pulls the table into the preceding paragraph and the top margin).
-- An offset that puts the float past the end of the page: the float goes to the page's end, as a tall float does.
-- Both sides (§4.3); two floats on one anchor; a float anchored in a table cell.
+- A float taller than a page with its offset: placed and clamped to the page's end, as before (§4.1).
+- Two floats on one anchor are one band from the first top to the lowest foot (§4.1); Word sets text between two
+  same-side floats. Both sides (§4.3); a float anchored in a table cell.
 
 ## 9. Gate (the docx4j session)
 
@@ -205,4 +229,19 @@ applies the previous paragraph's 8pt space-after and the anchor's 24pt space-bef
 moved into the float has the two spaces adjacent and FOP takes the larger; docx4j now forces the anchor's space-before
 to the sum across a floated table and writes the offset as `tblpY` plus that space-after, and case 4's float is at
 179.5 too. Cases 1, 3 and 4 still differ after the float: both-sides wrap (§4.3). The overflow rule's renderer-alone
-control (cand105 on r18 against b193) and the measurement (cand107 on r19) follow, with the b189 documents' numbers.
+control (b195, r18 renderer alone against b193) moved nothing. Gate b196 (docx4j writing both hooks on r19 against
+b195, 2026-10-08): `float-offset` lifts the probes (`table-floating` 0.6875 to 0.9792, `offset-sides` 0.50 to 0.69 with all
+four tables at Word's y, `wide-anchor-text` 0.78 to 0.97) and 6293 to Word's 9 pages (+16 lines); and shows two defects
+of the hook and one finding against the overflow rule:
+1. two offset floats on one anchor crash the layout: 3229 (offsets 43.3pt and 339.25pt in one paragraph) throws
+   `NoSuchElementException` in `LMiter.next` from `BlockStackingLayoutManager.getNextKnuthElements` on the restart;
+   reproducer `~/fidelity-cr030/repro/float-offset-lmiter-3229.fo`. docx4j's interim: no offset written for a pair on
+   one anchor (padding as before);
+2. an offset float whose top falls past the page's end is carried to the next page's top, split from its anchor
+   paragraph: 4083's two floats at 51.55 and 47.45pt near a page foot, -10 lines and a page lost (11 to 10), where Word
+   keeps anchor and table together on the next page; 9775 -5 (15pt offset) and 3640 -2 (4.2pt) not yet read;
+3. `float-overflow-below` changes nothing for the sliver documents: with the 2in bound lifted, 6705, 1616, 9832, 8236
+   and 14776 land exactly where b182 had them (240, 747, 47, 54 and 110 lines), since a line set at the float's foot
+   re-flows with its paragraph where Word's in-flow table simply precedes the paragraphs, and the line events climb as
+   before. docx4j keeps the 2in bound and does not use the capability for tables; it may still serve pictures.
+b197 (docx4j's interim build on r19 against b195) reads the rest.

@@ -263,7 +263,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    clean. r18 (63fdc0aee) drew the float above Word's by the previous paragraph's space-after (the docx4j session's
    probes): the reference is now the anchor's own space-before only (5afcfc657, a fifth layout-test case); the jar is r19
    at `~/fop-renderers/r19-CR-023-5afcfc657/` (sha256 2cfbbf41...), handed to the docx4j gate 2026-10-08 with CR-023 §6's
-   pass criteria and the registry text. On PASS: merge to `2.11-docx4j.6` by fast-forward,
+   pass criteria and the registry text. Gate b196 (2026-10-08): the offset at Word's y on every probe shape, 6293 to
+   Word's pages; two defects fixed since (two floats on one anchor crashed on a restart inside a table; a float the page
+   cannot hold below its anchor was carried to the next page without it) and `float-overflow-below` measured inert on
+   docx4j's tables (the moved line re-flows with its paragraph where Word's table precedes the paragraphs), so docx4j
+   keeps its 2in bound and the capability may serve pictures. r20 after the suite. On PASS: merge to `2.11-docx4j.6` by fast-forward,
    release notes closed, §6.6 item 8 narrowed in the Enterprise file (Jason's; `git status` first). Jason confirmed D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
    settled it: `float-offset` stands (`fox:float-offset` on `fo:float`: the intrusion begins N pt below the top of the
    anchor block, space-before included; the lines that fit in the gap are full width above the float), `float-band` is
