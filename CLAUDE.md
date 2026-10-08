@@ -189,7 +189,7 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-08, after `fop/CR-025` merged, before a `/clear`. Read Enterprise CR-001 §6.6 before proposing
+Last updated 2026-10-08, after `fop/CR-026` phase B was built and handed to the gate (r26). Read Enterprise CR-001 §6.6 before proposing
 anything, as the section above says.
 
 **State.** `2.11-docx4j.5` is on Maven Central (2026-10-07, released by Jason from the pushed branch), tagged
@@ -208,7 +208,7 @@ by the docx4j session, each with its CR under `docs/developer/change-requests/`:
 - `fop/CR-020` (side floats, items 44 and 45, `side-float-edges`), with the `FLOAT_RESTART` bit fix (CR-020 §9);
 - `fop/CR-021` (simulated italic and bold per face, item 46, `simulate-style-per-face`).
 
-Nineteen capabilities in `.5`; twenty-four on `2.11-docx4j.6`, which carries, unreleased and all gated PASS: `fop/CR-022`
+Nineteen capabilities in `.5`; twenty-four on `2.11-docx4j.6` (twenty-five on branch `CR-026-balancing`, phase B, unmerged), which carries, unreleased and all gated PASS: `fop/CR-022`
 (`clear-after-side-float`), the three edge-search fixes, `fop/CR-023` (`float-offset`, `float-overflow-below`),
 `fop/CR-025` (`row-first-part-room`) and `fop/CR-026` phase A (`column-widths`), each in
 `docs/release-notes/2.11-docx4j.6.md`; the branch and its commits are
@@ -321,8 +321,20 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    (−55) where a strict same-page pairing rises 4012 to 5347 lines; an open harness question, not the fork's.
 6. *`fop/CR-026`, columns of unequal width in the region body* (§6.6 item 49, the docx4j session's measurement on
    10598, 6116, 1137 and 11092, 2026-10-08): PHASE A DONE 2026-10-08, gated PASS (b211 on r24, b212 on r25 0 movers)
-   and merged to `2.11-docx4j.6` by fast-forward. **Phase B is next (Jason, 2026-10-08): the balancing before a
-   `span="all"` block with unequal columns.** Start from CR-026 §3 phase B (balance by trial: a candidate break in
+   and merged to `2.11-docx4j.6` by fast-forward. **Phase B BUILT 2026-10-08 on branch `CR-026-balancing` (cut
+   from `2.11-docx4j.6` at 1c992e216), commit 1d6dd8be6, capability `column-balancing`, the twenty-fifth; r26 at
+   `~/fop-renderers/r26-CR-026-1d6dd8be6/` (sha256 a9ea261b...) handed to the docx4j session (docx4j-25) with the
+   pass criteria; gate pending.** Not the §3 design (trial restarts on the breaker's own managers, which a restart
+   inside a paragraph mutates destructively and which column 1's later `addAreas` reads): a height cap found by
+   bisection (`PageBreakingAlgorithm.setBalancingCap`), each trial laying the list out column by column on a
+   throwaway flow layout manager made by the maker for the same `fo:flow`, positioned where the breaker's list
+   began (`UnequalColumnBalancer`, CR-026 §9), so docx4j's own managers lay the trial out and need nothing exposed.
+   Measured: 33/31 with the heading on page 1 where it was 58/21 and the heading on page 2; the restarted page
+   49/47; three columns 33/33/31; 11126's FO 82/83; 10598 unchanged. Full suite 3882/0, checkstyle clean, layout
+   tests `region-body_column-widths_balance.xml` (new) and `_span.xml` (now balanced). On PASS: merge by
+   fast-forward, release note's "Gate: pending" closed, §6.6 item 49 narrowed further in the Enterprise file
+   (Jason's; `git status` first), registry. The §3 text that follows is the design as first written.
+   Start from CR-026 §3 phase B (balance by trial: a candidate break in
    the first column, the remainder re-laid from it at the second column's width, the heights compared, a bounded
    search, the first column's areas added only when the search ends) and §5's mechanism (the changing-IPD restart
    adds column 1's areas and notes the committed position before column 2 is laid, so the restarted list begins in
