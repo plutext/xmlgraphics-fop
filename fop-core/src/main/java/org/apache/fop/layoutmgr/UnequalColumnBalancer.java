@@ -160,7 +160,11 @@ final class UnequalColumnBalancer {
         }
         try {
             Trial full = layTrial(origin, list, startColumn, Integer.MAX_VALUE);
-            if (full == null || !full.fits) {
+            if (full == null) {
+                log.debug("column balancing by trial: no trial could be run");
+                return -1;
+            }
+            if (!full.fits) {
                 log.debug("column balancing by trial: the list does not end on the page");
                 return -1;
             }
@@ -319,7 +323,13 @@ final class UnequalColumnBalancer {
             }
             init(child);
             fresh.setCurrentChildLM(child);
-            return fresh.getNextKnuthElements(lc, alignment);
+            List<ListElement> elements = fresh.getNextKnuthElements(lc, alignment);
+            if (elements != null && isForcedBreakAlone(elements)) {
+                // a block serves its break-before on its first call and its content on the second: the
+                // breaker's list came from the second
+                elements = fresh.getNextKnuthElements(lc, alignment);
+            }
+            return elements;
         }
         if (origin.position == null || origin.position.getLM() == null) {
             // the list was the remainder of a non-restartable manager alone
@@ -489,6 +499,19 @@ final class UnequalColumnBalancer {
             trial.parts++;
             start = par.getFirstBoxIndex(end + 1);
         }
+    }
+
+    /** Whether a list is a forced break and nothing else (a block's break-before, served ahead of its content). */
+    private static boolean isForcedBreakAlone(List<ListElement> elements) {
+        if (!ElementListUtils.endsWithForcedBreak(elements)) {
+            return false;
+        }
+        for (ListElement element : elements) {
+            if (element.isBox()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Whether a list carries footnotes or floats, which a trial does not lay out. */

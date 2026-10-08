@@ -382,3 +382,20 @@ differ by the reflow's granularity (49 and 47 above). The last page of a page-se
 not balance it for equal columns either. N columns are handled by the same chain (three measured); the cost is one
 uncapped trial per page the list crosses before the one it ends on, each laying out the remainder, so a long
 section before a span block costs about twice phase A's restarts.
+
+**r26 read by the docx4j session before its gate (2026-10-08): identical to r25 on 6116, 1137 and 11092; two
+causes, one the fork's.** (1) On 6116 the trial logged "the list read again differs (0 elements against 45)".
+The unequal sequence's two-column content is [block] [block `break-before="column"`] [three list-blocks] [block]
+[list-block] then two `span="all"` blocks, so the list before the span block begins at the block carrying the
+forced column break. A block serves its break-before on its first call and its content on the second; the
+breaker's list came from the second call, but the throwaway flow's first call on a fresh block returned the break
+alone, which the sequence builder strips to nothing. Reproduced here with FOP's stock managers (33 elements
+against 0), so not docx4j's flow manager. Fixed: the trial reads again when the first read is a forced break alone
+(`isForcedBreakAlone`); layout test sequence (6), a `break-before="column"` block ahead of the span block (37 and
+14 lines, the heading on the page). With the fix 6116 lays as before, and rightly: each of its two-column
+stretches holds an explicit column break, so there is nothing to balance (Word keeps an explicit break where it
+stands), and the page's first list before the break does not end on the page. (2) On 1137 the unequal-column
+page-sequence has two flow children, both `span="all"`, and nothing in the columns: a shape of docx4j's writer,
+not the renderer's; 11092 asked to be checked the same way. The log line for a trial that cannot be run now says
+so, where it said "does not end on the page".
+

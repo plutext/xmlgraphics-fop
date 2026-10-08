@@ -35,6 +35,10 @@
       read again from inside a paragraph (the restart replayed on the trial's own managers); the second page is
       balanced at 49 and 47 lines.
       (5) four paragraphs then the heading: the list fits the first column alone; balanced at 14 and 13 lines.
+      (6) three paragraphs, a paragraph with break-before="column", two more, then the heading: a forced column
+      break is kept (the first column ends where it stands, as a word processor keeps an explicit break), the
+      list after it begins in the second column at a block that serves its break ahead of its content, which the
+      trial reads past, and the heading follows on the page.
     </p>
   </info>
   <fo>
@@ -154,6 +158,19 @@
       <fo:block space-after="6pt">P4 jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick.</fo:block>
         </fo:flow>
       </fo:page-sequence>
+      <fo:page-sequence master-reference="two">
+        <fo:flow flow-name="xsl-region-body">
+      <fo:block space-after="6pt">P1 quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the.</fo:block>
+      <fo:block space-after="6pt">P2 brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river.</fo:block>
+      <fo:block space-after="6pt">P3 fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the.</fo:block>
+      <fo:block break-before="column" space-after="6pt">P4 jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick.</fo:block>
+      <fo:block space-after="6pt">P5 over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown.</fo:block>
+      <fo:block space-after="6pt">P6 the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox.</fo:block>
+      <fo:block span="all" font-size="14pt" space-after="8pt">Heading across all columns</fo:block>
+      <fo:block space-after="6pt">P1 quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the.</fo:block>
+      <fo:block space-after="6pt">P2 brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river.</fo:block>
+        </fo:flow>
+      </fo:page-sequence>
     </fo:root>
   </fo>
   <checks>
@@ -184,5 +201,10 @@
     <eval expected="14" xpath="count(//pageViewport[@nr=8]//span[1]/flow[1]//lineArea)"/>
     <eval expected="13" xpath="count(//pageViewport[@nr=8]//span[1]/flow[2]//lineArea)"/>
     <eval expected="Heading across all columns" xpath="//pageViewport[@nr=8]//span[2]/flow[1]//lineArea[1]//text"/>
+    <!-- (6) a forced column break kept, the list after it read past the block's break, the heading on the page -->
+    <eval expected="37" xpath="count(//pageViewport[@nr=9]//span[1]/flow[1]//lineArea)"/>
+    <eval expected="14" xpath="count(//pageViewport[@nr=9]//span[1]/flow[2]//lineArea)"/>
+    <true xpath="starts-with((//pageViewport[@nr=9]//span[1]/flow[2]//lineArea)[1]//text, 'P4 jumps')"/>
+    <eval expected="Heading across all columns" xpath="//pageViewport[@nr=9]//span[2]/flow[1]//lineArea[1]//text"/>
   </checks>
 </testcase>
