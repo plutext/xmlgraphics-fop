@@ -17,8 +17,9 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: the first part laid out after a side float's edge forced by clear starts at the float's foot
- * (fop/CR-022).; and hook column-widths, a list read again keeping its span
- * (fop/CR-026). See README.md, "Changes from Apache FOP 2.11". */
+ * (fop/CR-022); and hook column-widths, a list read again keeping its span, and columns of unequal width balanced
+ * before a span="all" block by trial, the breaks found again under a height cap (fop/CR-026).
+ * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -428,14 +429,20 @@ public abstract class AbstractBreaker {
                     //*** Phase 2: Alignment and breaking ***
                     log.debug("PLM> start of algorithm (" + this.getClass().getName()
                             + "), flow BPD =" + flowBPD);
-                    PageBreakingAlgorithm alg = new PageBreakingAlgorithm(getTopLevelLM(),
-                             getPageProvider(), createLayoutListener(),
-                             alignment, alignmentLast, footnoteSeparatorLength,
-                             isPartOverflowRecoveryActivated(), autoHeight, isSinglePartFavored(), childLC);
+                    PageBreakingAlgorithm alg = createPageBreakingAlgorithm(childLC, autoHeight,
+                            createLayoutListener());
 
                     alg.setConstantLineWidth(flowBPD);
                     int optimalPageCount = alg.findBreakingPoints(blockList, 1, true,
                             BreakingAlgorithm.ALL_BREAKS);
+                    // hook column-widths (fop/CR-026 phase B): columns of unequal width before a span="all"
+                    // block are balanced by trial, the parts then found again under a height cap
+                    BalancedBreaking balanced = balanceUnequalColumns(alg, optimalPageCount, blockList, childLC,
+                            flowBPD, autoHeight);
+                    if (balanced != null) {
+                        alg = balanced.alg;
+                        optimalPageCount = balanced.partCount;
+                    }
                     boolean ipdChangesOnNextPage = (alg.getIPDdifference() != 0);
                     boolean onLastPageAndIPDChanges = false;
                     if (!ipdChangesOnNextPage) {
@@ -497,6 +504,73 @@ public abstract class AbstractBreaker {
     }
 
     static class PagePositionOnlyException extends RuntimeException {
+    }
+
+    /**
+     * Makes the page breaking algorithm for a list.
+     * @param childLC the layout context
+     * @param autoHeight true if warnings about overflows should be disabled
+     * @param listener the listener told of overflows, or null for none
+     * @return the algorithm, not yet run
+     */
+    protected PageBreakingAlgorithm createPageBreakingAlgorithm(LayoutContext childLC, boolean autoHeight,
+            PageBreakingAlgorithm.PageBreakingLayoutListener listener) {
+        return new PageBreakingAlgorithm(getTopLevelLM(), getPageProvider(), listener,
+                alignment, alignmentLast, footnoteSeparatorLength,
+                isPartOverflowRecoveryActivated(), autoHeight, isSinglePartFavored(), childLC);
+    }
+
+    /** A list's breaks found again under a balancing cap (hook column-widths, fop/CR-026 phase B). */
+    protected static final class BalancedBreaking {
+        private final PageBreakingAlgorithm alg;
+        private final int partCount;
+
+        /**
+         * @param alg the algorithm, run
+         * @param partCount the number of parts it found
+         */
+        protected BalancedBreaking(PageBreakingAlgorithm alg, int partCount) {
+            this.alg = alg;
+            this.partCount = partCount;
+        }
+    }
+
+    /**
+     * Hook column-widths (fop/CR-026 phase B): where the list is laid out in columns of unequal width that are
+     * to be balanced before a span="all" block, finds by trial the height the columns are held to, and finds the
+     * list's breaks again under it. Only the page breaker implements it.
+     * @param alg the algorithm as run on the list
+     * @param partCount the number of parts it found
+     * @param blockList the list
+     * @param childLC the layout context
+     * @param flowBPD the height available to a part
+     * @param autoHeight true if warnings about overflows should be disabled
+     * @return the breaks found again, or null where the list is laid out as the algorithm found
+     */
+    protected BalancedBreaking balanceUnequalColumns(PageBreakingAlgorithm alg, int partCount,
+            BlockSequence blockList, LayoutContext childLC, int flowBPD, boolean autoHeight) {
+        return null;
+    }
+
+    /**
+     * Makes a block sequence of the elements a flow returned: a forced break at the end is taken off, and the
+     * elements ending the sequence added.
+     * @param returnedList the elements
+     * @param startOn where the sequence should start
+     * @return the sequence, or null where the elements hold no content
+     */
+    protected BlockSequence toBlockSequence(List<ListElement> returnedList, int startOn) {
+        BlockSequence blockList = new BlockSequence(startOn, getCurrentDisplayAlign());
+        Position breakPosition = null;
+        if (ElementListUtils.endsWithForcedBreak(returnedList)) {
+            KnuthPenalty breakPenalty = (KnuthPenalty) ListUtil.removeLast(returnedList);
+            breakPosition = breakPenalty.getPosition();
+            if (ElementListUtils.isEmptyBox(returnedList)) {
+                ListUtil.removeLast(returnedList);
+            }
+        }
+        blockList.addAll(returnedList);
+        return blockList.endBlockSequence(breakPosition);
     }
 
     private boolean shouldRedoLayoutWithoutPagePositionOnly(boolean ipdChangesOnNextPage, int optimalPageCount,

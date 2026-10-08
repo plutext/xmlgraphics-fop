@@ -225,11 +225,21 @@ public final class Docx4jFop {
      * per pair of columns, so that the body's columns take widths of their own, as a word processor's section
      * whose columns are not equal; each column is laid at its width through the changing-IPD restart, and the
      * renderers step by each column's width and gap. {@code column-count} is kept, so Apache FOP lays equal
-     * columns from it. Balancing before a {@code span="all"} block is not yet unequal-aware (fop/CR-026 phase B).
-     * Lists that disagree with {@code column-count} or with the body's width are ignored with a warning
-     * ({@code columnWidthsIgnored}) and the columns stay equal (fop/CR-026; Enterprise CR-001 item 49).
+     * columns from it. Lists that disagree with {@code column-count} or with the body's width are ignored with a
+     * warning ({@code columnWidthsIgnored}) and the columns stay equal (fop/CR-026; Enterprise CR-001 item 49).
      */
     public static final String COLUMN_WIDTHS = "column-widths";
+
+    /**
+     * Columns of unequal width are balanced before a {@code span="all"} block (fop/CR-026 phase B): the page
+     * breaker finds by trial the smallest height the columns can be held to with the content still ending on the
+     * page, laying the list out again column by column on throwaway layout managers, and lays the columns out
+     * under that height; the block follows on the page. Without it the first column was filled, the remainder
+     * went to the second, and the block opened the next page behind an empty span, as Apache FOP lays unequal
+     * columns with {@code fox:disable-column-balancing}, which still turns balancing off per block. Needs
+     * {@link #COLUMN_WIDTHS}; equal columns are balanced by Apache FOP's own algorithm as before.
+     */
+    public static final String COLUMN_BALANCING = "column-balancing";
 
     private static final Set<String> CAPABILITIES;
 
@@ -259,6 +269,7 @@ public final class Docx4jFop {
         caps.add(FLOAT_OVERFLOW_BELOW);
         caps.add(ROW_FIRST_PART_ROOM);
         caps.add(COLUMN_WIDTHS);
+        caps.add(COLUMN_BALANCING);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

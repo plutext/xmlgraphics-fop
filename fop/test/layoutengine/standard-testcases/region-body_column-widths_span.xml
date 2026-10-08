@@ -17,7 +17,8 @@
 -->
 <!-- $Id$ -->
 <!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
-     from Apache FOP 2.11: hook column-widths, a span="all" block after a column boundary (fop/CR-026 section 8). -->
+     from Apache FOP 2.11: hook column-widths, a span="all" block after a column boundary (fop/CR-026 section 8),
+     the columns before it balanced (phase B). -->
 <testcase>
   <info>
     <p>
@@ -25,10 +26,10 @@
       that overflow the first column, then a span="all" block and five more blocks. The restart at the column
       boundary used to make the span signal report a change on the first block read again, so the flow returned
       nothing and the page breaker opened a new two-column span on the page for every remaining block (thirty
-      spans and as many body-overflow events on a corpus document). Now the first column holds 66 lines, the
-      second the remaining 4, and the span="all" block follows: page 1 carries the columns' span and the empty
-      span-all span, page 2 the block and the five after it (the columns before a span="all" block are not yet
-      balanced for unequal widths, CR-026 phase B). The equal-columns control is laid the same way by Apache FOP.
+      spans and as many body-overflow events on a corpus document). Now the columns are balanced before the
+      span="all" block by trial (CR-026 phase B): 35 lines in each, the block and the five after it on page 1.
+      Before phase B the first column held 66 lines, the second the remaining 4, and the block opened page 2
+      behind an empty span. The equal-columns control is balanced by Apache FOP's own algorithm.
     </p>
   </info>
   <fo>
@@ -122,13 +123,15 @@
     </fo:root>
   </fo>
   <checks>
-    <eval expected="2" xpath="count(//pageViewport)"/>
-    <eval expected="2" xpath="count(//pageViewport[@nr=1]//span)"/>
-    <eval expected="66" xpath="count(//pageViewport[@nr=1]//span[1]/flow[1]//lineArea)"/>
-    <eval expected="4" xpath="count(//pageViewport[@nr=1]//span[1]/flow[2]//lineArea)"/>
+    <eval expected="1" xpath="count(//pageViewport)"/>
+    <eval expected="3" xpath="count(//pageViewport[@nr=1]//span)"/>
+    <eval expected="35" xpath="count(//pageViewport[@nr=1]//span[1]/flow[1]//lineArea)"/>
+    <eval expected="35" xpath="count(//pageViewport[@nr=1]//span[1]/flow[2]//lineArea)"/>
     <eval expected="265650" xpath="//pageViewport[@nr=1]//span[1]/flow[1]/@ipd"/>
     <eval expected="260950" xpath="//pageViewport[@nr=1]//span[1]/flow[2]/@ipd"/>
-    <eval expected="SPAN ALL heading" xpath="//pageViewport[@nr=2]//span[1]/flow[1]//lineArea[1]//text"/>
-    <eval expected="5" xpath="count(//pageViewport[@nr=2]//span[2]/flow[1]//lineArea)"/>
+    <eval expected="S35 short line" xpath="(//pageViewport[@nr=1]//span[1]/flow[1]//lineArea)[35]//text"/>
+    <eval expected="S36 short line" xpath="(//pageViewport[@nr=1]//span[1]/flow[2]//lineArea)[1]//text"/>
+    <eval expected="SPAN ALL heading" xpath="//pageViewport[@nr=1]//span[2]/flow[1]//lineArea[1]//text"/>
+    <eval expected="5" xpath="count(//pageViewport[@nr=1]//span[3]/flow[1]//lineArea)"/>
   </checks>
 </testcase>

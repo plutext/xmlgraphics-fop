@@ -1,10 +1,10 @@
 # CR-026: columns of unequal width in the region body
 
 Status: PHASE A DONE 2026-10-08, gated PASS (b211 on r24; b212 on r25, 0 movers) and merged to `2.11-docx4j.6` by
-fast-forward, unreleased; phase B (balancing before a `span="all"` block, about a week, §3 and §5) not started,
-Jason's ordering. Registry key `fop/CR-026`. Enterprise CR-001 §6.6 item 49, measured by the docx4j session on four
-corpus documents (10598, 6116, 1137, 11092). §7 says what phase A built, §8 how it was gated.
-
+fast-forward, unreleased. PHASE B BUILT 2026-10-08 on branch `CR-026-balancing` (§9: the balancing before a
+`span="all"` block, capability `column-balancing`), not yet gated. Registry key `fop/CR-026`. Enterprise CR-001 §6.6
+item 49, measured by the docx4j session on four corpus documents (10598, 6116, 1137, 11092). §7 says what phase A
+built, §8 how it was gated, §9 what phase B built and how.
 ## 1. The need
 
 XSL-FO's `fo:region-body` lays every column at one width from `column-count` and `column-gap`. Word's sections with
@@ -303,3 +303,82 @@ on the four corpora, probes and errors unchanged; 11126 with the widths forced: 
 against 25 on r24, its second page the documented limit (the 480pt table overhanging the 265pt column). Phase A
 confirmed; the fork's baseline for later gates is b212 on r25. Merged to `2.11-docx4j.6` by fast-forward.
 
+
+
+## 9. Phase B as built (2026-10-08)
+
+**The problem, restated from §5.** FOP balances columns before a `span="all"` block with
+`BalancingColumnBreakingAlgorithm`, which divides the content's height by the column count and so assumes one width;
+and with unequal widths the content before the block is never one list: the changing-IPD restart (phase A) adds the
+first column's areas and notes the committed position before the second column is laid out, so by the time the
+balancing algorithm runs it sees the last column's list alone (`getStartingPartIndexForLastPage` −1). Any balancing
+must therefore choose the first column's break *before* its areas are added, from a measurement of what the
+remainder would come to at the next column's width, which only laying it out can give.
+
+**The design built: a height cap found by trial.** The page breaker holds every column of the page to a height H
+(`PageBreakingAlgorithm.setBalancingCap(H, lastColumn)`: `getLineWidth` returns the lesser of the part's height and
+H), so that under H each column takes what fits and the page's last column the remainder. Balanced means the
+smallest H under which the list still ends on the page; feasibility is monotone in H, so the breaker bisects. Each
+trial lays the list out column by column under H: the trial breaker on the list, the IPD change it finds, a restart
+from that break at the next column's width, the trial breaker on the restarted list, and so on until a list has no
+IPD change (it ends on the page: feasible, with the parts' heights) or the next part would lie on the next page
+(infeasible). The first trial is uncapped and says whether the list ends on the page at all; if not, there is no
+balancing on this page (the span block is further on) and the breaker proceeds as phase A did. The search starts
+from the mean of the uncapped column heights, tightens the feasible bound to the tallest column each trial found,
+and stops within 0.1pt or at fourteen trials; the result is the cap, and the production breaker is run again on the
+list under it (`PageBreaker.findBreaksUnderCap`, the page's last column uncapped since the remainder fits by
+construction), the IPD-change restarts following as in phase A with the cap kept for the page's later lists
+(`balancingCap`, cleared when the balanced list's last column is added in `doPhase3`, when a list is read afresh,
+or when the page changes). `AbstractBreaker.doLayout` calls the hook `balanceUnequalColumns` after the first
+`findBreakingPoints` and takes its breaks and part count instead when it returns them.
+
+**What a trial lays out on, and why.** A restart inside a paragraph is destructive: `LineLayoutManager`'s restart
+removes the paragraphs before the restart and the elements before the restart line from `knuthParagraphs`, and a
+block's restart resets its spaces and content inline size; the areas of a column added afterwards read exactly
+those (`addAreas` indexes the paragraphs by the line positions, the block's inline size and spaces become the area's
+traits). Apache adds a column's areas *before* it restarts for that reason. A trial must restart from candidates
+earlier than the eventual break, so it cannot touch the breaker's managers at all; snapshotting them was weighed
+and rejected (every manager from the restart point to the span block would need its state saved, tables included,
+and docx4j's `WordLineLayoutManager` is a copy of the line manager with its own private paragraph list, which no
+save on the superclass reaches). So a trial lays out on a throwaway tree: a new flow layout manager made by the
+same maker for the same `fo:flow` (`UnequalColumnBalancer.layTrial`), whose children are created on demand from the
+FO tree, positioned where the breaker's list began. The page breaker records how each list was read
+(`ListOrigin`: the index of the flow child a list read afresh began at, or the restart's position, manager and
+carried elements) and the restarts each line manager has taken in order (`lineRestarts`). Replaying the origin:
+a flow child by index, laid out through the flow's ordinary `getNextKnuthElements` (so a consumer's flow manager's
+own post-processing runs); a restart by mapping the manager chain to the fresh tree by child index (`map`,
+creating and initializing managers as needed), laying the fresh flow child out once so its line managers hold their
+paragraphs (`prime`), replaying on the fresh line manager the restarts the breaker's took before the one that
+began the list (`replayLineRestarts`), and then the restart itself through the fresh flow. The fresh list must have
+the breaker's list's size, else no trial. Each trial makes its own tree, so a later trial from an earlier position
+finds whole paragraphs; a fresh tree costs the inline element collection of the remainder, measured at 0.14s for
+two balanced pages of the three-page probe (0.52s against 0.37s unbalanced). Because the throwaway tree comes from
+the maker, docx4j's `WordLayoutManagerMaker` gives the trial docx4j's own flow, block and line managers, and their
+restarts cut their own paragraphs: nothing is required of docx4j.
+
+**Where a trial declines.** A list with footnote or float anchors (the trial breaker would reach page-sequence
+state through them); a restart position not on the fresh tree (the remainder of a non-restartable manager alone);
+a fresh list of a different size. A cap whose break falls inside a table or list block (`containsNonRestartableLM`)
+counts as infeasible, so the search settles above it; production never restarts from such a cap. All of these leave
+the page as phase A laid it.
+
+**Measured** (`~/fop-session-tools/2026-10-08-cr026-probe/`, Helvetica 10pt on 12pt, the 125.45 / 360.8pt
+columns): `a-span-all` (nine paragraphs then a heading): 33 and 31 lines and the heading on page 1, where it was 58
+and 21 with the heading on page 2 (cap 408000 of an uncapped 720000); `b-span-late` (thirty paragraphs then the
+heading, which falls on page 2, whose first column is a restart from inside a paragraph): page 2 at 49 and 47 and
+the heading there; `b-span-short` (four paragraphs, which fit the first column alone): 14 and 13; `b-span-three`
+(81.25 / 58.25 / 358pt): 33, 33 and 31; `b-span-nobal` (`fox:disable-column-balancing`): 58 and 21, the heading on
+page 2, Apache's own; `b-span-equal` (equal widths): 30 and 29, Apache's algorithm untouched; `over-span-70`
+(seventy one-line blocks over a 66-line column, the 11126 shape): 35 and 35 and the block on page 1; `fit-span`:
+20 and 20. One defect found on the way: a restart between flow children names the flow itself as the position's
+manager, which the on-tree check first refused, so every block-boundary candidate counted as infeasible and the
+search never went below the uncapped height on lists of short paragraphs. Layout test
+`region-body_column-widths_balance.xml` pins the first five of these; `region-body_column-widths_span.xml` now
+expects the balanced columns (35 and 35, the block on page 1). Capability `column-balancing`, the twenty-fifth.
+
+**Limits.** A word processor's balancing puts the extra line in the earlier column; the cap does the same (each
+column fills to the cap in turn) except that the search's unit is the cap's height, not a line, so columns can
+differ by the reflow's granularity (49 and 47 above). The last page of a page-sequence is not balanced, as FOP does
+not balance it for equal columns either. N columns are handled by the same chain (three measured); the cost is one
+uncapped trial per page the list crosses before the one it ends on, each laying out the remainder, so a long
+section before a span block costs about twice phase A's restarts.

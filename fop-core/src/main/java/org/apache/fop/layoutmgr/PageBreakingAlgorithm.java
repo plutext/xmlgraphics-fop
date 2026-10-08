@@ -22,7 +22,8 @@
  * again from there (fop/CR-020); and a block-level FO whose clear names the side a float is on ends the float at the
  * break before it, its content starting at the float's foot (fop/CR-022); and hook float-offset, a float's start edge
  * at the first break after which a line would cross the float's top, `fox:float-offset` below its anchor block's top
- * (fop/CR-023), and a line that does not fit beside a float ends it, the line set at its foot (fop/CR-023 §4.2).
+ * (fop/CR-023), and a line that does not fit beside a float ends it, the line set at its foot (fop/CR-023 §4.2); and
+ * hook column-widths, the parts held to a height while columns of unequal width are balanced (fop/CR-026 phase B).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -114,6 +115,9 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
 
     private int ipdDifference;
     private KnuthNode bestNodeForIPDChange;
+    /** Hook column-widths (fop/CR-026 phase B): a height the parts are held to, 0 for none. */
+    private int balancingCap;
+    private boolean capLastColumn;
     public KnuthNode bestNodeForLastPage;
 
     //Used to keep track of switches in keep-context
@@ -1611,7 +1615,8 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     protected int getLineWidth(KnuthNode node) {
         if (pageProvider != null && node instanceof KnuthPageNode && ((KnuthPageNode) node).pageOwner != null) {
             KnuthPageNode pageNode = (KnuthPageNode) node;
-            return pageProvider.getAvailableBPD(node.line, pageNode.pageOwner, pageNode.opensOwner);
+            return capped(node.line, pageProvider.getAvailableBPD(node.line, pageNode.pageOwner,
+                    pageNode.opensOwner));
         }
         return getLineWidth(node.line);
     }
@@ -1621,12 +1626,31 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     protected int getLineWidth(int line) {
         int bpd;
         if (pageProvider != null) {
-            bpd = pageProvider.getAvailableBPD(line);
+            bpd = capped(line, pageProvider.getAvailableBPD(line));
         } else {
             bpd = super.getLineWidth(line);
         }
         if (log.isTraceEnabled()) {
             log.trace("getLineWidth(" + line + ") -> " + bpd);
+        }
+        return bpd;
+    }
+
+    /**
+     * Hook column-widths (fop/CR-026 phase B): holds the parts to a height, so that columns of unequal width
+     * are balanced before a span="all" block: each column takes what fits under the cap and the last column of
+     * the page the remainder. Nothing changes with a cap of 0.
+     * @param cap the height in millipoints, 0 for none
+     * @param lastColumn whether the page's last column is held to it too (a trial), or takes the page's height
+     */
+    public void setBalancingCap(int cap, boolean lastColumn) {
+        this.balancingCap = cap;
+        this.capLastColumn = lastColumn;
+    }
+
+    private int capped(int line, int bpd) {
+        if (balancingCap > 0 && (capLastColumn || pageProvider == null || !pageProvider.endPage(line))) {
+            return Math.min(bpd, balancingCap);
         }
         return bpd;
     }

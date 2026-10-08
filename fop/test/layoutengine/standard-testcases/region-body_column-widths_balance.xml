@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: hook column-widths, the columns of unequal width before a span="all" block balanced by
+     trial (fop/CR-026 phase B). -->
+<testcase>
+  <info>
+    <p>
+      Columns of unequal width balanced before a span="all" block (CR-026 phase B). Helvetica 10pt on a 12pt
+      line, a letter page with a 720pt body, paragraphs of sixty words with 6pt after each.
+      Five page-sequences:
+      (1) two columns of 125.45pt and 360.8pt, nine paragraphs then a heading across all columns: the columns are
+      balanced at 33 and 31 lines and the heading follows on page 1; unbalanced, the first column held 58 lines, the
+      second 21, and the heading opened page 2 behind an empty span, as Apache FOP lays it with balancing disabled.
+      (2) three columns of 81.25, 58.25 and 358pt: 33, 33 and 31 lines, the heading on the page.
+      (3) the heading with fox:disable-column-balancing="true": Apache FOP's own output, 58 and 21 lines, the heading
+      on the next page.
+      (4) thirty paragraphs then the heading: the heading falls on the second page, whose first column is a list
+      read again from inside a paragraph (the restart replayed on the trial's own managers); the second page is
+      balanced at 49 and 47 lines.
+      (5) four paragraphs then the heading: the list fits the first column alone; balanced at 14 and 13 lines.
+    </p>
+  </info>
+  <fo>
+    <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"
+        font-family="Helvetica" font-size="10pt" line-height="12pt">
+      <fo:layout-master-set>
+        <fo:simple-page-master master-name="two" page-width="612pt" page-height="792pt" margin-top="36pt" margin-bottom="36pt" margin-left="37.25pt" margin-right="37.25pt">
+          <fo:region-body column-count="2" column-gap="51.25pt" fox:column-widths="125.45pt 360.8pt" fox:column-gaps="51.25pt"/>
+        </fo:simple-page-master>
+        <fo:simple-page-master master-name="three" page-width="612pt" page-height="792pt" margin-top="36pt" margin-bottom="36pt" margin-left="37.25pt" margin-right="37.25pt">
+          <fo:region-body column-count="3" column-gap="20pt" fox:column-widths="81.25pt 58.25pt 358pt" fox:column-gaps="20pt 20pt"/>
+        </fo:simple-page-master>
+      </fo:layout-master-set>
+      <fo:page-sequence master-reference="two">
+        <fo:flow flow-name="xsl-region-body">
+      <fo:block space-after="6pt">P1 quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the.</fo:block>
+      <fo:block space-after="6pt">P2 brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river.</fo:block>
+      <fo:block space-after="6pt">P3 fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the.</fo:block>
+      <fo:block space-after="6pt">P4 jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick.</fo:block>
+      <fo:block space-after="6pt">P5 over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown.</fo:block>
+      <fo:block space-after="6pt">P6 the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox.</fo:block>
+      <fo:block space-after="6pt">P7 lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps.</fo:block>
+      <fo:block space-after="6pt">P8 dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over.</fo:block>
+      <fo:block space-after="6pt">P9 and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the.</fo:block>
+      <fo:block span="all" font-size="14pt" space-after="8pt">Heading across all columns</fo:block>
+      <fo:block space-after="6pt">P1 quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the.</fo:block>
+      <fo:block space-after="6pt">P2 brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river.</fo:block>
+      <fo:block space-after="6pt">P3 fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the.</fo:block>
+      <fo:block space-after="6pt">P4 jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick.</fo:block>
+        </fo:flow>
+      </fo:page-sequence>
+      <fo:page-sequence master-reference="three">
+        <fo:flow flow-name="xsl-region-body">
+      <fo:block space-after="6pt">P1 quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the.</fo:block>
+      <fo:block space-after="6pt">P2 brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river.</fo:block>
+      <fo:block space-after="6pt">P3 fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the.</fo:block>
+      <fo:block space-after="6pt">P4 jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick.</fo:block>
+      <fo:block space-after="6pt">P5 over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown.</fo:block>
+      <fo:block space-after="6pt">P6 the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox.</fo:block>
+      <fo:block space-after="6pt">P7 lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps.</fo:block>
+      <fo:block space-after="6pt">P8 dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over.</fo:block>
+      <fo:block space-after="6pt">P9 and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the.</fo:block>
+      <fo:block span="all" font-size="14pt" space-after="8pt">Heading across all columns</fo:block>
+      <fo:block space-after="6pt">P1 quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the.</fo:block>
+      <fo:block space-after="6pt">P2 brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river.</fo:block>
+      <fo:block space-after="6pt">P3 fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the.</fo:block>
+      <fo:block space-after="6pt">P4 jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick.</fo:block>
+        </fo:flow>
+      </fo:page-sequence>
+      <fo:page-sequence master-reference="two">
+        <fo:flow flow-name="xsl-region-body">
+      <fo:block space-after="6pt">P1 quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the.</fo:block>
+      <fo:block space-after="6pt">P2 brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river.</fo:block>
+      <fo:block space-after="6pt">P3 fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the.</fo:block>
+      <fo:block space-after="6pt">P4 jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick.</fo:block>
+      <fo:block space-after="6pt">P5 over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown.</fo:block>
+      <fo:block space-after="6pt">P6 the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox.</fo:block>
+      <fo:block space-after="6pt">P7 lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps.</fo:block>
+      <fo:block space-after="6pt">P8 dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over.</fo:block>
+      <fo:block space-after="6pt">P9 and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the.</fo:block>
+      <fo:block span="all" font-size="14pt" space-after="8pt" fox:disable-column-balancing="true">Heading across all columns</fo:block>
+      <fo:block space-after="6pt">P1 quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the.</fo:block>
+      <fo:block space-after="6pt">P2 brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river.</fo:block>
+      <fo:block space-after="6pt">P3 fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the.</fo:block>
+      <fo:block space-after="6pt">P4 jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick.</fo:block>
+        </fo:flow>
+      </fo:page-sequence>
+      <fo:page-sequence master-reference="two">
+        <fo:flow flow-name="xsl-region-body">
+      <fo:block space-after="6pt">P1 quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the.</fo:block>
+      <fo:block space-after="6pt">P2 brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river.</fo:block>
+      <fo:block space-after="6pt">P3 fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the.</fo:block>
+      <fo:block space-after="6pt">P4 jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick.</fo:block>
+      <fo:block space-after="6pt">P5 over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown.</fo:block>
+      <fo:block space-after="6pt">P6 the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox.</fo:block>
+      <fo:block space-after="6pt">P7 lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps.</fo:block>
+      <fo:block space-after="6pt">P8 dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over.</fo:block>
+      <fo:block space-after="6pt">P9 and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the.</fo:block>
+      <fo:block space-after="6pt">P10 keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy.</fo:block>
+      <fo:block space-after="6pt">P11 on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog.</fo:block>
+      <fo:block space-after="6pt">P12 running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and.</fo:block>
+      <fo:block space-after="6pt">P13 through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps.</fo:block>
+      <fo:block space-after="6pt">P14 the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on.</fo:block>
+      <fo:block space-after="6pt">P15 field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running.</fo:block>
+      <fo:block space-after="6pt">P16 until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through.</fo:block>
+      <fo:block space-after="6pt">P17 the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the.</fo:block>
+      <fo:block space-after="6pt">P18 evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field.</fo:block>
+      <fo:block space-after="6pt">P19 comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until.</fo:block>
+      <fo:block space-after="6pt">P20 and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the.</fo:block>
+      <fo:block space-after="6pt">P21 the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening.</fo:block>
+      <fo:block space-after="6pt">P22 light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes.</fo:block>
+      <fo:block space-after="6pt">P23 fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and.</fo:block>
+      <fo:block space-after="6pt">P24 away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the.</fo:block>
+      <fo:block space-after="6pt">P25 over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light.</fo:block>
+      <fo:block space-after="6pt">P26 the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades.</fo:block>
+      <fo:block space-after="6pt">P27 hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away.</fo:block>
+      <fo:block space-after="6pt">P28 beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over.</fo:block>
+      <fo:block space-after="6pt">P29 the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the.</fo:block>
+      <fo:block space-after="6pt">P30 river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills.</fo:block>
+      <fo:block span="all" font-size="14pt" space-after="8pt">Heading across all columns</fo:block>
+      <fo:block space-after="6pt">P1 quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the.</fo:block>
+      <fo:block space-after="6pt">P2 brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river.</fo:block>
+      <fo:block space-after="6pt">P3 fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the.</fo:block>
+      <fo:block space-after="6pt">P4 jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick.</fo:block>
+        </fo:flow>
+      </fo:page-sequence>
+      <fo:page-sequence master-reference="two">
+        <fo:flow flow-name="xsl-region-body">
+      <fo:block space-after="6pt">P1 quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the.</fo:block>
+      <fo:block space-after="6pt">P2 brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river.</fo:block>
+      <fo:block space-after="6pt">P3 fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the.</fo:block>
+      <fo:block space-after="6pt">P4 jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick.</fo:block>
+      <fo:block span="all" font-size="14pt" space-after="8pt">Heading across all columns</fo:block>
+      <fo:block space-after="6pt">P1 quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the.</fo:block>
+      <fo:block space-after="6pt">P2 brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river.</fo:block>
+      <fo:block space-after="6pt">P3 fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the.</fo:block>
+      <fo:block space-after="6pt">P4 jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick brown fox jumps over the lazy dog and keeps on running through the field until the evening comes and the light fades away over the hills beyond the river the quick.</fo:block>
+        </fo:flow>
+      </fo:page-sequence>
+    </fo:root>
+  </fo>
+  <checks>
+    <!-- (1) two columns, balanced, the heading on page 1 -->
+    <eval expected="33" xpath="count(//pageViewport[@nr=1]//span[1]/flow[1]//lineArea)"/>
+    <eval expected="31" xpath="count(//pageViewport[@nr=1]//span[1]/flow[2]//lineArea)"/>
+    <eval expected="125450" xpath="//pageViewport[@nr=1]//span[1]/flow[1]/@ipd"/>
+    <eval expected="360800" xpath="//pageViewport[@nr=1]//span[1]/flow[2]/@ipd"/>
+    <eval expected="Heading across all columns" xpath="//pageViewport[@nr=1]//span[2]/flow[1]//lineArea[1]//text"/>
+    <eval expected="2" xpath="count(//pageViewport[@nr=1]//span[3]/flow)"/>
+    <!-- (2) three columns -->
+    <eval expected="33" xpath="count(//pageViewport[@nr=2]//span[1]/flow[1]//lineArea)"/>
+    <eval expected="33" xpath="count(//pageViewport[@nr=2]//span[1]/flow[2]//lineArea)"/>
+    <eval expected="31" xpath="count(//pageViewport[@nr=2]//span[1]/flow[3]//lineArea)"/>
+    <eval expected="Heading across all columns" xpath="//pageViewport[@nr=2]//span[2]/flow[1]//lineArea[1]//text"/>
+    <!-- (3) balancing disabled: Apache FOP's output -->
+    <eval expected="58" xpath="count(//pageViewport[@nr=3]//span[1]/flow[1]//lineArea)"/>
+    <eval expected="21" xpath="count(//pageViewport[@nr=3]//span[1]/flow[2]//lineArea)"/>
+    <eval expected="0" xpath="count(//pageViewport[@nr=3]//span[2]//lineArea)"/>
+    <eval expected="Heading across all columns" xpath="//pageViewport[@nr=4]//span[1]/flow[1]//lineArea[1]//text"/>
+    <!-- (4) the heading on the second page, whose columns are balanced from a list read again inside a paragraph -->
+    <eval expected="58" xpath="count(//pageViewport[@nr=5]//span[1]/flow[1]//lineArea)"/>
+    <eval expected="54" xpath="count(//pageViewport[@nr=5]//span[1]/flow[2]//lineArea)"/>
+    <eval expected="49" xpath="count(//pageViewport[@nr=6]//span[1]/flow[1]//lineArea)"/>
+    <eval expected="47" xpath="count(//pageViewport[@nr=6]//span[1]/flow[2]//lineArea)"/>
+    <eval expected="Heading across all columns" xpath="//pageViewport[@nr=6]//span[2]/flow[1]//lineArea[1]//text"/>
+    <!-- (5) a list that fits the first column alone -->
+    <eval expected="14" xpath="count(//pageViewport[@nr=8]//span[1]/flow[1]//lineArea)"/>
+    <eval expected="13" xpath="count(//pageViewport[@nr=8]//span[1]/flow[2]//lineArea)"/>
+    <eval expected="Heading across all columns" xpath="//pageViewport[@nr=8]//span[2]/flow[1]//lineArea[1]//text"/>
+  </checks>
+</testcase>

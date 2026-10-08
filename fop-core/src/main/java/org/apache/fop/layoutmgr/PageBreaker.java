@@ -18,8 +18,9 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook page-master-by-content, each page made for the part of the page-sequence that owns it
  * (fop/CR-017); the space between paragraphs at a side float's edge is kept, the edge being no break in the
- * flow (fop/CR-020); the content after an edge forced by clear is laid out at the float's foot (fop/CR-022); and
- * hook float-offset, the float placed at its target top (fop/CR-023).
+ * flow (fop/CR-020); the content after an edge forced by clear is laid out at the float's foot (fop/CR-022);
+ * hook float-offset, the float placed at its target top (fop/CR-023); and hook column-widths, columns of unequal
+ * width balanced before a span="all" block by trial (fop/CR-026 phase B).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -28,13 +29,16 @@ package org.apache.fop.layoutmgr;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.fop.area.Block;
 import org.apache.fop.area.BodyRegion;
 import org.apache.fop.area.Footnote;
 import org.apache.fop.area.PageViewport;
+import org.apache.fop.area.Span;
 import org.apache.fop.fo.Constants;
 import org.apache.fop.fo.FObj;
 import org.apache.fop.fo.pagination.Region;
@@ -42,6 +46,7 @@ import org.apache.fop.fo.pagination.RegionBody;
 import org.apache.fop.fo.pagination.StaticContent;
 import org.apache.fop.layoutmgr.BreakingAlgorithm.KnuthNode;
 import org.apache.fop.layoutmgr.PageBreakingAlgorithm.PageBreakingLayoutListener;
+import org.apache.fop.layoutmgr.inline.LineLayoutManager;
 import org.apache.fop.layoutmgr.list.ListItemLayoutManager;
 import org.apache.fop.traits.MinOptMax;
 
@@ -53,6 +58,14 @@ public class PageBreaker extends AbstractBreaker {
     private boolean firstPart = true;
     private boolean pageBreakHandled;
     private boolean needColumnBalancing;
+    /** Hook column-widths (fop/CR-026 phase B): the height the columns of the current page are held to, 0 for none. */
+    private int balancingCap;
+    private int balancingPage;
+    /** How the current list was read (fop/CR-026 phase B). */
+    private UnequalColumnBalancer.ListOrigin lastListOrigin;
+    /** The restarts each line manager has taken, in order (fop/CR-026 phase B). */
+    private final Map<LayoutManager, List<LeafPosition>> lineRestarts
+            = new IdentityHashMap<LayoutManager, List<LeafPosition>>();
     private PageProvider pageProvider;
     private Block separatorArea;
     private boolean spanAllActive;
@@ -175,6 +188,7 @@ public class PageBreaker extends AbstractBreaker {
     /** {@inheritDoc} */
     protected int getNextBlockList(LayoutContext childLC, int nextSequenceStartsOn,
             Position positionAtIPDChange, LayoutManager restartLM, List<ListElement> firstElements) {
+        recordListOrigin(positionAtIPDChange, restartLM, firstElements);
         if (!layoutRedone && !handlingFloat()) {
             if (!firstPart) {
                 // if this is the first page that will be created by
@@ -206,6 +220,90 @@ public class PageBreaker extends AbstractBreaker {
         }
         ownPagesOfNewList();
         return next;
+    }
+
+    /**
+     * Hook column-widths (fop/CR-026 phase B): notes how the list about to be read begins, so that a balancing
+     * trial can read it again on a throwaway tree, and the restarts each line manager takes, so that the
+     * trial's line manager can be cut as the page breaker's is.
+     */
+    private void recordListOrigin(Position positionAtIPDChange, LayoutManager restartLM,
+            List<ListElement> firstElements) {
+        if (positionAtIPDChange == null && firstElements == null) {
+            balancingCap = 0;
+            LayoutManager current = childFLM.curChildLM;
+            int index = current == null ? 0 : childFLM.getChildLMs().indexOf(current);
+            if (current != null && current.isFinished()) {
+                index++;
+            }
+            lastListOrigin = new UnequalColumnBalancer.ListOrigin(index);
+            return;
+        }
+        lastListOrigin = new UnequalColumnBalancer.ListOrigin(positionAtIPDChange, restartLM, firstElements);
+        if (positionAtIPDChange == null || (restartLM != null && restartLM.getParent() == childFLM)) {
+            return;
+        }
+        LayoutManager lm = positionAtIPDChange.getLM();
+        if (lm instanceof LineLayoutManager) {
+            List<LeafPosition> restarts = lineRestarts.get(lm);
+            if (restarts == null) {
+                restarts = new ArrayList<LeafPosition>();
+                lineRestarts.put(lm, restarts);
+            }
+            restarts.add(positionAtIPDChange instanceof LeafPosition ? (LeafPosition) positionAtIPDChange : null);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected BalancedBreaking balanceUnequalColumns(PageBreakingAlgorithm alg, int partCount,
+            BlockSequence blockList, LayoutContext childLC, int flowBPD, boolean autoHeight) {
+        if (balancingCap > 0 && pslm.getCurrentPageNum() != balancingPage) {
+            balancingCap = 0;
+        }
+        if (balancingCap > 0) {
+            // a later column of a page being balanced
+            return findBreaksUnderCap(blockList, childLC, flowBPD, autoHeight);
+        }
+        if (!needColumnBalancing || layoutRedone || spanAllActive || alg.handlingFloat() || handlingFloat()
+                || lastListOrigin == null) {
+            return null;
+        }
+        Span span = pslm.getCurrentPV().getCurrentSpan();
+        if (span.getColumnWidths() == null || span.getColumnCount() < 2 || !columnsDiffer(span)) {
+            return null;
+        }
+        UnequalColumnBalancer balancer = new UnequalColumnBalancer(this, childFLM, lineRestarts, childLC,
+                flowBPD, alignment);
+        int cap = balancer.findCap(lastListOrigin, blockList);
+        if (cap < 0) {
+            return null;
+        }
+        balancingCap = cap;
+        balancingPage = pslm.getCurrentPageNum();
+        return findBreaksUnderCap(blockList, childLC, flowBPD, autoHeight);
+    }
+
+    private BalancedBreaking findBreaksUnderCap(BlockSequence blockList, LayoutContext childLC, int flowBPD,
+            boolean autoHeight) {
+        PageBreakingAlgorithm alg = createPageBreakingAlgorithm(childLC, autoHeight, createLayoutListener());
+        alg.setConstantLineWidth(flowBPD);
+        alg.setBalancingCap(balancingCap, false);
+        int partCount = alg.findBreakingPoints(blockList, 1, true, BreakingAlgorithm.ALL_BREAKS);
+        if (log.isDebugEnabled()) {
+            log.debug("column balancing by trial: " + partCount + " part(s) under cap " + balancingCap
+                    + " on page " + balancingPage);
+        }
+        return new BalancedBreaking(alg, partCount);
+    }
+
+    private static boolean columnsDiffer(Span span) {
+        for (int col = 1; col < span.getColumnCount(); col++) {
+            if (span.getColumnWidth(col) != span.getColumnWidth(col - 1)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -411,6 +509,13 @@ public class PageBreaker extends AbstractBreaker {
             BlockSequence originalList, BlockSequence effectiveList) {
 
         if (needColumnBalancing) {
+            if (balancingCap > 0) {
+                // hook column-widths (fop/CR-026 phase B): the columns were balanced by trial and the parts found
+                // under the cap; the last column holds the remainder
+                balancingCap = 0;
+                addAreas(alg, partCount, originalList, effectiveList);
+                return;
+            }
             //column balancing for the last part
             redoLayout(alg, partCount, originalList, effectiveList);
             return;

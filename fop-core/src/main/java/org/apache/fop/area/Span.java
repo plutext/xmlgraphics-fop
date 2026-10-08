@@ -17,7 +17,7 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook column-widths, a width and a gap per column, so that the columns of a span may differ in
- * width (fop/CR-026). See README.md, "Changes from Apache FOP 2.11". */
+ * width, and the current column settable (fop/CR-026). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -211,6 +211,16 @@ public class Span extends Area {
     /** @return the index of the current normal flow */
     public int getCurrentFlowIndex() {
         return curFlowIdx;
+    }
+
+    /**
+     * Makes a column the current one (hook column-widths, fop/CR-026 phase B: a trial lays a list out at a
+     * column's width without moving the page breaker's flow for good).
+     *
+     * @param col the zero-based column number
+     */
+    public void setCurrentFlowIndex(int col) {
+        curFlowIdx = col;
     }
 
     /**
