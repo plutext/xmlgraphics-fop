@@ -236,3 +236,14 @@ the overshoot (803.5 wanted of a 799.6 column, 3.9pt; stock 0.6pt) is in the thr
 line, which Word fits above its foot and docx4j's path does not, by about 4pt. It takes the fidelity fix, finding
 those 4pt on its side, over making its restart drop the blank as Apache's does; r24 stays the gate renderer.
 
+**Where it stands (2026-10-08, evening).** The three blanks are the author's paragraphs (one with a 523 auto line
+spacing, written as a 25pt line-height whose extra is droppable leading, one of spaces, one empty), the same three
+11499 boxes in both paths' lists; the 1 to 4pt Word gives them past our column's foot (Word's last baseline at 792.0,
+three 11.5pt pitches to 826.5 against a foot of 828, the last line's descent allowed past the margin, or the blanks
+sized smaller) is docx4j's pitch question, §6.6 territory, open in its register. The word on the restart, this
+session's: the fork keeps Apache's behaviour (the spilled blank dropped at an IPD restart) until the pitch is settled;
+a change there is a fix of Apache's own defect and would go upstream first. The docx4j session is reading the whole
+corpus on r24 meanwhile (b209 the control without the column code, b210 with the attributes written and the table
+route off) so that Jason has the four documents and the probe beside the 10598 reading; its side stays uncommitted
+until then.
+
