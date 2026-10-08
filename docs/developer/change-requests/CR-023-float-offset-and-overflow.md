@@ -196,4 +196,13 @@ behaviour, and no worse than overflowing the column); draft when measured, Jason
 
 ## 9. Gate (the docx4j session)
 
-Pending: r19 (5afcfc657; r18, with the reference at the resolved gap, superseded).
+Pending on the corpora: r19 (5afcfc657; r18, with the reference at the resolved gap, superseded). The probes on r19
+(the docx4j session, 2026-10-08): `table-floating`'s float lands at Word's y (its cell text 183.5 against 184.5) with the
+anchor paragraph's five lines full width and the next paragraph at 188.0 against 189.1, 36 of 37 lines equal, from
+0.6875; `table-floating-offset-sides` cases 1 to 3 at 179.5 against 180.4, case 2's next paragraph 266.8 against 267.8.
+Case 4's residual was docx4j's: in document order the table lies between the previous paragraph and its anchor, so Word
+applies the previous paragraph's 8pt space-after and the anchor's 24pt space-before both, where the FO with the table
+moved into the float has the two spaces adjacent and FOP takes the larger; docx4j now forces the anchor's space-before
+to the sum across a floated table and writes the offset as `tblpY` plus that space-after, and case 4's float is at
+179.5 too. Cases 1, 3 and 4 still differ after the float: both-sides wrap (§4.3). The overflow rule's renderer-alone
+control (cand105 on r18 against b193) and the measurement (cand107 on r19) follow, with the b189 documents' numbers.
