@@ -394,8 +394,8 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    FOP-3353's fix applied and a guard that a float with `fox:float-offset` written never takes FOP-3331's in-flow
    path (CR-027 §3). Seven conflicts resolved as CR-027 §3 says. DONE: gated PASS (b220, 0 movers; one event
    count moved, FOP-3357 supplying a Bangla syllabizer) and merged to `2.11-docx4j.7` by fast-forward; the fork's
-   baseline for later gates is b220 on r28. The registry entry `fop/CR-027` was sent to the docx4j session
-   (tasks.yaml dirty there, 2026-10-09).
+   baseline for later gates is b220 on r28. Registry `fop/CR-027` done (portfolio b7e3be3f5, by the docx4j
+   session); `fop/CR-024`'s registry status corrected there to "proposed" (6e82b9910).
 9. *Upstream pull requests*: on a reviewer's request, work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
    and #109 merge, and `FOP-3355` when #123 merges.
 10. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
