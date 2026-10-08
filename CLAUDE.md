@@ -326,8 +326,14 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    the renderers step by each column's width. About a week for the widths, three to five days for balancing; one
    afternoon's probe of the restart path within a page (CR-026 §5) before trusting it. Jason asked 2026-10-08 whether
    anything stops it: nothing does (the Apache `main` merge waits a week by agreement and touches floats, not the
-   column or IPD path; `.6`'s release needs only his push; CR-024 is his ordering). Next up, the §5 probe first, on
-   a branch `CR-026-unequal-columns` off `2.11-docx4j.6`.
+   column or IPD path; `.6`'s release needs only his push; CR-024 is his ordering). The §5 probe was run 2026-10-08
+   on branch `CR-026-unequal-columns` (cut from `2.11-docx4j.6`): phase A is as sized, the restart path laying the
+   second column at its own width on the same page (one page, two pages, three columns, reversed widths; a table
+   across the boundary keeps column 1's width, the known limit); `compareIPDs` must keep Apache's body-region
+   comparison under `span="all"` (six layout tests). Phase B is a week, not three to five days: the restart commits
+   column 1 before column 2 is laid, so the balancing algorithm never sees it and a `span="all"` heading goes to the
+   next page behind an empty span, as Apache's own unbalanced output does. The probe code (a system property in
+   `Span`) stays on the branch for phase A to replace. Not started beyond the probe; Jason's word.
 7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
    off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
    says.
