@@ -167,3 +167,30 @@ Measured as the probe was (§5): the same figures through the attributes instead
 column at x=213.95pt in the PDF. Not changed: `BalancingColumnBreakingAlgorithm` (phase B); the IF and other renderers
 inherit the stepping from `AbstractRenderer`. docx4j's layout managers use none of the members touched
 (`docx4j-export-fo` reads `BodyRegion.getBPD()` only).
+
+## 8. Gate
+
+**r24 (872d45020), 2026-10-08: FAIL on 10598, by §4, in the docx4j session's path; not reproduced through FOP's command
+line.** The docx4j session wrote the attributes (`fox:column-widths="125.45pt 360.8pt" fox:column-gaps="51.25pt"`, no
+`columnWidthsIgnored`), the second column landed at Word's x, and the document went from 10 pages to 9 against Word's
+7; its reading: the columns do not fill as Word's, page 3's second column empty but for one line. Measured here on
+its PDF, Word's and a render of its FO through FOP's command line with the gate's fonts (Trebuchet MS, Cousine, Symbol,
+Wingdings added to the config; `~/fop-session-tools/2026-10-08-cr026-probe/`), lines with text per column, split at
+x=200: the command-line render is Word's page for page (p1 33/42 to Word's 32/54, p2 31/63 to 32/66 both ending
+'OPManager', p3 32/52 to 32/65 with the same first and last words in every column, p4 39/71 to 39/75, p5 8/57 to 8/64,
+p6 5/51 to 5/57, p7 0/10 to 0/16; the line counts differ by bullets and wrapping, the flow does not). The gate's PDF
+agrees through page 2, then its page 3 has column 2 empty and the text block that should open it (break-before="column"
+after the labels) opens page 4's narrow column instead, everything after shifted a column; its page 1 column 1 already
+ends a line earlier than the command line's (foot 789.6 to 800.4). So the fault is in the gate's path: docx4j's own
+layout managers (`WordLineLayoutManager` carries its own restart), the two-pass measured extents, or the user agent's
+hooks; a bisect was asked of the docx4j session 2026-10-08 (stock managers; single pass; full path).
+
+Two readings withdrawn on the way: "the labels carried into column 2 and column 2 overfilled" was the docx4j
+session's count including blank lines plus this session's render without Trebuchet MS, which wraps more; and the
+lines wider than column 1 in the area tree are empty inline-block parents (docx4j's `w:br` as an `fo:inline` holding
+a `fo:block` with a newline), sized at the width the paragraph was first laid at and drawn as nothing. The mechanism
+seen in the breaker's log, which the fix must respect: the page breaker's parts have no stretch, so every candidate
+column break is "too short" (r=1000), the break is found by the forced path (`createForcedNodes`, `restartFrom`),
+and `addNode` then diverts the restarted node, demerits zeroed, to `bestNodeForIPDChange`; that gives the right
+break on the command line.
+

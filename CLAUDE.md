@@ -340,7 +340,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    twenty-fourth; layout test `region-body_column-widths.xml`; the warning `columnWidthsIgnored`; full suite 3876/0,
    checkstyle clean; commit 872d45020. Not yet gated: r24 at `~/fop-renderers/r24-CR-026-872d45020/` (sha256
    e23002a1...) handed to the docx4j session 2026-10-08 with CR-026 §4's pass criteria (10598 to Word's pages and its
-   column origins; 6116, 1137, 11092 their column origins; nothing else moves). On PASS: merge to `2.11-docx4j.6` by
+   column origins; 6116, 1137, 11092 their column origins; nothing else moves). Gate FAIL on 10598 (2026-10-08, CR-026
+   §8): the second column at Word's x, but its page 3's column 2 empty and the text shifted a column; not reproduced
+   through FOP's command line with the gate's fonts, which gives Word's pages (the config and reader under
+   `~/fop-session-tools/2026-10-08-cr026-probe/`), so the fault is in the gate's path (docx4j's own layout managers,
+   the two-pass extents, or the hooks); the docx4j session is bisecting. On PASS: merge to `2.11-docx4j.6` by
    fast-forward, the release note's "Gate: pending" closed, §6.6 item 49 narrowed in the Enterprise file (Jason's;
    `git status` first). Phase B after.
 7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
