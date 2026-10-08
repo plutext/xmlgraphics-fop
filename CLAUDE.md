@@ -191,7 +191,8 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-09, after the `2.11-docx4j.6` release, before a `/clear`. Read Enterprise CR-001 §6.6 before
+Last updated 2026-10-09, after the `2.11-docx4j.6` release and the merge of Apache `main` (`fop/CR-027`, on
+`2.11-docx4j.7`, unreleased), before a `/clear`. Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
 **State.** `2.11-docx4j.6` is on Maven Central (2026-10-09, released by Jason from the pushed branch), tagged
@@ -203,8 +204,9 @@ capabilities, each with its CR under `docs/developer/change-requests/` and all g
 read of the release code (b218 = its cand120 on r27 against b215) had one mover, 12301 +5, its own keep-chain change.
 The docx4j session reads the published jar against b218 and then moves `docx4j-export-fo` to `.6`; docx4j 17.3.1
 (2026-10-07) depends on `.5`. Work is on branch `2.11-docx4j.7` (snapshot `2.11-docx4j.7-SNAPSHOT`), cut from the
-release commit, added to CI's branch list and pushed (CI ran on it: the list change works); it carries only the
-post-release commit. `.5` (2026-10-07,
+release commit, added to CI's branch list and pushed (CI ran on it: the list change works); it carries the
+post-release commit and `fop/CR-027`, the merge of Apache `main` at c2d7e0aca (gated PASS b220, unreleased; the
+merge commit and its docs are local until Jason pushes the branch). `.5` (2026-10-07,
 `724e92d1c`), `.4` (2026-10-04, `75f9b0262`), `.2` (2026-10-02) and `.1` (2026-09-25) are the earlier releases;
 `.3` never shipped. Jason pushed the tag `v2.11-docx4j.6` and the branch by name on 2026-10-09. `fop/CR-019` (ActualText per cluster) is designed and waits on Jason.
 
@@ -392,7 +394,8 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    FOP-3353's fix applied and a guard that a float with `fox:float-offset` written never takes FOP-3331's in-flow
    path (CR-027 §3). Seven conflicts resolved as CR-027 §3 says. DONE: gated PASS (b220, 0 movers; one event
    count moved, FOP-3357 supplying a Bangla syllabizer) and merged to `2.11-docx4j.7` by fast-forward; the fork's
-   baseline for later gates is b220 on r28. Still to do: the registry entry `fop/CR-027`.
+   baseline for later gates is b220 on r28. The registry entry `fop/CR-027` was sent to the docx4j session
+   (tasks.yaml dirty there, 2026-10-09).
 9. *Upstream pull requests*: on a reviewer's request, work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
    and #109 merge, and `FOP-3355` when #123 merges.
 10. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
