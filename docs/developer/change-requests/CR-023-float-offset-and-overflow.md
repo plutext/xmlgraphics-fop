@@ -41,8 +41,11 @@ line breaking takes one width per paragraph. Sized in §4.3, not built here.
 
 ## 2. Word's rules (the docx4j session's phase 0 probes, CR-032 §3)
 
-- The offset is measured from the top of the anchor paragraph's block including its space-before: 24pt of
-  space-before on the anchor moves its first line 24pt down and leaves the table where it was (case 4).
+- The offset is measured from the top of the anchor paragraph's block including its own space-before, and not
+  the previous paragraph's space-after: 24pt of space-before on the anchor moves its first line 24pt down and leaves
+  the table where it was (case 4); r18, which measured from the top of the resolved gap (the larger of the two
+  spaces, where FOP's space resolution puts it), drew the table above Word's by exactly the previous paragraph's
+  space-after (13.0pt on `table-floating`, 8.9pt on the four `offset-sides` cases; the docx4j session, 2026-10-08).
 - The lines that fit in the offset are laid full width above the table, and the anchor paragraph's own text
   continues below the table: with `tblpY` 30pt the anchor's first two lines are above the table and the rest below
   (`wide-anchor-text` case 2); with `tblpY` 36pt and eight empty paragraphs, two are above the table and six below.
@@ -73,7 +76,10 @@ below it.
 ### 4.1 `fox:float-offset`, capability `float-offset`
 
 **The property.** `fox:float-offset` on `fo:float`, a length, default 0pt, not inherited; read by `Float` into the
-`FloatContentLayoutManager` through the `Float` node. Only a positive offset does anything (§8).
+`FloatContentLayoutManager` through the `Float` node. Only a positive offset does anything (§8). The reference is the
+top of the anchor block including its own space-before and excluding the previous block's space-after: in the list,
+the anchor box's position less the smaller of the resolved gap before it and the block's own space-before optimum
+(`anchorSpaceBefore`, read from the anchor `Block` up the float's FO chain).
 
 **The start edge moves to the offset.** In the first pass, `handleBox` no longer sets `handlingStartOfFloat` at
 the anchor box when the float has an offset; it records the anchor block's top (the box's position less the glue
@@ -111,7 +117,9 @@ with a 32pt offset in a heading with 10pt space-after draws at 32pt, the heading
 26 to 74pt beside it (foot 72) and the next full; offset 0 as before; an anchor with 24pt space-before after a
 one-line paragraph draws the float at 48pt (16 + 32), inside the heading's line, which is beside it with the two
 below; a 60pt float 200pt down after seven short paragraphs draws at 200pt with all seven full width and the
-eighth beside it. CR-022's seven cases unchanged.
+eighth beside it. CR-022's seven cases unchanged. r18 took the reference at the top of the resolved gap; corrected
+for r19 (5afcfc657) after the docx4j session's probe reading (§2): a fifth case, a paragraph with 12pt space-after
+before an anchor with none and a 32pt offset, draws the float at 16 + 12 + 32 = 60pt, not 48.
 
 **What docx4j writes.** `fox:float-offset` = `tblpY` on the `fo:float`, and no `padding-top` inside it; the anchor
 block keeps its own space-before, which the offset is measured from. Gated on `float-offset`.
@@ -188,4 +196,4 @@ behaviour, and no worse than overflowing the column); draft when measured, Jason
 
 ## 9. Gate (the docx4j session)
 
-Pending.
+Pending: r19 (5afcfc657; r18, with the reference at the resolved gap, superseded).

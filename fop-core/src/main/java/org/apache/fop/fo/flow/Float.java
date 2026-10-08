@@ -102,8 +102,8 @@ public class Float extends FObj {
     }
 
     /**
-     * Hook float-offset (fop/CR-023): how far below the top of its anchor block, space-before included, the
-     * float begins; the lines above it keep the full width.
+     * Hook float-offset (fop/CR-023): how far below the top of its anchor block, the block's own space-before
+     * included and the previous block's space-after not, the float begins; the lines above it keep the full width.
      * @return the fox:float-offset length, 0pt by default
      */
     public Length getFloatOffset() {

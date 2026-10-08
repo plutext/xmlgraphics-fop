@@ -197,7 +197,8 @@ public final class Docx4jFop {
 
     /**
      * {@code fox:float-offset} on {@code fo:float}: the float begins that far below the top of its anchor block,
-     * space-before included, and the lines above it keep the full width, as a word processor places a table
+     * the block's own space-before included and the previous block's space-after not, and the lines above it keep
+     * the full width, as a word processor places a table
      * a stated distance below the paragraph it is anchored to (docx4j CR-032, Enterprise CR-001 item 8;
      * fop/CR-023 §4.1).
      */

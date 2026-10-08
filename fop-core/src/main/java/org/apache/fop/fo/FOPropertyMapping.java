@@ -2705,8 +2705,9 @@ public final class FOPropertyMapping implements Constants {
         m.setDefault("auto");
         addPropertyMaker("fox:continuation-display-align", m);
 
-        // fox:float-offset, how far below the top of its anchor block (space-before included) a side float
-        // begins; the lines above it keep the full width (hook float-offset, fop/CR-023)
+        // fox:float-offset, how far below the top of its anchor block (its own space-before included, the
+        // previous block's space-after not) a side float begins; the lines above it keep the full width
+        // (hook float-offset, fop/CR-023)
         LengthProperty.Maker l = new LengthProperty.Maker(PR_X_FLOAT_OFFSET);
         l.setInherited(false);
         l.setDefault("0pt");
