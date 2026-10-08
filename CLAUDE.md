@@ -413,7 +413,19 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    docx4j session); FOP embeds a single-byte TrueType font whole (`PDFFactory.makeFontFile`), moot for
    docx4j since it retired its `+noliga` twin under the fork; per-font `advanced="false"` is ignored by
    FOP's stock font collection (CR-003 §10).
-11. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
+11. *Backlog, measured by the docx4j session (2026-10-09), not to start without Jason's word:* 12301 (311 pages),
+   every section a keepNext heading, a 481pt picture with keepNext, a second keepNext heading, then a 36-column
+   table with a repeating header row. Word drops the keeps it cannot satisfy and breaks before the table (the
+   heading at page 11's foot, page 12 opening with the repeated header); the renderer puts the heading and the
+   table's first step on page 11 and the body overflows, 119pt under docx4j's managers, 449pt under FOP's stock
+   ones, at every section. By the flow's element list the chain fits (560839 of 615271): the repeated header's
+   height is not in the list, only in the header/footer penalty's width (21661), so the breaker lays the first
+   step with the header unaccounted. First measurement here when ordered: where the table stepper puts the
+   repeated header's height (the first step's box, or the penalty only) and whether the stock overflow is Apache's
+   own, upstream-bound. Reproducer `~/fidelity-cr030/repro/keep-chain-table-header-12301.fo` (not redistributable);
+   docx4j's register `documents/12301.md`, cause `keep-chain-table-header`; docx4j's `boundKeepChains` does not
+   reach it (its gate b216). Not a §6.6 item yet: nothing measured here.
+12. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
    and P2-3 small and clean; P2-4, P2-6, P2-7 inert; the structure-tree half of P2-5 superseded by
    FOP-3165 and FOP-3283 in Apache `main`).
 
