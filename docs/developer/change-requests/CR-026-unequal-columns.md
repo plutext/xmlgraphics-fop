@@ -247,3 +247,18 @@ corpus on r24 meanwhile (b209 the control without the column code, b210 with the
 route off) so that Jason has the four documents and the probe beside the 10598 reading; its side stays uncommitted
 until then.
 
+**Corpus reading of phase A, b210 against b209 (the docx4j session, 2026-10-08; r24; docx4j writing widths on every
+section with `w:col` widths and never tabling; b209 is HEAD without the column code, 0 movers against r23).** Gains:
+10598 +203 lines (0.2128 to 0.7527, 10 pages to 9 against Word's 8), 394 +49 (0.48 to 0.76), 6116 +25 (0.64 to 0.71,
+5 pages to 7: the span-block balancing, phase B). Losses: 11126 −73 (0.9560 to 0.1538, 1 page to 2, with 25
+body-overflow events where there were none), 13753 −9 (from 1.0), 330 −4, 1432 −3 (from 1.0), 5639 −2 (1 page to 3),
+2299 −1; the probe `columns-unequal` 0.7949 to 0.7692. Two kinds, both routed on docx4j's side (cand117, b211 against
+b209): stretches that fit a page, which the one-row table had right and the renderer lays unbalanced until phase B
+(13753, 1432); and near-equal columns within 5% (11126 at 5313 / 240 / 5219 twips; 5639 three and four columns),
+Word's own rounding of equal ones, left to `column-count` as before. 11126's 25 overflow events and second page on
+near-equal widths (265.65 / 12 / 260.95pt on 538.6pt) are the one item for the fork: a probe here of two tables
+crossing that boundary (`neareq-table.fo` with the tools) paginates as equal columns do, with one warning (the table
+continuing into the narrower column at its old width, the known limit, a 4.7pt overhang) and no overflow events, so
+11126 carries something else; its FO and the event key are asked of the docx4j session (a table written at an
+absolute width that no longer fits the narrower column is the guess).
+

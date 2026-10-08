@@ -347,8 +347,10 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    columns on r24, docx4j's own managers do not, the column 8.4pt over at its head: the blank paragraph that spilled
    past page 2's column 2, which Apache's IPD restart drops and docx4j's managers keep (CR-026 §8, probes `spill2-*`,
    `pagewidth-*`); the 1 to 4pt Word gives those blanks is docx4j's pitch question, open in its register; the fork
-   keeps Apache's drop until it is settled. r24 stands; the docx4j session is reading the whole corpus on it (b209
-   the control, b210 the attributes written). On PASS: merge to `2.11-docx4j.6` by
+   keeps Apache's drop until it is settled. r24 stands. Corpus reading b210 against b209 (CR-026 §8): 10598 +203 to
+   0.7527, 394 +49, 6116 +25; losses routed on docx4j's side (cand117, b211 running: table where the stretch fits a
+   page, widths only where columns differ by more than 5%); 11126's 25 overflow events on near-equal widths are the
+   one open item for the fork, its FO asked of the docx4j session. On PASS: merge to `2.11-docx4j.6` by
    fast-forward, the release note's "Gate: pending" closed, §6.6 item 49 narrowed in the Enterprise file (Jason's;
    `git status` first). Phase B after.
 7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
