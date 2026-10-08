@@ -305,24 +305,35 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    `BreakingAlgorithm.getLineWidth(int line)` is the hook, the line areas already take a width per line) with an obstacle
    registry and page-anchored objects as virtual floats, about two weeks; phase B a line in segments, two to three; §6.6
    items 10 and 11. Not started; his ordering against the `.6` release and the merge of Apache `main`.
-5. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
+5. *A table row that would start at a page's foot without room for its first line plus the cell's bottom margin goes
+   to the next page* (Word's rule; the docx4j session, 2026-10-08, measured on 11657: 2393 one-line rows, 28-twip cell
+   margins, 0.5pt borders, a body foot at 549.8pt; Word stops page 30 at row 53 where row 54's first line would end at
+   549.3 plus the 1.44pt margin, FOP sets that line and continues the row on page 31). Not `padding-after.conditionality=
+   "retain"` (gate b206: 11657 -55 lines, 12363 -8), since Word drops the bottom margin where a long cell's first part
+   ends at the foot: the condition is on starting the row's first part (at least the first line plus padding-after and
+   presumably border-after), not on the split's end. Where it sits: `TableStepper`/`ActiveCell`'s first step for a row,
+   or `TableContentLayoutManager`'s first legal break in a row. docx4j writes `padding-before.conditionality="retain"`
+   on every cell (Word's, gate b205) and `padding-after` without. Reproducer: 11657's FO under `~/fidelity-real3/
+   score/b205/fop/` (not redistributable); a probe to cut if taken up. Register: Enterprise `causes/table-outer-border-half.md`
+   and `documents/11657.md`. No §6.6 item until reproduced here. Not started; Jason's word.
+6. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
    off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
    says.
-6. *Merging Apache `main`* into the fork, which this file asks for now that FOP-3348 and FOP-3349 have landed:
+7. *Merging Apache `main`* into the fork, which this file asks for now that FOP-3348 and FOP-3349 have landed:
    `main` at 5be8c69b6 also carries FOP-3331's float regression (FOP-3353: a float whose own child is a
    block-container goes in the flow). Fix or revert it in the fork with the merge, and gate the merge. Committed
    docx4j wraps float content in an `fo:block`, which is unaffected. Also check Apache's FOP-3352 (`GlyfTable`,
    empty glyphs) against our #108 (FOP-3339).
-7. *Upstream pull requests*: on a reviewer's request, work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
+8. *Upstream pull requests*: on a reviewer's request, work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
    and #109 merge, and `FOP-3355` when #123 merges.
-8. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
+9. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
    private-use code point in ToUnicode (CR-002 §10.2; ActualText per cluster is the follow-up); a format
    character the font has no glyph for is still lost (CR-007 §4); the position-adjustments paint path
    indexes its adjustments by UTF-16 unit, wrong after a supplementary character (CR-005, noted to the
    docx4j session); FOP embeds a single-byte TrueType font whole (`PDFFactory.makeFontFile`), moot for
    docx4j since it retired its `+noliga` twin under the fork; per-font `advanced="false"` is ignored by
    FOP's stock font collection (CR-003 §10).
-9. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
+10. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
    and P2-3 small and clean; P2-4, P2-6, P2-7 inert; the structure-tree half of P2-5 superseded by
    FOP-3165 and FOP-3283 in Apache `main`).
 
