@@ -1,3 +1,12 @@
+Pull request https://github.com/apache/xmlgraphics-fop/pull/126, opened 2026-10-08 at Jason's word ("Send a pull request
+for FOP-3353"): branch FOP-3353 in ../fop-upstream-wt (57cc8a40b), one commit on Apache main 5be8c69b6; text in
+../fop-upstream-prs/FOP-3353.md. The fix: FloatContentLayoutManager.addChildArea compares the content's effective width
+against the width available to the float (getContentAreaIPD()) instead of the child area's own width. Measured on
+main: a 100pt container's heading beside it at x 172 (main: x 72 below the float), a 300pt one at 372, the wrapped
+container and a plain block unchanged, a column-wide container still in the flow. Layout test
+float_block-container-child.xml; the 747 layout tests, the suite (3679/0) and checkstyle pass. The JIRA comment with
+the link waits on Jason's OK of its text. The fork does not carry FOP-3331 yet; the fix arrives with the merge of main.
+
 JIRA, POSTED 2026-10-07 by the fork session as jharrop, at Jason's word: FOP-3353 (https://issues.apache.org/jira/browse/FOP-3353),
 linked "is broken by" FOP-3331; the text from "Summary" on in JIRA markup, one line per paragraph. No pull request. A regression on Apache main from FOP-3331, found by the fork session 2026-10-07 while
 reproducing fop/CR-020's two float defects on main. Not in 2.11 or in the fork: it arrives with the next merge of
