@@ -90,7 +90,7 @@ session routed an edit to the wrong peer on that inference, is why.
   cut 2026-10-03, `FOP-2918` and `FOP-3339` to `FOP-3347`. `FOP-3345` is stacked on `FOP-3346` and
   `FOP-3340`. Cut 2026-10-07 on `main` at 5be8c69b6: `FOP-3354`, `FOP-3355` stacked on it, and `FOP-3356`. Cut 2026-10-08:
   `FOP-3353` (pull request #126), and `FOP-edge-walked-past` and `FOP-edge-under-keep` (unfiled, CR-022 §3.5's two
-  defects of Apache's own). The older names `FOP-cjk-radical-tounicode`, `FOP-empty-glyph-not-composite` and
+  defects of Apache's own). `trunk` is at `upstream/main` c2d7e0aca (2026-10-08), merged into the fork by `fop/CR-027`. The older names `FOP-cjk-radical-tounicode`, `FOP-empty-glyph-not-composite` and
   `FOP-surrogate-pair-word-split` were deleted on 2026-10-03 (local only, never pushed; their commits
   are in `FOP-3340`, `FOP-3339` and `FOP-2918`). The branches are worked on in a
   worktree at `../fop-upstream-wt`; the pull request texts are in `../fop-upstream-prs/`. On Apache
@@ -386,11 +386,12 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
 7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
    off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
    says.
-8. *Merging Apache `main`* into the fork, which this file asks for now that FOP-3348 and FOP-3349 have landed:
-   `main` at 5be8c69b6 also carries FOP-3331's float regression (FOP-3353: a float whose own child is a
-   block-container goes in the flow). Fix or revert it in the fork with the merge, and gate the merge. Committed
-   docx4j wraps float content in an `fo:block`, which is unaffected. Also check Apache's FOP-3352 (`GlyfTable`,
-   empty glyphs) against our #108 (FOP-3339).
+8. *Merging Apache `main`* into the fork: BUILT 2026-10-09 at Jason's word on branch `merge-main-2026-10-09`
+   (cut from `2.11-docx4j.7`), `fop/CR-027`, `main` at c2d7e0aca: eight commits, three ours come back identical,
+   FOP-3357 Bengali, FOP-3351 AFP, FOP-3352 (the fork keeps FOP-3339's general form), FOP-3331 floats with
+   FOP-3353's fix applied and a guard that a float with `fox:float-offset` written never takes FOP-3331's in-flow
+   path (CR-027 §3). Seven conflicts resolved as CR-027 §3 says. Gate pending (0 movers expected); on PASS merge
+   to `2.11-docx4j.7` by fast-forward, release note `2.11-docx4j.7.md` closed, registry.
 9. *Upstream pull requests*: on a reviewer's request, work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
    and #109 merge, and `FOP-3355` when #123 merges.
 10. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
