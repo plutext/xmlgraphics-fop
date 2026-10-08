@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: a width per column, so that the columns of a span may differ in width (fop/CR-026; section 5's
+ * probe reads them from a system property). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.area;
@@ -65,11 +69,33 @@ public class Span extends Area {
     private void createNormalFlows() {
         flowAreas = new java.util.ArrayList<NormalFlow>(colCount);
         colWidth = (ipd - ((colCount - 1) * colGap)) / colCount;
+        int[] probeWidths = probeColumnWidths();
 
         for (int i = 0; i < colCount; i++) {
-            NormalFlow newFlow = new NormalFlow(colWidth);
+            NormalFlow newFlow = new NormalFlow(probeWidths == null ? colWidth : probeWidths[i]);
             flowAreas.add(newFlow);
         }
+    }
+
+    /**
+     * CR-026 section 5 probe only: the widths of this span's columns from the system property
+     * {@code fop.probe.columnWidths}, a comma-separated list of points, one per column, or null.
+     * To be replaced by {@code fox:column-widths} in phase A.
+     */
+    private int[] probeColumnWidths() {
+        String property = System.getProperty("fop.probe.columnWidths");
+        if (property == null || colCount < 2) {
+            return null;
+        }
+        String[] parts = property.split(",");
+        if (parts.length != colCount) {
+            return null;
+        }
+        int[] widths = new int[colCount];
+        for (int i = 0; i < colCount; i++) {
+            widths[i] = Math.round(Float.parseFloat(parts[i].trim()) * 1000);
+        }
+        return widths;
     }
 
     /**
@@ -96,7 +122,17 @@ public class Span extends Area {
      * @return the width of a single column
      */
     public int getColumnWidth() {
-        return colWidth;
+        return getColumnWidth(curFlowIdx);
+    }
+
+    /**
+     * Get the width of one column within this Span (CR-026: columns may differ in width).
+     *
+     * @param col the zero-based column number
+     * @return the width of that column
+     */
+    public int getColumnWidth(int col) {
+        return getNormalFlow(col).getIPD();
     }
 
     /**

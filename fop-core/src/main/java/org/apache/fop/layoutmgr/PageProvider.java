@@ -20,7 +20,8 @@
  * height of a page asked for with its owner (fop/CR-017); and hook page-number-restart, each page numbered by a
  * running count that a part may restart (fop/CR-017.2); and hook measured-region-extents, each page cached or
  * measured for its height made through one method, with its master's header and footer extents measured where the
- * master asks (fop/CR-018). See README.md, "Changes from Apache FOP 2.11". */
+ * master asks (fop/CR-018); and columns of unequal width, a part's inline size compared with its neighbour
+ * column's (fop/CR-026). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -40,6 +41,7 @@ import org.apache.fop.area.AreaTreeHandler;
 import org.apache.fop.area.BodyRegion;
 import org.apache.fop.area.MeasuredExtents;
 import org.apache.fop.area.PageViewport;
+import org.apache.fop.area.Span;
 import org.apache.fop.fo.Constants;
 import org.apache.fop.fo.pagination.PageProductionException;
 import org.apache.fop.fo.pagination.PageSequence;
@@ -423,14 +425,26 @@ public class PageProvider implements Constants {
      */
     public int compareIPDs(int index) {
         Column column = getColumn(index);
+        PageViewport pv = column.page.getPageViewport();
         if (column.colIndex + 1 < column.columnCount) {
-            // Next part is a column on same page => same IPD
-            return 0;
+            // CR-026: the columns of one page may differ in width, so a column is compared with its neighbour
+            Span span = pv.getCurrentSpan();
+            return span.getColumnWidth(column.colIndex) - span.getColumnWidth(column.colIndex + 1);
         } else {
-            Page nextPage = getPage(false, column.pageIndex + 1, RELTO_CURRENT_ELEMENT_LIST);
-            return column.page.getPageViewport().getBodyRegion().getColumnIPD()
-                    - nextPage.getPageViewport().getBodyRegion().getColumnIPD();
+            PageViewport nextPV = getPage(false, column.pageIndex + 1, RELTO_CURRENT_ELEMENT_LIST)
+                    .getPageViewport();
+            if (spansAllColumns(pv) || spansAllColumns(nextPV)) {
+                // a span="all" list, or a page replaced under it: as Apache FOP compares
+                return pv.getBodyRegion().getColumnIPD() - nextPV.getBodyRegion().getColumnIPD();
+            }
+            return pv.getCurrentSpan().getColumnWidth(column.colIndex)
+                    - nextPV.getCurrentSpan().getColumnWidth(0);
         }
+    }
+
+    /** @return whether the page's current span is a span="all" over a multi-column body (CR-026) */
+    private static boolean spansAllColumns(PageViewport pv) {
+        return pv.getCurrentSpan().getColumnCount() != pv.getBodyRegion().getColumnCount();
     }
 
     /**

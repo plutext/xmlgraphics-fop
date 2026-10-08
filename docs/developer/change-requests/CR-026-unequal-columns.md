@@ -1,8 +1,9 @@
 # CR-026: columns of unequal width in the region body
 
 Status: SIZING 2026-10-08, not started; Jason's word to begin. Registry key `fop/CR-026`. Enterprise CR-001 §6.6
-item 49, measured by the docx4j session on four corpus documents (10598, 6116, 1137, 11092). Sized from a reading of
-the code, not yet from a probe: §5 names the one experiment that would firm the estimate.
+item 49, measured by the docx4j session on four corpus documents (10598, 6116, 1137, 11092). §5's probe of the restart
+path was run 2026-10-08 on branch `CR-026-unequal-columns`: phase A is as sized, phase B (balancing) is a week, not three
+to five days, for the reason §5 gives.
 
 ## 1. The need
 
@@ -55,11 +56,14 @@ pages today; footnotes and side floats on the same page as a width change take t
 `doLayout` (`alg.handlingFloat()` is tested before `ipdChangesOnNextPage`), untested together. Word's own
 column breaks (`break-before="column"` from `w:br w:type="column"`) already exist in FOP.
 
-**Phase B, balancing (three to five days).** With unequal widths the balanced height is not the content height over
-the count: the content reflows per column. Balance by area: a first pass at the heights the equal rule gives, then
-the restart path, then one correction from the measured surplus; or disable balancing for an unequal body and let the
-last page fill column by column (Word balances a continuous section's unequal columns, so this is phase B's
-measurement, not its default).
+**Phase B, balancing (a week; §5 measured why).** With unequal widths the balanced height is not the content height
+over the count: the content reflows per column, and the restart path commits the first column before the second is
+laid, so FOP's `BalancingColumnBreakingAlgorithm` never sees the first column at all (§5). Balance by trial: a
+candidate break in the first column, the remainder re-laid from it at the second column's width, the two heights
+compared, a bounded search over the first column's lines (each step one restart), with the first column's areas added
+only when the search ends. Word balances a continuous section's unequal columns, so this is phase B's measurement,
+not its default; where docx4j writes a section change as a new page-sequence the last page is not balanced in FOP
+today either (§5), and phase B serves only the span="all" case.
 
 **Phase C, docx4j (its side).** Write the attributes for a section whose columns are unequal, gated on the
 capability; stop sending such a stretch to the one-row table; `FopCapabilities`.
@@ -69,17 +73,62 @@ capability; stop sending such a stretch to the one-row table; `FopCapabilities`.
 | phase | fork | gate |
 |---|---|---|
 | A, the widths | about one week: the properties and area model two days, the breaker's per-column comparison and the renderers two, the layout tests and the suite one | the four documents and the `columns-unequal` probe on the share |
-| B, balancing | three to five days | 6116 (nine sections) is the balancing case |
+| B, balancing | about a week (trial restarts, §5) | 6116 (nine sections) is the balancing case, if its section changes are span="all" blocks |
 
 Total about two weeks, the first week giving the four documents their column origins and line breaks and the second
 their last pages and section ends.
 
-## 5. Before the estimate is trusted
+## 5. The probe (2026-10-08)
 
-One afternoon: on a branch, return the width difference from `compareIPDs` for two columns of a page whose `Span`
-is given two widths by hand, and see the restart path lay the second column at its width without a new page. If
-it does, phase A is as sized; if the path assumes a page boundary somewhere (`startPage`, `lastPageHasIPDChange`,
-the last-page replacement in `PageBreaker`), phase A grows by the days it takes to teach it a column.
+§5 asked, before the estimate was trusted, for one afternoon on a branch: give a page's `Span` two widths by hand,
+return their difference from `compareIPDs`, and see whether the restart path lays the second column at its width
+without a new page. Run 2026-10-08 on `CR-026-unequal-columns`, cut from `2.11-docx4j.6` at d9df4ed82.
+
+**What was changed.** `Span` takes a width per column from the system property `fop.probe.columnWidths` (points,
+one per column; to be replaced by `fox:column-widths` in phase A), `getColumnWidth()` returns the current flow's
+width and `getColumnWidth(int)` any column's. `PageProvider.compareIPDs` returns the difference between a column
+and its neighbour on the page, and between a page's last column and the next page's first; under `span="all"` (the
+span's column count differing from the body's) it keeps Apache's body-region comparison. Nothing else: the renderer
+already steps by each flow's own inline size, the restart's `handleBreakTrait(EN_COLUMN)` already moves to the next
+flow, and `updateLayoutContext` already reads the current flow's width through `getCurrentColumnWidth()`.
+
+**Result: phase A is as sized.** The restart path lays the second column at its own width on the same page; nothing
+in `startPage`, `lastPageHasIPDChange` or the last-page replacement assumes a page boundary. Measured with Helvetica
+10pt on a 12pt line, a letter page with 37.25pt side margins (body 537.5pt), `column-count="2"`,
+`column-gap="51.25pt"`, widths 125.45pt and 360.8pt (10598's), so the second column begins at x=213.95pt; the area
+tree read per flow, the words of every flow checked continuous against the source (probe FOs and readers at
+`~/fop-session-tools/2026-10-08-cr026-probe/`):
+
+| FO | laid |
+|---|---|
+| `one-page` (eight paragraphs of sixty words) | column 1: 58 lines at ipd 125450; column 2: 16 lines at 360800, same page; in the PDF 58 lines at x=37.25 and 16 at x=213.95, right edge 573.56 of the body's 574.75 |
+| `two-pages` (thirty paragraphs) | 58/54 on page 1, 58/44 on page 2, each column at its width on both pages |
+| the same, widths reversed (360.8, 125.45) | 54/57 then 53/29: a negative difference restarts the same |
+| `three` (81/58/336pt, 1137's, gap 20pt) | 58/59/50 then 54/24/0 |
+| `table2` (two paragraphs, then a thirty-row table) | the table begins in column 1 (rows 1 to 11) and continues in column 2 (rows 12 to 30) at column 1's width: cell ipds 41316 and 83132 in both columns, the rows at x=214.2pt; the paragraphs after it at 360.8pt. §3's known limit, measured: a table is not restartable, so its remainder keeps the previous column's width. Equal control: rows 1 to 22 then 23 to 30, cells 80541 and 161582 throughout |
+
+Checkstyle clean; `LayoutEngineTestSuite` 778 of 778. The first form of `compareIPDs` compared the current spans on
+both sides of a page boundary and failed six of them (`page-sequence_two-column_last-page_7`, `_8`, `_9`,
+`footnote_column_span`, `keep_within-page_multi-column_overflow`, `page-master-by-content_span-change`: an extra page,
+or the wrong master on the last page), since under `span="all"` the current span is one column over a multi-column
+body and Apache compares the body regions' column widths there. The span="all" guard above is the fix.
+
+**Phase B is harder than sized.** `span-all` (a `span="all"` heading after nine paragraphs, balancing on): the equal
+control balances the columns before the heading (30/29 lines) and the heading follows on page 1 with 25/25 below it.
+With the probe widths column 1 is full (58 lines), column 2 holds the remainder (21), an empty full-width span is left
+on page 1 and the heading opens page 2. That is exactly Apache's own output when `fox:disable-column-balancing="true"`
+is on the heading (equal widths: 56/3, the empty span, the heading on page 2). The mechanism, from the breaker's
+debug log: the IPD-change restart adds column 1's areas and notes the committed position before column 2 is laid,
+and the restarted list begins in column 2, so `getStartingPartIndexForLastPage` returns -1 ("Restarting at -1") and
+`BalancingColumnBreakingAlgorithm` sees column 2's content alone; nothing can pull column 1 up, the columns' span
+keeps the page's full height, and the heading finds no room. So balancing by dividing the content height cannot
+work for unequal columns; phase B must choose column 1's break by trial (§3), a week's work. Two things learnt on
+the way: `fox:disable-column-balancing` is a property of the spanning block, not of `fo:region-body` (on the region
+it is inert), and FOP does not balance the last page of a page-sequence at all without a `span="all"` block (the
+equal control of `one-page` lays 52 lines in column 1 and none in column 2).
+
+**Open for the docx4j session.** Whether docx4j writes a continuous section change as a `span="all"` block within
+one page-sequence or as a new page-sequence decides whether phase B is needed at all for the four documents.
 
 ## 6. Upstream
 
