@@ -333,24 +333,31 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    on every cell (Word's, gate b205) and `padding-after` without. Reproducer: 11657's FO under `~/fidelity-real3/
    score/b205/fop/` (not redistributable); a probe to cut if taken up. Register: Enterprise `causes/table-outer-border-half.md`
    and `documents/11657.md`. No §6.6 item until reproduced here. Not started; Jason's word.
-6. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
+6. *`fop/CR-026`, columns of unequal width in the region body* (§6.6 item 49, the docx4j session's measurement on
+   10598, 6116, 1137 and 11092, 2026-10-08): SIZING only, `docs/developer/change-requests/CR-026-unequal-columns.md`,
+   not started. `fox:column-widths` and `fox:column-gaps` on `fo:region-body`, a width per column in `Span` and
+   `BodyRegion`, `PageSequenceLayoutManager.getCurrentColumnWidth()` per column, and `PageProvider.compareIPDs`
+   returning the difference between consecutive columns so FOP's own changing-IPD restart reflows column by column;
+   the renderers step by each column's width. About a week for the widths, three to five days for balancing; one
+   afternoon's probe of the restart path within a page (CR-026 §5) before trusting it. Jason's word to begin.
+7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
    off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
    says.
-7. *Merging Apache `main`* into the fork, which this file asks for now that FOP-3348 and FOP-3349 have landed:
+8. *Merging Apache `main`* into the fork, which this file asks for now that FOP-3348 and FOP-3349 have landed:
    `main` at 5be8c69b6 also carries FOP-3331's float regression (FOP-3353: a float whose own child is a
    block-container goes in the flow). Fix or revert it in the fork with the merge, and gate the merge. Committed
    docx4j wraps float content in an `fo:block`, which is unaffected. Also check Apache's FOP-3352 (`GlyfTable`,
    empty glyphs) against our #108 (FOP-3339).
-8. *Upstream pull requests*: on a reviewer's request, work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
+9. *Upstream pull requests*: on a reviewer's request, work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
    and #109 merge, and `FOP-3355` when #123 merges.
-9. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
+10. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a
    private-use code point in ToUnicode (CR-002 §10.2; ActualText per cluster is the follow-up); a format
    character the font has no glyph for is still lost (CR-007 §4); the position-adjustments paint path
    indexes its adjustments by UTF-16 unit, wrong after a supplementary character (CR-005, noted to the
    docx4j session); FOP embeds a single-byte TrueType font whole (`PDFFactory.makeFontFile`), moot for
    docx4j since it retired its `+noliga` twin under the fork; per-font `advanced="false"` is ignored by
    FOP's stock font collection (CR-003 §10).
-10. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
+11. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
    and P2-3 small and clean; P2-4, P2-6, P2-7 inert; the structure-tree half of P2-5 superseded by
    FOP-3165 and FOP-3283 in Apache `main`).
 
