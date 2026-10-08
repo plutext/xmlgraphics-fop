@@ -1,9 +1,9 @@
 # CR-026: columns of unequal width in the region body
 
-Status: PHASE A BUILT 2026-10-08, on branch `CR-026-unequal-columns` (Jason's word to start, 2026-10-08), not yet gated;
-phase B (balancing) not started. Registry key `fop/CR-026`. Enterprise CR-001 §6.6 item 49, measured by the docx4j
-session on four corpus documents (10598, 6116, 1137, 11092). §5's probe of the restart path was run first: phase A as
-sized, phase B a week. §7 says what phase A built and measured.
+Status: PHASE A DONE 2026-10-08, gated PASS (b211 on r24; b212 on r25, 0 movers) and merged to `2.11-docx4j.6` by
+fast-forward, unreleased; phase B (balancing before a `span="all"` block, about a week, §3 and §5) not started,
+Jason's ordering. Registry key `fop/CR-026`. Enterprise CR-001 §6.6 item 49, measured by the docx4j session on four
+corpus documents (10598, 6116, 1137, 11092). §7 says what phase A built, §8 how it was gated.
 
 ## 1. The need
 
@@ -297,4 +297,9 @@ master set, so it carries one set of widths (6116's nine divisions get the one s
 built from), a docx4j refinement to write them per part master when phase B makes it worth measuring. docx4j's side
 is committed (5eb37c818, docs d98317526), gated on `column-widths`. r24 passed before the fix above; r25
 carries it for a confirmation run (0 movers expected on the four, 11126 with the widths forced without events).
+
+**Confirmed on r25, b212 (the docx4j session, 2026-10-08):** cand117 unchanged on r25 against b211 on r24: 0 movers
+on the four corpora, probes and errors unchanged; 11126 with the widths forced: 0 region-body overflow events
+against 25 on r24, its second page the documented limit (the 480pt table overhanging the 265pt column). Phase A
+confirmed; the fork's baseline for later gates is b212 on r25. Merged to `2.11-docx4j.6` by fast-forward.
 

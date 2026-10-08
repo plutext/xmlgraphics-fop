@@ -208,7 +208,7 @@ by the docx4j session, each with its CR under `docs/developer/change-requests/`:
 - `fop/CR-020` (side floats, items 44 and 45, `side-float-edges`), with the `FLOAT_RESTART` bit fix (CR-020 §9);
 - `fop/CR-021` (simulated italic and bold per face, item 46, `simulate-style-per-face`).
 
-Nineteen capabilities in `.5`; twenty-three on `2.11-docx4j.6`, which carries, unreleased and all gated PASS: `fop/CR-022`
+Nineteen capabilities in `.5`; twenty-four on `2.11-docx4j.6`, which carries, unreleased and all gated PASS: `fop/CR-022`
 (`clear-after-side-float`), the three edge-search fixes, `fop/CR-023` (`float-offset`, `float-overflow-below`) and
 `fop/CR-025` (`row-first-part-room`), each in `docs/release-notes/2.11-docx4j.6.md`; the branch and its commits are
 local until Jason pushes. `fop/CR-019` (ActualText per cluster) is designed and waits on Jason. `2.11-docx4j.4`
@@ -319,8 +319,10 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    harness caveat, the docx4j session's: the scoreboard's in-order line parity misreads this pagination fix on 11657
    (−55) where a strict same-page pairing rises 4012 to 5347 lines; an open harness question, not the fork's.
 6. *`fop/CR-026`, columns of unequal width in the region body* (§6.6 item 49, the docx4j session's measurement on
-   10598, 6116, 1137 and 11092, 2026-10-08): SIZING only, `docs/developer/change-requests/CR-026-unequal-columns.md`,
-   not started. `fox:column-widths` and `fox:column-gaps` on `fo:region-body`, a width per column in `Span` and
+   10598, 6116, 1137 and 11092, 2026-10-08): PHASE A DONE 2026-10-08, gated PASS (b211 on r24, b212 on r25 0 movers)
+   and merged to `2.11-docx4j.6` by fast-forward; phase B (balancing before a `span="all"` block, a week) not
+   started, Jason's ordering. `docs/developer/change-requests/CR-026-unequal-columns.md`; the history that follows is
+   how it went. `fox:column-widths` and `fox:column-gaps` on `fo:region-body`, a width per column in `Span` and
    `BodyRegion`, `PageSequenceLayoutManager.getCurrentColumnWidth()` per column, and `PageProvider.compareIPDs`
    returning the difference between consecutive columns so FOP's own changing-IPD restart reflows column by column;
    the renderers step by each column's width. About a week for the widths, three to five days for balancing; one
@@ -354,8 +356,9 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    `LayoutContext.restoreSpan`; layout test `region-body_column-widths_span.xml`; a balancing guard tried first
    failed `basic_link_to_last_page` and is out). Gate PASS on r24, b211 (cand117 against b209: 10598 +203 to
    0.7527 at 9 pages, 6116 +14 at Word's 5, nothing else moved; docx4j's side committed 5eb37c818); r25 with the
-   fix, at `~/fop-renderers/r25-CR-026-91f3527db/` (sha256 13970471...), handed to the docx4j session 2026-10-08 for
-   a confirmation run against b211 (0 movers expected). On that reading: merge to `2.11-docx4j.6` by
+   fix, at `~/fop-renderers/r25-CR-026-91f3527db/` (sha256 13970471...): b212 (cand117 unchanged on r25 against
+   b211) 0 movers on the four corpora, probes and errors unchanged, 11126's events gone; the fork's baseline for
+   later gates is b212 on r25. Merged 2026-10-08. Still to do after the merge: merge to `2.11-docx4j.6` by
    fast-forward, the release note's "Gate: pending" closed, §6.6 item 49 narrowed in the Enterprise file (Jason's;
    `git status` first). Phase B after.
 7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
