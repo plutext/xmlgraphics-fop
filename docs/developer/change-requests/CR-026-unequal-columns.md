@@ -227,3 +227,12 @@ behaviour, recorded here with the probes, for upstream if it matters. Asked of t
 carries each `w:br type="column"` (an empty paragraph holding the break mapped to an 11.5pt block is the mapping to
 look at), and the line pitch that makes the column 11pt taller than Word's, §6.6 territory rather than columns.
 
+**The docx4j session's answer (2026-10-08).** Six of the seven column breaks are paragraphs of their own (an empty
+`w:p` whose only run holds the `w:br`), mapped as `break-before="column"` on the block whose own line opens the next
+column, which is Word's placement of the mark; the blanks before each break are the author's paragraphs, so the
+mapping stands. The list ends are identical in both paths, and the "11pt taller" reading above was the command-line
+render's, not docx4j's: against Word's baselines its text lines run 1.0 to 1.5pt above Word's down the column, and
+the overshoot (803.5 wanted of a 799.6 column, 3.9pt; stock 0.6pt) is in the three blank boxes after the last text
+line, which Word fits above its foot and docx4j's path does not, by about 4pt. It takes the fidelity fix, finding
+those 4pt on its side, over making its restart drop the blank as Apache's does; r24 stays the gate renderer.
+
