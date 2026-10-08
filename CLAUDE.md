@@ -333,7 +333,9 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    comparison under `span="all"` (six layout tests). Phase B is a week, not three to five days: the restart commits
    column 1 before column 2 is laid, so the balancing algorithm never sees it and a `span="all"` heading goes to the
    next page behind an empty span, as Apache's own unbalanced output does. The probe code (a system property in
-   `Span`) stays on the branch for phase A to replace. Not started beyond the probe; Jason's word.
+   `Span`) stays on the branch for phase A to replace. The docx4j session (2026-10-08): continuous sections share one
+   page-sequence with `span="all"` blocks, so phase A alone serves 10598 (next-page breaks) and phase B's balancing
+   is what 6116, 1137 and 11092 need at their span blocks. Not started beyond the probe; Jason's word.
 7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
    off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
    says.

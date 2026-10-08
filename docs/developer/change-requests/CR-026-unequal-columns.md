@@ -73,7 +73,7 @@ capability; stop sending such a stretch to the one-row table; `FopCapabilities`.
 | phase | fork | gate |
 |---|---|---|
 | A, the widths | about one week: the properties and area model two days, the breaker's per-column comparison and the renderers two, the layout tests and the suite one | the four documents and the `columns-unequal` probe on the share |
-| B, balancing | about a week (trial restarts, §5) | 6116 (nine sections) is the balancing case, if its section changes are span="all" blocks |
+| B, balancing | about a week (trial restarts, §5) | 6116 (twenty sections, span="all" blocks throughout), then 1137 and 11092 at their span blocks |
 
 Total about two weeks, the first week giving the four documents their column origins and line breaks and the second
 their last pages and section ends.
@@ -127,8 +127,15 @@ the way: `fox:disable-column-balancing` is a property of the spanning block, not
 it is inert), and FOP does not balance the last page of a page-sequence at all without a `span="all"` block (the
 equal control of `one-page` lays 52 lines in column 1 and none in column 2).
 
-**Open for the docx4j session.** Whether docx4j writes a continuous section change as a `span="all"` block within
-one page-sequence or as a new page-sequence decides whether phase B is needed at all for the four documents.
+**Answered by the docx4j session (2026-10-08).** docx4j writes a run of continuous sections as one page-sequence,
+at the run's largest column count, each narrower part wrapped in an `fo:block span="all"` (its
+`ConversionSectionWrapperFactory`; rules §7); only a next-page section break starts a new page-sequence. So a
+continuous change out of an unequal-column section is a `span="all"` block within the sequence, and phase B's
+balancing applies at each. The four documents: 10598 is two next-page sections, its unequal section ending in a
+next-page break, so phase A alone serves it; 6116 is twenty sections, nearly all continuous, two-column and
+one-column alternating, span blocks throughout, phase B's measurement; 1137's unequal section is continuous into a
+one-column one, and 11092's two unequal sections are continuous, span blocks each. Phase A gives 10598 its pages and
+the other three their column origins; phase B settles their balancing at each span block.
 
 ## 6. Upstream
 
