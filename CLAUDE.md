@@ -257,8 +257,10 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    IN PROGRESS 2026-10-08 on branch `CR-023-float-offset` (Jason: start after the two upstream drafts). The design is
    `docs/developer/change-requests/CR-023-float-offset-and-overflow.md`; the first half, `fox:float-offset`
    (capability `float-offset`, the twenty-first), is built and measured (§4.1 as built; layout test `float_offset.xml`,
-   four cases); the second, a line that does not fit beside a float going to its foot (`float-overflow-below`), is
-   designed (§4.2) and next; both-sides wrap is sized only (§4.3). Jason confirmed D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
+   four cases, committed 1760e33c2); the second, a line that does not fit beside a float set at its foot
+   (`float-overflow-below`, the twenty-second capability), is built and measured (§4.2 as built; layout test
+   `float_overflow-below.xml`); both-sides wrap is sized only (§4.3). Next: the suite, commit, the jar (r18) to the
+   docx4j gate with CR-023 §6's pass criteria, the registry text. Jason confirmed D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
    settled it: `float-offset` stands (`fox:float-offset` on `fo:float`: the intrusion begins N pt below the top of the
    anchor block, space-before included; the lines that fit in the gap are full width above the float), `float-band` is
    WITHDRAWN (Word does not lay empty paragraphs behind a full-width table; FOP's zero-ipd lines beside a column-wide

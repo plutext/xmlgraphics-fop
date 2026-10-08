@@ -18,7 +18,8 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
  * from Apache FOP 2.11: hook inline-access, LineBreakPosition public with getters; and a nested block's positions
  * are not wrapped twice when line breaking runs again, and a line overflow is reported when there is no current child
- * (fop/CR-011). See README.md, "Changes from Apache FOP 2.11". */
+ * (fop/CR-011); and a line that does not fit beside a side float is marked for the page breaking to set it below the
+ * float (fop/CR-023). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -128,6 +129,8 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         private final int spaceBefore;
         private final int spaceAfter;
         private final int baseline;
+        /** fop/CR-023: the line's content did not fit beside a side float but would fit the column without it */
+        private boolean overflowsBesideFloat;
 
         /**
          * docx4j-fo-renderer hook {@code inline-access}: public, so that a consumer's line
@@ -238,6 +241,16 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         }
 
         /** @return the baseline */
+        /** @return whether the line's content did not fit beside a side float but would fit without it (fop/CR-023) */
+        public boolean overflowsBesideFloat() {
+            return overflowsBesideFloat;
+        }
+
+        /** @param overflows whether the line's content did not fit beside a side float but would fit without it */
+        public void setOverflowsBesideFloat(boolean overflows) {
+            overflowsBesideFloat = overflows;
+        }
+
         public int getBaseline() {
             return baseline;
         }
@@ -510,13 +523,22 @@ public class LineLayoutManager extends InlineStackingLayoutManager
 
             //log.debug("LLM> (" + (lineLayouts.getLineNumber(activePossibility) - addedPositions)
             //    + ") difference = " + difference + " ratio = " + ratio);
-            lineLayouts.addBreakPosition(makeLineBreakPosition(par,
+            LineBreakPosition lbp = makeLineBreakPosition(par,
                    (bestActiveNode.line > 1 ? bestActiveNode.previous.position + 1 : 0),
                    bestActiveNode.position,
                    bestActiveNode.availableShrink - (addedPositions > 0
                        ? 0 : ((Paragraph) par).lineFiller.getShrink()),
                    bestActiveNode.availableStretch,
-                   difference, ratio, startIndent, endIndent), activePossibility);
+                   difference, ratio, startIndent, endIndent);
+            if (lack < 0) {
+                // A line that does not fit beside a side float but would fit the column without it is marked,
+                // and the page breaking sets it, with the rest of its paragraph, below the float (fop/CR-023)
+                int intrusion = getPSLM().getStartIntrusionAdjustment() + getPSLM().getEndIntrusionAdjustment();
+                if (intrusion > 0 && -lack <= intrusion) {
+                    lbp.setOverflowsBesideFloat(true);
+                }
+            }
+            lineLayouts.addBreakPosition(lbp, activePossibility);
             addedPositions++;
         }
 

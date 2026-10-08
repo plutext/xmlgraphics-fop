@@ -203,6 +203,13 @@ public final class Docx4jFop {
      */
     public static final String FLOAT_OFFSET = "float-offset";
 
+    /**
+     * A line whose content does not fit beside a side float, but would fit the column without it, is set at the
+     * float's foot with the rest of its paragraph, full width, as a word processor moves a word that does not fit
+     * beside a table below it; FOP let the line overflow the column (docx4j CR-032; fop/CR-023 §4.2).
+     */
+    public static final String FLOAT_OVERFLOW_BELOW = "float-overflow-below";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -228,6 +235,7 @@ public final class Docx4jFop {
         caps.add(SIMULATE_STYLE_PER_FACE);
         caps.add(CLEAR_AFTER_SIDE_FLOAT);
         caps.add(FLOAT_OFFSET);
+        caps.add(FLOAT_OVERFLOW_BELOW);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

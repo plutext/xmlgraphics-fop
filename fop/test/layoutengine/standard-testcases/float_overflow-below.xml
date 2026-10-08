@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: a line that does not fit beside a side float is set at its foot (fop/CR-023). -->
+<testcase>
+  <info>
+    <p>
+      A side float 300pt wide and 60pt tall leaves 151pt beside it. First sequence: a paragraph whose third
+      word is wider than that room but not than the column; its first line is beside the float, the line with
+      the word and the rest of the paragraph start at the float's foot (60pt) full width, by an 18pt clearance
+      after the 42pt of the heading and the first line. Before this, the line was set beside the float and
+      overflowed the column by more than 50pt. Second: a word wider than the column too; it cannot fit anywhere,
+      so the line stays beside the float and overflows, as before. Third: no float, nothing changes.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:layout-master-set><fo:simple-page-master master-name="A4" page-width="595pt" page-height="842pt" margin="72pt"><fo:region-body/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="10pt"><fo:float float="left"><fo:block-container width="300pt" height="60pt"><fo:block font-size="8pt" line-height="8pt">FLOATTOP</fo:block></fo:block-container></fo:float>Heading</fo:block>
+<fo:block>a0 a1 Wwwwwwwwwwwwwwwwwwwwwwwwww a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24 a25 a26 a27 a28 a29</fo:block>
+<fo:block>a-after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="10pt"><fo:float float="left"><fo:block-container width="300pt" height="60pt"><fo:block font-size="8pt" line-height="8pt">FLOATTOP</fo:block></fo:block-container></fo:float>Heading</fo:block>
+<fo:block>b0 b1 WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15 b16 b17 b18 b19 b20 b21 b22 b23 b24 b25 b26 b27 b28 b29</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="10pt">Heading</fo:block>
+<fo:block>c0 c1 Wwwwwwwwwwwwwwwwwwwwwwwwww c0 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12 c13 c14 c15 c16 c17 c18 c19 c20 c21 c22 c23 c24 c25 c26 c27 c28 c29</fo:block>
+</fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <eval expected="3" xpath="count(//pageViewport)"/>
+    <!-- 1: the first line beside the float, the long word's line and the rest at the foot, full width -->
+    <eval expected="151000" xpath="//word[.='a0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="451000" xpath="//word[starts-with(., 'Wwww')]/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="451000" xpath="//word[.='a12']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="1" xpath="count((//pageViewport)[1]//flow/block[@bpd='18000'])"/>
+    <eval expected="2" xpath="count((//pageViewport)[1]//lineArea[@ipd='151000'])"/>
+    <eval expected="108000" xpath="(//pageViewport)[1]//flow/@bpd"/>
+    <!-- 2: a word wider than the column stays beside the float -->
+    <eval expected="151000" xpath="//word[starts-with(., 'WWWW')]/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="4" xpath="count((//pageViewport)[2]//lineArea[@ipd='151000'])"/>
+    <eval expected="0" xpath="count((//pageViewport)[2]//flow/block[@bpd='18000'])"/>
+    <!-- 3: no float -->
+    <eval expected="3" xpath="count((//pageViewport)[3]//lineArea[@ipd='451000'])"/>
+  </checks>
+</testcase>

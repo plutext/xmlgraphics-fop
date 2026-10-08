@@ -22,7 +22,8 @@
  * again from there (fop/CR-020); and a block-level FO whose clear names the side a float is on ends the float at the
  * break before it, its content starting at the float's foot (fop/CR-022); and hook float-offset, a float's start edge
  * at the first break after which a line would cross the float's top, `fox:float-offset` below its anchor block's top
- * (fop/CR-023). See README.md, "Changes from Apache FOP 2.11". */
+ * (fop/CR-023), and a line that does not fit beside a float ends it, the line set at its foot (fop/CR-023 §4.2).
+ * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -45,6 +46,7 @@ import org.apache.fop.fo.flow.table.Table;
 import org.apache.fop.layoutmgr.AbstractBreaker.FloatPosition;
 import org.apache.fop.layoutmgr.AbstractBreaker.PageBreakPosition;
 import org.apache.fop.layoutmgr.WhitespaceManagementPenalty.Variant;
+import org.apache.fop.layoutmgr.inline.LineLayoutManager;
 import org.apache.fop.traits.MinOptMax;
 import org.apache.fop.util.ListUtil;
 
@@ -677,6 +679,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             // first box is the float's edge too, and deactivateNode keeps the float's foot as the height the
             // content after the edge starts at, so the FO is laid out below the float (fop/CR-022).
             if (!handlingEndOfFloat && (edgeWidth >= floatHeight || clearsFloatAtNextBox(elementIdx)
+                    || overflowsBesideFloatAtNextBox(elementIdx)
                     || startsNonRestartableThePageCannotHold(elementIdx, edgeWidth))) {
                 handlingEndOfFloat = true;
             }
@@ -778,6 +781,21 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             }
         }
         return edgeWidth + extent > lineWidth;
+    }
+
+    /**
+     * Whether the next box is a line that did not fit beside the float but would fit without it (marked by
+     * LineLayoutManager): the edge is here, and the clearance sets the line, with the rest of its paragraph, at
+     * the float's foot, as a word processor moves a word that does not fit beside a table (fop/CR-023 §4.2).
+     */
+    private boolean overflowsBesideFloatAtNextBox(int elementIdx) {
+        for (Position p = positionOfNextBox(elementIdx); p != null; p = nextInChain(p)) {
+            if (p instanceof LineLayoutManager.LineBreakPosition
+                    && ((LineLayoutManager.LineBreakPosition) p).overflowsBesideFloat()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static int clearOf(FObj fo) {

@@ -60,7 +60,8 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.SIDE_FLOAT_EDGES));
         assertTrue(Docx4jFop.has(Docx4jFop.SIMULATE_STYLE_PER_FACE));
         assertTrue(Docx4jFop.has(Docx4jFop.FLOAT_OFFSET));
-        assertEquals(21, Docx4jFop.capabilities().size());
+        assertTrue(Docx4jFop.has(Docx4jFop.FLOAT_OVERFLOW_BELOW));
+        assertEquals(22, Docx4jFop.capabilities().size());
     }
 
     @Test

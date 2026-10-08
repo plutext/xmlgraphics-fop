@@ -1,6 +1,8 @@
 # CR-023: the offset float, and a line that does not fit beside a float set below it
 
-Status: IN PROGRESS 2026-10-08, on branch `CR-023-float-offset` off `2.11-docx4j.6` (after `fop/CR-022`, 13a3fbec7).
+Status: IN PROGRESS 2026-10-08, on branch `CR-023-float-offset` off `2.11-docx4j.6` (after `fop/CR-022`, 13a3fbec7):
+both halves built and measured (§4.1 and §4.2 as built); full `fop-core` suite 3870 tests, 0 failures, 4 skipped,
+checkstyle clean; the docx4j gate pending (§9).
 Registry key `fop/CR-023`. Two hooks for docx4j CR-032 (floating tables as Word lays them), §4.2 of that CR as
 revised after its phase 0 Word probes (2026-10-08, commit cae13d3d1 and after), decided by Jason as D2 there and
 confirmed in this session on 2026-10-08. Enterprise CR-001 §6.6 item 8 (no floating tables), and item 10 for the
@@ -129,6 +131,20 @@ puts the line, and the rest of its paragraph, at the foot, full width. A marked 
 is the same case as a cleared block; one in the middle of a paragraph restarts the paragraph's remaining lines at
 the foot, which the float restart does already (the edge of CR-020 falls mid-paragraph in its own tests).
 
+**As built (2026-10-08).** `LineLayoutManager.LineBreakingAlgorithm.updateData2` marks the line's
+`LineBreakPosition` (`setOverflowsBesideFloat`, a setter rather than a constructor argument, since the constructor
+is the `inline-access` hook docx4j's line manager calls) when `lack < 0`, the page sequence's intrusion adjustments
+are not both zero, and the overflow is no more than their sum. `PageBreakingAlgorithm.considerLegalBreak` adds
+`overflowsBesideFloatAtNextBox` to the edge conditions beside `clear`'s, walking the next box's position chain for
+a marked line; the clearance of CR-022 §3.3 then sets the line at the foot. Capability `float-overflow-below`, the
+twenty-second.
+
+Measured on the command line (a 300pt float 60pt tall, 151pt beside it; positions from the PDF): a paragraph whose
+third word is about 290pt wide has its first line (two short words) beside the float at 26pt and the word's line
+with the rest of the paragraph at the foot, 60pt, full width, where before the word's line was set beside the
+float and overflowed the column by more than 50pt with FOP's warning; a word wider than the column stays beside
+the float and overflows, as before; without a float nothing changes. Layout test `float_overflow-below.xml`.
+
 **Where Word differs.** Word sets the words that fit beside the float and moves the first that does not; FOP's line
 breaking at the narrowed width has already made the overflowing line, so the line is moved whole. For a sliver that
 holds one or two words a line, the difference is a word or two per line. docx4j's 2in rule can then go (§6).
@@ -145,11 +161,12 @@ and 54pt a page on the two probes, and the sliver cases of §1.2 once a word can
 
 ## 5. Tests
 
-- Layout tests `float_offset.xml` (the lines above the float full width; the float drawn at the offset; the foot
-  honoured; an offset of 0 unchanged; an anchor with space-before) and `float_overflow-below.xml` (a word that does
-  not fit beside a 300pt float goes below it with the rest of its paragraph; a word wider than the column stays).
-- `Docx4jHooksTestCase`: twenty-two capabilities.
-- The full `fop-core` suite and checkstyle before the gate.
+- Layout tests `float_offset.xml` (four cases, 20 checks: the lines above the float full width; the float drawn at
+  the offset, `top-offset` in the area tree; the foot honoured; an offset of 0 unchanged; an anchor with space-before)
+  and `float_overflow-below.xml` (three cases, 11 checks: a word that does not fit beside a 300pt float goes below it
+  with the rest of its paragraph; a word wider than the column stays; no float unchanged). Both green.
+- `Docx4jHooksTestCase`: twenty-two capabilities. CR-022's and CR-020's float tests unchanged.
+- The full `fop-core` suite: 3870 tests, 0 failures, 4 skipped; checkstyle 0 findings (2026-10-08).
 
 ## 6. docx4j
 
