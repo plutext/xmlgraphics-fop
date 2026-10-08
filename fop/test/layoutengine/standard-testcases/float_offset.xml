@@ -28,7 +28,10 @@
       width. Second: offset 0, the heading beside the float as before. Third: the anchor has 24pt space-before
       after a one-line paragraph; the float's top is at 16 + 32 = 48pt, inside the heading's line at 40-56pt,
       which is therefore beside the float, and the lines up to the foot at 88pt too. Fourth: a 60pt float 200pt
-      down, with eight short paragraphs: the first seven are full width above it, the eighth beside it.
+      down, with eight short paragraphs: the first seven are full width above it, the eighth beside it. Fifth: the
+      paragraph before the anchor has 12pt space-after and the anchor no space-before; the offset counts from the
+      anchor's own space-before only, so the float's top is at 16 + 12 + 32 = 60pt, not 48 (the docx4j session's
+      probes against Word, 2026-10-08).
     </p>
   </info>
   <fo>
@@ -59,10 +62,15 @@
 <fo:block space-after="8pt">d6_0 d6_1 d6_2 d6_3 d6_4 d6_5 d6_6 d6_7 d6_8 d6_9 d6_10 d6_11</fo:block>
 <fo:block space-after="8pt">d7_0 d7_1 d7_2 d7_3 d7_4 d7_5 d7_6 d7_7 d7_8 d7_9 d7_10 d7_11</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block space-after="12pt">e-before</fo:block>
+<fo:block space-after="10pt"><fo:float float="left" fox:float-offset="32pt"><fo:block-container width="300pt" height="40pt"><fo:block font-size="8pt" line-height="8pt">FLOATTOP</fo:block></fo:block-container></fo:float>Heading</fo:block>
+<fo:block>e0 e1 e2 e3 e4 e5 e6 e7 e8 e9 e10 e11 e12 e13 e14 e15 e16 e17 e18 e19 e20 e21 e22 e23 e24 e25 e26 e27 e28 e29 e30 e31 e32 e33 e34 e35 e36 e37 e38 e39</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
-    <eval expected="4" xpath="count(//pageViewport)"/>
+    <eval expected="5" xpath="count(//pageViewport)"/>
     <!-- 1: the heading full width, the float 32pt down, three lines beside it -->
     <eval expected="451000" xpath="//word[.='Heading'][1]/ancestor::lineArea[1]/@ipd"/>
     <eval expected="32000" xpath="(//pageViewport)[1]//flow/block[@positioning='absolute']/@top-offset"/>
@@ -85,5 +93,11 @@
     <eval expected="451000" xpath="//word[.='d6_0']/ancestor::lineArea[1]/@ipd"/>
     <eval expected="151000" xpath="//word[.='d7_0']/ancestor::lineArea[1]/@ipd"/>
     <eval expected="3" xpath="count((//pageViewport)[4]//lineArea[@ipd='151000'])"/>
+    <!-- 5: the previous block's space-after is not in the reference: the float 32 below the flow's 28, the heading full width -->
+    <eval expected="32000" xpath="(//pageViewport)[5]//flow/block[@positioning='absolute']/@top-offset"/>
+    <eval expected="451000" xpath="(//pageViewport)[5]//word[.='Heading']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="151000" xpath="//word[.='e0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="3" xpath="count((//pageViewport)[5]//lineArea[@ipd='151000'])"/>
+    <eval expected="451000" xpath="//word[.='e21']/ancestor::lineArea[1]/@ipd"/>
   </checks>
 </testcase>

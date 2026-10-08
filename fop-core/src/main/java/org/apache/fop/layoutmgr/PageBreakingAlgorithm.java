@@ -38,6 +38,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.apache.fop.fo.Constants;
+import org.apache.fop.fo.FONode;
 import org.apache.fop.fo.FObj;
 import org.apache.fop.fo.flow.Block;
 import org.apache.fop.fo.flow.BlockContainer;
@@ -468,9 +469,12 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             int offset = floatOffsetOf((KnuthBlockBox) box);
             if (offset > 0) {
                 // hook float-offset (fop/CR-023): the float's top is `offset` below the top of its anchor
-                // block, space-before included, which is the box's position less the glue just before it. The
-                // float's area is still placed at this break; its intrusion into the lines waits for the top.
-                floatStartListTop = totalWidth - glueBefore(box) + offset;
+                // block including the block's own space-before, which is the box's position less that space,
+                // where the resolved gap before the box also holds the previous block's space-after (a word
+                // processor measures from the anchor's own spacing; the docx4j session's probes, 2026-10-08).
+                // The float's area is still placed at this break; its intrusion into the lines waits for the top.
+                floatStartListTop = totalWidth - Math.min(glueBefore(box), anchorSpaceBefore((KnuthBlockBox) box))
+                        + offset;
                 floatAnchorLineHeight = nextContentBoxWidth(box);
             }
             handlingStartOfFloat = true;
@@ -1745,6 +1749,18 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     /** @return the height of the first line of the anchor of the float whose start edge was just taken (fop/CR-023) */
     protected int getFloatAnchorLineHeight() {
         return floatAnchorLineHeight;
+    }
+
+    /** The anchor block's own space-before (its optimum), for the floats anchored in a box (fop/CR-023). */
+    private static int anchorSpaceBefore(KnuthBlockBox box) {
+        for (FloatContentLayoutManager fclm : box.getFloatContentLMs()) {
+            for (FONode node = fclm.getFObj(); node != null; node = node.getParent()) {
+                if (node instanceof Block) {
+                    return ((Block) node).getCommonMarginBlock().spaceBefore.getOptimum(null).getLength().getValue();
+                }
+            }
+        }
+        return 0;
     }
 
     /** The glue immediately before a box in the list: the resolved space before its block (fop/CR-023). */
