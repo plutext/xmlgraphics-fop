@@ -321,9 +321,22 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    (−55) where a strict same-page pairing rises 4012 to 5347 lines; an open harness question, not the fork's.
 6. *`fop/CR-026`, columns of unequal width in the region body* (§6.6 item 49, the docx4j session's measurement on
    10598, 6116, 1137 and 11092, 2026-10-08): PHASE A DONE 2026-10-08, gated PASS (b211 on r24, b212 on r25 0 movers)
-   and merged to `2.11-docx4j.6` by fast-forward; phase B (balancing before a `span="all"` block, a week) not
-   started, Jason's ordering. `docs/developer/change-requests/CR-026-unequal-columns.md`; the history that follows is
-   how it went. `fox:column-widths` and `fox:column-gaps` on `fo:region-body`, a width per column in `Span` and
+   and merged to `2.11-docx4j.6` by fast-forward. **Phase B is next (Jason, 2026-10-08): the balancing before a
+   `span="all"` block with unequal columns.** Start from CR-026 §3 phase B (balance by trial: a candidate break in
+   the first column, the remainder re-laid from it at the second column's width, the heights compared, a bounded
+   search, the first column's areas added only when the search ends) and §5's mechanism (the changing-IPD restart
+   adds column 1's areas and notes the committed position before column 2 is laid, so the restarted list begins in
+   column 2, `getStartingPartIndexForLastPage` returns −1 and `BalancingColumnBreakingAlgorithm` sees column 2
+   alone; a span="all" block then opens the next page behind an empty span, as `region-body_column-widths_span.xml`
+   pins today: 66 and 4 lines, the block on page 2). The probes are `a-span-all.fo` (10598's widths, a heading after
+   nine paragraphs; the equal control balances 30/29 and keeps the heading on page 1) and `over-span-70.fo` under
+   `~/fop-session-tools/2026-10-08-cr026-probe/`; a balancing guard in `PageBreaker.redoLayout` for the −1 case was
+   tried and withdrawn (Apache's last-page redo, `basic_link_to_last_page`, relies on that path), so the design must
+   not simply skip the redo. Cut `CR-026-balancing` off `2.11-docx4j.6`. Gate: 6116 (twenty sections, span blocks
+   throughout, the balancing measurement), then 1137 and 11092 at their span blocks; the baseline is b212 on r25;
+   docx4j writes one set of widths per continuous run (its rules §7), which phase B may make worth refining per part
+   master. Word balances a continuous section's unequal columns (CR-026 §3). `docs/developer/change-requests/CR-026-unequal-columns.md`;
+   the history that follows is how phase A went. `fox:column-widths` and `fox:column-gaps` on `fo:region-body`, a width per column in `Span` and
    `BodyRegion`, `PageSequenceLayoutManager.getCurrentColumnWidth()` per column, and `PageProvider.compareIPDs`
    returning the difference between consecutive columns so FOP's own changing-IPD restart reflows column by column;
    the renderers step by each column's width. About a week for the widths, three to five days for balancing; one
