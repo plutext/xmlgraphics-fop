@@ -132,7 +132,12 @@ intrusion is pending starts it at the page's end.
   not fit an empty page either is not refused (it is placed and clamped, as before). The page's own height is the
   measure (`getLineWidth(node)`, which honours a first page's master and `page-master-by-content`), not the
   algorithm's nominal width: gate b198 found 13419 refused, a 2.25pt-offset table 64pt tall anchored near the foot
-  of a page whose first-page master differs, where r19 had drawn it within the body (r21). Measured: after 38 lines, an
+  of a page, where r19 had drawn it within the body (r21). On r21 the refusal stood and was right (the docx4j
+  session's numbers): the anchor's top at 715.7 on a 738pt body ending at 756, the table 65.7pt tall, so the foot at
+  784 lies past the body's foot, and r19's placement at 737 to 763 had run into the footer region, paired by the
+  harness only because the words were on the page. The document's own cause is docx4j's: Word lays that anchor, an
+  empty paragraph holding only the float, in the gap above a preceding full-width table, which docx4j's gap fill
+  skipped because the paragraph held a float; docx4j fixes that on its side. Measured: after 38 lines, an
   anchor with a 60pt offset and a 60pt float breaks the page before it and starts the next page with the float 60pt
   down and the anchor's lines full width above; the same anchor with a float that fits (20pt offset, 40pt) stays,
   the float at 628pt. On r19, 4083's two such floats were carried to the next page's top split from their anchors
@@ -255,3 +260,9 @@ before. r20 (2f5db13ff) read on the four documents before its gate: 3229 renders
 shape that arises only with docx4j's fonts and line counts); 9775 at 2 pages. Gates b198 (docx4j as committed, pairs
 padded, r20 against r19), b199 (the pair guard dropped) and b200 (anchored-picture and framePr floats given
 `fox:float-offset` for their padding-top, gated on `float-offset`, with the picture floats' overflow rule read) follow.
+b198 (docx4j as committed, r20 against r19): 1056 +2 (0.8636 to 0.9545), 1616 +3, the pair probe 0.6972 to 0.9225,
+3640 and 4083 right; one regression, 13419 -2 and a page, the page-end refusal. b199 (the pair guard dropped): 0 movers
+against b198, 3229 rendering with its pair. Phase 2 whole on r20 against b195: +34 / -8 lines; 6293 +16 to Word's pages,
+1616 +4, 1056 +2, 6131 +2; 9775 -5 (unread), 13419 -2, 4083 -1. 13419 on r21 (989280390, the refusal against the page's
+own height): still refused, rightly (§4.1); the cause docx4j's, fixed there and gated as b202 after b201 (r21 against
+r20). r21 is the gate renderer from here.

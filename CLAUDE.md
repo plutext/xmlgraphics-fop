@@ -275,7 +275,9 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    Gates b198 and b199 on r20 (2026-10-08): phase 2 whole +34/-8 lines against the renderer-alone control, 6293 +16, the
    pair probe 0.70 to 0.92, 3229 and 3640 right; one regression, 13419 -2 and a page, the page-end refusal firing on a
    page whose first-page master differs: the check now uses the page's own height, 989280390, r21 at
-   `~/fop-renderers/r21-CR-023-989280390/` (sha256 a833d5d9...) handed to the gate. 9775 -5 unread
+   `~/fop-renderers/r21-CR-023-989280390/` (sha256 a833d5d9...) handed to the gate. On r21 13419 is still refused, and rightly: its float's
+   foot would lie 28pt past the body's foot (the docx4j session's numbers); r19 had drawn it into the footer region. The
+   cause is docx4j's gap fill, fixed there; r21 is the gate renderer from here (b201, b202). 9775 -5 unread
    by the docx4j session. b200 (picture and framePr floats on float-offset) running. On PASS: merge to `2.11-docx4j.6` by fast-forward,
    release notes closed, §6.6 item 8 narrowed in the Enterprise file (Jason's; `git status` first). Jason confirmed D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
    settled it: `float-offset` stands (`fox:float-offset` on `fo:float`: the intrusion begins N pt below the top of the
