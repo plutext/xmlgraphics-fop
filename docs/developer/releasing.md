@@ -207,6 +207,26 @@ numbered staging repositories like `orgdocx4j-1095`.
 - The next development version is `2.11-docx4j.6-SNAPSHOT`, on branch `2.11-docx4j.6`, cut from the
   release commit and added to CI's branch list.
 
+## Proven by the fifth release, 2.11-docx4j.6 on 2026-10-09
+
+- **Released by Jason from the pushed branch** at the version commit `76a413acf` (the `revision` and the `<scm>`
+  lines, nothing else), CI green on it (run 37858658826). The branch had never been pushed before that day, so the
+  fork session ran the CI steps locally first (`mvn -B package checkstyle:check spotbugs:check`, clean) beside the
+  full `fop-core` suite on the last code commit; and the docx4j session read the release code before the release
+  (b218 on r27, the last code commit's jar): one mover, its own.
+- **Tagged after the deployment was confirmed**: `v2.11-docx4j.6`, annotated, at `76a413acf` once Central served
+  the artifacts; pushed by name.
+- **Verified from Central after publication**: the five artifacts, each with sources, javadoc, `.asc`, `.md5` and
+  `.sha1` (the parent a pom only), every file answering 200; the core jar's sha1 as Central's `.sha1` states; the
+  core manifest's `Implementation-Version` is `2.11-docx4j.6`; the published core pom carries no property
+  reference and no parent element; `Docx4jFop` in the published core names the twenty-five capabilities, the six
+  new in `.6` among them (`clear-after-side-float`, `float-offset`, `float-overflow-below`, `row-first-part-room`,
+  `column-widths`, `column-balancing`). Core jar sha256
+  `c0a8f9e48206e45da5175ba4b584d05c545163d115ba880bbdecacd2ab9e2900`.
+- The release notes were still marked draft at the version commit, as for `.5`, and were closed on the next
+  branch. The next development version is `2.11-docx4j.7-SNAPSHOT`, on branch `2.11-docx4j.7`, cut from the
+  release commit and added to CI's branch list.
+
 ## Two things that look wrong and are not
 
 **The published pom lists fewer dependencies than the module's own pom.** For the core
