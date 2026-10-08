@@ -427,3 +427,5 @@ docx4j's side committed (824a384d6, `FopCapabilities.COLUMN_BALANCING` and the r
 f769d0494), gated on the capability; the fork's baseline for later gates is b215 on r27. Merged to `2.11-docx4j.6`
 by fast-forward.
 
+Enterprise CR-001 §6.6 item 49 carries phase B (the docx4j session, commit 9c438e4 there, the item left open for
+the remainder above); the registry has `fop/CR-026` done at aff684a6f.

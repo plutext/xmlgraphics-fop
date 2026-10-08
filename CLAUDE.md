@@ -325,8 +325,8 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    (commits 1d6dd8be6 and 0d14ae993, capability `column-balancing`, the twenty-fifth), gated PASS on r27 (b214 0
    movers; b215, docx4j writing near-equal widths under the capability: 11126 to 1.0000 and Word's page, 6116 +65,
    394 +50, all at Word's page counts, nothing else moved) and merged to `2.11-docx4j.6` by fast-forward; the
-   fork's baseline for later gates is b215 on r27. §6.6 item 49 text sent to the docx4j session (its file was open
-   there). Still open: the registry entry's status, the Enterprise item's wording landing.** r26's reading (CR-026 §9, end): 6116, 1137 and 11092 identical to r25. 6116 because
+   fork's baseline for later gates is b215 on r27. §6.6 item 49 carries it (Enterprise 9c438e4, item open for the
+   remainder); the registry has `fop/CR-026` done at aff684a6f. Nothing open on phase B but Jason's push.** r26's reading (CR-026 §9, end): 6116, 1137 and 11092 identical to r25. 6116 because
    a list beginning at a `break-before="column"` block was re-read as the break alone (fixed in 0d14ae993) and,
    with the fix, because each of its two-column stretches holds an explicit column break, so nothing balances;
    1137 because its unequal sequence's two flow children are both `span="all"` (docx4j's writer, nothing in the
