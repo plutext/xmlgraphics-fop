@@ -390,8 +390,9 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    (cut from `2.11-docx4j.7`), `fop/CR-027`, `main` at c2d7e0aca: eight commits, three ours come back identical,
    FOP-3357 Bengali, FOP-3351 AFP, FOP-3352 (the fork keeps FOP-3339's general form), FOP-3331 floats with
    FOP-3353's fix applied and a guard that a float with `fox:float-offset` written never takes FOP-3331's in-flow
-   path (CR-027 §3). Seven conflicts resolved as CR-027 §3 says. Gate pending (0 movers expected); on PASS merge
-   to `2.11-docx4j.7` by fast-forward, release note `2.11-docx4j.7.md` closed, registry.
+   path (CR-027 §3). Seven conflicts resolved as CR-027 §3 says. DONE: gated PASS (b220, 0 movers; one event
+   count moved, FOP-3357 supplying a Bangla syllabizer) and merged to `2.11-docx4j.7` by fast-forward; the fork's
+   baseline for later gates is b220 on r28. Still to do: the registry entry `fop/CR-027`.
 9. *Upstream pull requests*: on a reviewer's request, work in `../fop-upstream-wt`; rebase `FOP-3345` when #114
    and #109 merge, and `FOP-3355` when #123 merges.
 10. *Known and unfixed, recorded in the CRs:* the second glyph of a one-character cluster keeps a

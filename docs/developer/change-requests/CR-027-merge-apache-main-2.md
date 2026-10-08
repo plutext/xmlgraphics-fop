@@ -1,9 +1,9 @@
 # CR-027: the second merge of Apache `main` into the fork
 
-Status: BUILT 2026-10-09 on branch `merge-main-2026-10-09` (cut from `2.11-docx4j.7` at 5b8061c09), the merge commit
-6a4664dc4 of Apache `main` at c2d7e0aca (2026-10-08); not yet gated. Registry key `fop/CR-027`. The first merge is `fop/CR-009`
-(`main` at ab5d6eba6, 2026-09-29); this one takes the eight commits since.
-
+Status: DONE 2026-10-09: the merge of Apache `main` at c2d7e0aca (2026-10-08), commit 6a4664dc4 on branch
+`merge-main-2026-10-09`, gated PASS (b220, 0 movers) and merged to `2.11-docx4j.7` by fast-forward, unreleased.
+Registry key `fop/CR-027`. The first merge is `fop/CR-009` (`main` at ab5d6eba6, 2026-09-29); this one takes the
+eight commits since.
 ## 1. Why now
 
 CLAUDE.md asks for a merge at every Apache release and whenever a fix sent from here lands upstream. Three have:
@@ -73,4 +73,11 @@ more than `.6`: the Bengali, Hebrew and Hindi cases, FOP-3331's two float tests,
 failures, 4 skipped.
 
 ## 6. Gate
+
+**PASS (the docx4j session, 2026-10-09).** b220 = its cand121 (docx4j-export-fo on `.6`, docx4j 409392c9a) on the
+r28 core jar with the `.6` events and util jars, against b219: 0 movers on real, real2, real3 and real-c2; the 270
+probes identical row for row; every event count equal except "other" 89 to 87, which is 11334's Bangla runs no
+longer logging "No syllabizer available for script 'bng2'", FOP-3357's processor supplying one, its text and pages
+unchanged. Nothing from FOP-3331's in-flow path, every float docx4j gates on the hook carrying `fox:float-offset`.
+The fork's baseline for later gates is b220 on r28. Merged to `2.11-docx4j.7` by fast-forward.
 
