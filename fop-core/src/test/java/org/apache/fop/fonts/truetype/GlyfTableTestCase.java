@@ -193,6 +193,25 @@ public class GlyfTableTestCase {
                 mtx, new OFDirTabEntry(12, 8), new HashMap<Integer, Integer>());
     }
 
+    @Test
+    public void testIsCompositeOnEmptyGlyph() throws IOException {
+        int glyphLength = 12;
+
+        OFMtxEntry glyph = new OFMtxEntry();
+        glyph.setOffset(glyphLength);
+
+        OFMtxEntry[] mtx = new OFMtxEntry[] {glyph};
+        OFDirTabEntry dirTab = new OFDirTabEntry(0, glyphLength);
+
+        byte[] glyf = new byte[glyphLength];
+        glyf[0] = 0x00;
+
+        FontFileReader reader = new FontFileReader(new ByteArrayInputStream(glyf));
+        GlyfTable glyfTable = new GlyfTable(reader, mtx, dirTab, new HashMap<Integer, Integer>());
+
+        assertFalse("An empty glyph must not be reported as composite", glyfTable.isComposite(0));
+    }
+
     private int[] setupTest(int... glyphIndices) throws IOException {
         Map<Integer, Integer> glyphs = new HashMap<Integer, Integer>();
         int index = 0;

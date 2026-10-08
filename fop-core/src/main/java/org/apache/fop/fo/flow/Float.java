@@ -16,8 +16,8 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
- * Apache FOP 2.11: hook float-offset, the fox:float-offset property (fop/CR-023). See README.md, "Changes from
- * Apache FOP 2.11". */
+ * Apache FOP 2.11: hook float-offset, the fox:float-offset property (fop/CR-023), and whether it was written
+ * (fop/CR-027). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -45,6 +45,7 @@ public class Float extends FObj {
     // End of property values
     private boolean inWhiteSpace;
     private Length floatOffset; // fop/CR-023
+    private boolean floatOffsetGiven; // fop/CR-027
     private boolean disabled;
 
     /**
@@ -62,6 +63,7 @@ public class Float extends FObj {
         foFloat = pList.get(PR_FLOAT).getEnum();
         clear = pList.get(PR_CLEAR).getEnum();
         floatOffset = pList.get(PR_X_FLOAT_OFFSET).getLength(); // fop/CR-023
+        floatOffsetGiven = pList.getExplicit(PR_X_FLOAT_OFFSET) != null; // fop/CR-027
     }
 
     /**
@@ -108,6 +110,16 @@ public class Float extends FObj {
      */
     public Length getFloatOffset() {
         return floatOffset;
+    }
+
+    /**
+     * Whether fox:float-offset was written on this float, even as 0pt: such a float keeps its side-float placement
+     * and never takes the in-flow placement a float as wide as its containing block otherwise gets (FOP-3331),
+     * where the offset could not be honoured (fop/CR-027).
+     * @return true if the attribute was given
+     */
+    public boolean hasFloatOffset() {
+        return floatOffsetGiven;
     }
 
     public void setInWhiteSpace(boolean iws) {

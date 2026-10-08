@@ -17,31 +17,31 @@
 -->
 <!-- $Id$ -->
 <testcase>
-  <info>
-    <p>
-      This test checks a block nested in an inline, in a paragraph laid out again beside a float.
-      Line breaking runs a second time over the paragraph's stored sequences, and the nested
-      block's positions were wrapped again; adding its areas re-entered the paragraph's block,
-      the lines after the nested block were lost, and FOP threw a NullPointerException.
-    </p>
-  </info>
-  <fo>
-    <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
-      <fo:layout-master-set>
-        <fo:simple-page-master master-name="page" page-width="595pt" page-height="842pt" margin="72pt">
-          <fo:region-body/>
-        </fo:simple-page-master>
-      </fo:layout-master-set>
-      <fo:page-sequence master-reference="page">
-        <fo:flow flow-name="xsl-region-body">
-          <fo:block><fo:float float="start"><fo:block-container width="100pt" height="60pt"><fo:block>Float</fo:block></fo:block-container></fo:float>The quick brown fox jumps over the lazy dog, and then it runs back across the field again before the evening comes.</fo:block>
-          <fo:block>Before <fo:inline>the run<fo:block linefeed-treatment="preserve">&#x2028;</fo:block>after the break and on.</fo:inline></fo:block>
-        </fo:flow>
-      </fo:page-sequence>
-    </fo:root>
-  </fo>
-  <checks>
-    <eval expected="Before the run" xpath="//flow/block[last()]/lineArea[1]"/>
-    <eval expected="after the break and on." xpath="//flow/block[last()]/lineArea[3]"/>
-  </checks>
+    <info>
+        <p>
+            This test checks a block nested in an inline, in a paragraph laid out again beside a float.
+            Line breaking runs a second time over the paragraph's stored sequences, and the nested
+            block's positions were wrapped again; adding its areas re-entered the paragraph's block,
+            the lines after the nested block were lost, and FOP threw a NullPointerException.
+        </p>
+    </info>
+    <fo>
+        <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+            <fo:layout-master-set>
+                <fo:simple-page-master master-name="page" page-width="595pt" page-height="842pt" margin="72pt">
+                    <fo:region-body/>
+                </fo:simple-page-master>
+            </fo:layout-master-set>
+            <fo:page-sequence master-reference="page">
+                <fo:flow flow-name="xsl-region-body">
+                    <fo:block><fo:float float="start"><fo:block-container width="100pt" height="60pt"><fo:block>Float</fo:block></fo:block-container></fo:float>The quick brown fox jumps over the lazy dog, and then it runs back across the field again before the evening comes.</fo:block>
+                    <fo:block>Before <fo:inline>the run<fo:block linefeed-treatment="preserve">&#x2028;</fo:block>after the break and on.</fo:inline></fo:block>
+                </fo:flow>
+            </fo:page-sequence>
+        </fo:root>
+    </fo>
+    <checks>
+        <eval expected="Before the run" xpath="//flow/block[last()]/lineArea[1]"/>
+        <eval expected="after the break and on." xpath="//flow/block[last()]/lineArea[3]"/>
+    </checks>
 </testcase>

@@ -17,30 +17,30 @@
 -->
 <!-- $Id$ -->
 <testcase>
-  <info>
-    <p>
-      This test checks a line that overflows beside a float wider than the measure. On the float
-      re-layout pass the line breaking algorithm reported the overflow through curChildLM, which
-      is null there, and FOP threw a NullPointerException instead of reporting it.
-    </p>
-  </info>
-  <fo>
-    <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
-      <fo:layout-master-set>
-        <fo:simple-page-master master-name="page" page-width="595pt" page-height="842pt" margin="85pt">
-          <fo:region-body/>
-        </fo:simple-page-master>
-      </fo:layout-master-set>
-      <fo:page-sequence master-reference="page">
-        <fo:flow flow-name="xsl-region-body">
-          <fo:block><fo:float float="start"><fo:block-container width="480pt" height="200pt"><fo:block> </fo:block></fo:block-container></fo:float></fo:block>
-          <fo:block><fo:block>block child</fo:block><fo:inline>Overflowing ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ</fo:inline></fo:block>
-        </fo:flow>
-      </fo:page-sequence>
-    </fo:root>
-  </fo>
-  <checks>
-    <eval expected="1" xpath="count(//pageViewport)"/>
-    <true xpath="boolean(//word[starts-with(., 'ABCDEFGHIJ')])"/>
-  </checks>
+    <info>
+        <p>
+            This test checks a line that overflows beside a float wider than the measure. On the float
+            re-layout pass the line breaking algorithm reported the overflow through curChildLM, which
+            is null there, and FOP threw a NullPointerException instead of reporting it.
+        </p>
+    </info>
+    <fo>
+        <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+            <fo:layout-master-set>
+                <fo:simple-page-master master-name="page" page-width="595pt" page-height="842pt" margin="85pt">
+                    <fo:region-body/>
+                </fo:simple-page-master>
+            </fo:layout-master-set>
+            <fo:page-sequence master-reference="page">
+                <fo:flow flow-name="xsl-region-body">
+                    <fo:block><fo:float float="start"><fo:block-container width="480pt" height="200pt"><fo:block> </fo:block></fo:block-container></fo:float></fo:block>
+                    <fo:block><fo:block>block child</fo:block><fo:inline>Overflowing ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ</fo:inline></fo:block>
+                </fo:flow>
+            </fo:page-sequence>
+        </fo:root>
+    </fo>
+    <checks>
+        <eval expected="1" xpath="count(//pageViewport)"/>
+        <true xpath="boolean(//word[starts-with(., 'ABCDEFGHIJ')])"/>
+    </checks>
 </testcase>

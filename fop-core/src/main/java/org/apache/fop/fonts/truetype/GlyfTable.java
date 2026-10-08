@@ -215,6 +215,7 @@ public class GlyfTable {
             // to read: the two bytes at its offset belong to the next glyph, or - when it is
             // the last glyph in the table - are past the end of the font file, which made this
             // throw an EOFException.  TTFFile.readGlyf guards its own read the same way.
+            // Apache main guards the last glyph only (FOP-3352); this is the general form (FOP-3339).
             return false;
         }
         int numberOfContours = in.readTTFShort(tableOffset + mtxTab[indexInOriginal].getOffset());
