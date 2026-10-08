@@ -316,7 +316,9 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    r22 failed the gate: 11657's row 54 did not move, because the margin was combined by `max` with the width the
    stepper carves out of the first part's box for a split's cost, and docx4j's retained padding-before made that
    width the larger (CR-025 §3); reproduced on the probe with a retained padding-before, the margin is now added to
-   the width, r23 to the gate. The rule: a row
+   the width, r23 (6237aacfa) to the gate: 11657 reads right on it (page 30 ends at row 53, row 54 whole on 31, row 34
+   still split; the row-number divergence from Word over pages 2 to 119 from 68 pages to 49), gates b207 (control) and
+   b208 running. The rule: a row
    that would start at a page's foot without room for its first line plus the cell's bottom margin goes
    to the next page (Word's rule; the docx4j session, 2026-10-08, measured on 11657: 2393 one-line rows, 28-twip cell
    margins, 0.5pt borders, a body foot at 549.8pt; Word stops page 30 at row 53 where row 54's first line would end at

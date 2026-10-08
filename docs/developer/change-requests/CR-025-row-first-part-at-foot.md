@@ -101,4 +101,7 @@ switch confirmed on both user agents of its two-pass render, 11657's row 54 did 
 its first line at 546.22pt, box foot 549.3 against the body foot 549.8, page 31 opening with the continuation. Its
 FO as rendered is at `~/fidelity-cr030/repro/row-first-part-11657.fo` (this machine only). Reproduced here on the
 probe with the FO's cell shape: the retained padding-before (§3, §4). r23 with the margin added to the break's width
-handed over; its gates pending.
+handed over. Its reading before the gate (2026-10-08): 11657 right, page 30 ending at row 53, row 54 opening page 31
+whole, row 34 still split after its first line on page 29, 223 pages; the document's row-number divergence from Word
+over pages 2 to 119 down from 68 pages to 49, the first now at page 42. Gates b207 (the control, without the switch)
+and b208 (with it) running; the corpus reading follows.
