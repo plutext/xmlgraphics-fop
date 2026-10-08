@@ -344,8 +344,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    §8): the second column at Word's x, but its page 3's column 2 empty and the text shifted a column; not reproduced
    through FOP's command line with the gate's fonts, which gives Word's pages (the config and reader under
    `~/fop-session-tools/2026-10-08-cr026-probe/`). Bisected by the docx4j session: FOP's stock managers give Word's
-   columns on r24, docx4j's own managers do not, the column 8.4pt too tall at its head (a space kept at a restarted
-   column's start, CR-026 §8); the fix is docx4j's, r24 stands. On PASS: merge to `2.11-docx4j.6` by
+   columns on r24, docx4j's own managers do not, the column 8.4pt over at its head: the blank paragraph that spilled
+   past page 2's column 2, which Apache's IPD restart drops and docx4j's managers keep (CR-026 §8, probes `spill2-*`,
+   `pagewidth-*`); the 1 to 4pt Word gives those blanks is docx4j's pitch question, open in its register; the fork
+   keeps Apache's drop until it is settled. r24 stands; the docx4j session is reading the whole corpus on it (b209
+   the control, b210 the attributes written). On PASS: merge to `2.11-docx4j.6` by
    fast-forward, the release note's "Gate: pending" closed, §6.6 item 49 narrowed in the Enterprise file (Jason's;
    `git status` first). Phase B after.
 7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
