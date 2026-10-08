@@ -203,10 +203,10 @@ capabilities, each with its CR under `docs/developer/change-requests/` and all g
 read of the release code (b218 = its cand120 on r27 against b215) had one mover, 12301 +5, its own keep-chain change.
 The docx4j session reads the published jar against b218 and then moves `docx4j-export-fo` to `.6`; docx4j 17.3.1
 (2026-10-07) depends on `.5`. Work is on branch `2.11-docx4j.7` (snapshot `2.11-docx4j.7-SNAPSHOT`), cut from the
-release commit and added to CI's branch list; it carries only this post-release commit. `.5` (2026-10-07,
+release commit, added to CI's branch list and pushed (CI ran on it: the list change works); it carries only the
+post-release commit. `.5` (2026-10-07,
 `724e92d1c`), `.4` (2026-10-04, `75f9b0262`), `.2` (2026-10-02) and `.1` (2026-09-25) are the earlier releases;
-`.3` never shipped. The tag `v2.11-docx4j.6` and the branch `2.11-docx4j.7` are local until Jason pushes them by
-name (never `--tags`). `fop/CR-019` (ActualText per cluster) is designed and waits on Jason.
+`.3` never shipped. Jason pushed the tag `v2.11-docx4j.6` and the branch by name on 2026-10-09. `fop/CR-019` (ActualText per cluster) is designed and waits on Jason.
 
 **Upstream.** Every fix has a JIRA and an open pull request on apache/xmlgraphics-fop, cut against Apache `main` on
 a branch named for its number, each measured on `main` and passing the full suite and checkstyle (2026-10-03): #108
@@ -235,8 +235,7 @@ changes, work in the worktree at `../fop-upstream-wt`; when #114 and #109 merge,
 commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/main` (5be8c69b6, 2026-10-07).
 
 **Open, in order.**
-1. *After the `.6` release*: Jason pushes the tag `v2.11-docx4j.6` and the branch `2.11-docx4j.7` by name (both
-   local; never `--tags`). The docx4j session reads the published core jar (coordinates and sha256 sent 2026-10-09)
+1. *After the `.6` release* (tag and branch pushed 2026-10-09): the docx4j session reads the published core jar (coordinates and sha256 sent 2026-10-09)
    against b218 and bumps `docx4j-export-fo`; its gate line and commit go into the `.6` release note's header ("Reached
    users in docx4j 17.3.N") when they arrive. The items 2 to 6 below are history now: all of them shipped in `.6`.
 2. *`fop/CR-022`, `clear` after a side float: DONE 2026-10-08*, gated PASS (b186b: band withheld, 0 movers; b191: band
