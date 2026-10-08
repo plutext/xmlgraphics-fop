@@ -337,9 +337,12 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    page-sequence with `span="all"` blocks, so phase A alone serves 10598 (next-page breaks) and phase B's balancing
    is what 6116, 1137 and 11092 need at their span blocks. Phase A BUILT 2026-10-08 on the branch at Jason's word
    (CR-026 §7): `fox:column-widths` and `fox:column-gaps` on `fo:region-body`, capability `column-widths`, the
-   twenty-fourth; layout test `region-body_column-widths.xml`; the warning `columnWidthsIgnored`. Not yet gated: the
-   jar goes to the docx4j session next (rNN under `~/fop-renderers/`), with CR-026 §4's pass criteria (10598 to Word's
-   pages and its column origins; 6116, 1137, 11092 their column origins); phase B after.
+   twenty-fourth; layout test `region-body_column-widths.xml`; the warning `columnWidthsIgnored`; full suite 3876/0,
+   checkstyle clean; commit 872d45020. Not yet gated: r24 at `~/fop-renderers/r24-CR-026-872d45020/` (sha256
+   e23002a1...) handed to the docx4j session 2026-10-08 with CR-026 §4's pass criteria (10598 to Word's pages and its
+   column origins; 6116, 1137, 11092 their column origins; nothing else moves). On PASS: merge to `2.11-docx4j.6` by
+   fast-forward, the release note's "Gate: pending" closed, §6.6 item 49 narrowed in the Enterprise file (Jason's;
+   `git status` first). Phase B after.
 7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
    off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
    says.
