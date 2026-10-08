@@ -1,7 +1,8 @@
 # CR-025: a table row's first part at a page's foot has room for the margin it gives up
 
 Status: IN PROGRESS 2026-10-08, on branch `CR-025-row-first-part` off `2.11-docx4j.6` (after `fop/CR-023`, 3339fc1cf);
-measured on the command line (§4), the suite running, the docx4j gate pending (§8). Registry key `fop/CR-025`.
+measured on the command line (§4); the full `fop-core` suite 3873/0 and checkstyle clean at 7fa106f12; the jar r22
+(`~/fop-renderers/r22-CR-025-7fa106f12/`, sha256 3c5be21d...) handed to the docx4j gate 2026-10-08 (§8). Registry key `fop/CR-025`.
 Hook `row-first-part-room` (`FOUserAgent.setRowFirstPartRoom`, off by default), the twenty-third capability. Enterprise CR-001 §6.6 item 48. Found by the docx4j session on
 corpus document 11657 (2026-10-08, gates b205 and b206), reproduced here with a probe on the fork and on Apache
 `main` 5be8c69b6. Started on Jason's word ("let's do this row rule now").
@@ -69,7 +70,7 @@ Apache `main` 5be8c69b6 (the worktree's jar): the "before" column.
   and on (a layout-engine test case cannot set the user agent); three tests, the first run of the rule on by default
   having failed `table_empty-cells.xml`.
 - `Docx4jHooksTestCase`: twenty-three capabilities.
-- The full `fop-core` suite and checkstyle: see Status.
+- The full `fop-core` suite 3873/0, checkstyle clean (7fa106f12).
 
 ## 6. docx4j
 
@@ -84,4 +85,4 @@ row's first part must have. It is a word processor's rule, the fork's; not sent.
 
 ## 8. Gate (the docx4j session)
 
-Pending.
+r22 handed over 2026-10-08 with §6's pass criteria and the registry text; pending.

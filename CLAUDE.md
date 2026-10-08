@@ -309,7 +309,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    `CR-025-row-first-part` (Jason: "let's do this row rule now"). Reproduced with a probe on the fork and on Apache
    `main`; the first break element inside a row carries the after padding and border its cells give up at a split
    (`TableStepper`, `ActiveCell`), off by default as a hook, `FOUserAgent.setRowFirstPartRoom(true)` (on by default it
-   failed Apache's `table_empty-cells.xml`), capability `row-first-part-room`, the twenty-third; `RowFirstPartRoomTestCase`; the suite running, then the jar (r22) to the docx4j gate. The rule: a row
+   failed Apache's `table_empty-cells.xml`), capability `row-first-part-room`, the twenty-third; `RowFirstPartRoomTestCase`;
+   full suite 3873/0 and checkstyle clean at 7fa106f12; jar r22 (`~/fop-renderers/r22-CR-025-7fa106f12/`) handed to
+   the docx4j gate 2026-10-08 with CR-025 §6's pass criteria; §6.6 item 48 written (Enterprise 3c9cfa0, c0460d7). On
+   PASS: merge to `2.11-docx4j.6` by fast-forward, docx4j sets `FOUserAgent.setRowFirstPartRoom(true)` on the hook.
+   The rule: a row
    that would start at a page's foot without room for its first line plus the cell's bottom margin goes
    to the next page (Word's rule; the docx4j session, 2026-10-08, measured on 11657: 2393 one-line rows, 28-twip cell
    margins, 0.5pt borders, a body foot at 549.8pt; Word stops page 30 at row 53 where row 54's first line would end at
