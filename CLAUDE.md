@@ -305,34 +305,16 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    `BreakingAlgorithm.getLineWidth(int line)` is the hook, the line areas already take a width per line) with an obstacle
    registry and page-anchored objects as virtual floats, about two weeks; phase B a line in segments, two to three; §6.6
    items 10 and 11. Not started; his ordering against the `.6` release and the merge of Apache `main`.
-5. *`fop/CR-025`, a table row at a page's foot needs room for its bottom margin*: IN PROGRESS 2026-10-08 on branch
-   `CR-025-row-first-part` (Jason: "let's do this row rule now"). Reproduced with a probe on the fork and on Apache
-   `main`; the first break element inside a row carries the after padding and border its cells give up at a split
-   (`TableStepper`, `ActiveCell`), off by default as a hook, `FOUserAgent.setRowFirstPartRoom(true)` (on by default it
-   failed Apache's `table_empty-cells.xml`), capability `row-first-part-room`, the twenty-third; `RowFirstPartRoomTestCase`;
-   full suite 3873/0 and checkstyle clean at 7fa106f12; jar r22 (`~/fop-renderers/r22-CR-025-7fa106f12/`) handed to
-   the docx4j gate 2026-10-08 with CR-025 §6's pass criteria; §6.6 item 48 written (Enterprise 3c9cfa0, c0460d7). On
-   PASS: merge to `2.11-docx4j.6` by fast-forward, docx4j sets `FOUserAgent.setRowFirstPartRoom(true)` on the hook.
-   r22 failed the gate: 11657's row 54 did not move, because the margin was combined by `max` with the width the
-   stepper carves out of the first part's box for a split's cost, and docx4j's retained padding-before made that
-   width the larger (CR-025 §3); reproduced on the probe with a retained padding-before, the margin is now added to
-   the width, r23 (6237aacfa) to the gate: 11657 reads right on it (page 30 ends at row 53, row 54 whole on 31, row 34
-   still split; the row-number divergence from Word over pages 2 to 119 from 68 pages to 49), gates b207 (control) and
-   b208 running. The rule: a row
-   that would start at a page's foot without room for its first line plus the cell's bottom margin goes
-   to the next page (Word's rule; the docx4j session, 2026-10-08, measured on 11657: 2393 one-line rows, 28-twip cell
-   margins, 0.5pt borders, a body foot at 549.8pt; Word stops page 30 at row 53 where row 54's first line would end at
-   549.3 plus the 1.44pt margin, FOP sets that line and continues the row on page 31). Not `padding-after.conditionality=
-   "retain"` (gate b206: 11657 -55 lines, 12363 -8), since Word drops the bottom margin where a long cell's first part
-   ends at the foot: the condition is on starting the row's first part, "the first line plus padding-after and
-   border-after fits, and the row may then split after it" (second reading, same document: row 34 on page 29, a
-   multi-line row whose first line fits with the margin, 547.3 against 549.8, is started and split after line one; row 54
-   on page 30, whose first line reaches 550.1 with the margin, is moved whole). One probe shape with both rows near the
-   foot covers it. Where it sits: `TableStepper`/`ActiveCell`'s first step for a row,
-   or `TableContentLayoutManager`'s first legal break in a row. docx4j writes `padding-before.conditionality="retain"`
-   on every cell (Word's, gate b205) and `padding-after` without. Reproducer: 11657's FO under `~/fidelity-real3/
-   score/b205/fop/` (not redistributable); a probe to cut if taken up. Register: Enterprise `causes/table-outer-border-half.md`
-   and `documents/11657.md`. No §6.6 item until reproduced here. Not started; Jason's word.
+5. *`fop/CR-025`, a table row at a page's foot needs room for its bottom margin*: DONE 2026-10-08, gated PASS (b208:
+   11657's page 30 ends at row 53, row 54 opens page 31 whole, row 34 still split; 2451 +19 lines, 13383 +4, 2048 −1,
+   nothing else moved) and merged to `2.11-docx4j.6` by fast-forward; unreleased, in the `.6` release notes. Hook
+   `row-first-part-room` (`FOUserAgent.setRowFirstPartRoom(true)`, off by default: on by default it failed Apache's
+   `table_empty-cells.xml`), the twenty-third capability; `TableStepper` adds to the first break element inside a row
+   the after padding and border its cells give up at a split, `RowFirstPartRoomTestCase`. r22 failed the gate because
+   the margin was combined by `max` with the split's carved-out width, which docx4j's retained padding-before made the
+   larger (CR-025 §3); §6.6 item 48 records the rule, the mechanism and the fork commit. docx4j's side 2b914e69a. A
+   harness caveat, the docx4j session's: the scoreboard's in-order line parity misreads this pagination fix on 11657
+   (−55) where a strict same-page pairing rises 4012 to 5347 lines; an open harness question, not the fork's.
 6. *`fop/CR-026`, columns of unequal width in the region body* (§6.6 item 49, the docx4j session's measurement on
    10598, 6116, 1137 and 11092, 2026-10-08): SIZING only, `docs/developer/change-requests/CR-026-unequal-columns.md`,
    not started. `fox:column-widths` and `fox:column-gaps` on `fo:region-body`, a width per column in `Span` and

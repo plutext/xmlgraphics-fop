@@ -1,6 +1,8 @@
 # CR-025: a table row's first part at a page's foot has room for the margin it gives up
 
-Status: IN PROGRESS 2026-10-08, on branch `CR-025-row-first-part` off `2.11-docx4j.6` (after `fop/CR-023`, 3339fc1cf);
+Status: DONE 2026-10-08, gated PASS (b208, §8) and merged to `2.11-docx4j.6` by fast-forward; unreleased, in
+`docs/release-notes/2.11-docx4j.6.md`. Was on branch `CR-025-row-first-part` off `2.11-docx4j.6` (after `fop/CR-023`,
+3339fc1cf);
 measured on the command line (§4); r22 (7fa106f12, suite 3873/0) failed the gate on 11657, the margin hidden behind a
 retained padding-before (§3); r23 adds it instead, suite 3874/0 and checkstyle clean, handed to the gate 2026-10-08 (§8). Registry key `fop/CR-025`.
 Hook `row-first-part-room` (`FOUserAgent.setRowFirstPartRoom`, off by default), the twenty-third capability. Enterprise CR-001 §6.6 item 48. Found by the docx4j session on
@@ -104,4 +106,12 @@ probe with the FO's cell shape: the retained padding-before (§3, §4). r23 with
 handed over. Its reading before the gate (2026-10-08): 11657 right, page 30 ending at row 53, row 54 opening page 31
 whole, row 34 still split after its first line on page 29, 223 pages; the document's row-number divergence from Word
 over pages 2 to 119 down from 68 pages to 49, the first now at page 42. Gates b207 (the control, without the switch)
-and b208 (with it) running; the corpus reading follows.
+and b208 (with it): PASS by §6 (2026-10-08). 11657's page 30 ends at row 53 and row 54 opens page 31 whole, row 34
+still split after its first line on page 29; 12363 unmoved; 2451 +19 lines (0.9739 to 0.9829), 13383 +4, 2048 −1;
+nothing else moved, probes and errors unchanged. A harness caveat the docx4j session records as an open question: the
+scoreboard's line parity for 11657 falls 0.9423 to 0.9361, the same −55 b206's retained padding-after gave (one layout
+for this document under either), while a strict same-page pairing of Word's lines (same text, x within 2pt, baseline
+within 3pt) rises from 4012 to 5347 of 8821, page 31 from 8 to 91 of 92, and pages ending on Word's last line from 64
+to 81 of 221: the figure is dominated by its in-order longest common subsequence and misreads a pagination fix.
+docx4j's side is committed (2b914e69a: the capability constant and the reflective `setRowFirstPartRoom` at every
+user-agent site), gated on the hook; the registry has `fop/CR-025` gated.
