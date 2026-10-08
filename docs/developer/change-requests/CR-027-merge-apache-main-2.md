@@ -69,8 +69,8 @@ The merge commit is 6a4664dc4. The in-flow guard first tested the offset's value
 the property defaults to 0pt, so no float ever took the in-flow path. `Float.hasFloatOffset()` now reads the
 explicit property at bind time. Full `fop-core` suite on the resolved merge 3924 tests, 0 failures, 4 skipped (42
 more than `.6`: the Bengali, Hebrew and Hindi cases, FOP-3331's two float tests, FOP-3353's); layout engine suite
-784/0 and checkstyle clean after the guard's fix; the full suite again on the final state before the merge to
-`2.11-docx4j.7` (§6).
+784/0 and checkstyle clean after the guard's fix; the full suite on the final state (389154e8a) 3924 tests, 0
+failures, 4 skipped.
 
 ## 6. Gate
 
