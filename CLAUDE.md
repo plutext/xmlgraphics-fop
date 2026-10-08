@@ -310,8 +310,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    margins, 0.5pt borders, a body foot at 549.8pt; Word stops page 30 at row 53 where row 54's first line would end at
    549.3 plus the 1.44pt margin, FOP sets that line and continues the row on page 31). Not `padding-after.conditionality=
    "retain"` (gate b206: 11657 -55 lines, 12363 -8), since Word drops the bottom margin where a long cell's first part
-   ends at the foot: the condition is on starting the row's first part (at least the first line plus padding-after and
-   presumably border-after), not on the split's end. Where it sits: `TableStepper`/`ActiveCell`'s first step for a row,
+   ends at the foot: the condition is on starting the row's first part, "the first line plus padding-after and
+   border-after fits, and the row may then split after it" (second reading, same document: row 34 on page 29, a
+   multi-line row whose first line fits with the margin, 547.3 against 549.8, is started and split after line one; row 54
+   on page 30, whose first line reaches 550.1 with the margin, is moved whole). One probe shape with both rows near the
+   foot covers it. Where it sits: `TableStepper`/`ActiveCell`'s first step for a row,
    or `TableContentLayoutManager`'s first legal break in a row. docx4j writes `padding-before.conditionality="retain"`
    on every cell (Word's, gate b205) and `padding-after` without. Reproducer: 11657's FO under `~/fidelity-real3/
    score/b205/fop/` (not redistributable); a probe to cut if taken up. Register: Enterprise `causes/table-outer-border-half.md`
