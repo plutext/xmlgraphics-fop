@@ -354,7 +354,8 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    `LayoutContext.restoreSpan`; layout test `region-body_column-widths_span.xml`; a balancing guard tried first
    failed `basic_link_to_last_page` and is out). Gate PASS on r24, b211 (cand117 against b209: 10598 +203 to
    0.7527 at 9 pages, 6116 +14 at Word's 5, nothing else moved; docx4j's side committed 5eb37c818); r25 with the
-   fix goes for a confirmation run. On PASS: merge to `2.11-docx4j.6` by
+   fix, at `~/fop-renderers/r25-CR-026-91f3527db/` (sha256 13970471...), handed to the docx4j session 2026-10-08 for
+   a confirmation run against b211 (0 movers expected). On that reading: merge to `2.11-docx4j.6` by
    fast-forward, the release note's "Gate: pending" closed, §6.6 item 49 narrowed in the Enterprise file (Jason's;
    `git status` first). Phase B after.
 7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
