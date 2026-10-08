@@ -259,8 +259,10 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    (capability `float-offset`, the twenty-first), is built and measured (§4.1 as built; layout test `float_offset.xml`,
    four cases, committed 1760e33c2); the second, a line that does not fit beside a float set at its foot
    (`float-overflow-below`, the twenty-second capability), is built and measured (§4.2 as built; layout test
-   `float_overflow-below.xml`); both-sides wrap is sized only (§4.3). Next: the suite, commit, the jar (r18) to the
-   docx4j gate with CR-023 §6's pass criteria, the registry text. Jason confirmed D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
+   `float_overflow-below.xml`, committed 63fdc0aee); both-sides wrap is sized only (§4.3). Full suite 3870/0, checkstyle
+   clean. The jar is r18 at `~/fop-renderers/r18-CR-023-63fdc0aee/` (sha256 a2845a9c...), handed to the docx4j gate
+   2026-10-08 with CR-023 §6's pass criteria and the registry text. On PASS: merge to `2.11-docx4j.6` by fast-forward,
+   release notes closed, §6.6 item 8 narrowed in the Enterprise file (Jason's; `git status` first). Jason confirmed D2 here on 2026-10-08. Phase 0 (nine Word probes, the docx4j session, 2026-10-08, CR-032 §3 and §4 at cae13d3d1)
    settled it: `float-offset` stands (`fox:float-offset` on `fo:float`: the intrusion begins N pt below the top of the
    anchor block, space-before included; the lines that fit in the gap are full width above the float), `float-band` is
    WITHDRAWN (Word does not lay empty paragraphs behind a full-width table; FOP's zero-ipd lines beside a column-wide
