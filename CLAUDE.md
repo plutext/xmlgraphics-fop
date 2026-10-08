@@ -189,8 +189,8 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-07, after the `2.11-docx4j.5` release. Read Enterprise CR-001 §6.6 before proposing anything,
-as the section above says.
+Last updated 2026-10-08, after `fop/CR-025` merged, before a `/clear`. Read Enterprise CR-001 §6.6 before proposing
+anything, as the section above says.
 
 **State.** `2.11-docx4j.5` is on Maven Central (2026-10-07, released by Jason from the pushed branch), tagged
 `v2.11-docx4j.5` at `724e92d1c`, the version commit; `docs/release-notes/2.11-docx4j.5.md` says what it carries and
@@ -208,10 +208,13 @@ by the docx4j session, each with its CR under `docs/developer/change-requests/`:
 - `fop/CR-020` (side floats, items 44 and 45, `side-float-edges`), with the `FLOAT_RESTART` bit fix (CR-020 §9);
 - `fop/CR-021` (simulated italic and bold per face, item 46, `simulate-style-per-face`).
 
-Nineteen capabilities. `fop/CR-019` (ActualText per cluster) is designed and waits on Jason. `2.11-docx4j.4`
+Nineteen capabilities in `.5`; twenty-three on `2.11-docx4j.6`, which carries, unreleased and all gated PASS: `fop/CR-022`
+(`clear-after-side-float`), the three edge-search fixes, `fop/CR-023` (`float-offset`, `float-overflow-below`) and
+`fop/CR-025` (`row-first-part-room`), each in `docs/release-notes/2.11-docx4j.6.md`; the branch and its commits are
+local until Jason pushes. `fop/CR-019` (ActualText per cluster) is designed and waits on Jason. `2.11-docx4j.4`
 (2026-10-04, at `75f9b0262`), `2.11-docx4j.2` (2026-10-02) and `2.11-docx4j.1` (2026-09-25, tagged at `2f5030172`)
 are the earlier releases; `.3` never shipped. `docs/developer/releasing.md` is the runbook and records what each
-release proved. Nothing is unreleased on `2.11-docx4j.6` beyond the branch cut.
+release proved.
 
 **Upstream.** Every fix has a JIRA and an open pull request on apache/xmlgraphics-fop, cut against Apache `main` on
 a branch named for its number, each measured on `main` and passing the full suite and checkstyle (2026-10-03): #108
@@ -321,7 +324,10 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    `BodyRegion`, `PageSequenceLayoutManager.getCurrentColumnWidth()` per column, and `PageProvider.compareIPDs`
    returning the difference between consecutive columns so FOP's own changing-IPD restart reflows column by column;
    the renderers step by each column's width. About a week for the widths, three to five days for balancing; one
-   afternoon's probe of the restart path within a page (CR-026 §5) before trusting it. Jason's word to begin.
+   afternoon's probe of the restart path within a page (CR-026 §5) before trusting it. Jason asked 2026-10-08 whether
+   anything stops it: nothing does (the Apache `main` merge waits a week by agreement and touches floats, not the
+   column or IPD path; `.6`'s release needs only his push; CR-024 is his ordering). Next up, the §5 probe first, on
+   a branch `CR-026-unequal-columns` off `2.11-docx4j.6`.
 7. *`fop/CR-019`, ActualText per cluster*: §9 answered by Jason (tier A, all scripts, on in the fork and offered
    off upstream; PDF/UA matters, so veraPDF is installed and a tagged sample tested first). Not to start until he
    says.
@@ -373,6 +379,12 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
   2026-10-07 `main` had moved six commits, and FOP-3331 had changed floats under CR-020's drafts.
 - The working tree is shared with other fork sessions: `git branch --show-current` before every commit and every
   statement naming a branch (the memory note on it).
+- A probe must carry the consumer's FO shape, not the rule's minimum: CR-025's r22 passed its probe and failed the
+  gate on the retained padding-before docx4j writes on every cell. Before handing a jar over, render the docx4j
+  session's reproducer here with the switch on (a small harness sets the user agent; the fonts are under
+  `~/fidelity-fonts/vm-common`, a config built from them; `docx4j:` attributes stripped) and diff the pages against
+  the switch off; the pagination will not be the docx4j session's (its two-pass render measures the region extents),
+  but whether the rule fires at all shows.
 
 **Be honest about the fork.** Gated against Apache FOP, the measured fidelity difference was nil until
 CR-003; since then the gates show real movement toward Word (kerning and ligatures for Calibri text,
