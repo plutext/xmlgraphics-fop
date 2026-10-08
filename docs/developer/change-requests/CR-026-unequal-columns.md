@@ -399,3 +399,12 @@ page-sequence has two flow children, both `span="all"`, and nothing in the colum
 not the renderer's; 11092 asked to be checked the same way. The log line for a trial that cannot be run now says
 so, where it said "does not end on the page".
 
+**The docx4j session's check (2026-10-08, after r27):** 11092's merged sequence has three flow children, all
+`span="all"`, because both of its unequal stretches fit a page and took the one-row table, so its widths are idle
+and its residual has another cause; 1137's unequal section holds a single empty paragraph. So the documents the
+region body lays at widths are 10598 and 6116 only (its register and Enterprise §6.6 item 49 corrected), and 6116
+is phase B's one corpus measurement, where its explicit column breaks leave nothing to balance. A corpus measurement
+of the balancing itself needs a document whose unequal stretch runs into a span block without an explicit break:
+11126 if docx4j writes its near-equal widths (its FO balances 82 and 83 lines here, the spanning table on page 1,
+where r25 gave 66 and 4 with the table on page 2), or a probe document.
+
