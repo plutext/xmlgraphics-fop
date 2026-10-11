@@ -1,7 +1,7 @@
 # CR-018: header and footer extents measured in FOP
 
 Status: DONE 2026-10-06, gated PASS by the docx4j session (§9) and merged to `2.11-docx4j.5` by fast-forward
-(3e5381d6f; the change is 7ae4c950a); unreleased. Designed and revised on 2026-10-05 after two reviews (§8).
+(3e5381d6f; the change is 7ae4c950a); released in 2.11-docx4j.5 (2026-10-07). Designed and revised on 2026-10-05 after two reviews (§8).
 Registry key `fop/CR-018`. Capability
 `measured-region-extents`. A docx4j hook (Word's rule for where the body starts, which FO leaves to the producer),
 so not upstream-bound. Requested by the docx4j session for docx4j CR-031 phase 5, the companion hook at the end of

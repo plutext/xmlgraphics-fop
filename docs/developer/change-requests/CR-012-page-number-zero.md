@@ -1,6 +1,6 @@
 # CR-012: a page numbered 0, behind a user-agent option; and the page label of a page numbered 0
 
-Status: DONE 2026-10-04, gated PASS by the docx4j session (§6) and merged to `2.11-docx4j.5`; unreleased.
+Status: DONE 2026-10-04, gated PASS by the docx4j session (§6) and merged to `2.11-docx4j.5`; released in 2.11-docx4j.5 (2026-10-07).
 Registry key `fop/CR-012`. Capability `page-number-zero`.
 
 Enterprise CR-001 §6.6 item 38, the docx4j session's (batch 50, found 2026-10-04):

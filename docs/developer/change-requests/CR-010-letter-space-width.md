@@ -1,6 +1,6 @@
 # CR-010: a word's letter spaces are in its width on the complex-script path
 
-Status: DONE 2026-10-03 on `2.11-docx4j.4` (ab8fcaa48), gated PASS with the merge (§4), unreleased. Capability
+Status: DONE 2026-10-03 on `2.11-docx4j.4` (ab8fcaa48), gated PASS with the merge (§4), released in 2.11-docx4j.4 (2026-10-04). Capability
 `letter-space-width`. Registry key `fop/CR-010`. Upstream-bound: a duplicate of
 [FOP-2349](https://issues.apache.org/jira/browse/FOP-2349) (Open since 2014; Andreas L. Delmelle's 2015
 comments trace it to the same `[TBD]` and sketch this fix), found by the docx4j session's duplicate

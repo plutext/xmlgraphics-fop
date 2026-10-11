@@ -1,6 +1,6 @@
 # CR-013: the display-align of a table cell's continuation parts
 
-Status: DONE 2026-10-04, gated PASS by the docx4j session (below) and merged to `2.11-docx4j.5`; unreleased. Registry key `fop/CR-013`. Capability `continuation-display-align`. A docx4j hook (Word compatibility,
+Status: DONE 2026-10-04, gated PASS by the docx4j session (below) and merged to `2.11-docx4j.5`; released in 2.11-docx4j.5 (2026-10-07). Registry key `fop/CR-013`. Capability `continuation-display-align`. A docx4j hook (Word compatibility,
 not an XSL defect), so not upstream-bound.
 
 The docx4j session's batch 51 (probe table-rowsplit-3, variant F), taken to the fork at Jason's word on

@@ -1,7 +1,7 @@
 # CR-017: page masters chosen by the content a page starts with
 
 Status: DONE 2026-10-05, gated PASS by the docx4j session (§10) and merged to `2.11-docx4j.5` by fast-forward;
-unreleased. Implemented at Jason's word on branch `CR-017-page-master-by-content` (code f0d2717fa, the 12802 fix
+released in 2.11-docx4j.5 (2026-10-07). Implemented at Jason's word on branch `CR-017-page-master-by-content` (code f0d2717fa, the 12802 fix
 7c6f43b07); the full build passes, 3804 tests, 0 failures, checkstyle and spotbugs clean. Designed and revised after
 two reviews (§8). Registry key
 `fop/CR-017`. Capability `page-master-by-content`. A docx4j hook, for Word compatibility: XSL chooses a page master

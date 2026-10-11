@@ -1,7 +1,7 @@
 # CR-021: simulated italic and bold as Word draws them, per face
 
 Status: DONE 2026-10-07, gated PASS by the docx4j session (§9) and merged to `2.11-docx4j.5` by fast-forward
-(dbe0b7cf2; the change is eb003c325); unreleased. Full CI build: 3860 tests, 0 failures, checkstyle and spotbugs
+(dbe0b7cf2; the change is eb003c325); released in 2.11-docx4j.5 (2026-10-07). Full CI build: 3860 tests, 0 failures, checkstyle and spotbugs
 clean.
 by Jason the same day, to ship in `2.11-docx4j.5`. Registry key `fop/CR-021`. Capability `simulate-style-per-face`
 (§3.3). A fix, not a hook: FOP's `simulate-style` is wrong for any face that is already italic or bold, and its

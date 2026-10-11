@@ -1,9 +1,9 @@
 # CR-026: columns of unequal width in the region body
 
 Status: PHASE A DONE 2026-10-08, gated PASS (b211 on r24; b212 on r25, 0 movers) and merged to `2.11-docx4j.6` by
-fast-forward, unreleased. PHASE B DONE 2026-10-08 (§9: the balancing before a `span="all"` block, capability
+fast-forward, released in 2.11-docx4j.6 (2026-10-09). PHASE B DONE 2026-10-08 (§9: the balancing before a `span="all"` block, capability
 `column-balancing`), gated PASS (b214 0 movers; b215 11126, 6116 and 394 up to Word's page counts) and merged to
-`2.11-docx4j.6` by fast-forward, unreleased. Registry key `fop/CR-026`. Enterprise CR-001 §6.6
+`2.11-docx4j.6` by fast-forward, released in 2.11-docx4j.6 (2026-10-09). Registry key `fop/CR-026`. Enterprise CR-001 §6.6
 item 49, measured by the docx4j session on four corpus documents (10598, 6116, 1137, 11092). §7 says what phase A
 built, §8 how it was gated, §9 what phase B built and how.
 ## 1. The need

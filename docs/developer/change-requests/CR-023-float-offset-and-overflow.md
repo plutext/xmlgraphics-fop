@@ -1,7 +1,7 @@
 # CR-023: the offset float, and a line that does not fit beside a float set below it
 
 Status: DONE 2026-10-08, gated PASS by the docx4j session (§9: b196 to b202 on r19 to r21) and merged to `2.11-docx4j.6`
-by fast-forward; unreleased. The code is 989280390; full `fop-core` suite 3870 tests, 0 failures, 4 skipped, checkstyle
+by fast-forward; released in 2.11-docx4j.6 (2026-10-09). The code is 989280390; full `fop-core` suite 3870 tests, 0 failures, 4 skipped, checkstyle
 clean. Both halves built and measured (§4.1 and §4.2 as built); `float-overflow-below` measured inert on docx4j's tables
 and kept for pictures (§9).
 Registry key `fop/CR-023`. Two hooks for docx4j CR-032 (floating tables as Word lays them), §4.2 of that CR as

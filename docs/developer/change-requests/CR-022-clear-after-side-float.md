@@ -1,7 +1,7 @@
 # CR-022: honour `clear` on a block-level FO after a side float
 
 Status: DONE 2026-10-08, gated PASS by the docx4j session (§9: b186b and b191 on r17) and merged to `2.11-docx4j.6` by
-fast-forward; unreleased. Full `fop-core` suite 3864 tests, 0 failures, 4 skipped, checkstyle clean. Registry key `fop/CR-022`. Capability
+fast-forward; released in 2.11-docx4j.6 (2026-10-09). Full `fop-core` suite 3864 tests, 0 failures, 4 skipped, checkstyle clean. Registry key `fop/CR-022`. Capability
 `clear-after-side-float` (§3.4). Decided by Jason on 2026-10-07 as the first item after `2.11-docx4j.5` shipped
 (CR-020 §7), and started on his word on 2026-10-08.
 

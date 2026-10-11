@@ -1,6 +1,6 @@
 # CR-025: a table row's first part at a page's foot has room for the margin it gives up
 
-Status: DONE 2026-10-08, gated PASS (b208, §8) and merged to `2.11-docx4j.6` by fast-forward; unreleased, in
+Status: DONE 2026-10-08, gated PASS (b208, §8) and merged to `2.11-docx4j.6` by fast-forward; released in 2.11-docx4j.6 (2026-10-09), in
 `docs/release-notes/2.11-docx4j.6.md`. Was on branch `CR-025-row-first-part` off `2.11-docx4j.6` (after `fop/CR-023`,
 3339fc1cf);
 measured on the command line (§4); r22 (7fa106f12, suite 3873/0) failed the gate on 11657, the margin hidden behind a
