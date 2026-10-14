@@ -1,7 +1,7 @@
 # CR-024: obstacles in the line - text on both sides of a float, and around page-anchored objects
 
-Status: PHASE A IN PROGRESS, ordered by Jason 2026-10-15; branch `CR-024-obstacles` off `2.11-docx4j.7`; the first
-increment (the page-anchored half, forward case, §11) built 2026-10-15, not yet gated. Designed 2026-10-08, reviewed
+Status: PHASE A IN PROGRESS, ordered by Jason 2026-10-15; branch `CR-024-obstacles` off `2.11-docx4j.7`; increments 1
+and 2 (the page-anchored half, with the restart from the page's first break, §11) built 2026-10-15, not yet gated. Designed 2026-10-08, reviewed
 2026-10-15 against what the fork learnt since (§10: five changes to the design, the estimate for phase A 2.5 to 3 weeks); Jason asked for it after CR-023 shipped its two hooks, on the question whether
 the floating-table work is one instance of the general case of wrapping around pictures, charts and text boxes. It
 is. Registry key `fop/CR-024`. Enterprise CR-001 §6.6 items 10 (text on both sides of an anchored object) and 11 (wrap
@@ -317,7 +317,7 @@ answered the same way). The `LineWidthProvider` of §10.2 remains for the paragr
 (`fox:float-x`) and for phase B, where a line's width varies within a band.
 
 Limits of the increment, each to be lifted or recorded: (i) a band that begins above the box that holds the
-obstacle is taken from the box on; the restart from the page's first break (§10.1) is increment 2; (ii) an obstacle
+obstacle was taken from the box on; lifted by increment 2, below; (ii) an obstacle
 met while a float or another obstacle is being handled waits for a later box that holds it, and is lost if none
 follows (the common corpus case has one object a page; two on one page, or an object beside a floating table, is
 the case to measure); (iii) the page a box lands on is read from the active node of the highest part, which is the
@@ -325,4 +325,28 @@ page in FOP's first-fit page breaking with floats and may not be under total-fit
 page is clipped by FOP as before, and the registry takes it for the page it starts on. Layout test
 `block-container_fox-wrap.xml`, seven cases (the right margin, left only, largest at the left margin, top-and-bottom,
 the four distances, an absolute container inside its paragraph, a control without `fox:wrap`): each passes;
-checkstyle clean; the full suite's reading is in the commit.
+checkstyle clean; the full suite's reading is in the commit (bf0a439c3: 3927/0).
+
+**11.2 Increment 2, 2026-10-15: the restart from the page's first break (§10.1).** A band that begins above the box
+that holds the obstacle, on the box's page, is honoured from its top. Two cases, both in
+`PageBreakingAlgorithm.armObstacleHeldBy`. Where the band's top lies below the page's content top, the page's
+elements are read again: every active node is dropped (`BreakingAlgorithm.removeAllNodes`) and the main loop goes
+back to the page's start node with the band pending (`rewindRequested`, a hook in `BreakingAlgorithm`'s loop that
+the subclass answers once; `restartFrom` resets the totals and the footnotes met since, and from the list's start
+node, which is no break, the reading begins at the first element again), so the edge is found at the first legal
+break before a line would cross the top as in increment 1, and the areas up to it are added once, since nothing
+had been added. Where the band covers the page's top and the page's start is a break in the list, that break is the
+edge itself: the edge node is made at the page start's position with its totals, every node is dropped so the
+algorithm ends there, the parts before it are added, the float part is empty, and
+`PageBreaker.addAreasForFloats` starts the obstacle on the new page instead of faking content on it
+(`handleEmptyContent`), so the next list begins on that page with the lines narrowed from its first. The limit that
+remains: a band above the start of a list that began mid-page (after a float's edge or an earlier obstacle's) is
+honoured from the list's start, the lines before it being areas already; `armObstacleHeldBy` reads the earliest
+point it can reach and refuses a band wholly above it. Two defects found by the test and fixed on the way: the
+registry matches an obstacle to a box by the innermost layout manager of the box's position chain, the wrapper's,
+since the flow's manager heads every chain and is an ancestor of every obstacle (the first box of the page claimed
+it); and a block-container whose elements are made again after an edge registers its obstacle again, which the
+registry now ignores, the first registration standing with what the breaker did with it. Test cases 8 (the band
+above the anchor, the two one-line paragraphs before it beside the container) and 9 (the band covering the top of
+page 2, the anchor mid-page, page 1 unchanged and page 2's lines narrowed from its first, the anchor's own first
+line below the foot full width).

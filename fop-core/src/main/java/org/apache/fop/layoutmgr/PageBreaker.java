@@ -1252,6 +1252,10 @@ public class PageBreaker extends AbstractBreaker {
                 PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
                 alg.relayFootnotes(pslm);
             }
+        } else if (alg.handlingStartOfFloat() && alg.getArmedObstacle() != null) {
+            // the edge is the page's start, whose band an obstacle covers: the new page is begun with nothing on
+            // it, and the next list fills it with its lines narrowed (hook obstacles-in-the-line, fop/CR-024)
+            startObstacle(alg);
         } else {
             // no content for this part
             handleEmptyContent();

@@ -16,8 +16,9 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
- * Apache FOP 2.11: hook float-offset, the ordinary recovery when a float's edge was refused (fop/CR-023). See
- * README.md, "Changes from Apache FOP 2.11". */
+ * Apache FOP 2.11: hook float-offset, the ordinary recovery when a float's edge was refused (fop/CR-023); and hook
+ * obstacles-in-the-line, the main loop reading the elements again from an earlier node when a subclass asks
+ * (fop/CR-024). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -561,6 +562,15 @@ public abstract class BreakingAlgorithm {
             previousIsBox = handleElementAt(
                     elementIndex, previousIsBox, allowedBreaks).isBox();
 
+            // hook obstacles-in-the-line (fop/CR-024): a subclass may ask to read the elements again from an
+            // earlier active node, with what it learnt at this element
+            int rewindIndex = rewindRequested(elementIndex);
+            if (rewindIndex != NO_REWIND) {
+                elementIndex = rewindIndex;
+                previousIsBox = false;
+                continue;
+            }
+
             if (activeNodeCount == 0) {
                 if (handlingFloat() && floatEdgeFound()) {
                     return handleFloat();
@@ -610,6 +620,34 @@ public abstract class BreakingAlgorithm {
 
         activeLines = null;
         return line;
+    }
+
+    /**
+     * Hook obstacles-in-the-line (fop/CR-024): whether the main loop should go back and read the elements again
+     * from an earlier point, which a subclass asks for after handling an element that tells it something about
+     * the elements before it (an obstacle whose band begins above the box that holds it).
+     * @param elementIndex the index of the element just handled
+     * @return the index the loop continues after (-1 for the first element), or {@link #NO_REWIND} to go on
+     */
+    protected int rewindRequested(int elementIndex) {
+        return NO_REWIND;
+    }
+
+    /** What {@link #rewindRequested(int)} returns to go on (hook obstacles-in-the-line, fop/CR-024). */
+    protected static final int NO_REWIND = Integer.MIN_VALUE;
+
+    /**
+     * Deactivates every active node (hook obstacles-in-the-line, fop/CR-024), before a restart from a chosen node.
+     */
+    protected void removeAllNodes() {
+        for (int i = startLine; i < endLine; i++) {
+            KnuthNode node = getNode(i);
+            while (node != null) {
+                KnuthNode next = node.next;
+                removeNode(i, node);
+                node = next;
+            }
+        }
     }
 
     /**

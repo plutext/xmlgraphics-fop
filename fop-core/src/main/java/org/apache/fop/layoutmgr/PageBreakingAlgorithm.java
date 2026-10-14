@@ -158,6 +158,8 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     private int armedBottomInFlow;
     /** The flow's height on its page where this list starts, when the list starts mid-page (fop/CR-024). */
     private int listStartFlowY;
+    /** The page start to read the elements again from, for an obstacle whose band begins above its box (fop/CR-024). */
+    private KnuthNode rewindTo;
     private KnuthNode bestFloatEdgeNode;
     private FloatPosition floatPosition;
     private int previousFootnoteListIndex = -2;
@@ -575,8 +577,11 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             roomEnd = obstacle.getRoomEnd();
             columnWidth = pslm.getCurrentColumnWidth();
         }
-        if (bandBottom <= pageTopInList || bandTop >= pageTopInList + pageHeight || bandBottom <= totalWidth) {
-            // not on this page's body, or wholly above the content read so far
+        // the earliest point of the list the band can be honoured from: the page's top, or the list's start
+        // where the list began mid-page (the lines above it are areas already)
+        int reachable = (pageStart.line == 0) ? pageStart.totalWidth : pageTopInList;
+        if (bandBottom <= reachable || bandTop >= pageTopInList + pageHeight) {
+            // not on this page's body, or above what this list can read again
             return;
         }
         int[] intrusions = obstacle.intrusionsIn(roomStart, roomEnd, columnWidth);
@@ -587,12 +592,52 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         armedStartIntrusion = intrusions[0];
         armedEndIntrusion = intrusions[1];
         armedBottomInFlow = bandBottom - pageTopInList;
-        armedTop = Math.max(bandTop, totalWidth);
+        if (bandTop >= totalWidth) {
+            // the band lies ahead: the edge is the first legal break after which a line would cross its top
+            armedTop = bandTop;
+        } else if (bandTop > pageTopInList || pageStart.line == 0) {
+            // the band begins above the box, on this page: the elements from the page's start are read again
+            // with the band known, and the edge found as above (CR-024 §10.1). At a list's start the page's
+            // top lies above the list, so the lines before the list keep their width and the first line of the
+            // list is the earliest the edge can be.
+            armedTop = Math.max(bandTop, pageStart.totalWidth);
+            rewindTo = pageStart;
+        } else {
+            // the band covers the page's top: the page's start, a break in this list, is the edge itself, so
+            // the parts before it are added, the float part is empty, and the next list begins on the new page
+            // with the lines narrowed from its first
+            armedTop = pageStart.totalWidth;
+            removeAllNodes();
+            handlingStartOfFloat = true;
+            bestFloatEdgeNode = createNode(pageStart.position, pageStart.line + 1, pageStart.fitness,
+                    pageStart.totalWidth, pageStart.totalStretch, pageStart.totalShrink, 0, 0, 0, 0,
+                    pageStart.totalDemerits, pageStart);
+            if (log.isDebugEnabled()) {
+                log.debug("Obstacle armed at the page's top: " + obstacle + ", the edge at " + pageStart.position);
+            }
+            return;
+        }
         pendingFloatTop = armedTop;
         if (log.isDebugEnabled()) {
             log.debug("Obstacle armed: " + obstacle + " band " + bandTop + ".." + bandBottom + " in list, intrusions "
-                    + armedStartIntrusion + "/" + armedEndIntrusion);
+                    + armedStartIntrusion + "/" + armedEndIntrusion + (rewindTo != null ? ", read again from "
+                    + rewindTo.position : ""));
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected int rewindRequested(int elementIndex) {
+        if (rewindTo == null) {
+            return NO_REWIND;
+        }
+        KnuthNode node = rewindTo;
+        rewindTo = null;
+        removeAllNodes();
+        int next = restartFrom(node, elementIndex);
+        // the list's start node is no break: its totals hold nothing, so every element is read again from the
+        // first, where a break node's trailing glue is in its totals and the reading goes on from its next box
+        return node.line == 0 ? -1 : next;
     }
 
     /** The active node of the highest part number: the start of the page being filled (fop/CR-024). */

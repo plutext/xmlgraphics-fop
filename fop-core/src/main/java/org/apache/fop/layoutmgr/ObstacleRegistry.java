@@ -38,8 +38,17 @@ public final class ObstacleRegistry {
 
     private final List<Obstacle> obstacles = new ArrayList<Obstacle>();
 
-    /** @param obstacle an obstacle made by a layout manager of this page-sequence */
+    /**
+     * Registers an obstacle. A layout manager whose elements are made again, after a float's edge or a change of
+     * width, registers its obstacle again: the first registration stands, with what the page breaker did with it.
+     * @param obstacle an obstacle made by a layout manager of this page-sequence
+     */
     public void register(Obstacle obstacle) {
+        for (Obstacle o : obstacles) {
+            if (o.getLayoutManager() == obstacle.getLayoutManager()) {
+                return;
+            }
+        }
         obstacles.add(obstacle);
     }
 
@@ -54,8 +63,10 @@ public final class ObstacleRegistry {
     }
 
     /**
-     * The first obstacle not yet started that a box holds: one whose layout manager is, or descends from, a
-     * layout manager in the box's position chain.
+     * The first obstacle not yet started that a box holds: one whose layout manager is, or descends from, the
+     * innermost layout manager of the box's position chain (the wrapper's, for a word processor's anchored
+     * object). The outer managers of the chain, the flow's above all, are ancestors of every obstacle and
+     * decide nothing.
      * @param position the box's position
      * @return the obstacle, or null
      */
@@ -72,15 +83,18 @@ public final class ObstacleRegistry {
     }
 
     private static boolean heldBy(Position position, LayoutManager obstacleLM) {
+        LayoutManager leaf = null;
         for (Position p = position; p != null; p = next(p)) {
-            LayoutManager lm = p.getLM();
-            if (lm == null) {
-                continue;
+            if (p.getLM() != null) {
+                leaf = p.getLM();
             }
-            for (LayoutManager a = obstacleLM; a != null; a = a.getParent()) {
-                if (a == lm) {
-                    return true;
-                }
+        }
+        if (leaf == null) {
+            return false;
+        }
+        for (LayoutManager a = obstacleLM; a != null; a = a.getParent()) {
+            if (a == leaf) {
+                return true;
             }
         }
         return false;

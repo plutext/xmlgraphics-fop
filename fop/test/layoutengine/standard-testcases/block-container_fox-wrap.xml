@@ -32,7 +32,11 @@
       no line beside it, the lines from 64 set below its foot. 5: as 1 with distances 12 18 24 6: the band is 124
       to 254, so the lines from 112 to 256 are beside it, 277pt wide. 6: an absolute container 32pt below the top
       of its paragraph, the second: the band begins at 48 in the flow, inside the paragraph's first line, so its
-      lines from 32 are beside it. 7: a control without fox:wrap: every line full width.
+      lines from 32 are beside it. 7: a control without fox:wrap: every line full width. 8: the band begins above the box
+      that holds the container (page y 150, the anchor the seventh paragraph): the page's elements are read again
+      from its start with the band known, so the two one-line paragraphs before the anchor are beside it too. 9: the
+      band covers the top of page 2 (page y 72), the anchor mid-page: page 1 ends where it did, and page 2's lines are
+      beside it from its first.
     </p>
   </info>
   <fo>
@@ -60,6 +64,70 @@
 </fo:flow></fo:page-sequence>
 <fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
 <fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="373pt" width="150pt" height="100pt" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>g0 g1 g2 g3 g4 g5 g6 g7 g8 g9 g10 g11 g12 g13 g14 g15 g16 g17 g18 g19 g20 g21 g22 g23 g24 g25 g26 g27 g28 g29 g30 g31 g32 g33 g34 g35 g36 g37 g38 g39 g40 g41 g42 g43 g44 g45 g46 g47 g48 g49 g50 g51 g52 g53 g54 g55 g56 g57 g58 g59 g60 g61 g62 g63 g64 g65 g66 g67 g68 g69 g70 g71 g72 g73 g74 g75 g76 g77 g78 g79 g80 g81 g82 g83 g84 g85 g86 g87 g88 g89 g90 g91 g92 g93 g94 g95 g96 g97 g98 g99 g100 g101 g102 g103 g104 g105 g106 g107 g108 g109 g110 g111 g112 g113 g114 g115 g116 g117 g118 g119 g120 g121 g122 g123 g124 g125 g126 g127 g128 g129 g130 g131 g132 g133 g134 g135 g136 g137 g138 g139 g140 g141 g142 g143 g144 g145 g146 g147 g148 g149 g150 g151 g152 g153 g154 g155 g156 g157 g158 g159</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>h0</fo:block>
+<fo:block>h1</fo:block>
+<fo:block>h2</fo:block>
+<fo:block>h3</fo:block>
+<fo:block>h4</fo:block>
+<fo:block>h5</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="150pt" left="373pt" width="150pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>h-0 h-1 h-2 h-3 h-4 h-5 h-6 h-7 h-8 h-9 h-10 h-11 h-12 h-13 h-14 h-15 h-16 h-17 h-18 h-19 h-20 h-21 h-22 h-23 h-24 h-25 h-26 h-27 h-28 h-29 h-30 h-31 h-32 h-33 h-34 h-35 h-36 h-37 h-38 h-39 h-40 h-41 h-42 h-43 h-44 h-45 h-46 h-47 h-48 h-49 h-50 h-51 h-52 h-53 h-54 h-55 h-56 h-57 h-58 h-59 h-60 h-61 h-62 h-63 h-64 h-65 h-66 h-67 h-68 h-69 h-70 h-71 h-72 h-73 h-74 h-75 h-76 h-77 h-78 h-79 h-80 h-81 h-82 h-83 h-84 h-85 h-86 h-87 h-88 h-89 h-90 h-91 h-92 h-93 h-94 h-95 h-96 h-97 h-98 h-99 h-100 h-101 h-102 h-103 h-104 h-105 h-106 h-107 h-108 h-109 h-110 h-111 h-112 h-113 h-114 h-115 h-116 h-117 h-118 h-119 h-120 h-121 h-122 h-123 h-124 h-125 h-126 h-127 h-128 h-129 h-130 h-131 h-132 h-133 h-134 h-135 h-136 h-137 h-138 h-139 h-140 h-141 h-142 h-143 h-144 h-145 h-146 h-147 h-148 h-149 h-150 h-151 h-152 h-153 h-154 h-155 h-156 h-157 h-158 h-159</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>i0</fo:block>
+<fo:block>i1</fo:block>
+<fo:block>i2</fo:block>
+<fo:block>i3</fo:block>
+<fo:block>i4</fo:block>
+<fo:block>i5</fo:block>
+<fo:block>i6</fo:block>
+<fo:block>i7</fo:block>
+<fo:block>i8</fo:block>
+<fo:block>i9</fo:block>
+<fo:block>i10</fo:block>
+<fo:block>i11</fo:block>
+<fo:block>i12</fo:block>
+<fo:block>i13</fo:block>
+<fo:block>i14</fo:block>
+<fo:block>i15</fo:block>
+<fo:block>i16</fo:block>
+<fo:block>i17</fo:block>
+<fo:block>i18</fo:block>
+<fo:block>i19</fo:block>
+<fo:block>i20</fo:block>
+<fo:block>i21</fo:block>
+<fo:block>i22</fo:block>
+<fo:block>i23</fo:block>
+<fo:block>i24</fo:block>
+<fo:block>i25</fo:block>
+<fo:block>i26</fo:block>
+<fo:block>i27</fo:block>
+<fo:block>i28</fo:block>
+<fo:block>i29</fo:block>
+<fo:block>i30</fo:block>
+<fo:block>i31</fo:block>
+<fo:block>i32</fo:block>
+<fo:block>i33</fo:block>
+<fo:block>i34</fo:block>
+<fo:block>i35</fo:block>
+<fo:block>i36</fo:block>
+<fo:block>i37</fo:block>
+<fo:block>i38</fo:block>
+<fo:block>i39</fo:block>
+<fo:block>i40</fo:block>
+<fo:block>i41</fo:block>
+<fo:block>i42</fo:block>
+<fo:block>i43</fo:block>
+<fo:block>i44</fo:block>
+<fo:block>i45</fo:block>
+<fo:block>i46</fo:block>
+<fo:block>i47</fo:block>
+<fo:block>i48</fo:block>
+<fo:block>i49</fo:block>
+<fo:block>i50</fo:block>
+<fo:block>i51</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="72pt" left="373pt" width="150pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>j0 j1 j2 j3 j4 j5 j6 j7 j8 j9 j10 j11 j12 j13 j14 j15 j16 j17 j18 j19 j20 j21 j22 j23 j24 j25 j26 j27 j28 j29 j30 j31 j32 j33 j34 j35 j36 j37 j38 j39 j40 j41 j42 j43 j44 j45 j46 j47 j48 j49 j50 j51 j52 j53 j54 j55 j56 j57 j58 j59 j60 j61 j62 j63 j64 j65 j66 j67 j68 j69 j70 j71 j72 j73 j74 j75 j76 j77 j78 j79 j80 j81 j82 j83 j84 j85 j86 j87 j88 j89 j90 j91 j92 j93 j94 j95 j96 j97 j98 j99 j100 j101 j102 j103 j104 j105 j106 j107 j108 j109 j110 j111 j112 j113 j114 j115 j116 j117 j118 j119 j120 j121 j122 j123 j124 j125 j126 j127 j128 j129 j130 j131 j132 j133 j134 j135 j136 j137 j138 j139 j140 j141 j142 j143 j144 j145 j146 j147 j148 j149 j150 j151 j152 j153 j154 j155 j156 j157 j158 j159</fo:block>
 </fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
@@ -90,5 +158,16 @@
     <eval expected="301000" xpath="((//pageViewport)[6]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[4]/@ipd"/>
     <!-- 7: the control: every line full width -->
     <eval expected="0" xpath="count((//pageViewport)[7]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd &lt; 451000])"/>
+    <!-- 8: the band (78 to 178) begins above the box that holds the container, in the seventh paragraph: the page is read again from its start, so h4 and h5 are beside it and the paragraph's lines up to 192 -->
+    <eval expected="451000" xpath="//word[.='h3']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="301000" xpath="//word[.='h4']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="301000" xpath="//word[.='h-0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="8" xpath="count((//pageViewport)[8]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
+    <!-- 9: the band covers the top of page 2, whose anchor paragraph comes after nine one-line paragraphs: page 1 ends where it did, page 2's lines are beside it from its first, seven of them, and the anchor's own first line, below the foot, is full width -->
+    <eval expected="43" xpath="count((//pageViewport)[9]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])"/>
+    <eval expected="301000" xpath="((//pageViewport)[10]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[1]/@ipd"/>
+    <eval expected="451000" xpath="//word[.='j0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="7" xpath="count((//pageViewport)[10]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
+    <eval expected="451000" xpath="((//pageViewport)[10]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[8]/@ipd"/>
   </checks>
 </testcase>
