@@ -1,6 +1,7 @@
 # CR-024: obstacles in the line - text on both sides of a float, and around page-anchored objects
 
-Status: DESIGN 2026-10-08, not started; Jason asked for it after CR-023 shipped its two hooks, on the question whether
+Status: DESIGN 2026-10-08, reviewed 2026-10-15 against what the fork learnt since (§10: five changes to the design,
+the estimate for phase A 2.5 to 3 weeks), not started; Jason asked for it after CR-023 shipped its two hooks, on the question whether
 the floating-table work is one instance of the general case of wrapping around pictures, charts and text boxes. It
 is. Registry key `fop/CR-024`. Enterprise CR-001 §6.6 items 10 (text on both sides of an anchored object) and 11 (wrap
 around a page-positioned object), both open since the first survey; what CR-023 §4.3 sized at three to four weeks,
@@ -202,3 +203,79 @@ algorithm is general and could go to Apache on its own if a use arises there.
 2. A alone first, or A and B as one CR.
 3. The Word run for the page-anchored probes (item 11), which the docx4j session would cut from CR-001 §6.8's
    anchored-picture cases.
+
+## 10. Review, 2026-10-15, in the light of what the fork learnt since
+
+Jason asked for the design to be reviewed before ordering it. What changed between 2026-10-08 and now: `fop/CR-026`
+phase B (a trial layout on a throwaway manager tree, because a line-level restart is destructive and docx4j's line
+manager is a private copy), `fop/CR-027` (Apache's FOP-3331 puts a column-wide float in the flow), §6.6 item 50
+(a tall inline doubles the line's half-leading), the docx4j session's Word probes (CR-032 §3 and §4.3: text takes
+any room at all beside a float, a negative offset pulls a table into the preceding paragraph and the top margin,
+the anchor's own lines split above an offset), and its question of 2026-10-15 on page-anchored tables (CR-032
+phase 4), answered by measurement (a retained negative space-before on a flow's first block draws it above the
+body top). Five changes follow; the model of §1 and the two phases stand.
+
+**10.1 Where an obstacle becomes known, and the restart from the page's first break.** §4.1 says a page-anchored
+object is "registered on the page viewport when the page is made, before any line of the page is laid out". It
+cannot be: docx4j's page-anchored object is an absolutely positioned `fo:block-container` in the flow, laid out when
+the flow reaches it, so the breaker learns of it at its element's place in the list, which is where the anchor
+paragraph is, and the lines of the page above that paragraph are already in the list and may lie in the obstacle's
+band. Word lets a page-anchored object, and a negative offset (CR-032 §3, `negative` case 1), affect text above its
+anchor on the same page. Two ways, and the design takes both: docx4j writes a section-opening object first in its
+section (cheap, and already its shape for case (a)); and the breaker, on meeting an obstacle whose band starts above
+the current position on the page, restarts from the page's first break, which it holds (`startPage`), reading the
+page's content again with the obstacle registered, as CR-020's float restart reads the content after an edge again.
+The areas of the page are not yet added at that point, so nothing is undone; the cost is one more pass over the
+page, as a float costs. That one mechanism serves page-anchored objects, negative offsets and a table a later
+paragraph's float reaches up to, so it is built once, in phase A. A page-anchored object taller than its page
+(CR-032 §3, `tall`) continues on the following pages in Word; FOP clips an absolutely positioned container at the
+page, so the continuation is docx4j's split of the container, outside this CR, and the obstacle registry takes a
+rectangle per page.
+
+**10.2 The width per line is supplied below the line manager, not built in it.** §3 and §7 treat docx4j's
+`WordLineLayoutManager` as a subclass reading fields through `inline-access`. It is more than that: a 4,600-line
+copy of `LineLayoutManager` with its own private paragraph list, its own `LineBreakingAlgorithm` (a greedy breaker
+that calls `getLineWidth()` at tab stops and line ends) and its own `makeLineBreakPosition` (CR-026 §9, where this
+was learnt). Anything built inside `LineLayoutManager` reaches the gate only once docx4j copies it. So phase A's
+width table is not the line manager's: a `LineWidthProvider` on the `LayoutContext`, set by the page breaker for the
+pass (the obstacle registry, the column's x-range, the paragraph's y0), answers `widthAt(y1, y2)` for a band;
+`BreakingAlgorithm.getLineWidth(int line)` consults it through the line's y, and the line position records the
+width it was broken for, as it already does. docx4j's part is then one call in its greedy loop (the per-line width in
+place of the constant) and the start indent on its position, gated on the capability so that it may lag. Phase B's
+segment flag is the same shape. The capability names stand (`obstacles-in-the-line`, `line-segments`).
+
+**10.3 The line pitch is not constant.** §4.2 builds the width table from "the paragraph's line-height where it is
+constant, which docx4j's paragraphs are". They are not, in two known ways: docx4j places lines as Word does, each
+from the tallest run on it (§6.6 item 13, §6.9), and an inline picture makes a line of its own height (item 50,
+measured on 12301). So the table is built from estimated pitches, the paragraph broken, the actual line heights
+read from the positions, the table rebuilt and the paragraph broken again until the bands agree, bounded at three
+passes (two in practice): the fixed point §4.2 only implied. Each pass runs the breaking algorithm over stored
+paragraphs, which the manager does already for a changed inline size; nothing is laid out twice.
+
+**10.4 No trial layout, and nothing on the breaker's managers.** CR-026 phase B's lesson: a restart inside a
+paragraph mutates the line manager, and areas added afterwards read that state, so a trial that must be undone has
+to run on a throwaway tree. Phase A needs no trial: the virtual float is a production restart, as a float's is, and
+the fixed point of 10.3 is inside one manager's breaking. Phase B's segments are likewise within the breaking. The
+balancing trial of CR-026 and the obstacles coexist because the registry lives on the page viewport, which the
+throwaway tree shares; the trial's lines then see the same obstacles.
+
+**10.5 Three things the model now also covers, which the fork has as separate rules.** (i) FOP-3331's in-flow path
+(CR-027: a float whose content is as wide as the space available goes in the flow) and CR-023's `float-overflow-below`
+(a line that does not fit beside a float goes below it) are the obstacle model's rule for a band with no free
+segment a word fits: the lines go below. Word's measured rule is "any room at all" (CR-032 §3), which phase B's
+segments give exactly; in phase A the one-sided largest side keeps CR-023's rule. Neither is removed by A; B folds
+them. (ii) The page-anchored tables of CR-032 phase 4: case (a), a section-opening table, needs nothing from the
+fork now (the retained negative space-before, measured 2026-10-15); case (b), a table after content, is 10.1's
+obstacle, so the `fox:page-y` hook offered as a three-to-five-day stopgap is not needed if A is ordered, and is
+withdrawn from the design as a separate piece. (iii) Unequal columns (CR-026): `segmentsAt` takes the current
+column's start and width from the span, not the body's, and an obstacle is clipped to the column it lies in.
+
+**10.6 Estimate and decisions, restated.** Phase A: 2.5 to 3 weeks, not 2: the restart from the page's first break
+(10.1) and the width provider below the line manager (10.2) are each a few days the first estimate did not hold,
+the fixed point (10.3) a day. Phase B unchanged at 2 to 3 weeks. docx4j's side is larger than "the attributes
+written": its greedy breaker takes the per-line width (A) and the segment flag (B), gated. For Jason: (1) whether to
+order A now, which the docx4j session's page-anchored work is waiting on; (2) A alone first, as §6 recommends; (3)
+the Word run for item 11's page-anchored picture probes, cut by the docx4j session from CR-001 §6.8; (4) whether
+docx4j writes page-anchored objects first in their section meanwhile, which costs it nothing and removes the
+page-start restart from the common case.
+
