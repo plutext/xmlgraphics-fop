@@ -429,7 +429,14 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    first penalty, 178195 wide, put 729034 on the page; fixed there, cand120, gate b217), no renderer item. §6.6
    item 50 agreed and added by the docx4j session (uncommitted there until its gate closes). Nothing for the fork
    but the upstream draft when Jason orders it; the backlog item above is closed.
-12. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
+12. *Page-anchored floating tables (docx4j's proposed CR-032 phase 4; Jason asked for a view 2026-10-15, answered
+   to docx4j-25):* measured here that a retained negative space-before on a flow's first block draws it above the
+   body top with the flow laid after it, nothing clipped (probes `~/fop-session-tools/2026-10-15-page-anchored-probe/`),
+   so a table that opens its section needs nothing from the fork; for a table after content, recommended against a
+   docx4j two-pass and for either CR-024 phase A (the obstacle registry, §6.6 item 11, two weeks, Jason's
+   ordering) or a three-to-five-day hook `fox:page-y` on a block-level FO, honoured in
+   `PageBreakingAlgorithm.computeDifference` per candidate part as float-offset is. Nothing ordered.
+13. CR-020 phases 2 and 3 remain in docx4j's CR; phase 2 is much smaller than its §8 describes (P2-2
    and P2-3 small and clean; P2-4, P2-6, P2-7 inert; the structure-tree half of P2-5 superseded by
    FOP-3165 and FOP-3283 in Apache `main`).
 
