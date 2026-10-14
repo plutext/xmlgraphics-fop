@@ -167,7 +167,9 @@ FOP-2918, which predates the fork). The text as drafted lives with the change: i
 for the `GlyfTable` empty-glyph fix and the Kangxi radical fix (`git log --grep` finds them), and under
 `docs/upstream/` for the rest, each stamped with its number. Each fix is cut a second time against Apache `main` on a branch named for its number, with a
 pull request open since 2026-10-03 (#109 to #117; FOP-3328 and FOP-3330 are #106 and #107; #108 was closed on
-2026-10-08 when Apache's FOP-3352 covered it; #120, #121 and #125 were merged and came back in `fop/CR-027`). A committer asked on 2026-10-06 for an FO on every ticket; each that
+2026-10-08 when Apache's FOP-3352 covered it; #120, #121, #125 and #123 were applied to `main` as Apache's own commits
+(FOP-3348, FOP-3349, FOP-3356 on 2026-10-05 to 07, back in `fop/CR-027`; FOP-3354 on 2026-10-09) and closed here on
+2026-10-15; #122, FOP-3350, was declined as a path FOP itself never reaches and closed the same day). A committer asked on 2026-10-06 for an FO on every ticket; each that
 can have one got it on 2026-10-08, the files under `docs/upstream/repro/`.
 
 `upstream` is `apache/xmlgraphics-fop`; the branch merges upstream at least at

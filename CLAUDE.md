@@ -239,8 +239,8 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
 **Upstream, checked 2026-10-15.** Apache applies our pull requests as its own commits ("by Jason Harrop" in the
 subject) and leaves the requests open: #120 (FOP-3348, 5be8c69b6), #121 (FOP-3349, a36b42fab), #125 (FOP-3356,
 c2d7e0aca) and, since the CR-027 merge, #123 (FOP-3354, bed50fc76 on 2026-10-09, our Java byte for byte, the test
-reworded; JIRA closed Fixed, fix version `main`). Those four are ours to close with a note, on Jason's word. #122
-(FOP-3350, the page label 0) was declined on 2026-10-08 ("FOP itself will not cause it"): close it. #108 closed
+reworded; JIRA closed Fixed, fix version `main`). Those four were closed here with a note on 2026-10-15 at Jason's
+word, and #122 (FOP-3350, the page label 0, declined 2026-10-08 as a path FOP itself never reaches) with them. #108 closed
 2026-10-07 (FOP-3352). The sixteen others are open and untouched since our FO reproducers of 2026-10-07: #106, #107,
 #109 to #119, #124, #126; one comment from Glenn Adams on #116, encouragement. FOP-3355 (#124) is stacked on #123, so it
 should be rebased to its one commit now that FOP-3354 is on `main`; FOP-3345 (#116) still waits on #114 and #109.
