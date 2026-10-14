@@ -242,8 +242,9 @@ c2d7e0aca) and, since the CR-027 merge, #123 (FOP-3354, bed50fc76 on 2026-10-09,
 reworded; JIRA closed Fixed, fix version `main`). Those four were closed here with a note on 2026-10-15 at Jason's
 word, and #122 (FOP-3350, the page label 0, declined 2026-10-08 as a path FOP itself never reaches) with them. #108 closed
 2026-10-07 (FOP-3352). The sixteen others are open and untouched since our FO reproducers of 2026-10-07: #106, #107,
-#109 to #119, #124, #126; one comment from Glenn Adams on #116, encouragement. FOP-3355 (#124) is stacked on #123, so it
-should be rebased to its one commit now that FOP-3354 is on `main`; FOP-3345 (#116) still waits on #114 and #109.
+#109 to #119, #124, #126; one comment from Glenn Adams on #116, encouragement. FOP-3355 (#124) was rebased 2026-10-15 at Jason's word
+onto `main` at ced58ae40 as its one commit (765487a77; layout suite 748/0 and checkstyle clean on `main`; pushed by
+name with `--force-with-lease`, the request told); FOP-3345 (#116) still waits on #114 and #109.
 Apache `main` has moved seven commits past CR-027's base c2d7e0aca: FOP-3354, a version bump to 2.12.0-SNAPSHOT with
 Batik 1.19.0-SNAPSHOT and xmlgraphics-commons 2.12.0-SNAPSHOT (snapshot pins again, as CR-009 §3.1 found), javadoc in
 CI, "Allow branching" (the workflow), bouncycastle and ant bumps; a follow-up merge is a day and conflicts on the
