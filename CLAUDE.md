@@ -191,14 +191,25 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-15, before a `/clear`. **Jason's orders today: start `fop/CR-024` phase A** (the obstacle registry
-and a width per line; the design is CR-024 §4 as corrected by the review in §10, which overrides §4 where they
-differ; phase A alone first; cut `CR-024-obstacles` off `2.11-docx4j.7`; the page-anchored half first, since the
-docx4j session's CR-032 phase 4 waits on it; before any signature change in `LineLayoutManager` or
-`LineBreakPosition`, tell the docx4j session, whose `WordLineLayoutManager` is a private copy with its own greedy
-breaker, CR-024 §10.2; capability `obstacles-in-the-line`); ask the docx4j session for the Word run of item 11's
-page-anchored picture probes (§10.6 decision 3) and whether it writes page-anchored objects first in their section
-meanwhile (decision 4). **The next merge of Apache `main` waits** for the next batch of our pull requests to land or
+Last updated 2026-10-15, evening. **`fop/CR-024` phase A is IN PROGRESS on branch `CR-024-obstacles`** (cut off
+`2.11-docx4j.7`; Jason's order of 2026-10-15: phase A alone, the page-anchored half first, since the docx4j session's
+CR-032 phase 4 waits on it; the design is CR-024 §4 as corrected by §10, which overrides §4 where they differ; §11 is
+the as-built record). Increments 1 and 2 are built and committed (bf0a439c3, 61f53844a): `fox:wrap`, `fox:wrap-sides`,
+`fox:wrap-distances` on an absolutely positioned `fo:block-container`, capability `obstacles-in-the-line` (the 26th),
+the obstacle registry, the obstacle as a virtual float through CR-023's pending-intrusion mechanism, and the restart
+from the page's first break (§10.1); layout test `block-container_fox-wrap.xml`, nine cases; full suite 3927/0,
+checkstyle clean. The narrowing reaches docx4j's line manager through the reference IPD, so its side is the
+attributes only for this half (no `LineLayoutManager` or `LineBreakPosition` signature changed; tell it before any).
+Handed to the gate: r30 at `~/fop-renderers/r30-CR-024-61f53844a/` (sha256 5edb8f9e...; r29 was increment 1). The
+docx4j session (2026-10-15): page-anchored objects stay at their anchor mid-flow (decision 4: no); the corpus has few
+of them (two square pictures, a handful of frames, one top-and-bottom shape), so the nine `picture-page-square` probes
+it cut are the measure and wait on Jason's Word run (decision 3); it has put the gate's timing to Jason. **Next in
+phase A, not started:** increment 3, the `LineWidthProvider` on the `LayoutContext` (§10.2) with `fox:float-x` for a
+paragraph-anchored float at any x and the fixed point of §10.3; then the limits of §11 (an obstacle met while a float
+or another obstacle is on; multi-column pages). Registry `fop/CR-024` in_progress (tasks.yaml edited and accepted
+here, uncommitted: it carries the docx4j session's CR-032 entries and enterprise edits, so the commit is its). On the
+gate's PASS: merge to `2.11-docx4j.7` by fast-forward, §6.6 item 11 narrowed in the Enterprise file (Jason's;
+`git status` first), release note. **The next merge of Apache `main` waits** for the next batch of our pull requests to land or
 an Apache release, whichever first (today `main` is seven commits past CR-027's base: FOP-3354, which the fork
 has, and a 2.12.0-SNAPSHOT bump with snapshot Batik and commons; a day's merge, pom and workflow conflicts only). Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
@@ -324,7 +335,7 @@ pom and the workflow only. `trunk` is still at c2d7e0aca.
    provider on the layout context, below the line manager, since docx4j's is a private copy with its own greedy
    breaker; the pitch is a fixed point; no trial layout; it folds FOP-3331's in-flow path, float-overflow-below and
    the page-anchored question. Phase A 2.5 to 3 weeks. **ORDERED 2026-10-15 (Jason): phase A, see the top of this
-   section.** Not yet cut.
+   section; IN PROGRESS, increments 1 and 2 built the same day.**
 5. *`fop/CR-025`, a table row at a page's foot needs room for its bottom margin*: DONE 2026-10-08, gated PASS (b208:
    11657's page 30 ends at row 53, row 54 opens page 31 whole, row 34 still split; 2451 +19 lines, 13383 +4, 2048 −1,
    nothing else moved) and merged to `2.11-docx4j.6` by fast-forward; unreleased, in the `.6` release notes. Hook
