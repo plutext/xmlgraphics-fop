@@ -191,8 +191,16 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-09, after the `2.11-docx4j.6` release and the merge of Apache `main` (`fop/CR-027`, on
-`2.11-docx4j.7`, unreleased), before a `/clear`. Read Enterprise CR-001 §6.6 before
+Last updated 2026-10-15, before a `/clear`. **Jason's orders today: start `fop/CR-024` phase A** (the obstacle registry
+and a width per line; the design is CR-024 §4 as corrected by the review in §10, which overrides §4 where they
+differ; phase A alone first; cut `CR-024-obstacles` off `2.11-docx4j.7`; the page-anchored half first, since the
+docx4j session's CR-032 phase 4 waits on it; before any signature change in `LineLayoutManager` or
+`LineBreakPosition`, tell the docx4j session, whose `WordLineLayoutManager` is a private copy with its own greedy
+breaker, CR-024 §10.2; capability `obstacles-in-the-line`); ask the docx4j session for the Word run of item 11's
+page-anchored picture probes (§10.6 decision 3) and whether it writes page-anchored objects first in their section
+meanwhile (decision 4). **The next merge of Apache `main` waits** for the next batch of our pull requests to land or
+an Apache release, whichever first (today `main` is seven commits past CR-027's base: FOP-3354, which the fork
+has, and a 2.12.0-SNAPSHOT bump with snapshot Batik and commons; a day's merge, pom and workflow conflicts only). Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
 **State.** `2.11-docx4j.6` is on Maven Central (2026-10-09, released by Jason from the pushed branch), tagged
@@ -315,7 +323,8 @@ pom and the workflow only. `trunk` is still at c2d7e0aca.
    breaker restarts from the page's first break when a band starts above it; the width per line comes from a
    provider on the layout context, below the line manager, since docx4j's is a private copy with its own greedy
    breaker; the pitch is a fixed point; no trial layout; it folds FOP-3331's in-flow path, float-overflow-below and
-   the page-anchored question. Phase A 2.5 to 3 weeks. Not started; Jason's ordering, the docx4j session waiting.
+   the page-anchored question. Phase A 2.5 to 3 weeks. **ORDERED 2026-10-15 (Jason): phase A, see the top of this
+   section.** Not yet cut.
 5. *`fop/CR-025`, a table row at a page's foot needs room for its bottom margin*: DONE 2026-10-08, gated PASS (b208:
    11657's page 30 ends at row 53, row 54 opens page 31 whole, row 34 still split; 2451 +19 lines, 13383 +4, 2048 −1,
    nothing else moved) and merged to `2.11-docx4j.6` by fast-forward; unreleased, in the `.6` release notes. Hook
