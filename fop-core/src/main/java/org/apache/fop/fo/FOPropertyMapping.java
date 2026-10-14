@@ -18,7 +18,8 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook gsub-features, the fox:gsub-features property, inherited; and initial-page-number's maker,
  * which keeps 0 where the user agent allows it (fop/CR-012).; fox:continuation-display-align (fop/CR-013),
- * and fox:float-offset (fop/CR-023), fox:column-widths and fox:column-gaps (fop/CR-026). See
+ * and fox:float-offset (fop/CR-023), fox:column-widths and fox:column-gaps (fop/CR-026), fox:wrap, fox:wrap-sides
+ * and fox:wrap-distances (fop/CR-024). See
  * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -2723,6 +2724,29 @@ public final class FOPropertyMapping implements Constants {
         m.setInherited(false);
         m.setDefault("none");
         addPropertyMaker("fox:column-gaps", m);
+
+        // fox:wrap, fox:wrap-sides and fox:wrap-distances on an absolutely positioned fo:block-container: the
+        // lines of the page it lies on wrap around it as around a side float, on the side the side rule names,
+        // keeping the distances (before, after, start, end) from it (hook obstacles-in-the-line, fop/CR-024)
+        m = new EnumProperty.Maker(PR_X_WRAP);
+        m.setInherited(false);
+        m.addEnum("none", getEnumProperty(EN_NONE, "NONE"));
+        m.addEnum("square", getEnumProperty(EN_SQUARE, "SQUARE"));
+        m.addEnum("top-and-bottom", getEnumProperty(EN_TOP_AND_BOTTOM, "TOP_AND_BOTTOM"));
+        m.setDefault("none");
+        addPropertyMaker("fox:wrap", m);
+        m = new EnumProperty.Maker(PR_X_WRAP_SIDES);
+        m.setInherited(false);
+        m.addEnum("both", getEnumProperty(EN_BOTH, "BOTH"));
+        m.addEnum("left", getEnumProperty(EN_LEFT, "LEFT"));
+        m.addEnum("right", getEnumProperty(EN_RIGHT, "RIGHT"));
+        m.addEnum("largest", getEnumProperty(EN_LARGEST, "LARGEST"));
+        m.setDefault("both");
+        addPropertyMaker("fox:wrap-sides", m);
+        m = new StringProperty.Maker(PR_X_WRAP_DISTANCES);
+        m.setInherited(false);
+        m.setDefault("none");
+        addPropertyMaker("fox:wrap-distances", m);
 
         // fox:auto-toggle, used only in fo:multi-switch
         m = new EnumProperty.Maker(PR_X_AUTO_TOGGLE);

@@ -369,6 +369,22 @@ public class PageProvider implements Constants {
         return startPageOfCurrentElementList + getPartColumn(index).pageIndex + startPageOfPageSequence - 1;
     }
 
+    /**
+     * @param index the index of a part of the current element list
+     * @return the part's column on its page, zero-based (hook obstacles-in-the-line, fop/CR-024)
+     */
+    int columnIndexOfPart(int index) {
+        return getPartColumn(index).colIndex;
+    }
+
+    /**
+     * @param index the index of a part of the current element list
+     * @return the part's page, relative to the current element list (hook obstacles-in-the-line, fop/CR-024)
+     */
+    int pageIndexOfPart(int index) {
+        return getPartColumn(index).pageIndex;
+    }
+
     private Column getPartColumn(int index) {
         while (partColumns.size() <= index) {
             partColumns.add(null);

@@ -20,7 +20,8 @@
  * (fop/CR-017); the space between paragraphs at a side float's edge is kept, the edge being no break in the
  * flow (fop/CR-020); the content after an edge forced by clear is laid out at the float's foot (fop/CR-022);
  * hook float-offset, the float placed at its target top (fop/CR-023); and hook column-widths, columns of unequal
- * width balanced before a span="all" block by trial (fop/CR-026 phase B).
+ * width balanced before a span="all" block by trial (fop/CR-026 phase B); and hook obstacles-in-the-line, an
+ * obstacle taken up at its start edge as a float whose area is already drawn (fop/CR-024 phase A).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -998,6 +999,28 @@ public class PageBreaker extends AbstractBreaker {
         handleStartOfFloat(floatHeight, edgeY, Math.max(0, floatTopY - edgeY), false);
     }
 
+    /**
+     * Hook obstacles-in-the-line (fop/CR-024): the breaking algorithm reached the start edge before an obstacle's
+     * band. Nothing is drawn, the object being on the page already; the column is narrowed as the obstacle's side
+     * rule asks, and the obstacle is handled from here as a float whose foot lies at the band's foot.
+     */
+    private void startObstacle(PageBreakingAlgorithm alg) {
+        PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
+        int edgeY = pslm.getCurrentPV().getCurrentFlow().getBPD();
+        int height = Math.max(0, alg.getArmedBottomInFlow() - edgeY);
+        if (alg.getArmedObstacle().getWrap() == Constants.EN_TOP_AND_BOTTOM) {
+            // no line beside it: the obstacle ends at its start edge, and the content after the edge starts at
+            // its foot, as after an edge forced by clear (fop/CR-022)
+            floatYOffset = edgeY;
+            pendingFloatClearance = height;
+            handleEndOfFloat(height);
+            return;
+        }
+        pslm.setStartIntrusionAdjustment(alg.getArmedStartIntrusion());
+        pslm.setEndIntrusionAdjustment(alg.getArmedEndIntrusion());
+        handleStartOfFloat(height, edgeY, 0, false);
+    }
+
     /** @return how far below the flow's height at its insertion the float being handled was placed (fop/CR-023) */
     protected int getFloatYShift() {
         return floatYShift;
@@ -1212,6 +1235,9 @@ public class PageBreaker extends AbstractBreaker {
             if (alg.handlingStartOfFloat() && intrusionPending && !placed) {
                 // no anchor in this part: the algorithm reached a placed float's top (hook float-offset, fop/CR-023)
                 resolvePendingIntrusion(alg);
+            } else if (alg.handlingStartOfFloat() && !placed && alg.getArmedObstacle() != null) {
+                // the edge before an obstacle's band (hook obstacles-in-the-line, fop/CR-024)
+                startObstacle(alg);
             }
             if (alg.handlingEndOfFloat()) {
                 PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();

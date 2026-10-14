@@ -241,6 +241,17 @@ public final class Docx4jFop {
      */
     public static final String COLUMN_BALANCING = "column-balancing";
 
+    /**
+     * {@code fox:wrap}, {@code fox:wrap-sides} and {@code fox:wrap-distances} on an absolutely positioned
+     * {@code fo:block-container}: the lines of the page the container lands on wrap around it, as around a side
+     * float whose area is already drawn, on the side the side rule names ({@code left}, {@code right}, or the wider
+     * side for {@code largest} and, in phase A, {@code both}), keeping the four distances; {@code top-and-bottom}
+     * sends the lines below it. A word processor's page- or margin-anchored picture, text box or table with square
+     * wrap is such a container, which Apache FOP lays the lines under (fop/CR-024 phase A; Enterprise CR-001
+     * item 11). Phase A lays a line in one piece: text on both sides of an obstacle is phase B.
+     */
+    public static final String OBSTACLES_IN_THE_LINE = "obstacles-in-the-line";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -270,6 +281,7 @@ public final class Docx4jFop {
         caps.add(ROW_FIRST_PART_ROOM);
         caps.add(COLUMN_WIDTHS);
         caps.add(COLUMN_BALANCING);
+        caps.add(OBSTACLES_IN_THE_LINE);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

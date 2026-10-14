@@ -18,7 +18,8 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook gsub-features, the PR_X_GSUB_FEATURES property id.; and PR_X_CONTINUATION_DISPLAY_ALIGN
  * (hook continuation-display-align, fop/CR-013); and PR_X_FLOAT_OFFSET (hook float-offset, fop/CR-023); and
- * PR_X_COLUMN_WIDTHS and PR_X_COLUMN_GAPS (hook column-widths, fop/CR-026). See
+ * PR_X_COLUMN_WIDTHS and PR_X_COLUMN_GAPS (hook column-widths, fop/CR-026); and PR_X_WRAP, PR_X_WRAP_SIDES and
+ * PR_X_WRAP_DISTANCES (hook obstacles-in-the-line, fop/CR-024). See
  * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -851,8 +852,17 @@ public interface Constants {
     /** A gap per pair of columns of fo:region-body (hook column-widths, fop/CR-026) */
     int PR_X_COLUMN_GAPS = 300;
 
+    /** How the lines of the page wrap around an absolutely positioned block-container (hook obstacles-in-the-line, fop/CR-024) */
+    int PR_X_WRAP = 301;
+
+    /** Which side of such a container the lines go on (hook obstacles-in-the-line, fop/CR-024) */
+    int PR_X_WRAP_SIDES = 302;
+
+    /** The distances the lines keep from such a container, before after start end (hook obstacles-in-the-line, fop/CR-024) */
+    int PR_X_WRAP_DISTANCES = 303;
+
     /** Number of property constants defined */
-    int PROPERTY_COUNT = 300;
+    int PROPERTY_COUNT = 303;
 
     // compound property constants
 
@@ -1300,6 +1310,10 @@ public interface Constants {
     int EN_END_ON_DOUBLY_ODD = 209;
     /** Enumeration constant -- style format for a leader*/
     int EN_SQUARE = 210;
+    /** Enumeration constant -- fox:wrap, the lines go above and below the container only (fop/CR-024) */
+    int EN_TOP_AND_BOTTOM = 211;
+    /** Enumeration constant -- fox:wrap-sides, the lines go on the wider side (fop/CR-024) */
+    int EN_LARGEST = 212;
     /** Number of enumeration constants defined */
-    int ENUM_COUNT = 210;
+    int ENUM_COUNT = 212;
 }

@@ -64,7 +64,8 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.ROW_FIRST_PART_ROOM));
         assertTrue(Docx4jFop.has(Docx4jFop.COLUMN_WIDTHS));
         assertTrue(Docx4jFop.has(Docx4jFop.COLUMN_BALANCING));
-        assertEquals(25, Docx4jFop.capabilities().size());
+        assertTrue(Docx4jFop.has(Docx4jFop.OBSTACLES_IN_THE_LINE));
+        assertEquals(26, Docx4jFop.capabilities().size());
     }
 
     @Test

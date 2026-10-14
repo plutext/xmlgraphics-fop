@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.11: hook obstacles-in-the-line, fox:wrap on an absolutely positioned fo:block-container
+     (fop/CR-024 phase A). -->
+<testcase>
+  <info>
+    <p>
+      fox:wrap on an absolutely positioned fo:block-container: the lines of the page it lands on wrap around it.
+      A4, 72pt margins (the column 451pt wide, its top at 72pt), 16pt lines; each container is written as a word
+      processor's anchored object is, a fixed container in a zero-height wrapper at the head of its anchor
+      paragraph, 150 x 100pt at page y 136, four lines down. 1: at the right margin: the first four lines full
+      width, the seven lines from 64 to 176 (the first legal break after which a line lies below the foot at 164)
+      301pt wide, the rest full. 2: in the middle of the column (room 150 to 300) with the lines on the left only:
+      150pt wide. 3: at the left margin, largest side: the lines 301pt wide and shifted 150pt. 4: top-and-bottom:
+      no line beside it, the lines from 64 set below its foot. 5: as 1 with distances 12 18 24 6: the band is 124
+      to 254, so the lines from 112 to 256 are beside it, 277pt wide. 6: an absolute container 32pt below the top
+      of its paragraph, the second: the band begins at 48 in the flow, inside the paragraph's first line, so its
+      lines from 32 are beside it. 7: a control without fox:wrap: every line full width.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+<fo:layout-master-set><fo:simple-page-master master-name="A4" page-width="595pt" page-height="842pt" margin="72pt"><fo:region-body/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="373pt" width="150pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24 a25 a26 a27 a28 a29 a30 a31 a32 a33 a34 a35 a36 a37 a38 a39 a40 a41 a42 a43 a44 a45 a46 a47 a48 a49 a50 a51 a52 a53 a54 a55 a56 a57 a58 a59 a60 a61 a62 a63 a64 a65 a66 a67 a68 a69 a70 a71 a72 a73 a74 a75 a76 a77 a78 a79 a80 a81 a82 a83 a84 a85 a86 a87 a88 a89 a90 a91 a92 a93 a94 a95 a96 a97 a98 a99 a100 a101 a102 a103 a104 a105 a106 a107 a108 a109 a110 a111 a112 a113 a114 a115 a116 a117 a118 a119 a120 a121 a122 a123 a124 a125 a126 a127 a128 a129 a130 a131 a132 a133 a134 a135 a136 a137 a138 a139 a140 a141 a142 a143 a144 a145 a146 a147 a148 a149 a150 a151 a152 a153 a154 a155 a156 a157 a158 a159</fo:block>
+<fo:block>a-after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="222pt" width="150pt" height="100pt" fox:wrap="square" fox:wrap-sides="left" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15 b16 b17 b18 b19 b20 b21 b22 b23 b24 b25 b26 b27 b28 b29 b30 b31 b32 b33 b34 b35 b36 b37 b38 b39 b40 b41 b42 b43 b44 b45 b46 b47 b48 b49 b50 b51 b52 b53 b54 b55 b56 b57 b58 b59 b60 b61 b62 b63 b64 b65 b66 b67 b68 b69 b70 b71 b72 b73 b74 b75 b76 b77 b78 b79 b80 b81 b82 b83 b84 b85 b86 b87 b88 b89 b90 b91 b92 b93 b94 b95 b96 b97 b98 b99 b100 b101 b102 b103 b104 b105 b106 b107 b108 b109 b110 b111 b112 b113 b114 b115 b116 b117 b118 b119 b120 b121 b122 b123 b124 b125 b126 b127 b128 b129 b130 b131 b132 b133 b134 b135 b136 b137 b138 b139 b140 b141 b142 b143 b144 b145 b146 b147 b148 b149 b150 b151 b152 b153 b154 b155 b156 b157 b158 b159</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="72pt" width="150pt" height="100pt" fox:wrap="square" fox:wrap-sides="largest" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>c0 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12 c13 c14 c15 c16 c17 c18 c19 c20 c21 c22 c23 c24 c25 c26 c27 c28 c29 c30 c31 c32 c33 c34 c35 c36 c37 c38 c39 c40 c41 c42 c43 c44 c45 c46 c47 c48 c49 c50 c51 c52 c53 c54 c55 c56 c57 c58 c59 c60 c61 c62 c63 c64 c65 c66 c67 c68 c69 c70 c71 c72 c73 c74 c75 c76 c77 c78 c79 c80 c81 c82 c83 c84 c85 c86 c87 c88 c89 c90 c91 c92 c93 c94 c95 c96 c97 c98 c99 c100 c101 c102 c103 c104 c105 c106 c107 c108 c109 c110 c111 c112 c113 c114 c115 c116 c117 c118 c119 c120 c121 c122 c123 c124 c125 c126 c127 c128 c129 c130 c131 c132 c133 c134 c135 c136 c137 c138 c139 c140 c141 c142 c143 c144 c145 c146 c147 c148 c149 c150 c151 c152 c153 c154 c155 c156 c157 c158 c159</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="222pt" width="150pt" height="100pt" fox:wrap="top-and-bottom" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>d0 d1 d2 d3 d4 d5 d6 d7 d8 d9 d10 d11 d12 d13 d14 d15 d16 d17 d18 d19 d20 d21 d22 d23 d24 d25 d26 d27 d28 d29 d30 d31 d32 d33 d34 d35 d36 d37 d38 d39 d40 d41 d42 d43 d44 d45 d46 d47 d48 d49 d50 d51 d52 d53 d54 d55 d56 d57 d58 d59 d60 d61 d62 d63 d64 d65 d66 d67 d68 d69 d70 d71 d72 d73 d74 d75 d76 d77 d78 d79 d80 d81 d82 d83 d84 d85 d86 d87 d88 d89 d90 d91 d92 d93 d94 d95 d96 d97 d98 d99 d100 d101 d102 d103 d104 d105 d106 d107 d108 d109 d110 d111 d112 d113 d114 d115 d116 d117 d118 d119 d120 d121 d122 d123 d124 d125 d126 d127 d128 d129 d130 d131 d132 d133 d134 d135 d136 d137 d138 d139 d140 d141 d142 d143 d144 d145 d146 d147 d148 d149 d150 d151 d152 d153 d154 d155 d156 d157 d158 d159</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="373pt" width="150pt" height="100pt" fox:wrap="square" fox:wrap-distances="12pt 18pt 24pt 6pt" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>e0 e1 e2 e3 e4 e5 e6 e7 e8 e9 e10 e11 e12 e13 e14 e15 e16 e17 e18 e19 e20 e21 e22 e23 e24 e25 e26 e27 e28 e29 e30 e31 e32 e33 e34 e35 e36 e37 e38 e39 e40 e41 e42 e43 e44 e45 e46 e47 e48 e49 e50 e51 e52 e53 e54 e55 e56 e57 e58 e59 e60 e61 e62 e63 e64 e65 e66 e67 e68 e69 e70 e71 e72 e73 e74 e75 e76 e77 e78 e79 e80 e81 e82 e83 e84 e85 e86 e87 e88 e89 e90 e91 e92 e93 e94 e95 e96 e97 e98 e99 e100 e101 e102 e103 e104 e105 e106 e107 e108 e109 e110 e111 e112 e113 e114 e115 e116 e117 e118 e119 e120 e121 e122 e123 e124 e125 e126 e127 e128 e129 e130 e131 e132 e133 e134 e135 e136 e137 e138 e139 e140 e141 e142 e143 e144 e145 e146 e147 e148 e149 e150 e151 e152 e153 e154 e155 e156 e157 e158 e159</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>f-before</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="absolute" top="32pt" left="301pt" width="150pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28 f29 f30 f31 f32 f33 f34 f35 f36 f37 f38 f39 f40 f41 f42 f43 f44 f45 f46 f47 f48 f49 f50 f51 f52 f53 f54 f55 f56 f57 f58 f59 f60 f61 f62 f63 f64 f65 f66 f67 f68 f69 f70 f71 f72 f73 f74 f75 f76 f77 f78 f79 f80 f81 f82 f83 f84 f85 f86 f87 f88 f89 f90 f91 f92 f93 f94 f95 f96 f97 f98 f99 f100 f101 f102 f103 f104 f105 f106 f107 f108 f109 f110 f111 f112 f113 f114 f115 f116 f117 f118 f119 f120 f121 f122 f123 f124 f125 f126 f127 f128 f129 f130 f131 f132 f133 f134 f135 f136 f137 f138 f139 f140 f141 f142 f143 f144 f145 f146 f147 f148 f149 f150 f151 f152 f153 f154 f155 f156 f157 f158 f159</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="373pt" width="150pt" height="100pt" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>g0 g1 g2 g3 g4 g5 g6 g7 g8 g9 g10 g11 g12 g13 g14 g15 g16 g17 g18 g19 g20 g21 g22 g23 g24 g25 g26 g27 g28 g29 g30 g31 g32 g33 g34 g35 g36 g37 g38 g39 g40 g41 g42 g43 g44 g45 g46 g47 g48 g49 g50 g51 g52 g53 g54 g55 g56 g57 g58 g59 g60 g61 g62 g63 g64 g65 g66 g67 g68 g69 g70 g71 g72 g73 g74 g75 g76 g77 g78 g79 g80 g81 g82 g83 g84 g85 g86 g87 g88 g89 g90 g91 g92 g93 g94 g95 g96 g97 g98 g99 g100 g101 g102 g103 g104 g105 g106 g107 g108 g109 g110 g111 g112 g113 g114 g115 g116 g117 g118 g119 g120 g121 g122 g123 g124 g125 g126 g127 g128 g129 g130 g131 g132 g133 g134 g135 g136 g137 g138 g139 g140 g141 g142 g143 g144 g145 g146 g147 g148 g149 g150 g151 g152 g153 g154 g155 g156 g157 g158 g159</fo:block>
+</fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <!-- 1: four lines full width, seven lines 301pt wide beside the container at the right margin, the rest full -->
+    <eval expected="451000" xpath="//word[.='a0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="451000" xpath="((//pageViewport)[1]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[4]/@ipd"/>
+    <eval expected="301000" xpath="((//pageViewport)[1]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[5]/@ipd"/>
+    <eval expected="7" xpath="count((//pageViewport)[1]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
+    <eval expected="451000" xpath="((//pageViewport)[1]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[12]/@ipd"/>
+    <eval expected="0" xpath="count((//pageViewport)[1]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd!='301000' and @ipd!='451000'])"/>
+    <!-- 2: left only: the lines beside the container 150pt wide -->
+    <eval expected="150000" xpath="((//pageViewport)[2]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[5]/@ipd"/>
+    <eval expected="7" xpath="count((//pageViewport)[2]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='150000'])"/>
+    <!-- 3: largest side, the container at the left margin: the lines 301pt wide -->
+    <eval expected="301000" xpath="((//pageViewport)[3]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[5]/@ipd"/>
+    <eval expected="7" xpath="count((//pageViewport)[3]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
+    <!-- 4: top-and-bottom: no line beside it, the content after the fourth line set 100pt down at its foot -->
+    <eval expected="0" xpath="count((//pageViewport)[4]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd &lt; 451000])"/>
+    <eval expected="1" xpath="count((//pageViewport)[4]//flow/block[@bpd='100000' and not(@positioning)])"/>
+    <!-- 5: distances 12 18 24 6: the band is 52 to 182 in the flow, so the lines from 48 to 192 are beside it, 277pt wide -->
+    <eval expected="451000" xpath="((//pageViewport)[5]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[3]/@ipd"/>
+    <eval expected="277000" xpath="((//pageViewport)[5]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[4]/@ipd"/>
+    <eval expected="9" xpath="count((//pageViewport)[5]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='277000'])"/>
+    <!-- 6: absolute, 32pt below its paragraph's top: the band from 48, the fourth line of the page the first beside it -->
+    <eval expected="451000" xpath="//word[.='f0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="451000" xpath="((//pageViewport)[6]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[3]/@ipd"/>
+    <eval expected="301000" xpath="((//pageViewport)[6]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[4]/@ipd"/>
+    <!-- 7: the control: every line full width -->
+    <eval expected="0" xpath="count((//pageViewport)[7]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd &lt; 451000])"/>
+  </checks>
+</testcase>

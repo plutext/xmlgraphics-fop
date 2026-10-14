@@ -23,7 +23,9 @@
  * break before it, its content starting at the float's foot (fop/CR-022); and hook float-offset, a float's start edge
  * at the first break after which a line would cross the float's top, `fox:float-offset` below its anchor block's top
  * (fop/CR-023), and a line that does not fit beside a float ends it, the line set at its foot (fop/CR-023 §4.2); and
- * hook column-widths, the parts held to a height while columns of unequal width are balanced (fop/CR-026 phase B).
+ * hook column-widths, the parts held to a height while columns of unequal width are balanced (fop/CR-026 phase B);
+ * and hook obstacles-in-the-line, an obstacle held by a box armed as a virtual float for the page the box lands on,
+ * its start edge the first break before its band (fop/CR-024 phase A).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -38,6 +40,7 @@ import java.util.ListIterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.apache.fop.area.PageViewport;
 import org.apache.fop.fo.Constants;
 import org.apache.fop.fo.FONode;
 import org.apache.fop.fo.FObj;
@@ -146,6 +149,15 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     /** fop/CR-023: the anchor block's top in the page when an offset float's start edge is taken; -1 otherwise. */
     private int floatAnchorTopInPage = -1;
     private int edgeElementIdx = -1; // fop/CR-022: the legal break under consideration while a float is on
+    // hook obstacles-in-the-line (fop/CR-024): the obstacle armed at the box holding it, taken up at the edge
+    // before its band as a float whose area is already drawn
+    private Obstacle armedObstacle;
+    private int armedTop;
+    private int armedStartIntrusion;
+    private int armedEndIntrusion;
+    private int armedBottomInFlow;
+    /** The flow's height on its page where this list starts, when the list starts mid-page (fop/CR-024). */
+    private int listStartFlowY;
     private KnuthNode bestFloatEdgeNode;
     private FloatPosition floatPosition;
     private int previousFootnoteListIndex = -2;
@@ -314,10 +326,14 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                     // started the intrusion, where this list starts (fop/CR-023)
                     floatHeight = Math.min(pslm.getFloatHeight() + pslm.getFloatYShift(),
                             lineWidth - pslm.getFloatYOffset());
+                    // this list starts at the float's start edge, that far down the page (fop/CR-024)
+                    listStartFlowY = pslm.getFloatYOffset();
                 }
             }
             if (pslm.handlingEndOfFloat()) {
                 totalWidth += pslm.getOffsetDueToFloat() + insertedFootnotesLength;
+                // this list starts at the float's foot, where its width count begins (fop/CR-024)
+                listStartFlowY = totalWidth;
             } else if (spanAll) {
                 totalWidth += insertedFootnotesLength;
             }
@@ -496,6 +512,118 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         if (floatHeight != 0 && totalWidth >= floatHeight) {
             handlingEndOfFloat = true;
         }
+        armObstacleHeldBy(box);
+    }
+
+    /**
+     * Hook obstacles-in-the-line (fop/CR-024 phase A): a box holding an obstacle not yet started arms it for the
+     * page the box lands on: the obstacle's band and room are set against that page's body and the part's column,
+     * the narrowing of the lines beside it found by its side rule, and the intrusion made pending from the band's
+     * top, as an offset float's is (fop/CR-023), so that the start edge is the first legal break after which a
+     * line would cross the top, and the foot ends it as a float's foot does. A band that begins above the box is
+     * taken from the box on (the lines above it keep their width). An obstacle met while a float is on, or while
+     * another obstacle is pending, waits for the next box that holds it, which is read again after the edge only
+     * when the box lies after it.
+     */
+    private void armObstacleHeldBy(KnuthBox box) {
+        if (!(topLevelLM instanceof PageSequenceLayoutManager) || handlingFloat() || pendingFloatTop >= 0
+                || armedObstacle != null) {
+            return;
+        }
+        PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) topLevelLM;
+        ObstacleRegistry registry = pslm.getObstacleRegistry();
+        if (!registry.hasPending()) {
+            return;
+        }
+        Obstacle obstacle = registry.firstHeldBy(box.getPosition());
+        if (obstacle == null) {
+            return;
+        }
+        obstacle.setStarted();
+        KnuthNode pageStart = currentPageStart();
+        if (pageStart == null) {
+            return;
+        }
+        int pageTopInList = pageStart.totalWidth - (pageStart.line == 0 ? listStartFlowY : 0);
+        int pageHeight = getLineWidth(pageStart);
+        int bandTop;
+        int bandBottom;
+        int roomStart;
+        int roomEnd;
+        int columnWidth;
+        if (obstacle.isPageRelative()) {
+            boolean spanAll = childLC != null && childLC.getCurrentSpan() == Constants.EN_ALL;
+            int column = 0;
+            PageViewport pv;
+            if (pageProvider != null) {
+                column = pageProvider.columnIndexOfPart(pageStart.line);
+                pv = pageProvider.getPage(false, pageProvider.pageIndexOfPart(pageStart.line),
+                        PageProvider.RELTO_CURRENT_ELEMENT_LIST).getPageViewport();
+            } else {
+                pv = pslm.getCurrentPV();
+            }
+            int[] geometry = PageSequenceLayoutManager.columnGeometryInPage(pv, column, spanAll);
+            bandTop = pageTopInList + obstacle.getBandTop() - geometry[0];
+            bandBottom = pageTopInList + obstacle.getBandBottom() - geometry[0];
+            roomStart = obstacle.getRoomStart() - geometry[1];
+            roomEnd = obstacle.getRoomEnd() - geometry[1];
+            columnWidth = geometry[2];
+        } else {
+            bandTop = totalWidth + obstacle.getBandTop();
+            bandBottom = totalWidth + obstacle.getBandBottom();
+            roomStart = obstacle.getRoomStart();
+            roomEnd = obstacle.getRoomEnd();
+            columnWidth = pslm.getCurrentColumnWidth();
+        }
+        if (bandBottom <= pageTopInList || bandTop >= pageTopInList + pageHeight || bandBottom <= totalWidth) {
+            // not on this page's body, or wholly above the content read so far
+            return;
+        }
+        int[] intrusions = obstacle.intrusionsIn(roomStart, roomEnd, columnWidth);
+        if (intrusions == null) {
+            return;
+        }
+        armedObstacle = obstacle;
+        armedStartIntrusion = intrusions[0];
+        armedEndIntrusion = intrusions[1];
+        armedBottomInFlow = bandBottom - pageTopInList;
+        armedTop = Math.max(bandTop, totalWidth);
+        pendingFloatTop = armedTop;
+        if (log.isDebugEnabled()) {
+            log.debug("Obstacle armed: " + obstacle + " band " + bandTop + ".." + bandBottom + " in list, intrusions "
+                    + armedStartIntrusion + "/" + armedEndIntrusion);
+        }
+    }
+
+    /** The active node of the highest part number: the start of the page being filled (fop/CR-024). */
+    private KnuthNode currentPageStart() {
+        for (int i = endLine - 1; i >= startLine; i--) {
+            KnuthNode node = getNode(i);
+            if (node != null) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    /** @return the obstacle armed and reached at the float start edge being handled, or null (fop/CR-024) */
+    protected Obstacle getArmedObstacle() {
+        return armedObstacle;
+    }
+
+    /** @return the start intrusion adjustment the armed obstacle asks for (fop/CR-024) */
+    protected int getArmedStartIntrusion() {
+        return armedStartIntrusion;
+    }
+
+    /** @return the end intrusion adjustment the armed obstacle asks for (fop/CR-024) */
+    protected int getArmedEndIntrusion() {
+        return armedEndIntrusion;
+    }
+
+    /** @return the foot of the armed obstacle's band, in the flow of its page (fop/CR-024) */
+    protected int getArmedBottomInFlow() {
+        return armedBottomInFlow;
     }
 
     /**
@@ -627,6 +755,10 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             floatStartListTop = -1;
             floatAnchorListTop = -1;
             floatStartListBottom = 0;
+            if (armedObstacle != null) {
+                // an armed obstacle stays pending from its band's top (fop/CR-024)
+                pendingFloatTop = armedTop;
+            }
         }
 
         int returnValue = super.restartFrom(restartingNode, currentIndex);

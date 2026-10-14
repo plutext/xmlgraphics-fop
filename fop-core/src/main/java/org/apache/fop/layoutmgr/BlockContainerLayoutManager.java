@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook obstacles-in-the-line, an absolutely positioned container with fox:wrap registered as an
+ * obstacle the lines of its page wrap around (fop/CR-024 phase A). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -545,6 +549,7 @@ public class BlockContainerLayoutManager extends SpacedBorderedPaddedBlockLayout
         if (!breaker.isEmpty()) {
             Position bcPosition = new BlockContainerPosition(this, breaker);
             returnList.add(new KnuthBox(0, notifyPos(bcPosition), false));
+            registerObstacle(offset);
 
             //TODO Maybe check for page overflow when autoHeight=true
             if (!autoHeight & (contentOverflows)) {
@@ -718,6 +723,51 @@ public class BlockContainerLayoutManager extends SpacedBorderedPaddedBlockLayout
                           LayoutContext.offspringOf(layoutContext));
         }
 
+    }
+
+    /**
+     * Hook obstacles-in-the-line (fop/CR-024): a container with fox:wrap is an obstacle the lines of its page wrap
+     * around; its rectangle is the viewport's allocation, in page coordinates for a fixed container and relative
+     * to the box that holds it, and the column's start edge, for an absolute one.
+     * @param offset the container's offset, from getAbsOffset
+     */
+    private void registerObstacle(Point offset) {
+        BlockContainer fo = getBlockContainerFO();
+        if (fo.getWrap() == EN_NONE) {
+            return;
+        }
+        int width = getContentAreaIPD() + getIPIndents();
+        int height = vpContentBPD + getBPIndents();
+        if (width <= 0 || height <= 0) {
+            return;
+        }
+        getPSLM().getObstacleRegistry().register(new Obstacle(this, isFixed(), offset.y, offset.x, width, height,
+                fo.getWrap(), fo.getWrapSides(), parseWrapDistances(fo.getWrapDistances())));
+    }
+
+    private static final java.util.regex.Pattern LENGTH
+            = java.util.regex.Pattern.compile("([-+]?[0-9]*\\.?[0-9]+)\\s*([a-z]+)");
+
+    /** fox:wrap-distances: up to four lengths, before after start end; a missing one is 0, a malformed list all 0. */
+    static int[] parseWrapDistances(String text) {
+        int[] distances = new int[4];
+        if (text == null || text.trim().length() == 0 || "none".equals(text.trim())) {
+            return distances;
+        }
+        String[] tokens = text.trim().split("[\\s,]+");
+        for (int i = 0; i < tokens.length && i < 4; i++) {
+            java.util.regex.Matcher m = LENGTH.matcher(tokens[i]);
+            if (!m.matches()) {
+                return new int[4];
+            }
+            try {
+                distances[i] = org.apache.fop.fo.properties.FixedLength.getInstance(
+                        Double.parseDouble(m.group(1)), m.group(2)).getValue();
+            } catch (RuntimeException e) {
+                return new int[4];
+            }
+        }
+        return distances;
     }
 
     private Point getAbsOffset() {

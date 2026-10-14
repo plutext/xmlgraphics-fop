@@ -1,7 +1,8 @@
 # CR-024: obstacles in the line - text on both sides of a float, and around page-anchored objects
 
-Status: DESIGN 2026-10-08, reviewed 2026-10-15 against what the fork learnt since (§10: five changes to the design,
-the estimate for phase A 2.5 to 3 weeks), not started; Jason asked for it after CR-023 shipped its two hooks, on the question whether
+Status: PHASE A IN PROGRESS, ordered by Jason 2026-10-15; branch `CR-024-obstacles` off `2.11-docx4j.7`; the first
+increment (the page-anchored half, forward case, §11) built 2026-10-15, not yet gated. Designed 2026-10-08, reviewed
+2026-10-15 against what the fork learnt since (§10: five changes to the design, the estimate for phase A 2.5 to 3 weeks); Jason asked for it after CR-023 shipped its two hooks, on the question whether
 the floating-table work is one instance of the general case of wrapping around pictures, charts and text boxes. It
 is. Registry key `fop/CR-024`. Enterprise CR-001 §6.6 items 10 (text on both sides of an anchored object) and 11 (wrap
 around a page-positioned object), both open since the first survey; what CR-023 §4.3 sized at three to four weeks,
@@ -279,3 +280,49 @@ the Word run for item 11's page-anchored picture probes, cut by the docx4j sessi
 docx4j writes page-anchored objects first in their section meanwhile, which costs it nothing and removes the
 page-start restart from the common case.
 
+
+## 11. Phase A as built
+
+**11.1 Increment 1, 2026-10-15: the page-anchored half, forward case.** Capability `obstacles-in-the-line`, the
+twenty-sixth. `fox:wrap` (`none`, `square`, `top-and-bottom`), `fox:wrap-sides` (`both`, `left`, `right`, `largest`)
+and `fox:wrap-distances` (up to four lengths, before after start end) on an absolutely positioned `fo:block-container`
+(`Constants` 301 to 303, `FOPropertyMapping`, `ExtensionElementMapping`, `BlockContainer`). The obstacle
+(`layoutmgr.Obstacle`: the rectangle, grown by the distances, with the side rule) is registered by
+`BlockContainerLayoutManager.getNextKnuthElementsAbsolute` with the page-sequence's `ObstacleRegistry` when its
+elements are made, page-relative for `fixed`, relative to the holding box's top and the column's start for
+`absolute`. The page is not known then: docx4j's object is a fixed container in a zero-height wrapper at the head of
+its anchor paragraph (`WordLayoutFixups.insertAnchorWrapper`), so only the wrapper's box reaches the page's list, with
+the container's own box inside the wrapper's breaker. `PageBreakingAlgorithm.handleBox` therefore asks the registry
+for an obstacle not yet started whose layout manager descends from one in the box's position chain, and arms it for
+the page the box lands on (the active node of the highest part number): the band in list coordinates from that
+page's start and the body's top in the page (`PageSequenceLayoutManager.columnGeometryInPage`, with the part's column
+from `PageProvider.columnIndexOfPart`), the room in the part's column, the narrowing by the side rule
+(`Obstacle.intrusionsIn`: the wider side for `largest` and, in phase A, `both`; the whole column for
+`top-and-bottom`), and `pendingFloatTop` set to the band's top, which is CR-023's mechanism unchanged: the start edge is
+the first legal break after which a line would cross the top (`nextLineCrosses`), and the edge node ends the
+algorithm. `PageBreaker.addAreasForFloats` then finds no float placed and an armed obstacle, and `startObstacle` sets
+the two intrusion adjustments and records a float of the band's remaining height from the edge
+(`handleStartOfFloat(bottom - edgeY, edgeY, 0, false)`); the list is read again from the edge with the lines narrowed
+through the reference IPD, and the foot ends it as a float's foot does (CR-020's edge, CR-022's clearance, CR-023's
+overflow rule all apply). For `top-and-bottom` the obstacle ends at its own start edge with a clearance to the foot,
+since the overflow rule tests the box after a break and the first line after the edge has none before it (measured: a
+zero-width line was laid beside the band). A list that starts mid-page records where (`listStartFlowY`), so a band is
+placed against the page whichever list it is found in.
+
+So the "width per line" of §4.2 is, for an obstacle at any x in phase A, a width per band with a start indent, which
+the float machinery's restarts already give at line granularity, and the narrowing reaches docx4j's line manager
+through `LayoutContext.getRefIPD()` as a float's does: its greedy breaker and tab stops need no change for this half
+(the docx4j session's correction of 2026-10-15 to §10.2, that its tab-stop logic reads the constant width too, is
+answered the same way). The `LineWidthProvider` of §10.2 remains for the paragraph-anchored float at any x
+(`fox:float-x`) and for phase B, where a line's width varies within a band.
+
+Limits of the increment, each to be lifted or recorded: (i) a band that begins above the box that holds the
+obstacle is taken from the box on; the restart from the page's first break (§10.1) is increment 2; (ii) an obstacle
+met while a float or another obstacle is being handled waits for a later box that holds it, and is lost if none
+follows (the common corpus case has one object a page; two on one page, or an object beside a floating table, is
+the case to measure); (iii) the page a box lands on is read from the active node of the highest part, which is the
+page in FOP's first-fit page breaking with floats and may not be under total-fit; (iv) a container taller than its
+page is clipped by FOP as before, and the registry takes it for the page it starts on. Layout test
+`block-container_fox-wrap.xml`, seven cases (the right margin, left only, largest at the left margin, top-and-bottom,
+the four distances, an absolute container inside its paragraph, a control without `fox:wrap`): each passes;
+checkstyle clean; the full suite's reading is in the commit.

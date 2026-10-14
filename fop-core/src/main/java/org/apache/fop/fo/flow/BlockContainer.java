@@ -17,7 +17,9 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: the clear property is read on this block-level FO, so that a side float ends before it and its
- * content starts at the float's foot (fop/CR-022). See README.md, "Changes from Apache FOP 2.11". */
+ * content starts at the float's foot (fop/CR-022); and fox:wrap, fox:wrap-sides and fox:wrap-distances, read on an
+ * absolutely positioned container so that the lines of its page wrap around it (hook obstacles-in-the-line,
+ * fop/CR-024). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -65,6 +67,9 @@ public class BlockContainer extends FObj implements BreakPropertySet, WritingMod
     private Numeric referenceOrientation;
     private int span;
     private int disableColumnBalancing;
+    private int wrap; // fop/CR-024
+    private int wrapSides;
+    private String wrapDistances;
     private WritingModeTraits writingModeTraits;
     // Unused but valid items, commented out for performance:
     //     private int intrusionDisplace;
@@ -107,6 +112,9 @@ public class BlockContainer extends FObj implements BreakPropertySet, WritingMod
             WritingMode.valueOf(pList.get(PR_WRITING_MODE).getEnum()),
             pList.getExplicit(PR_WRITING_MODE) != null);
         disableColumnBalancing = pList.get(PR_X_DISABLE_COLUMN_BALANCING).getEnum();
+        wrap = pList.get(PR_X_WRAP).getEnum(); // fop/CR-024
+        wrapSides = pList.get(PR_X_WRAP_SIDES).getEnum();
+        wrapDistances = pList.get(PR_X_WRAP_DISTANCES).getString();
     }
 
     /** {@inheritDoc} */
@@ -201,6 +209,32 @@ public class BlockContainer extends FObj implements BreakPropertySet, WritingMod
      */
     public int getClear() {
         return clear;
+    }
+
+    /**
+     * Hook obstacles-in-the-line (fop/CR-024): how the lines of the page wrap around this container when it is
+     * absolutely positioned.
+     * @return EN_NONE, EN_SQUARE or EN_TOP_AND_BOTTOM
+     */
+    public int getWrap() {
+        return wrap;
+    }
+
+    /**
+     * Hook obstacles-in-the-line (fop/CR-024): which side of the container the lines go on.
+     * @return EN_BOTH, EN_LEFT, EN_RIGHT or EN_LARGEST
+     */
+    public int getWrapSides() {
+        return wrapSides;
+    }
+
+    /**
+     * Hook obstacles-in-the-line (fop/CR-024): the distances the lines keep from the container, as written:
+     * up to four space-separated lengths, before, after, start and end; "none" when not written.
+     * @return the fox:wrap-distances string
+     */
+    public String getWrapDistances() {
+        return wrapDistances;
     }
 
     /** @return the "keep-with-next" FO trait.  */

@@ -18,7 +18,9 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook page-number-restart, a following page-sequence continues from the number the last page
  * prints (fop/CR-017.2); and hook measured-region-extents, a master's header and footer measured from the
- * page-sequence's static content (fop/CR-018). See README.md, "Changes from Apache FOP 2.11". */
+ * page-sequence's static content (fop/CR-018); and hook obstacles-in-the-line, the page-sequence's obstacle
+ * registry and the geometry of a part's column in its page (fop/CR-024 phase A).
+ * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -35,9 +37,12 @@ import org.apache.fop.area.Area;
 import org.apache.fop.area.AreaTreeHandler;
 import org.apache.fop.area.AreaTreeModel;
 import org.apache.fop.area.Block;
+import org.apache.fop.area.BodyRegion;
 import org.apache.fop.area.LineArea;
 import org.apache.fop.area.MeasuredExtents;
+import org.apache.fop.area.PageViewport;
 import org.apache.fop.area.RegionReference;
+import org.apache.fop.area.RegionViewport;
 import org.apache.fop.complexscripts.bidi.BidiResolver;
 import org.apache.fop.fo.Constants;
 import org.apache.fop.fo.pagination.PageSequence;
@@ -71,6 +76,9 @@ public class PageSequenceLayoutManager extends AbstractPageSequenceLayoutManager
 
     private int startIntrusionAdjustment;
     private int endIntrusionAdjustment;
+
+    /** hook obstacles-in-the-line (fop/CR-024): the obstacles registered by this page-sequence's layout managers */
+    private final ObstacleRegistry obstacleRegistry = new ObstacleRegistry();
 
     /**
      * Constructor
@@ -494,6 +502,38 @@ public class PageSequenceLayoutManager extends AbstractPageSequenceLayoutManager
         int flowIPD = getCurrentPV().getCurrentSpan().getColumnWidth();
         flowIPD -= startIntrusionAdjustment + endIntrusionAdjustment;
         return flowIPD;
+    }
+
+    /** @return the obstacles registered by this page-sequence's layout managers (hook obstacles-in-the-line) */
+    public ObstacleRegistry getObstacleRegistry() {
+        return obstacleRegistry;
+    }
+
+    /**
+     * Hook obstacles-in-the-line (fop/CR-024): where a part's column lies in its page, so that an obstacle given
+     * in page coordinates can be set against the lines of the column.
+     *
+     * @param pageViewport the page the part lies on
+     * @param column the part's column on that page, zero-based
+     * @param spanAll whether the part spans all columns
+     * @return the body's top edge in the page, the column's start edge in the page, and the column's inline size,
+     * in millipoints
+     */
+    public static int[] columnGeometryInPage(PageViewport pageViewport, int column, boolean spanAll) {
+        BodyRegion body = pageViewport.getBodyRegion();
+        RegionViewport rv = body.getRegionViewport();
+        java.awt.geom.Rectangle2D view = rv.getViewArea();
+        int bodyTop = (int) view.getY() + rv.getBorderAndPaddingWidthBefore();
+        int bodyStart = (int) view.getX() + rv.getBorderAndPaddingWidthStart();
+        int bodyIPD = body.getIPD() - rv.getBorderAndPaddingWidthStart() - rv.getBorderAndPaddingWidthEnd();
+        if (spanAll || body.getColumnCount() <= 1) {
+            return new int[] {bodyTop, bodyStart, bodyIPD};
+        }
+        int columnStart = 0;
+        for (int i = 0; i < column; i++) {
+            columnStart += body.getColumnWidth(i) + body.getColumnGap(i);
+        }
+        return new int[] {bodyTop, bodyStart + columnStart, body.getColumnWidth(column)};
     }
 
     public void holdFootnotes(List fl, List<Integer> ll, int tfl, int ifl, boolean fp, boolean nf, int fnfi, int fli,
