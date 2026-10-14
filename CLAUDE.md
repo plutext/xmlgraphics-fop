@@ -236,6 +236,19 @@ item (see the memory note). The drafts under `docs/upstream/` are stamped with b
 changes, work in the worktree at `../fop-upstream-wt`; when #114 and #109 merge, rebase `FOP-3345` to its one
 commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/main` (5be8c69b6, 2026-10-07).
 
+**Upstream, checked 2026-10-15.** Apache applies our pull requests as its own commits ("by Jason Harrop" in the
+subject) and leaves the requests open: #120 (FOP-3348, 5be8c69b6), #121 (FOP-3349, a36b42fab), #125 (FOP-3356,
+c2d7e0aca) and, since the CR-027 merge, #123 (FOP-3354, bed50fc76 on 2026-10-09, our Java byte for byte, the test
+reworded; JIRA closed Fixed, fix version `main`). Those four are ours to close with a note, on Jason's word. #122
+(FOP-3350, the page label 0) was declined on 2026-10-08 ("FOP itself will not cause it"): close it. #108 closed
+2026-10-07 (FOP-3352). The sixteen others are open and untouched since our FO reproducers of 2026-10-07: #106, #107,
+#109 to #119, #124, #126; one comment from Glenn Adams on #116, encouragement. FOP-3355 (#124) is stacked on #123, so it
+should be rebased to its one commit now that FOP-3354 is on `main`; FOP-3345 (#116) still waits on #114 and #109.
+Apache `main` has moved seven commits past CR-027's base c2d7e0aca: FOP-3354, a version bump to 2.12.0-SNAPSHOT with
+Batik 1.19.0-SNAPSHOT and xmlgraphics-commons 2.12.0-SNAPSHOT (snapshot pins again, as CR-009 §3.1 found), javadoc in
+CI, "Allow branching" (the workflow), bouncycastle and ant bumps; a follow-up merge is a day and conflicts on the
+pom and the workflow only. `trunk` is still at c2d7e0aca.
+
 **Open, in order.**
 1. *After the `.6` release* (tag and branch pushed 2026-10-09): the docx4j session reads the published core jar (coordinates and sha256 sent 2026-10-09)
    against b218 and bumps `docx4j-export-fo`; its gate line and commit go into the `.6` release note's header ("Reached
