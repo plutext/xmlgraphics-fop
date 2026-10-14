@@ -297,7 +297,11 @@ commit; when #123 merges, rebase `FOP-3355` likewise. `trunk` is at `upstream/ma
    and distances; tables, pictures, text boxes and charts are the same input. Phase A a width per line (TeX's parshape:
    `BreakingAlgorithm.getLineWidth(int line)` is the hook, the line areas already take a width per line) with an obstacle
    registry and page-anchored objects as virtual floats, about two weeks; phase B a line in segments, two to three; §6.6
-   items 10 and 11. Not started; his ordering against the `.6` release and the merge of Apache `main`.
+   items 10 and 11. Reviewed 2026-10-15 at Jason's word (CR-024 §10): the obstacle is known mid-list, so the
+   breaker restarts from the page's first break when a band starts above it; the width per line comes from a
+   provider on the layout context, below the line manager, since docx4j's is a private copy with its own greedy
+   breaker; the pitch is a fixed point; no trial layout; it folds FOP-3331's in-flow path, float-overflow-below and
+   the page-anchored question. Phase A 2.5 to 3 weeks. Not started; Jason's ordering, the docx4j session waiting.
 5. *`fop/CR-025`, a table row at a page's foot needs room for its bottom margin*: DONE 2026-10-08, gated PASS (b208:
    11657's page 30 ends at row 53, row 54 opens page 31 whole, row 34 still split; 2451 +19 lines, 13383 +4, 2048 −1,
    nothing else moved) and merged to `2.11-docx4j.6` by fast-forward; unreleased, in the `.6` release notes. Hook
