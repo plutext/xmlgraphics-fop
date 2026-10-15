@@ -413,3 +413,38 @@ not ending it (the first line after an edge has no break before it to be tested 
 returns the whole column when the side the rule names has no room, and `PageBreaker.startObstacle` clears to the
 foot as for `top-and-bottom`. Test cases 11 and 12; on the reproducers, every defect page now reads as Word's
 (page 3's line at 186.1 at 331.0 against Word's 331.1; the table's flow resuming at 208.1 against Word's 209.4).
+
+**11.5 Two defects from the docx4j session's r32 corpus gate (b236, 2026-10-15), fixed.** The gate's good part:
+the probes move to Word (`picture-page-square` 0.7273 to 0.9564, every defect page of §11.4 matching Word's
+reading; `table-floating-page-after` 0.8085 to 0.9504), and corpus documents with page-anchored objects (13544
+to 0.9815, 4621 and 4253 to 1.0, 5075 to Word's pages). Its control b235 (r32 without `fox:wrap`, against b233)
+had one mover, 2189 at -2 lines, the foot rule of §11.3; unread. Two renderer defects, each losing content,
+reproducers under `~/fidelity-cr030/repro/r32-*.fo`:
+
+(A) 3475, a page-anchored logo at the top of its last page, the page drawn with one line under docx4j's managers.
+The page starts at a forced break (`break-before="page"` on an empty paragraph before the anchor), so the page-top
+edge of §11.2 is that forced break. `PageBreaker.handleFloatLayout` resolves the restart from the edge's position:
+for a break between blocks (`addInBetweenBreak`, the parent's position) the restart is the next block, read again
+from its start; for `break-before` the break element carries the block's own position
+(`addKnuthElementsForBreakBefore`), so Apache's resolution restarted one level inside that block, at its line
+manager, with the block's auxiliary position. FOP's own line manager survives that (the shape renders here); a
+consumer's copy need not, and docx4j's lost the page. Fixed: at a forced break whose position belongs to a child of
+the flow, the restart is that block itself, as a restart for a change of width reads a block. Test case 13.
+
+(B) 8362, a column-wide page-anchored table at page y 66.65, anchored after a two-page table: the page the
+breaker first met its box on lost its lines and the table was drawn on the next. The band, clearing the column,
+pushed the content from the page's top down by its height, the anchor box with it, past the page's foot; the page
+then broke before the box, which landed on the next page with the fixed container, and the first page's lines had
+been cleared for nothing. The model's own answer, Word's too, is that the object moves with its anchor: when a
+clearing band would push its box past the page's foot (`boxY + bandHeightInPage >= pageHeight`), the obstacle is
+deferred: `computeDifference` returns too long for every break after the box on a page that cannot hold the box
+below the band, so the page breaks before the box as CR-023's `pageCannotHoldFloat` breaks before an anchor; and
+the obstacle is taken up for the page the box lands on, at the first legal break after the box by the first active
+node whose page holds it (`takeDeferredObstacle`, the page-top edge at that node), or in `handleBox` again when
+the algorithm's restart reads the box again. A band that no page holds with a line below it is given up, the
+object drawn where it lands. Test case 14 (a 400pt column-wide container at the page's top anchored at 480pt: the
+page keeps its thirty lines, the next opens with the container and the anchor below it). On the reproducer here
+page 3 keeps its content and breaks before the anchor, which lands below the table on page 4.
+
+Noted from the same gate, the docx4j session's side: a page-anchored table taller than the room below its
+`tblpY` is clipped by FOP (limit (iv) of §11.1), so docx4j keeps such tables in the flow.

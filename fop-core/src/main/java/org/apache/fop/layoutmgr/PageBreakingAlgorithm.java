@@ -163,6 +163,15 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     private int listStartFlowY;
     /** The page start to read the elements again from, for an obstacle whose band begins above its box (fop/CR-024). */
     private KnuthNode rewindTo;
+    // hook obstacles-in-the-line (fop/CR-024 §11.5): an obstacle whose band, clearing the column, would push the
+    // box that holds it past the page's foot: the page breaks before the box, and the obstacle is taken up on
+    // the page the box lands on
+    private Obstacle deferredObstacle;
+    private int deferredBoxIndex = -1;
+    private int deferredBoxWidth;
+    private int deferredBandHeight;
+    private int deferredBandBottomInPage;
+    private int[] deferredIntrusions;
     private KnuthNode bestFloatEdgeNode;
     private FloatPosition floatPosition;
     private int previousFootnoteListIndex = -2;
@@ -544,9 +553,14 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         if (obstacle == null) {
             return;
         }
-        obstacle.setStarted();
+        if (obstacle == deferredObstacle) {
+            // read again after the page broke before the box: taken up for the page it lands on now
+            deferredObstacle = null;
+            deferredBoxIndex = -1;
+        }
         KnuthNode pageStart = currentPageStart();
         if (pageStart == null) {
+            obstacle.setStarted();
             return;
         }
         int pageTopInList = pageStart.totalWidth - (pageStart.line == 0 ? listStartFlowY : 0);
@@ -591,6 +605,35 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         if (intrusions == null) {
             return;
         }
+        if (intrusions[0] + intrusions[1] >= columnWidth && obstacle.isPageRelative()) {
+            // the band clears the column: the box that holds the obstacle moves down by the band's height on
+            // the page. If it would then lie past the page's foot, the page breaks before it, the box lands on
+            // the next page with the object, and this page's lines would have been cleared for nothing (corpus
+            // 8362, CR-024 §11.5). As a word processor moves the object with its anchor, the page is made to
+            // break before the box (computeDifference, too long from the box on) and the obstacle is taken up on
+            // the page the box lands on (considerLegalBreak, or handleBox again after the restart)
+            int bandHeightInPage = (bandBottom - pageTopInList) - Math.max(bandTop - pageTopInList, 0);
+            int boxY = totalWidth - pageTopInList;
+            if (boxY + bandHeightInPage >= pageHeight) {
+                if (bandHeightInPage + nextContentBoxWidth(box) >= pageHeight) {
+                    // no page holds the band and a line below it: the object is drawn where it lands
+                    obstacle.setStarted();
+                    return;
+                }
+                deferredObstacle = obstacle;
+                deferredBoxIndex = par.indexOf(box);
+                deferredBoxWidth = totalWidth;
+                deferredBandHeight = bandHeightInPage;
+                deferredBandBottomInPage = bandBottom - pageTopInList;
+                deferredIntrusions = intrusions;
+                if (log.isDebugEnabled()) {
+                    log.debug("Obstacle deferred to the next page, its band would push its box past this one: "
+                            + obstacle);
+                }
+                return;
+            }
+        }
+        obstacle.setStarted();
         armedObstacle = obstacle;
         armedStartIntrusion = intrusions[0];
         armedEndIntrusion = intrusions[1];
@@ -607,18 +650,8 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             armedTop = Math.max(bandTop, pageStart.totalWidth);
             rewindTo = pageStart;
         } else {
-            // the band covers the page's top: the page's start, a break in this list, is the edge itself, so
-            // the parts before it are added, the float part is empty, and the next list begins on the new page
-            // with the lines narrowed from its first
-            armedTop = pageStart.totalWidth;
-            removeAllNodes();
-            handlingStartOfFloat = true;
-            bestFloatEdgeNode = createNode(pageStart.position, pageStart.line + 1, pageStart.fitness,
-                    pageStart.totalWidth, pageStart.totalStretch, pageStart.totalShrink, 0, 0, 0, 0,
-                    pageStart.totalDemerits, pageStart);
-            if (log.isDebugEnabled()) {
-                log.debug("Obstacle armed at the page's top: " + obstacle + ", the edge at " + pageStart.position);
-            }
+            // the band covers the page's top: the page's start, a break in this list, is the edge itself
+            takePageTopEdge(pageStart);
             return;
         }
         pendingFloatTop = armedTop;
@@ -642,6 +675,55 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         // the list's start node is no break: its totals hold nothing, so every element is read again from the
         // first, where a break node's trailing glue is in its totals and the reading goes on from its next box
         return node.line == 0 ? -1 : next;
+    }
+
+    /**
+     * The start of a page an armed obstacle's band covers, a break in this list, is the edge itself: the parts
+     * before it are added, the float part is empty, and the next list begins on the new page with the lines
+     * narrowed from its first (fop/CR-024 §11.2).
+     */
+    private void takePageTopEdge(KnuthNode pageStart) {
+        armedTop = pageStart.totalWidth;
+        removeAllNodes();
+        handlingStartOfFloat = true;
+        bestFloatEdgeNode = createNode(pageStart.position, pageStart.line + 1, pageStart.fitness,
+                pageStart.totalWidth, pageStart.totalStretch, pageStart.totalShrink, 0, 0, 0, 0,
+                pageStart.totalDemerits, pageStart);
+        if (log.isDebugEnabled()) {
+            log.debug("Obstacle armed at the page's top: " + armedObstacle + ", the edge at " + pageStart.position);
+        }
+    }
+
+    /**
+     * A deferred obstacle (§11.5) at a legal break after its box: the first active node whose page holds the box
+     * below the band is the start of the page the box lands on, and the band covers that page's top, so that
+     * node is the edge; with none, the nodes whose pages cannot hold it are deactivated as too long by
+     * computeDifference, and the algorithm's restart reads the box again.
+     * @return whether the edge was taken, which ends the algorithm
+     */
+    private boolean takeDeferredObstacle(int elementIdx) {
+        if (deferredObstacle == null || elementIdx <= deferredBoxIndex || handlingFloat()) {
+            return false;
+        }
+        for (int line = startLine; line < endLine; line++) {
+            for (KnuthNode node = getNode(line); node != null; node = node.next) {
+                int boxY = deferredBoxWidth - node.totalWidth;
+                if (boxY >= 0 && boxY + deferredBandHeight < getLineWidth(node)) {
+                    Obstacle obstacle = deferredObstacle;
+                    deferredObstacle = null;
+                    deferredBoxIndex = -1;
+                    obstacle.setStarted();
+                    armedObstacle = obstacle;
+                    armedStartIntrusion = deferredIntrusions[0];
+                    armedEndIntrusion = deferredIntrusions[1];
+                    armedClearsColumn = true;
+                    armedBottomInFlow = deferredBandBottomInPage;
+                    takePageTopEdge(node);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** The active node of the highest part number: the start of the page being filled (fop/CR-024). */
@@ -884,6 +966,9 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         }
         boolean edgeDeferred = false;
         edgeElementIdx = elementIdx;
+        if (takeDeferredObstacle(elementIdx)) {
+            return;
+        }
         if (pendingFloatTop >= 0 && !handlingFloat() && !insideNonRestartable(elementIdx)) {
             // the intrusion cannot start inside a table, which is not restarted from a row (CR-020): a table
             // starting at this break that reaches the float's top takes the start here, before it
@@ -1155,6 +1240,12 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     protected int computeDifference(KnuthNode activeNode, KnuthElement element,
                                     int elementIndex) {
         KnuthPageNode pageNode = (KnuthPageNode) activeNode;
+        if (deferredObstacle != null && elementIndex > deferredBoxIndex
+                && deferredBoxWidth - pageNode.totalWidth + deferredBandHeight >= getLineWidth(activeNode)) {
+            // a page that cannot hold a deferred obstacle's box below the band is too long from the box on, so
+            // it breaks before the box (fop/CR-024 §11.5)
+            return -getLineWidth(activeNode) - 1;
+        }
         if (handlingStartOfFloat && !handlingEndOfFloat && floatStartListTop >= 0 && floatFitsAnEmptyPage
                 && floatStartListBottom - pageNode.totalWidth > getLineWidth(activeNode)) {
             // hook float-offset (fop/CR-023): at an offset float's start edge, a page that cannot hold the

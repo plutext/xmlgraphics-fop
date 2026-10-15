@@ -1085,6 +1085,14 @@ public class PageBreaker extends AbstractBreaker {
         if (positionAtBreak != null && positionAtBreak.getIndex() == -1) {
             if (positionAtBreak instanceof ListItemLayoutManager.ListItemPosition) {
                 restartAtLM = positionAtBreak.getLM();
+            } else if (floatElem.isForcedBreak() && positionAtBreak.getLM() != null
+                    && positionAtBreak.getLM().getParent() == childFLM) {
+                // the edge at a forced page break, the start of the page an obstacle's band covers (hook
+                // obstacles-in-the-line, fop/CR-024 §11.5): the break belongs to the block that carries
+                // break-before, so the content after the edge is that block, read again from its start, as a
+                // restart for a change of width reads a block; the general case below would restart one level
+                // inside it, which a consumer's line manager need not support
+                restartAtLM = positionAtBreak.getLM();
             } else {
                 Position position;
                 Iterator iter = blockList.listIterator(floatPosition + 1);

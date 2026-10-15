@@ -41,7 +41,11 @@
       above the text, crosses it (its readings of 2026-10-15), so the fourth line keeps the full width and the
       eleventh is beside the container. 11: a band beginning inside a paragraph's second line, where orphans keep the
       boundary: the edge is made there all the same (Word's probe cases 3 to 6 and 9, 2026-10-15). 12: a container
-      as wide as the column: the lines go below it, as for top-and-bottom (Word's probe case 7).
+      as wide as the column: the lines go below it, as for top-and-bottom (Word's probe case 7). 13: a band
+      covering the top of a page that a forced break starts (corpus 3475's logo page): the edge is the forced break,
+      the block carrying it read again from its start, nothing lost. 14: a column-wide band that would push its own
+      anchor past the page's foot (corpus 8362): the page breaks before the anchor, which lands on the next page
+      below the container.
     </p>
   </info>
   <fo>
@@ -143,6 +147,45 @@
 <fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
 <fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="72pt" width="451pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>n0 n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15 n16 n17 n18 n19 n20 n21 n22 n23 n24 n25 n26 n27 n28 n29 n30 n31 n32 n33 n34 n35 n36 n37 n38 n39 n40 n41 n42 n43 n44 n45 n46 n47 n48 n49 n50 n51 n52 n53 n54 n55 n56 n57 n58 n59 n60 n61 n62 n63 n64 n65 n66 n67 n68 n69 n70 n71 n72 n73 n74 n75 n76 n77 n78 n79 n80 n81 n82 n83 n84 n85 n86 n87 n88 n89 n90 n91 n92 n93 n94 n95 n96 n97 n98 n99 n100 n101 n102 n103 n104 n105 n106 n107 n108 n109 n110 n111 n112 n113 n114 n115 n116 n117 n118 n119 n120 n121 n122 n123 n124 n125 n126 n127 n128 n129 n130 n131 n132 n133 n134 n135 n136 n137 n138 n139 n140 n141 n142 n143 n144 n145 n146 n147 n148 n149 n150 n151 n152 n153 n154 n155 n156 n157 n158 n159</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>q0 q1 q2 q3 q4 q5 q6 q7 q8 q9 q10 q11 q12 q13 q14 q15 q16 q17 q18 q19 q20 q21 q22 q23 q24 q25 q26 q27 q28 q29 q30 q31 q32 q33 q34 q35 q36 q37 q38 q39</fo:block>
+<fo:block break-before="page"> </fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="72pt" left="72pt" width="70pt" height="70pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 r17 r18 r19 r20 r21 r22 r23 r24 r25 r26 r27 r28 r29 r30 r31 r32 r33 r34 r35 r36 r37 r38 r39 r40 r41 r42 r43 r44 r45 r46 r47 r48 r49 r50 r51 r52 r53 r54 r55 r56 r57 r58 r59 r60 r61 r62 r63 r64 r65 r66 r67 r68 r69 r70 r71 r72 r73 r74 r75 r76 r77 r78 r79 r80 r81 r82 r83 r84 r85 r86 r87 r88 r89 r90 r91 r92 r93 r94 r95 r96 r97 r98 r99 r100 r101 r102 r103 r104 r105 r106 r107 r108 r109 r110 r111 r112 r113 r114 r115 r116 r117 r118 r119 r120 r121 r122 r123 r124 r125 r126 r127 r128 r129 r130 r131 r132 r133 r134 r135 r136 r137 r138 r139 r140 r141 r142 r143 r144 r145 r146 r147 r148 r149 r150 r151 r152 r153 r154 r155 r156 r157 r158 r159</fo:block>
+<fo:block>s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22 s23 s24 s25 s26 s27 s28 s29 s30 s31 s32 s33 s34 s35 s36 s37 s38 s39</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>t0</fo:block>
+<fo:block>t1</fo:block>
+<fo:block>t2</fo:block>
+<fo:block>t3</fo:block>
+<fo:block>t4</fo:block>
+<fo:block>t5</fo:block>
+<fo:block>t6</fo:block>
+<fo:block>t7</fo:block>
+<fo:block>t8</fo:block>
+<fo:block>t9</fo:block>
+<fo:block>t10</fo:block>
+<fo:block>t11</fo:block>
+<fo:block>t12</fo:block>
+<fo:block>t13</fo:block>
+<fo:block>t14</fo:block>
+<fo:block>t15</fo:block>
+<fo:block>t16</fo:block>
+<fo:block>t17</fo:block>
+<fo:block>t18</fo:block>
+<fo:block>t19</fo:block>
+<fo:block>t20</fo:block>
+<fo:block>t21</fo:block>
+<fo:block>t22</fo:block>
+<fo:block>t23</fo:block>
+<fo:block>t24</fo:block>
+<fo:block>t25</fo:block>
+<fo:block>t26</fo:block>
+<fo:block>t27</fo:block>
+<fo:block>t28</fo:block>
+<fo:block>t29</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="72pt" left="72pt" width="451pt" height="400pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>u0 u1 u2 u3 u4 u5 u6 u7 u8 u9 u10 u11 u12 u13 u14 u15 u16 u17 u18 u19 u20 u21 u22 u23 u24 u25 u26 u27 u28 u29 u30 u31 u32 u33 u34 u35 u36 u37 u38 u39 u40 u41 u42 u43 u44 u45 u46 u47 u48 u49 u50 u51 u52 u53 u54 u55 u56 u57 u58 u59</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
@@ -196,5 +239,16 @@
     <!-- 12: a container as wide as the column: no room on either side, so the lines go below it, from its foot -->
     <eval expected="0" xpath="count((//pageViewport)[13]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd &lt; 451000])"/>
     <eval expected="1" xpath="count((//pageViewport)[13]//flow/block[@bpd='100000' and not(@positioning)])"/>
+    <!-- 13: the band covers the top of a page that a forced break starts: the empty break-before block is the edge, read again from its start, the lines of the page beside the container from its first, and nothing lost -->
+    <eval expected="381000" xpath="((//pageViewport)[15]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[1]/@ipd"/>
+    <eval expected="5" xpath="count((//pageViewport)[15]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='381000'])"/>
+    <eval expected="1" xpath="count(//word[.='r159'])"/>
+    <eval expected="1" xpath="count(//word[.='s39'])"/>
+    <!-- 14: a column-wide 400pt container at the page's top, anchored in the thirty-first paragraph at 480pt: clearing the band would push the anchor past the page's foot, so the page breaks before the anchor, which lands on the next page below the container, as a word processor moves an object with its anchor; the first page keeps its thirty lines -->
+    <eval expected="30" xpath="count((//pageViewport)[16]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])"/>
+    <eval expected="0" xpath="count((//pageViewport)[16]//block[@positioning='fixed'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[17]//block[@positioning='fixed'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[17]//flow/block[@bpd='400000' and not(@positioning)])"/>
+    <eval expected="1" xpath="count((//pageViewport)[17]//word[.='u0'])"/>
   </checks>
 </testcase>
