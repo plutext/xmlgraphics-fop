@@ -237,7 +237,7 @@ brings the frames back (it took them out meanwhile, gate b243). **The r35 pair i
 candidate b245 13 movers, no line lost, the probes and corpus gains as listed there.** MERGED 2026-10-15 on Jason's
 word: `2.11-docx4j.7` is at f98834c2c (r35's gated code plus the several-obstacles commit 2c4d33c62, which gets its
 own gate with the frames on r36); the `.7` release note carries CR-024's entries (draft). The fork's baseline for
-later gates is b245 on r35 until r36 is read. Registry `fop/CR-024` stays in_progress (phase B waits on Jason). 13544 still ends a page over Word (its page 2 opens 25pt low,
+later gates is b245 on r35 until r36 is read. Registry `fop/CR-024` stays in_progress (phase B waits on Jason). **Jason accepted 2026-10-15: `fox:float-x` and the width provider are dropped from phase A (CR-024 §11.10); phase A closes with the frames' gate on r36; phase B, text on both sides, on his word.** 13544 still ends a page over Word (its page 2 opens 25pt low,
 the anchor paragraph that did not fit below the table; Word's placement unread). docx4j's side (CR-032 §4.5, its
 register, CR-001 §6.6 item 11) is written and uncommitted until Jason says. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
@@ -249,10 +249,9 @@ line late in that shape. The docx4j session (2026-10-15): page-anchored objects 
 (decision 4: no); the corpus has few of them (two square pictures, a handful of frames, one top-and-bottom shape),
 so the probes are the measure (`~/fidelity-cr030/readings/2026-10-15-picture-page-square-*.txt`, reproducers under
 `~/fidelity-cr030/repro/r31-*.fo`, which render here through the harness under `~/fop-session-tools/2026-10-08-cr025-row-foot/`);
-its candidate gate b234 (writing `fox:wrap`, on r31) is running. **Next in
-phase A, not started:** increment 3, the `LineWidthProvider` on the `LayoutContext` (§10.2) with `fox:float-x` for a
-paragraph-anchored float at any x and the fixed point of §10.3; then the limits of §11 (an obstacle met while a float
-or another obstacle is on; multi-column pages). Registry `fop/CR-024` in_progress (tasks.yaml edited and accepted
+its candidate gate b234 (writing `fox:wrap`, on r31) is running. **Next:** nothing in
+phase A but the frames' gate on r36 (increment 3, `fox:float-x` with the width provider, was dropped by Jason, CR-024
+§11.10: docx4j's padding gives the same one-sided intrusion; the provider is phase B's); phase B on Jason's word. Registry `fop/CR-024` in_progress (tasks.yaml edited and accepted
 here, uncommitted: it carries the docx4j session's CR-032 entries and enterprise edits, so the commit is its). On the
 gate's PASS: merge to `2.11-docx4j.7` by fast-forward, §6.6 item 11 narrowed in the Enterprise file (Jason's;
 `git status` first), release note. **The next merge of Apache `main` waits** for the next batch of our pull requests to land or

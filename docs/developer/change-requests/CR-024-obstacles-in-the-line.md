@@ -541,3 +541,10 @@ heading at 101.9 against 76.0, an empty line at 85.3, the anchor paragraph that 
 1); Word's placement of that paragraph is unread. docx4j's side is written up (CR-032 §4.5 as built, its register,
 CR-001 §6.6 item 11), uncommitted until Jason says; the merge of r35's commit (42f51bdd1) to `2.11-docx4j.7` is his
 word; the frames return with r36 (§11.8) as their own gate.
+
+**11.10 Phase A's remainder, decided by Jason 2026-10-15.** `fox:float-x` (§4.4, §6) is dropped from phase A: with a
+line laid in one piece, a paragraph-anchored float at an x inside the column narrows the lines to the column less
+the float's far edge, which docx4j already produces with the padding it writes inside the float, and CR-023's gates
+measured that one-sided cost; the attribute would add nothing until a line can be laid in segments. The width
+provider of §10.2 therefore belongs to phase B, where a line's width varies within a band, and is not built in
+phase A. Phase A closes with the frames' gate on r36 (§11.8); phase B waits on Jason's word.
