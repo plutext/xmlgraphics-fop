@@ -223,7 +223,12 @@ gate: r33 at `~/fop-renderers/r33-CR-024-e673e56f2/` (sha256 e0a757b2...; r29 to
 carrying break-before, which served the break again and lost the block; fixed 98daf581f, a block read again after
 an edge gets `SUPPRESS_BREAK_BEFORE`; under docx4j's managers page 6 draws 1714 characters against the control's
 1713; r34 at `~/fop-renderers/r34-CR-024-98daf581f/`, sha256 e283ae5b..., handed to the gate), 3955 -2 and
-6603 -2 (unread). 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
+6603 -2. The r34 gate (CR-024 §11.7): 3475 fixed; left 13544 (4 pages to Word's 3: the clearance to a band's
+foot leaked across the page break, fixed 42f51bdd1, `PageBreaker.startPart` drops it on a new page; r35 at
+`~/fop-renderers/r35-CR-024-42f51bdd1/`, sha256 00455a81..., handed to the gate), 3955 (a frame's own lines 609pt
+low in the gate; does not reproduce here with either set of managers) and 6603 (seven top-and-bottom frames on
+one page: limit (ii) of §11.1, several obstacles on one page, the next renderer item; the docx4j session has taken
+frames out of its obstacles meanwhile, gate b243). 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
 `docs/release-notes/2.11-docx4j.7.md` (not yet written), §6.6 item 11 narrowed in the Enterprise file (Jason's;
 `git status` first), registry. Then increment 3 (the width provider and `fox:float-x`). **docx4j's
