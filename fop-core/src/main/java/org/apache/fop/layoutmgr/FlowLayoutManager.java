@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: a block read again after a side float's edge is told so, to keep its resolved space-before
- * (fop/CR-020). See README.md, "Changes from Apache FOP 2.11". */
+ * (fop/CR-020). And a block read again after an edge
+ * serves no break-before again (hook obstacles-in-the-line, fop/CR-024 §11.6). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -157,6 +158,11 @@ public class FlowLayoutManager extends BlockStackingLayoutManager {
         LayoutContext childLC = makeChildLayoutContext(context);
         if (childLM == floatRestartLM) {
             childLC.setFlags(LayoutContext.FLOAT_RESTART, true);
+            // a block read again after an edge carries no new page break: its break-before was served when the
+            // list before was read (the page it starts is the page the edge lies on), and served again it would
+            // come back alone, the flow finished from the first reading and the block's content lost (hook
+            // obstacles-in-the-line, fop/CR-024 §11.6; FOP's own note on the reset, "won't work with forced breaks")
+            childLC.setFlags(LayoutContext.SUPPRESS_BREAK_BEFORE, true);
             floatRestartLM = null;
         }
         List<ListElement> childElements

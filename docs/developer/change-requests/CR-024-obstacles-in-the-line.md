@@ -458,8 +458,17 @@ float's area height is the docx4j session's to measure. 3475 was not fixed by (A
 so it was traced here with their classpath (its recipe `~/fidelity-cr030/repro/r33-3475-howto.txt`, the renderer's
 classes first): page 6 is a page-sequence of its own, so the band covers the list's start and the edge is the first
 legal break on the page, after the empty break-before paragraph (a break between blocks, `Position:-1(Flow)`,
-parts 0); the breaker then asks the flow to read again from its direct child, the anchor paragraph's block, and
-docx4j's `WordFlowLayoutManager` returns an empty list and reports the flow finished, where FOP's
-`FlowLayoutManager` rewinds its child iterator to that child (`setCurrentChildLM`), resets it and reads on. The
-renderer's path is right up to that call; the fix is docx4j's (told, with the trace). The forced-break restart of
-(A) stands for the shape it addressed.
+parts 0); the breaker then asks the flow to read again from its direct child. That child is not the anchor paragraph but
+the empty paragraph carrying `break-before="page"` (the edge falls among its trailing elements under docx4j's
+line manager), and a second trace, with prints in FOP's own flow and block managers, placed the loss in FOP:
+`FlowLayoutManager`'s restart resets the block (`reset()`, with FOP's own note "won't work with forced breaks"),
+the reset block serves its break-before again as a one-element list, the flow returns that list at once as a
+forced break, the breaker strips the trailing break and has nothing, and the flow, still marked finished from the
+first reading, is not read again: the page-sequence ends with the empty paragraph. docx4j's managers override
+none of this; its element shape merely routes the restart to that block, where FOP's stock shape (test case 13)
+routes it one level inside, to the block's line manager, where no reset happens. Fixed in `FlowLayoutManager`:
+a block read again after an edge (`floatRestartLM`) gets `SUPPRESS_BREAK_BEFORE` on its context with
+`FLOAT_RESTART`, since its break-before was served when the list before was read and the edge lies on the page
+it starts. Under docx4j's managers, by its recipe, page 6 then draws 1714 characters against the control's 1713.
+The forced-break restart of (A) never fires on either shape (the page-top edge's element is the keep penalty after
+the forced break, not the break), and is harmless; it stays as a guard.
