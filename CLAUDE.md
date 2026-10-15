@@ -191,10 +191,15 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-15, late. **r42 at `~/fop-renderers/r42-CR-024-70329626b/` (sha256 8ab9e4ca...) IS the fork's
-head and was handed to the docx4j session (the full suite 3927/0, checkstyle and spotbugs clean on 70329626b; its gate
-is not read yet; a pass is the frame probe's twelve cases at Word's y with plain top-and-bottom and `.minimum` on
-at-least frames, 6603 and 5218 at Word's pages, control 0 movers). 70329626b is checkstyle only: CI's own command
+Last updated 2026-10-15, evening. **r43 at `~/fop-renderers/r43-CR-024-a367207fb/` (sha256 10ce70b6...) IS the fork's
+head and was handed to the docx4j session (full suite 3927/0, checkstyle and spotbugs clean under CI's command).** It
+carries CR-024 §11.18 (a band's top inside the first line after an edge is beside that line; 6603's heading from 290.25
+to 302.25 under docx4j's managers, Word 300.2, the 1.5pt left unread since Word's PDF has no glyph for the empty lines)
+and §11.19 (widows and orphans kept beside an obstacle, `PageSequenceLayoutManager.handlingObstacle()`; 3955's 2+1
+split was Apache's relaxation to 1 beside a float on the re-read, copied in docx4j's line manager, which the docx4j
+session has mirrored uncommitted, waiting on r43). r42's gates: control b264 0 movers; candidate b265 finishing. Both
+traces were made with `~/fop-session-tools/2026-10-15-renderfo/` (lays a docx4j FO out through docx4j's own FOP path
+with its managers, the renderer's classes first). r42 (70329626b, checkstyle only over d89ccf85f) was the head before. 70329626b is checkstyle only: CI's own command
 (`mvn package checkstyle:check`) found seven violations that the phase A commits 2c4d33c62, c79fefc86, bf0a439c3 and
 98daf581f had recorded as clean (empty `if` shells left where trace prints were stripped, and long comment lines),
 so run CI's exact command, not a bare `checkstyle:check`, before calling a commit clean; origin's tip of the branch
