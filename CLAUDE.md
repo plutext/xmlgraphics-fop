@@ -205,11 +205,21 @@ the same day; `~/fidelity-cr030/readings/2026-10-15-picture-page-square-word.txt
 construction, case 2 (both sides) is phase B, and one rule the fork lacked was built (70eccedfc, CR-024 §11.3): a
 line is beside an object, or a float, when its text crosses the band, not when its leading alone does; the float
 edge moves by one line where the leading alone crossed (`float_overflow-below.xml`, one expectation updated; the
-rest of the suite unchanged). Handed to the gate: r31 at `~/fop-renderers/r31-CR-024-70eccedfc/` (sha256
-cc95cb2f...; r29 and r30 were increments 1 and 2). The docx4j session (2026-10-15): page-anchored objects stay at
-their anchor mid-flow (decision 4: no); the corpus has few of them (two square pictures, a handful of frames, one
-top-and-bottom shape), so the probes are the measure; it gates on the branch after its CR-032 phase 4 (gated b232)
-and writes the attributes then. Watch the floating-table documents in its gate: the text-box rule touches them. **Next in
+rest of the suite unchanged). Then the docx4j session ran r31 on the probes with `fox:wrap` written and found two defects, both fixed
+(3a33174a9, CR-024 §11.4): the band started a line late where its top fell inside a paragraph's first line
+(orphans leave no break element there; `LineLayoutManager` now emits one of infinite penalty, class line, only in
+a page-sequence that carries an obstacle, which only a pending band's edge may take), and a container with no room
+on either side left zero-width lines (it now clears the column). Its readings also corrected the foot rule: Word's
+line box carries its leading above the text, so the foot test is the pitch top less the half-leading below. Its
+control gate b233 (r31, no `fox:wrap`) had 0 movers: the float edge change is inert on the corpus. Handed to the
+gate: r32 at `~/fop-renderers/r32-CR-024-3a33174a9/` (sha256 5bba4c18...; r29 to r31 earlier). **docx4j's
+`WordLineLayoutManager` needs the same boundary break element in its copy** (told 2026-10-15, gated on the
+capability and `PageSequenceLayoutManager.hasObstacles()`); until it is in, its own managers still start the band a
+line late in that shape. The docx4j session (2026-10-15): page-anchored objects stay at their anchor mid-flow
+(decision 4: no); the corpus has few of them (two square pictures, a handful of frames, one top-and-bottom shape),
+so the probes are the measure (`~/fidelity-cr030/readings/2026-10-15-picture-page-square-*.txt`, reproducers under
+`~/fidelity-cr030/repro/r31-*.fo`, which render here through the harness under `~/fop-session-tools/2026-10-08-cr025-row-foot/`);
+its candidate gate b234 (writing `fox:wrap`, on r31) is running. **Next in
 phase A, not started:** increment 3, the `LineWidthProvider` on the `LayoutContext` (§10.2) with `fox:float-x` for a
 paragraph-anchored float at any x and the fixed point of §10.3; then the limits of §11 (an obstacle met while a float
 or another obstacle is on; multi-column pages). Registry `fop/CR-024` in_progress (tasks.yaml edited and accepted
