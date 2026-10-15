@@ -272,8 +272,13 @@ estimate from the content within a band, and a band above every line given up; t
 `~/fop-renderers/r40-CR-024-7bf13d689/` (sha256 2b4c21e8...) IS the fork's head; `.7` goes nowhere without
 7bf13d689. 5075's two empty lines unread. **r40 gated (§11.16): control 0 movers; the frames as obstacles under docx4j's
 writer rule (`below` in the page's upper half, `top-and-bottom` in the lower) put 5218 at Word's pages and 6603 at
-1.0; only 3955 -2 is open, a legal split Word avoids by luck, its element-list comparison deferred.** Phase A is
-closed; phase B on Jason's word. Jason's decision on the frames (2026-10-15, via the docx4j session): the frame
+1.0; only 3955 -2 is open, a legal split Word avoids by luck, its element-list comparison deferred.** Jason reopened the frames (a Word probe, `frame-page-bands`, twelve cases, on the share for his run): with
+plain `top-and-bottom` 6603's body went through its frames, a clearance lost in a chain of edges (the float part
+never took the clearance pending from the edge before; fixed 3a572c729, CR-024 §11.17; r41 at
+`~/fop-renderers/r41-CR-024-3a572c729/`, sha256 4c4be43f..., IS the fork's head). With the fix, top-and-bottom on
+6603 gives the gap layout under the stock managers (the heading fits an 11.35pt gap by 0.08pt on FOP's text box)
+and should give Word's 300.2 under docx4j's 12pt line boxes; the probe decides whether `below` stays. Phase A is
+closed but for that; phase B on Jason's word. Jason's earlier decision on the frames (2026-10-15, via the docx4j session): the frame
 grouping is committed (docx4j 565895f29, renderer-independent, gated on `.6`: 6603 +4, nothing else; Enterprise
 3b6b38a); frames as obstacles (the writer rule) and the page-foot table rule are held uncommitted until 3955's
 list-item split is read, against r40, when the element-list comparison offered here is taken up. Nothing needed
