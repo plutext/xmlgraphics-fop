@@ -514,6 +514,26 @@ public class PageSequenceLayoutManager extends AbstractPageSequenceLayoutManager
         return getPageSequence().hasObstacles();
     }
 
+    /** @param o an obstacle of the page being filled, in its flow coordinates (fop/CR-024 §11.8) */
+    void addPageObstacle(int[] o) {
+        pageBreaker.addPageObstacle(o);
+    }
+
+    /** @return the lowest top of an obstacle of the page being filled below the height, or -1 (fop/CR-024 §11.8) */
+    int nextObstacleTopAfter(int y) {
+        return pageBreaker.nextObstacleTopAfter(y);
+    }
+
+    /** @return whether the next event of the float being handled is an obstacle's top (fop/CR-024 §11.8) */
+    boolean nextEventIsTop() {
+        return pageBreaker.nextEventIsTop();
+    }
+
+    /** @param top whether the next event of the float being handled is an obstacle's top (fop/CR-024 §11.8) */
+    void setNextEventIsTop(boolean top) {
+        pageBreaker.setNextEventIsTop(top);
+    }
+
     /**
      * Hook obstacles-in-the-line (fop/CR-024): where a part's column lies in its page, so that an obstacle given
      * in page coordinates can be set against the lines of the column.

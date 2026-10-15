@@ -488,6 +488,44 @@ page, so the content that did not fit below the foot starts the next page at its
 CR-022's `clear` and a `top-and-bottom` object at a page's foot the same way. Test case 15.
 
 3955 (an address frame whose own lines were drawn 609pt low in b242) does not reproduce here on r34 with either
-FOP's stock managers or docx4j's (its recipe's classpath, the frame's lines at 147.4 against Word's 149.8); left
-with the docx4j session. 6603 (seven `top-and-bottom` frames on one page, the body 86pt above Word's) is limit
-(ii) of §11.1, several obstacles on one page, the next item for the renderer when the frames come back.
+FOP's stock managers or docx4j's (its recipe's classpath, the frame's lines at 147.4 against Word's 149.8), and
+the docx4j session retracted it: its comparison had paired Word's address line with the footer's repeat of the
+same text; the frame is at 134.1 in control and candidate alike. Gate b243 (r34, frames out) against b241: 13
+movers, every one a gain or neutral. 6603 (seven `top-and-bottom` frames on one page, each its own container at
+its own paragraph, two pairs with identical positions; the body 86pt above Word's) is limit (ii) of §11.1,
+several obstacles on one page: §11.8.
+
+**11.8 Several obstacles on one page, 2026-10-15 (limit (ii) of §11.1 lifted; 6603's seven frames).** The breaker
+took one obstacle at a time: an obstacle met while another was on waited for a later box, and was lost if none
+followed. Now the page's obstacles are a set, and the lines at any height are narrowed by every obstacle whose
+band holds it.
+
+- `PageBreaker` keeps the obstacles taken up on the page being filled, in its flow coordinates (top, foot, the two
+  intrusions, whether it clears the column), cleared when `startPart` opens a new page. `activeObstaclesAt(top, y)`
+  gives the narrowing below a height, the largest start and end intrusions over the obstacles whose band begins at
+  or above the top the edge was taken for and ends below the height, and whether any clears; `nextObstacleEventAfter`
+  the next height at which that set changes, the lowest foot among the active or the lowest top below.
+- At a start edge (`startObstacle`) the armed obstacles join the set, the active ones set the intrusions, and the
+  float being handled runs to the next event. At an end edge the event is read back from the float's foot
+  (`floatHeight + floatYOffset`): if obstacles are still active there, their intrusions replace the old ones and a
+  new float is handled from the event to the next one (`handleStartOfFloat` again, or the clearance path when one
+  clears the column), so the foot of one obstacle is the start of the rest; only when none is left does the float
+  end as before. A list starting mid-page with an obstacle of the set whose top lies below it (`PageBreakingAlgorithm.
+  initialize`, `nextObstacleTopAfter`) has the edge pending from that top.
+- The event at an obstacle's top differs from one at a foot: the lines change from the first line whose text
+  crosses the top, as at a start edge (`nextLineCrosses`), with no clearance, where at a foot they change from the
+  first line whose box lies below it (`floatEndsAtTop`, carried from the breaker to the algorithm for the list).
+- Arming (`armObstacleHeldBy`) takes every obstacle of the page: a second one while the first is pending joins the
+  armed set and the edge is taken for the earlier top; one met while a float or an obstacle is on joins the page's
+  set and brings the next event forward to its top, with the list read again from its start when the top lies
+  above the box. The deferral of §11.5 and the page-top edge of §11.2 apply to the first obstacle of a page.
+- Before the list's first box is handled, the boxes within its first page are scanned for the obstacles they hold
+  (`scanObstaclesOfFirstPage`), each armed as if met where it lies: without this an obstacle whose box lay after
+  the foot of another was never met in that float's list, which ends at the foot, and the list after the foot,
+  starting below the obstacle's top, honoured it a line late (test case 18 found it).
+
+Test cases 16 to 18: two obstacles on opposite sides with overlapping bands, held by one paragraph, by two, and
+with the second's box after the first's foot: the lines beside one at 301pt, beside both at 151pt, beside the
+other at 301pt, then full, in each. What remains of the limit: an obstacle met after a page break inside a float's
+list, or at its edge, waits for a later box; and the scan covers a list's first page only, later pages of a long
+list being walked as before.
