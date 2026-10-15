@@ -273,7 +273,11 @@ estimate from the content within a band, and a band above every line given up; t
 7bf13d689. 5075's two empty lines unread. **r40 gated (§11.16): control 0 movers; the frames as obstacles under docx4j's
 writer rule (`below` in the page's upper half, `top-and-bottom` in the lower) put 5218 at Word's pages and 6603 at
 1.0; only 3955 -2 is open, a legal split Word avoids by luck, its element-list comparison deferred.** Phase A is
-closed; phase B on Jason's word; docx4j's frame side and writer rule are uncommitted until he decides what to keep. The docx4j session's
+closed; phase B on Jason's word. Jason's decision on the frames (2026-10-15, via the docx4j session): the frame
+grouping is committed (docx4j 565895f29, renderer-independent, gated on `.6`: 6603 +4, nothing else; Enterprise
+3b6b38a); frames as obstacles (the writer rule) and the page-foot table rule are held uncommitted until 3955's
+list-item split is read, against r40, when the element-list comparison offered here is taken up. Nothing needed
+from the fork meanwhile. The docx4j session's
 own status (16:25): CR-040 phase 2 committed unpushed, its frame fixups uncommitted until its gates are read, nothing
 needed from Jason yet. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
