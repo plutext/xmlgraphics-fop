@@ -211,8 +211,13 @@ rest of the suite unchanged). Then the docx4j session ran r31 on the probes with
 a page-sequence that carries an obstacle, which only a pending band's edge may take), and a container with no room
 on either side left zero-width lines (it now clears the column). Its readings also corrected the foot rule: Word's
 line box carries its leading above the text, so the foot test is the pitch top less the half-leading below. Its
-control gate b233 (r31, no `fox:wrap`) had 0 movers: the float edge change is inert on the corpus. Handed to the
-gate: r32 at `~/fop-renderers/r32-CR-024-3a33174a9/` (sha256 5bba4c18...; r29 to r31 earlier). **docx4j's
+control gate b233 (r31, no `fox:wrap`) had 0 movers: the float edge change is inert on the corpus. Then its r32 corpus gate (b236: the probes to 0.9564, 13544, 4621, 4253 and 5075 to Word's; control b235 one
+mover, 2189 -2, the foot rule, unread) found two defects losing content, both fixed (e673e56f2, CR-024 §11.5):
+the page-top edge at a forced page break restarted one level inside the block carrying the break, which docx4j's
+line manager did not survive (now the block itself, 3475); and a clearing band that pushed its own anchor box past
+the page's foot had cleared the page for nothing (8362): the obstacle is now deferred, the page breaks before the
+box as CR-023 breaks before an anchor, and the obstacle is taken up on the page the box lands on. Handed to the
+gate: r33 at `~/fop-renderers/r33-CR-024-e673e56f2/` (sha256 e0a757b2...; r29 to r32 earlier). **docx4j's
 `WordLineLayoutManager` needs the same boundary break element in its copy** (told 2026-10-15, gated on the
 capability and `PageSequenceLayoutManager.hasObstacles()`); until it is in, its own managers still start the band a
 line late in that shape. The docx4j session (2026-10-15): page-anchored objects stay at their anchor mid-flow
