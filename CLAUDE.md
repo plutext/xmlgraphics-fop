@@ -262,9 +262,17 @@ first event only, forgetting a taller band still active there (fixed: `PageBreak
 routine for both edges, every consecutive clearing band one clearance); and Word lays a frame's following text
 below the frame, not in the gaps between frames, so `fox:wrap="below"` (`EN_BELOW`) was added for frames, the
 band from the anchor to the foot. ba77807a7, r39 at `~/fop-renderers/r39-CR-024-ba77807a7/` (sha256 f2628a93...)
-IS the fork's head; told to write `below` for frames and rerun them. 3955's -2 does not reproduce under the stock
-managers; 5075's two empty lines unread. `.7` goes nowhere without ba77807a7. Phase A is otherwise closed; phase B
-on Jason's word. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
+was handed over; the docx4j session reran the frames (CR-024 §11.15: control 0 movers; with `below` 6603 held,
+its last 81pt its own footer-table band copy, fixed on its side; 5218 a page over Word, since all its frames are
+anchored at the flow's start and `below` sends the body below the lowest, at the page's foot, where Word keeps the
+body at the frames' height: which frames get `below` is the writer's choice from the docx, told; 3955's -2 is a list
+item split at a page's foot under docx4j's managers only, no CR-024 hunk in the managers it copies, its
+`WordListItemLayoutManager`'s restart to compare). Two renderer fixes from 5218 (7bf13d689): the deferral's push
+estimate from the content within a band, and a band above every line given up; test case 21. r40 at
+`~/fop-renderers/r40-CR-024-7bf13d689/` (sha256 2b4c21e8...) IS the fork's head; `.7` goes nowhere without
+7bf13d689. 5075's two empty lines unread. Phase A is otherwise closed; phase B on Jason's word. The docx4j session's
+own status (16:25): CR-040 phase 2 committed unpushed, its frame fixups uncommitted until its gates are read, nothing
+needed from Jason yet. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
 `docs/release-notes/2.11-docx4j.7.md` (not yet written), §6.6 item 11 narrowed in the Enterprise file (Jason's;
 `git status` first), registry. Then increment 3 (the width provider and `fox:float-x`). **docx4j's
