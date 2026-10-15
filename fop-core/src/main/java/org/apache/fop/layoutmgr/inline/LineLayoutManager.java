@@ -731,6 +731,18 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         return pslm != null && pslm.hasObstacles();
     }
 
+    /**
+     * Whether the float being handled is an obstacle's band (fop/CR-024 §11.19): the lines read again beside or
+     * below it keep the widows and orphans the FO gives them, where beside an fo:float Apache FOP relaxes both to 1
+     * so that the float's edges can be found at any line (a word processor keeps them; a three-line list item
+     * split 2+1 at a page's foot on a page with a frame, corpus 3955). The band's edges within those lines are
+     * served by the §11.4 break elements instead.
+     */
+    private boolean handlingObstacle() {
+        PageSequenceLayoutManager pslm = getPSLM();
+        return pslm != null && pslm.handlingObstacle();
+    }
+
     private int getEffectiveAlignment(int alignment, int alignmentLast) {
         if (textAlignment != EN_JUSTIFY && textAlignmentLast == EN_JUSTIFY) {
             return 0;
@@ -1145,7 +1157,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                         i++) {
                     int orphans = fobj.getOrphans();
                     int widows = fobj.getWidows();
-                    if (handlingFloat()) {
+                    if (handlingFloat() && !handlingObstacle()) {
                         orphans = 1;
                         widows = 1;
                     }
@@ -1407,7 +1419,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
             //log.debug("demerits of the chosen layout: " + llPoss.getChosenDemerits());
             int orphans = fobj.getOrphans();
             int widows = fobj.getWidows();
-            if (handlingFloat()) {
+            if (handlingFloat() && !handlingObstacle()) {
                 orphans = 1;
                 widows = 1;
             }
@@ -1416,6 +1428,12 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                         && i <= llPoss.getChosenLineCount() - widows) {
                     // null penalty allowing a page break between lines
                     returnList.add(new KnuthPenalty(0, 0, false, new Position(this), false));
+                } else if (i > 0 && pageSequenceHasObstacles()) {
+                    // hook obstacles-in-the-line (fop/CR-024 §11.4, §11.19): a boundary a keep, the orphans or the
+                    // widows hold is no page break, but it is where a band's edge may be made, which the lines
+                    // read again beside a band need as much as the first reading does
+                    returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, Constants.EN_LINE,
+                            new Position(this), false));
                 }
                 LineBreakPosition lbp = llPoss.getChosenPosition(i);
                 //log.debug("LLM.getChangedKnuthElements> lineWidth= "

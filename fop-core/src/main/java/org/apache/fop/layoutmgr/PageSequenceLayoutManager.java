@@ -490,6 +490,14 @@ public class PageSequenceLayoutManager extends AbstractPageSequenceLayoutManager
         return pageBreaker.handlingStartOfFloat();
     }
 
+    /**
+     * @return whether the float being handled is an obstacle's band (hook obstacles-in-the-line, fop/CR-024 §11.19):
+     * the lines beside or below it keep their widows and orphans
+     */
+    public boolean handlingObstacle() {
+        return pageBreaker.handlingObstacle();
+    }
+
     public int getFloatHeight() {
         return pageBreaker.getFloatHeight();
     }

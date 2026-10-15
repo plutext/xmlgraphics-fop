@@ -687,3 +687,57 @@ ordinary part does. With `below` there is one edge and one clearance, which is w
 fix, plain `top-and-bottom` on 6603 lays the heading at 230.8, in the gap below the 187pt frames and above the
 241pt ones, the gap layout the probe's cases pin; Word has it at 300.2, below them all, which `below` gives. The
 probe decides which Word applies to a no-wrap frame, and `below` stays or goes by its reading.
+
+The probe's golden (Word's run, read by the docx4j session the same day) decided it: cases 1 to 9 follow plain
+top-and-bottom to 0.3pt (text above a frame, in a gap between two, below, overlapping and auto-height frames
+alike), `w:wrap="none"` gets no band, and an at-least frame's band is its at-least height. So `below` was dropped
+(d89ccf85f: `EN_BELOW` gone, `ENUM_COUNT` back to 212, test case 20 rewritten for top-and-bottom), and
+`block-progression-dimension.minimum` on an absolutely or fixed positioned container with an auto height is now the
+least of its extent (`BlockContainerLayoutManager.getNextKnuthElementsAbsolute`): its viewport and its obstacle are
+the greater of the minimum and the content, which is a word processor's "at least" frame. docx4j writes `.minimum`
+for those frames from r42.
+
+**11.18 A band's top inside the first line after an edge (2026-10-15): 6603's heading under docx4j's managers.**
+With plain top-and-bottom on r41 and r42, 6603's heading sat at 290.25 under docx4j's managers where Word has
+300.2, an empty paragraph of 12pt in the 11.35pt gap between the frames' foot at 229.7 and the next frames' top at
+241.05 (the docx4j session's labelled FO, `~/fidelity-cr030/repro/r42-6603-labelled.fo`, whose readings a render
+through docx4j's own FOP path reproduces here). Traced at the pending-edge decision: the clearance from the upper
+foot stopped at 229.7, the lower band not being active there, and the restarted list began directly with that
+paragraph's 12pt box, so the first legal break the algorithm considered came after it, at 241.7, past the pending
+top. The band's top fell inside the first line after the edge, and nothing tested that line: the §11.4 boundary
+element serves a top inside a paragraph's first line on the first reading, not a list that opens with the line.
+Under the stock managers the same line is 841 + 10318 + 841 (the leading split around the text), its text bottom
+at 240.86, under the top by 0.19pt, so the stock laid the heading in the gap by the §11.3 rule and showed nothing.
+Now `PageBreaker.continueBesideObstacles` tests the first line after an edge against the next band's top below the
+clearance (`PageBreakingAlgorithm.firstLineTextBottomAfterEdge`: the space-before plus the line height of the
+first box after the edge, by the §11.3 rule, or the box itself where it is no line): a band whose top the line's
+text crosses is beside that line, and a clearing one extends the clearance to its foot, consecutive bands as
+before; a narrowing one starts its float from the clearance's end. The end-edge branch goes through the same
+routine for a real float's foot too (its no-obstacle case is what the branch did). Test case 22 (two
+top-and-bottom frames 10pt apart, the 16pt line's text 11.1pt: one clearance of 90pt). 6603 under docx4j's
+managers: the two empty paragraphs at 276.5 and 288.5, the heading's glyphs at 302.25, from 290.25; the stock
+managers unchanged. Word's 300.2 leaves 2pt, unread: whether Word's two empty lines are shorter or sit higher than
+the lower frames' foot.
+
+**11.19 Widows and orphans beside an obstacle (2026-10-15): 3955's list item.** The docx4j session's 3955 split
+(§11.15, §11.16: a three-line list item 2+1 at page 1's foot with the frame written as an obstacle, whole on page
+2 in its control and in Word) was read here from its element lists under its managers. Both first readings carry
+the item as one box of 34497 (three lines of 11499; the stock list-item merge makes one box where the body has no
+legal break); the candidate's re-read after page 1's band edge carries it as three boxes with zero penalties
+between, and the page's foot takes the split. Every list-item call goes through docx4j's
+`WordListItemLayoutManager.getNextKnuthElements` with null restart arguments, so its restart variant is not the
+difference: the body's elements are. The FO's blocks carry no widows or orphans, so FOP's default of 2 holds on
+the first reading, the body's soft return counted across by docx4j's `linesAcrossSoftReturns`; on the re-read,
+`handlingFloat()` relaxes both to 1 and drops that count, which is Apache FOP's own rule beside a side float, in
+the stock `LineLayoutManager` at two sites and copied into docx4j's. It exists so a float's edges can be found at
+any line. A word processor keeps widow control beside a frame, and for an obstacle the §11.4 elements already mark
+the boundaries, so the fork keeps the FO's widows and orphans beside an obstacle: `PageBreaker.obstacleFloat`,
+set where an obstacle's band starts a float and cleared where an fo:float does, read as
+`PageSequenceLayoutManager.handlingObstacle()`; the stock line manager relaxes only when `handlingFloat()` and not
+`handlingObstacle()`, and its changed-elements path (`getChangedKnuthElements`, the re-read beside a band) now
+emits the §11.4 element within the widows and orphans as the first-read path does; the page breaker admits that
+element at a band's foot as well as at a pending top, where `handleBox` has found the foot at the box across it or
+the foot test fires at the element (`handlePenaltyAt`). Without the admission the foot was one line late where it
+fell within a paragraph's last two lines (test case 1 narrowed eight lines for seven). The stock managers split
+3955's control too, at the soft return, which the stock does not count across; so under the stock managers this
+change is measured by the layout tests only, and 3955 moves when docx4j's copy mirrors the two changes, told.

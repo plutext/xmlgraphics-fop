@@ -249,6 +249,11 @@
 <fo:block>db0 db1 db2 db3 db4 db5 db6 db7 db8 db9 db10 db11 db12 db13 db14 db15 db16 db17 db18 db19 db20 db21 db22 db23 db24 db25 db26 db27 db28 db29 db30 db31 db32 db33 db34 db35 db36 db37 db38 db39 db40 db41 db42 db43 db44 db45 db46 db47 db48 db49 db50 db51 db52 db53 db54 db55 db56 db57 db58 db59 db60 db61 db62 db63 db64 db65 db66 db67 db68 db69 db70 db71 db72 db73 db74 db75 db76 db77 db78 db79 db80 db81 db82 db83 db84 db85 db86 db87 db88 db89 db90 db91 db92 db93 db94 db95 db96 db97 db98 db99 db100 db101 db102 db103 db104 db105 db106 db107 db108 db109 db110 db111 db112 db113 db114 db115 db116 db117 db118 db119 db120 db121 db122 db123 db124 db125 db126 db127 db128 db129 db130 db131 db132 db133 db134 db135 db136 db137 db138 db139 db140 db141 db142 db143 db144 db145 db146 db147 db148 db149 db150 db151 db152 db153 db154 db155 db156 db157 db158 db159 db160 db161 db162 db163 db164 db165 db166 db167 db168 db169 db170 db171 db172 db173 db174 db175 db176 db177 db178 db179 db180 db181 db182 db183 db184 db185 db186 db187 db188 db189 db190 db191 db192 db193 db194 db195 db196 db197 db198 db199</fo:block>
 <fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="80pt" left="72pt" width="451pt" height="60pt" fox:wrap="top-and-bottom" overflow="visible"><fo:block font-size="8pt" line-height="8pt">F</fo:block></fo:block-container></fo:block-container>anchor</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="120pt" left="72pt" width="200pt" height="40pt" fox:wrap="top-and-bottom" overflow="visible"><fo:block font-size="8pt" line-height="8pt">G1</fo:block></fo:block-container></fo:block-container></fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="170pt" left="372pt" width="150pt" height="40pt" fox:wrap="top-and-bottom" overflow="visible"><fo:block font-size="8pt" line-height="8pt">G2</fo:block></fo:block-container></fo:block-container></fo:block>
+<fo:block>ea0 ea1 ea2 ea3 ea4 ea5 ea6 ea7 ea8 ea9 ea10 ea11 ea12 ea13 ea14 ea15 ea16 ea17 ea18 ea19 ea20 ea21 ea22 ea23 ea24 ea25 ea26 ea27 ea28 ea29 ea30 ea31 ea32 ea33 ea34 ea35 ea36 ea37 ea38 ea39 ea40 ea41 ea42 ea43 ea44 ea45 ea46 ea47 ea48 ea49 ea50 ea51 ea52 ea53 ea54 ea55 ea56 ea57 ea58 ea59</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
@@ -339,7 +344,7 @@
     <eval expected="151000" xpath="((//pageViewport)[22]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[8]/@ipd"/>
     <eval expected="451000" xpath="//word[.='ab0']/ancestor::lineArea[1]/@ipd"/>
     <!-- 19: two cases in one page-sequence, a forced page break between them, each a heading, then the anchor paragraph with a page-anchored picture at 136 (band 64 to 164): two pages, each with its heading on it and seven lines beside its picture (the probe document of gate b246, where the scan of a list's first page took the next case's picture for the page before the break) -->
-    <eval expected="26" xpath="count(//pageViewport)"/>
+    <eval expected="27" xpath="count(//pageViewport)"/>
     <eval expected="1" xpath="count((//pageViewport)[23]//word[.='ba-heading'])"/>
     <eval expected="1" xpath="count((//pageViewport)[23]//word[.='ba0'])"/>
     <eval expected="7" xpath="count((//pageViewport)[23]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
@@ -352,9 +357,15 @@
     <eval expected="1" xpath="count((//pageViewport)[25]//flow/block[@bpd='40000' and not(@positioning)])"/>
     <eval expected="1" xpath="count((//pageViewport)[25]//flow/block[@bpd='48000' and not(@positioning)])"/>
     <!-- 21: a column-wide frame at the page's top (8 to 68 in the flow) anchored in the page's last paragraph, the body beginning 300pt down: the band lies above every line, so nothing is cleared, the anchor stays on the page with the frame, and the page is as without the frame -->
-    <eval expected="26" xpath="count(//pageViewport)"/>
+    <eval expected="27" xpath="count(//pageViewport)"/>
     <eval expected="1" xpath="count((//pageViewport)[26]//word[.='anchor'])"/>
     <eval expected="1" xpath="count((//pageViewport)[26]//block[@positioning='fixed'])"/>
     <eval expected="0" xpath="count((//pageViewport)[26]//flow/block[@bpd &gt; 200000 and not(@positioning)]) - 1"/>
+    <!-- 22: as 20, with the second frame 10pt below the first's foot (98 to 138 in the flow): the first line (32 to 48) lies above the first, and the line after the first's foot (88 to 104, its text from 90.45 to 101.55) has its text across the second's top at 98, so it is no line in the gap: the clearance runs through both bands, 48 to 138, and the lines go on from there (an 11.35pt gap between a letterhead's frames under a consumer's 12pt line boxes, corpus 6603; §11.18) -->
+    <eval expected="27" xpath="count(//pageViewport)"/>
+    <eval expected="451000" xpath="//word[.='ea0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="1" xpath="count((//pageViewport)[27]//flow/block[@bpd='90000' and not(@positioning)])"/>
+    <eval expected="0" xpath="count((//pageViewport)[27]//flow/block[@bpd='40000' and not(@positioning)])"/>
+    <eval expected="0" xpath="count((//pageViewport)[27]//lineArea[@ipd &lt; 451000 and not(ancestor::block[@positioning])])"/>
   </checks>
 </testcase>

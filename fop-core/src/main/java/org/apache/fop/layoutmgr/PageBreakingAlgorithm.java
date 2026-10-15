@@ -1008,6 +1008,15 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 // no page break, but the edge before the first line that would cross a pending band's top,
                 // which considerLegalBreak takes (startPendingFloat) and elementCanEndLine then allows
                 considerLegalBreak(penalty, position);
+            } else if (breakClass == Constants.EN_LINE && floatHeight != 0 && handlingObstacle()
+                    && nextBoxHasContent(position) && edgeRestartable(position)
+                    && (handlingEndOfFloat || (floatEndsAtTop ? nextLineCrosses(position, floatHeight)
+                            : widthUpToNextBox(position) + lineBoxTopOffsetOfNextBox(position) >= floatHeight))) {
+                // and the edge at an obstacle's foot, or at the next band's top, within those lines: the lines
+                // beside a band keep their widows and orphans (§11.19), so the boundary is where the lines
+                // widen again, which considerLegalBreak takes as the end edge (the foot found by handleBox at
+                // the box across it, or by the test considerLegalBreak makes at a legal break)
+                considerLegalBreak(penalty, position);
             }
         }
     }
@@ -1206,6 +1215,8 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         edgeElementIdx = -1;
         newFootnotes = false;
     }
+
+
 
     private LayoutManager nonRestartableLMOfNextBox(int elementIdx) {
         for (int i = elementIdx; i < par.size(); i++) {
@@ -2257,6 +2268,27 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         return bestFloatEdgeNode.line - 1;
     }
 
+    /**
+     * The text bottom of the first line after the float edge being handled, below where that line is laid: its
+     * space-before plus its line height, as the lines are read against a band's top (§11.3), or the box's own
+     * height for a box that is no line; 0 when no box follows the edge (hook obstacles-in-the-line, CR-024 §11.18).
+     */
+    int firstLineTextBottomAfterEdge() {
+        if (bestFloatEdgeNode == null) {
+            return 0;
+        }
+        for (int i = bestFloatEdgeNode.position; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox() && e.getWidth() > 0) {
+                LineLayoutManager.LineBreakPosition line = lineOf(e.getPosition());
+                return line == null ? e.getWidth() : line.getSpaceBefore() + line.getLineHeight();
+            } else if (e.isForcedBreak() && i != bestFloatEdgeNode.position) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
     protected KnuthNode getBestFloatEdgeNode() {
         return bestFloatEdgeNode;
     }
@@ -2450,6 +2482,12 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             }
         }
         return 0;
+    }
+
+    /** @return whether the float being handled is an obstacle's band (fop/CR-024 §11.19) */
+    private boolean handlingObstacle() {
+        return topLevelLM instanceof PageSequenceLayoutManager
+                && ((PageSequenceLayoutManager) topLevelLM).handlingObstacle();
     }
 
     /** The intrusion of an offset float starts at this break (fop/CR-023). */
