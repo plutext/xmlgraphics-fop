@@ -672,3 +672,18 @@ it. 3955: the item has no keep and no break in the docx or the FO, and Word leav
 though the whole three-line item would fit, so the control's break matches Word by the breaker's luck and the
 obstacle path's 2+1 split is legal; the element-list comparison is deferred until Jason has decided what to keep.
 With this the frames are in phase A's reach too, on docx4j's uncommitted side.
+
+**11.17 Frames reopened (2026-10-15): the clearance lost in a chain of edges.** Jason reopened frames as obstacles
+with a Word probe for the writer's rule (`frame-page-bands`, twelve cases, on the share for his run). The docx4j
+session found that with every no-wrap frame written `top-and-bottom` (no `below`), r40 laid 6603's body through
+the frames (the heading at 109 over the address frame) while the probe's own top-and-bottom cases held. Traced
+here from `~/fidelity-cr030/repro/r40-frames-tb-6603.fo`: each edge after the first on a page lands in a list whose
+content up to the edge is added by the float part alone (`PageBreaker.addAreasForFloats`), with no ordinary part
+before it, and the clearance pending from the previous edge was taken only in the ordinary parts' loop
+(`AbstractBreaker.addAreas`), so in a chain of edges, which frames with gaps between them produce, every clearance
+after the first was lost: the first clearance (12.6 to 81.8 in the flow) was in the list's heights and not in the
+areas, which then ran 69pt above the breaker's coordinates. The float part now takes the pending clearance as an
+ordinary part does. With `below` there is one edge and one clearance, which is why that path was right. With the
+fix, plain `top-and-bottom` on 6603 lays the heading at 230.8, in the gap below the 187pt frames and above the
+241pt ones, the gap layout the probe's cases pin; Word has it at 300.2, below them all, which `below` gives. The
+probe decides which Word applies to a no-wrap frame, and `below` stays or goes by its reading.

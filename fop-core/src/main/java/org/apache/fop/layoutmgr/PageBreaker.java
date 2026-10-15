@@ -1391,11 +1391,23 @@ public class PageBreaker extends AbstractBreaker {
                 childLC.setSpaceBefore(pbp.difference);
             }
 
+            // the part up to an edge is the first of its list when the list began at the edge before, and takes
+            // the clearance pending from that edge as an ordinary part does (AbstractBreaker.addAreas): without
+            // this, in a chain of edges every clearance after the first was lost and the list's heights and the
+            // areas drifted apart by it (corpus 6603's letterhead with top-and-bottom frames, fop/CR-024 §11.17)
+            int floatClearance = takeFloatClearance();
+            int spaceBeforeClearance = childLC.getSpaceBefore();
+            if (floatClearance > 0) {
+                childLC.setSpaceBefore(spaceBeforeClearance + floatClearance);
+            }
             // Handle SpaceHandling(Break)Positions, see SpaceResolver!
             SpaceResolver.performConditionalsNotification(effectiveList, startElementIndex,
                     notificationEndElementIndex, lastBreak);
             // Add areas of lines, in the current page, before the float or during float
             addAreas(new KnuthPossPosIter(effectiveList, startElementIndex, endElementIndex + 1), childLC);
+            if (floatClearance > 0) {
+                childLC.setSpaceBefore(spaceBeforeClearance);
+            }
             // add areas for the float, if applicable
             boolean placed = false;
             if (alg.handlingStartOfFloat()) {
