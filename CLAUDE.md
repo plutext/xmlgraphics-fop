@@ -227,8 +227,15 @@ an edge gets `SUPPRESS_BREAK_BEFORE`; under docx4j's managers page 6 draws 1714 
 foot leaked across the page break, fixed 42f51bdd1, `PageBreaker.startPart` drops it on a new page; r35 at
 `~/fop-renderers/r35-CR-024-42f51bdd1/`, sha256 00455a81..., handed to the gate), 3955 (a frame's own lines 609pt
 low in the gate; does not reproduce here with either set of managers) and 6603 (seven top-and-bottom frames on
-one page: limit (ii) of §11.1, several obstacles on one page, the next renderer item; the docx4j session has taken
-frames out of its obstacles meanwhile, gate b243). 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
+one page: limit (ii) of §11.1). 3955 was retracted by the docx4j session (its script had paired Word's address
+line with the footer's repeat). Several obstacles on one page is BUILT (2c4d33c62, CR-024 §11.8: the page's
+obstacles a set on the breaker, the lines narrowed by every obstacle whose band holds them, the foot of one the
+start of the rest, a top an event too, the list's first page scanned for its obstacles before the walk; test
+cases 16 to 18; r36 at `~/fop-renderers/r36-CR-024-2c4d33c62/`, sha256 7be13ae9...), for when the docx4j session
+brings the frames back (it took them out meanwhile, gate b243). The docx4j session's final control and candidate
+pair runs on r35; on its PASS, merge the branch to `2.11-docx4j.7` by fast-forward on Jason's word (r35's commit
+42f51bdd1 is gated; the several-obstacles commit 2c4d33c62 follows its own gate unless the docx4j session gates r36
+as one). 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
 `docs/release-notes/2.11-docx4j.7.md` (not yet written), §6.6 item 11 narrowed in the Enterprise file (Jason's;
 `git status` first), registry. Then increment 3 (the width provider and `fox:float-x`). **docx4j's
