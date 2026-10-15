@@ -219,8 +219,10 @@ the page's foot had cleared the page for nothing (8362): the obstacle is now def
 box as CR-023 breaks before an anchor, and the obstacle is taken up on the page the box lands on. Handed to the
 gate: r33 at `~/fop-renderers/r33-CR-024-e673e56f2/` (sha256 e0a757b2...; r29 to r32 earlier). r33's gate (CR-024
 §11.6): control 0 movers; candidate b239 17 movers, 8362 fixed (+1), the probes and corpus gains hold, left 3475
--30 (traced here under docx4j's managers with its recipe: docx4j's `WordFlowLayoutManager` returns nothing when the
-breaker restarts the flow at a direct child block after an edge between blocks; docx4j's fix, told), 3955 -2 and
+-30 (traced here under docx4j's managers with its recipe, twice: not docx4j's, but FOP's restart at a block
+carrying break-before, which served the break again and lost the block; fixed 98daf581f, a block read again after
+an edge gets `SUPPRESS_BREAK_BEFORE`; under docx4j's managers page 6 draws 1714 characters against the control's
+1713; r34 at `~/fop-renderers/r34-CR-024-98daf581f/`, sha256 e283ae5b..., handed to the gate), 3955 -2 and
 6603 -2 (unread). 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
 `docs/release-notes/2.11-docx4j.7.md` (not yet written), §6.6 item 11 narrowed in the Enterprise file (Jason's;
