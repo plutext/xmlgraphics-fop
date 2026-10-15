@@ -610,3 +610,30 @@ from that height (`registerObstacle`), so the cause lies elsewhere (the 5218 lim
 page break inside a float's list, or the set resolving to the wider side); the FOs are asked for, local only.
 With this pair the page-anchored half of phase A, merged at f98834c2c and carried to c79fefc86, is gated on the
 fork's head: control b250 against b245 through b248 is 0 movers but the +4 recovery, and the gains of §11.9 hold.
+
+**11.14 6603's frames read (2026-10-15): a clearance over consecutive bands, and `fox:wrap="below"` for frames.**
+The two frame documents' FOs (local only, `~/fidelity-cr030/repro/r38-frames-*.fo`) rendered here: 3955's
+candidate is identical to its control under FOP's stock managers (its -2 is docx4j's managers' or its pagination,
+not read further); 6603's body sat 148pt above its control's, which reserves the frames' band with a hidden copy.
+Two things, both measured against Word's PDF of 6603 (`~/fidelity-real-c2/goldens-nofields/`, the body's heading
+at 300.2 below the lowest frame's foot at 276.5):
+
+- *The clearance ran to the first event only.* Ten frames with overlapping bands (tops 85.1 to 241.05, the
+  tallest to 152.7): the first edge cleared to the small frame's foot at 22.7 in the flow, the next list knew only
+  tops below that, and the taller frame still active there was forgotten, so lines were laid under it, and again
+  at each later event. `PageBreaker.continueBesideObstacles` now serves both the start edge and the end edge: from
+  the content's height it skips every consecutive clearing band as one clearance, then hands over to what is still
+  beside the lines there (a float to the next event with the union's intrusions) or, with nothing, reads the next
+  list as after a float's foot with the later tops pending; and every band begun by the content's height counts,
+  not only those at or above the top the edge was taken for (frames anchored a few points apart). The event
+  search after a start edge keeps the edge's top as its reference (an edge lies above its band, and the band's own
+  top was being taken for the next event: test case 5 gained a line until that was put back).
+- *Word does not lay a frame's text in the gaps.* With `top-and-bottom`, the model laid the heading in the 34pt
+  gap between the second and fourth frames (177 against Word's 300): a Word frame that text does not wrap around
+  is laid in its band and the text after its anchor continues below it, where a picture with top-and-bottom wrap
+  has text up to its top (probe case 8). So a frame's band runs from its anchor to its foot: `fox:wrap="below"`
+  (`EN_BELOW`), clearing the column like `top-and-bottom` with the band's top at the box that holds the
+  container when the band lies below it. With it 6603's body starts at the lowest foot, 276.5, as Word's; the
+  heading itself lands 82pt below Word's through the FO's own spacing (a 68pt heading block and a 12.6pt paragraph
+  written for the hidden band copies), the docx4j session's to read. Test case 20 (two frames anchored at the
+  page's top with a gap between, the body below the lower one).

@@ -50,7 +50,9 @@
       (corpus 6603's frames): the lines are narrowed by every obstacle whose band holds them, the foot of one is
       the start of the rest, and an obstacle's top met while another is on is an event as a foot is. 19: two cases in one
       page-sequence separated by a forced page break, each with its own picture: the scan of a list's first page
-      stops at a forced break.
+      stops at a forced break. 20: fox:wrap="below", a word processor's frame that text does not wrap around: the
+      content after its anchor goes below it, so two frames anchored at the page's top with a gap between them put
+      the body below the lower one.
     </p>
   </info>
   <fo>
@@ -237,6 +239,11 @@
 <fo:block break-before="page">bb-heading</fo:block>
 <fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="373pt" width="150pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">P2</fo:block></fo:block-container></fo:block-container>bb0 bb1 bb2 bb3 bb4 bb5 bb6 bb7 bb8 bb9 bb10 bb11 bb12 bb13 bb14 bb15 bb16 bb17 bb18 bb19 bb20 bb21 bb22 bb23 bb24 bb25 bb26 bb27 bb28 bb29 bb30 bb31 bb32 bb33 bb34 bb35 bb36 bb37 bb38 bb39 bb40 bb41 bb42 bb43 bb44 bb45 bb46 bb47 bb48 bb49 bb50 bb51 bb52 bb53 bb54 bb55 bb56 bb57 bb58 bb59 bb60 bb61 bb62 bb63 bb64 bb65 bb66 bb67 bb68 bb69 bb70 bb71 bb72 bb73 bb74 bb75 bb76 bb77 bb78 bb79 bb80 bb81 bb82 bb83 bb84 bb85 bb86 bb87 bb88 bb89 bb90 bb91 bb92 bb93 bb94 bb95 bb96 bb97 bb98 bb99 bb100 bb101 bb102 bb103 bb104 bb105 bb106 bb107 bb108 bb109 bb110 bb111 bb112 bb113 bb114 bb115 bb116 bb117 bb118 bb119</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="120pt" left="72pt" width="200pt" height="40pt" fox:wrap="below" overflow="visible"><fo:block font-size="8pt" line-height="8pt">F1</fo:block></fo:block-container></fo:block-container></fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="200pt" left="372pt" width="150pt" height="40pt" fox:wrap="below" overflow="visible"><fo:block font-size="8pt" line-height="8pt">F2</fo:block></fo:block-container></fo:block-container></fo:block>
+<fo:block>ca0 ca1 ca2 ca3 ca4 ca5 ca6 ca7 ca8 ca9 ca10 ca11 ca12 ca13 ca14 ca15 ca16 ca17 ca18 ca19 ca20 ca21 ca22 ca23 ca24 ca25 ca26 ca27 ca28 ca29 ca30 ca31 ca32 ca33 ca34 ca35 ca36 ca37 ca38 ca39 ca40 ca41 ca42 ca43 ca44 ca45 ca46 ca47 ca48 ca49 ca50 ca51 ca52 ca53 ca54 ca55 ca56 ca57 ca58 ca59</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
@@ -327,12 +334,15 @@
     <eval expected="151000" xpath="((//pageViewport)[22]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[8]/@ipd"/>
     <eval expected="451000" xpath="//word[.='ab0']/ancestor::lineArea[1]/@ipd"/>
     <!-- 19: two cases in one page-sequence, a forced page break between them, each a heading, then the anchor paragraph with a page-anchored picture at 136 (band 64 to 164): two pages, each with its heading on it and seven lines beside its picture (the probe document of gate b246, where the scan of a list's first page took the next case's picture for the page before the break) -->
-    <eval expected="24" xpath="count(//pageViewport)"/>
+    <eval expected="25" xpath="count(//pageViewport)"/>
     <eval expected="1" xpath="count((//pageViewport)[23]//word[.='ba-heading'])"/>
     <eval expected="1" xpath="count((//pageViewport)[23]//word[.='ba0'])"/>
     <eval expected="7" xpath="count((//pageViewport)[23]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
     <eval expected="1" xpath="count((//pageViewport)[24]//word[.='bb-heading'])"/>
     <eval expected="1" xpath="count((//pageViewport)[24]//word[.='bb0'])"/>
     <eval expected="7" xpath="count((//pageViewport)[24]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
+    <!-- 20: two frames text does not wrap around (fox:wrap="below"), anchored in two empty paragraphs at the page's top, drawn at 48 to 88 and 128 to 168 in the flow with a gap between: the body after their anchors starts below the lower one's foot, at 168, not in the gap (corpus 6603 against Word) -->
+    <eval expected="451000" xpath="//word[.='ca0']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="1" xpath="count((//pageViewport)[25]//flow/block[@bpd='168000' and not(@positioning)])"/>
   </checks>
 </testcase>

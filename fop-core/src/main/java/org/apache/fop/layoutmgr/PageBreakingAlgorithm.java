@@ -680,6 +680,12 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             roomEnd = obstacle.getRoomEnd();
             columnWidth = pslm.getCurrentColumnWidth();
         }
+        if (obstacle.getWrap() == Constants.EN_BELOW && bandTop > totalWidth) {
+            // a frame text does not wrap around: the content after its anchor goes below it, so its band runs
+            // from the box that holds it (a letterhead's frames anchored before the body, corpus 6603, whose
+            // body Word sets below the lowest of them, not in the gaps between; CR-024 §11.14)
+            bandTop = totalWidth;
+        }
         // the earliest point of the list the band can be honoured from: the page's top, or the list's start
         // where the list began mid-page (the lines above it are areas already)
         int reachable = (pageStart.line == 0) ? pageStart.totalWidth : pageTopInList;

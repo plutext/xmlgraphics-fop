@@ -1314,6 +1314,8 @@ public interface Constants {
     int EN_TOP_AND_BOTTOM = 211;
     /** Enumeration constant -- fox:wrap-sides, the lines go on the wider side (fop/CR-024) */
     int EN_LARGEST = 212;
+    /** Enumeration constant -- fox:wrap, the content after the container's anchor goes below it (fop/CR-024) */
+    int EN_BELOW = 213;
     /** Number of enumeration constants defined */
-    int ENUM_COUNT = 212;
+    int ENUM_COUNT = 213;
 }

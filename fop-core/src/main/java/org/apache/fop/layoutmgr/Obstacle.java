@@ -57,7 +57,7 @@ public final class Obstacle {
      * @param left the rectangle's start edge, in millipoints
      * @param width the rectangle's inline size, in millipoints
      * @param height the rectangle's block size, in millipoints
-     * @param wrap {@link Constants#EN_SQUARE} or {@link Constants#EN_TOP_AND_BOTTOM}
+     * @param wrap {@link Constants#EN_SQUARE}, {@link Constants#EN_TOP_AND_BOTTOM} or {@link Constants#EN_BELOW}
      * @param sides {@link Constants#EN_BOTH}, {@link Constants#EN_LEFT}, {@link Constants#EN_RIGHT} or
      * {@link Constants#EN_LARGEST}
      * @param distances the distances the lines keep from the rectangle: before, after, start, end, in millipoints
@@ -146,7 +146,7 @@ public final class Obstacle {
         if (end <= start) {
             return null;
         }
-        if (wrap == Constants.EN_TOP_AND_BOTTOM) {
+        if (wrap == Constants.EN_TOP_AND_BOTTOM || wrap == Constants.EN_BELOW) {
             return new int[] {columnWidth, 0};
         }
         int freeStart = start;

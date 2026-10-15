@@ -1044,35 +1044,58 @@ public class PageBreaker extends AbstractBreaker {
         // the obstacles beside the lines from this edge: those whose band begins at or above the top the edge was
         // taken for and ends below the edge (§11.8); the lines are narrowed by all of them until the next event,
         // the first foot among them or the first top below
-        int top = alg.getArmedTopInFlow();
-        int[] active = activeObstaclesAt(top, edgeY);
+        pendingFloatClearance = 0;
+        continueBesideObstacles(alg.getArmedTopInFlow(), edgeY, false);
+    }
+
+    /**
+     * From a height on the page, the obstacles beside the lines there decide how the content after the edge goes
+     * on (§11.8, §11.14): none, and the next list is read as after a float's foot, the page's later tops pending;
+     * a clearing one, and the content starts at the first height where none clears, every consecutive clearing
+     * band skipped as one clearance (an edge forced by clear, fop/CR-022; ten letterhead frames with overlapping
+     * bands lost the taller one at the first foot, corpus 6603); narrowing ones there, and a float is handled from
+     * that height to the next event with their intrusions.
+     *
+     * @param top the top the edge was taken for, or the event's height at an end edge
+     * @param y where the content after the edge lies, in the page
+     * @param ending whether this is an end edge, whose float must end when nothing is beside the lines
+     */
+    private void continueBesideObstacles(int top, int y, boolean ending) {
+        PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
+        // every band begun by the content's height is beside the lines there, not only those at or above the
+        // top the edge was taken for (frames anchored a few points apart, corpus 6603)
+        top = Math.max(top, y);
+        int[] active = activeObstaclesAt(top, y);
+        int end = y;
+        while (active != null && active[2] != 0) {
+            int next = nextObstacleEventAfter(end == y ? top : end, end);
+            if (next <= end) {
+                break;
+            }
+            end = next;
+            active = activeObstaclesAt(end, end);
+        }
+        int clearance = end - y;
         if (active == null) {
-            // the edge lies below every band the pending top belongs to (the band above the page's first legal
-            // break, inside a box that is no line): nothing is beside the lines from here, but the page's later
-            // obstacles are still to come, so the next list is read as after a float's foot, with their tops
-            // pending (§11.12)
-            floatYOffset = edgeY;
-            pendingFloatClearance = 0;
-            handleEndOfFloat(0);
+            // nothing beside the lines from the end of the clearance: the next list is read as after a float's
+            // foot, with the page's later tops pending
+            nextEventIsTop = false;
+            pendingFloatClearance += clearance;
+            if (ending) {
+                // the float ends at the event plus the clearance, measured from where it began
+                pslm.recordEndOfFloat(y - floatYOffset + clearance);
+            } else {
+                floatYOffset = y;
+                handleEndOfFloat(clearance);
+            }
             return;
         }
-        if (active == null) {
-            return;
-        }
-        int next = nextObstacleEventAfter(top, edgeY);
-        int height = Math.max(0, next - edgeY);
+        int next = nextObstacleEventAfter(end == y ? top : end, end);
         nextEventIsTop = isObstacleTop(next);
-        if (active[2] != 0) {
-            // no line beside it, by its wrap or because the side the rule names has no room (§11.4): the content
-            // after the edge starts at the next event, as after an edge forced by clear (fop/CR-022)
-            floatYOffset = edgeY;
-            pendingFloatClearance = height;
-            handleEndOfFloat(height);
-            return;
-        }
+        pendingFloatClearance += clearance;
         pslm.setStartIntrusionAdjustment(active[0]);
         pslm.setEndIntrusionAdjustment(active[1]);
-        handleStartOfFloat(height, edgeY, 0, false);
+        handleStartOfFloat(Math.max(0, next - end), end, 0, false);
     }
 
     /** @return whether an obstacle of the page begins at the height (§11.8) */
@@ -1423,20 +1446,8 @@ public class PageBreaker extends AbstractBreaker {
                 // the event this edge was taken for, in the page: the foot of what ended, or the top of the next
                 // obstacle; the obstacles beside the lines below it, if any, go on from here (§11.8)
                 int eventY = effectiveFloatHeight + floatYOffset;
-                int[] active = activeObstaclesAt(eventY, eventY);
-                if (active != null) {
-                    int next = nextObstacleEventAfter(eventY, eventY);
-                    int height = Math.max(0, next - eventY);
-                    nextEventIsTop = isObstacleTop(next);
-                    if (active[2] != 0) {
-                        floatYOffset = eventY;
-                        pendingFloatClearance += height;
-                        handleEndOfFloat(height);
-                    } else {
-                        pslm.setStartIntrusionAdjustment(active[0]);
-                        pslm.setEndIntrusionAdjustment(active[1]);
-                        handleStartOfFloat(height, eventY, 0, false);
-                    }
+                if (activeObstaclesAt(eventY, eventY) != null) {
+                    continueBesideObstacles(eventY, eventY, true);
                 } else {
                     nextEventIsTop = false;
                     pslm.recordEndOfFloat(effectiveFloatHeight);
