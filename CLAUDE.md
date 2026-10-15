@@ -246,10 +246,16 @@ CR-024 §11, gated b245 on r35), portfolio b4fe7f6 (the `fop/CR-024` entry and i
 17, a regression of several-obstacles: a fresh element list after a forced page break kept the page before's
 obstacle set, cleared only when the breaker opened the page, after the list's algorithm had run. FIXED on
 `2.11-docx4j.7` (9ebb77034, CR-024 §11.11: a fresh list drops the set; the pending check from the set only after a
-float's foot; the first-page scan stops at a forced break; test case 19); r37 at `~/fop-renderers/r37-CR-024-9ebb77034/`
-(sha256 7885bd3a...) replaces r36 and IS the fork's head: the frames' pair reruns on it, its control expected at 0
-movers; the other four b246 movers (table-floating-anchor -4, 5075 -1, 6251 -1, 4253's events) were not reproduced
-separately and are read there. `.7` goes nowhere without 9ebb77034. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
+float's foot; the first-page scan stops at a forced break; test case 19); The r37 pair (CR-024 §11.12): control b248 clean but for
+`table-floating-anchor` -4 and 5075 -1; candidate b249 found 5218 (a form with eight small top-and-bottom frames)
+throwing in `handleFloatLayout`. FIXED on `2.11-docx4j.7` (c79fefc86): a break is an edge only where its restart
+resolves (`edgeRestartable`, mirroring the resolution, which walks the break's manager up to the next box's chain),
+never before a box without content; and an obstacle met while an offset float (CR-023) is pending waits for a later
+list (the probe's page 5 had both, and the pending top had collapsed to zero). 5218 renders as its control; its
+page-top frames are a recorded limit (their band inside a paragraph's nested picture block, the only break before
+it a keep penalty of an empty run). 5075's two empty lines are unread (no text to measure by here). r38 at
+`~/fop-renderers/r38-CR-024-c79fefc86/` (sha256 b0c25774...) IS the fork's head; the frames' pair reruns on it.
+`.7` goes nowhere without c79fefc86. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
 `docs/release-notes/2.11-docx4j.7.md` (not yet written), §6.6 item 11 narrowed in the Enterprise file (Jason's;
 `git status` first), registry. Then increment 3 (the width provider and `fox:float-x`). **docx4j's
