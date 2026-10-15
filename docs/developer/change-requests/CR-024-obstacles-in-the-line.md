@@ -716,8 +716,12 @@ before; a narrowing one starts its float from the clearance's end. The end-edge 
 routine for a real float's foot too (its no-obstacle case is what the branch did). Test case 22 (two
 top-and-bottom frames 10pt apart, the 16pt line's text 11.1pt: one clearance of 90pt). 6603 under docx4j's
 managers: the two empty paragraphs at 276.5 and 288.5, the heading's glyphs at 302.25, from 290.25; the stock
-managers unchanged. Word's 300.2 leaves 2pt, unread: whether Word's two empty lines are shorter or sit higher than
-the lower frames' foot.
+managers unchanged. Retraction (the docx4j session, the same evening): Word's heading glyph top is 302.2 in
+real-c2's golden (302.7 in real's), not the 300.2 carried through §11.14 to §11.17 and the first text of this
+section without a re-reading of the golden; r43's 302.3 is at Word's, and the lines after it within 0.1pt. There
+is no gap left. A labelled copy (PX15 to PX21) is on the share for Jason's Word run, to confirm each empty line's
+place. Gated b268 (r43, the frames rule with docx4j's widows and soft-return fixes, 5f584872c): the frame probe
++32, nothing else moved.
 
 **11.19 Widows and orphans beside an obstacle (2026-10-15): 3955's list item.** The docx4j session's 3955 split
 (§11.15, §11.16: a three-line list item 2+1 at page 1's foot with the frame written as an obstacle, whole on page
