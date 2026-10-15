@@ -748,7 +748,11 @@ and a 1.44pt border below a band that its line alone fits above; the same withou
 paragraph whose second line alone goes below). Both probes rendered here through the renderfo harness under
 docx4j's managers: every case at Word's lines, a1 within 0.1pt and every rule top within 0.25pt (probe 1 case 1:
 P 209.2, the rule 241.9, a1 254.7 to Word's 209.3, 242.0, 254.7; probe 2 case 7: lines 1 and 2 above, the rule
-269.9 to 270.1, a1 282.7 to 282.8). Jason's order via the docx4j session: in `.7`, before the push.
+269.9 to 270.1, a1 282.7 to 282.8). Jason's order via the docx4j session: in `.7`, before the push. Gated b273
+(r46 against r45's b271, the docx4j session, 2026-10-16): 0 movers on the four corpora, events equal in every class;
+the two border probes 0.9876 and 0.9556 to 1.0000; m1's rule at 307.7 to Word's 308.3, its body within 0.8pt, its
+remaining offsets (the letterhead's top about 4pt, page 2's start about 22pt) the same on r45, so not this rule's.
+Released in `2.11-docx4j.7` (2026-10-16).
 
 **11.20 A sliver beside a page-anchored object, and a block wider than the room (2026-10-15): m1's tables lost.**
 Jason found, testing `.7` in the sample, that a letterhead (m1, a user's document, local only) lost both flow tables

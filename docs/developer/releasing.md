@@ -227,6 +227,30 @@ numbered staging repositories like `orgdocx4j-1095`.
   branch. The next development version is `2.11-docx4j.7-SNAPSHOT`, on branch `2.11-docx4j.7`, cut from the
   release commit and added to CI's branch list.
 
+## Proven by the sixth release, 2.11-docx4j.7 on 2026-10-16
+
+- **Released by Jason from the pushed branch** at the version commit `ecaa37c40` (the `revision` and the `<scm>`
+  lines, nothing else), built on his host with JDK 17 (the published classes differ byte for byte from the fork
+  session's JDK 21 build of the same source, class target 8 in both, so the docx4j session's read of the published
+  jar is the measure). CI's command had been run locally on the last code commit (`mvn -B package checkstyle:check
+  spotbugs:check`, 3927/0, clean) and the docx4j session had gated that commit's jar (b273 on r46, 0 movers).
+- **The version commit was made three times.** The branch was first pushed at a version commit on 2026-10-15; two
+  fixes then came in from Jason's testing of the sample (m1's tables, then its bordered paragraph), and each time
+  the version commit was taken off the tip (`git reset --mixed <fix base>`, the pom restored), the fix committed,
+  and the version commit re-applied from its saved diff, so the tip stayed the version commit and nothing was
+  committed after it. The pushed branch therefore had to be replaced: `git push --force-with-lease=<branch>:<old
+  tip> origin <branch>`, Jason's choice between that and rebasing the fixes onto the pushed version commit, and
+  his to run, since the session's permissions deny a force push. Nothing had been deployed or tagged from the old
+  tip (checked: Central 404, no tag on origin, CI green on it).
+- **Tagged after the deployment was confirmed**: `v2.11-docx4j.7`, annotated, at `ecaa37c40` once Central served
+  the artifacts; pushed by name by Jason.
+- **Verified from Central after publication**: the five artifacts, each with sources, javadoc, `.asc`, `.md5` and
+  `.sha1` (the parent a pom only), every file answering 200; the core jar's sha1 as Central's `.sha1` states;
+  Jason's signature good; the core manifest's `Implementation-Version` is `2.11-docx4j.7`; the published core pom
+  carries no property reference; `SpaceResolver.borderAndPaddingBeforeBreak` (the last fix) present.
+- The release note was closed on the next branch, as before. The next development version is
+  `2.11-docx4j.8-SNAPSHOT`, on branch `2.11-docx4j.8`, cut from the release commit and added to CI's branch list.
+
 ## Two things that look wrong and are not
 
 **The published pom lists fewer dependencies than the module's own pom.** For the core
