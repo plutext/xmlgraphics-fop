@@ -200,10 +200,16 @@ the obstacle registry, the obstacle as a virtual float through CR-023's pending-
 from the page's first break (§10.1); layout test `block-container_fox-wrap.xml`, nine cases; full suite 3927/0,
 checkstyle clean. The narrowing reaches docx4j's line manager through the reference IPD, so its side is the
 attributes only for this half (no `LineLayoutManager` or `LineBreakPosition` signature changed; tell it before any).
-Handed to the gate: r30 at `~/fop-renderers/r30-CR-024-61f53844a/` (sha256 5edb8f9e...; r29 was increment 1). The
-docx4j session (2026-10-15): page-anchored objects stay at their anchor mid-flow (decision 4: no); the corpus has few
-of them (two square pictures, a handful of frames, one top-and-bottom shape), so the nine `picture-page-square` probes
-it cut are the measure and wait on Jason's Word run (decision 3); it has put the gate's timing to Jason. **Next in
+Then, from Word's readings of the nine `picture-page-square` probes (the docx4j session cut them and read Word's PDF
+the same day; `~/fidelity-cr030/readings/2026-10-15-picture-page-square-word.txt`): every phase A case matches by
+construction, case 2 (both sides) is phase B, and one rule the fork lacked was built (70eccedfc, CR-024 §11.3): a
+line is beside an object, or a float, when its text crosses the band, not when its leading alone does; the float
+edge moves by one line where the leading alone crossed (`float_overflow-below.xml`, one expectation updated; the
+rest of the suite unchanged). Handed to the gate: r31 at `~/fop-renderers/r31-CR-024-70eccedfc/` (sha256
+cc95cb2f...; r29 and r30 were increments 1 and 2). The docx4j session (2026-10-15): page-anchored objects stay at
+their anchor mid-flow (decision 4: no); the corpus has few of them (two square pictures, a handful of frames, one
+top-and-bottom shape), so the probes are the measure; it gates on the branch after its CR-032 phase 4 (gated b232)
+and writes the attributes then. Watch the floating-table documents in its gate: the text-box rule touches them. **Next in
 phase A, not started:** increment 3, the `LineWidthProvider` on the `LayoutContext` (§10.2) with `fox:float-x` for a
 paragraph-anchored float at any x and the fixed point of §10.3; then the limits of §11 (an obstacle met while a float
 or another obstacle is on; multi-column pages). Registry `fop/CR-024` in_progress (tasks.yaml edited and accepted
