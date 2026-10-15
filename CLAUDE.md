@@ -254,8 +254,11 @@ never before a box without content; and an obstacle met while an offset float (C
 list (the probe's page 5 had both, and the pending top had collapsed to zero). 5218 renders as its control; its
 page-top frames are a recorded limit (their band inside a paragraph's nested picture block, the only break before
 it a keep penalty of an empty run). 5075's two empty lines are unread (no text to measure by here). r38 at
-`~/fop-renderers/r38-CR-024-c79fefc86/` (sha256 b0c25774...) IS the fork's head; the frames' pair reruns on it.
-`.7` goes nowhere without c79fefc86. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
+`~/fop-renderers/r38-CR-024-c79fefc86/` (sha256 b0c25774...) IS the fork's head. **Its pair is in (CR-024 §11.13):
+control b250 one mover, the anchor probe's +4 recovery, events equal; candidate b251 (frames on) 5218 clean, 3955
+and 6603 -2 lines each, so docx4j keeps its hidden band copy for frames and its phase 5 stays as committed. The
+head is gated; `.7` goes nowhere without c79fefc86.** Open, low priority: 6603's and 3955's frames (FOs asked for,
+local only) and 5075's two empty lines. Phase A is otherwise closed; phase B on Jason's word. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
 `docs/release-notes/2.11-docx4j.7.md` (not yet written), §6.6 item 11 narrowed in the Enterprise file (Jason's;
 `git status` first), registry. Then increment 3 (the width provider and `fox:float-x`). **docx4j's

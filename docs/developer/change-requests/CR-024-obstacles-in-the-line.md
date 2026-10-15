@@ -596,3 +596,17 @@ Three mechanisms, each reproduced here from the docx4j session's FOs:
   remainder (P07 over the float's table) is FOP's stock layout, the same on r35, r37 and now.
 - *5075 -1*, two empty lines near a column-wide page-anchored table at the page's foot: unread here (the empty
   lines carry no text to measure by); read on r38 by the gate.
+
+**11.13 The r38 pair (b250, b251; 2026-10-15): the head gated, the frames deferred.** Control b250 (docx4j HEAD
+597b168c9, frames out, on r38) against b248: one mover, `table-floating-anchor` +4, back to 0.9000; every event
+count equal. Candidate b251 (frames as `fox:wrap`, `both` sides, distances vSpace vSpace hSpace hSpace, replacing
+the hidden in-flow copy that reserves the band): 5218 clean; 3955 (1.0 to 0.9804, -2 lines, 3 pages as Word) and
+6603 (0.8788 to 0.8182, -2 lines) lose; nothing else moves. docx4j keeps the hidden band copy for frames and its
+phase 5 (pictures, text boxes, tables) stays as committed, renderer-gated on `obstacles-in-the-line`. Of 6603's
+ten frame containers four have no height (hRule auto), so they are absolute containers without a
+block-progression-dimension; the body still ran into their bands. Answered: such a container's extent is known
+before any line is broken beside it, its content being laid out on its own breaker and the obstacle registered
+from that height (`registerObstacle`), so the cause lies elsewhere (the 5218 limit of §11.12, a box met after a
+page break inside a float's list, or the set resolving to the wider side); the FOs are asked for, local only.
+With this pair the page-anchored half of phase A, merged at f98834c2c and carried to c79fefc86, is gated on the
+fork's head: control b250 against b245 through b248 is 0 movers but the +4 recovery, and the gains of §11.9 hold.
