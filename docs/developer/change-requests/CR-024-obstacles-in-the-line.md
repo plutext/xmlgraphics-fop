@@ -568,3 +568,31 @@ scan of a list's first page also stops at a forced break, a box after one lying 
 cases in one page-sequence separated by a forced break, each with its picture). The probe renders 9 pages again
 here, page 2's and page 3's pictures as on r35; the other four movers were not reproduced separately and are read
 by the gate on r37.
+
+**11.12 The frames' pair on r37 (b248, b249; 2026-10-15): a crash and two edges, fixed; one form's frames left.**
+Control b248 (frames out, r37 against r35): the picture probe back, 6251 and 4253 gone; left
+`table-floating-anchor` -4 and 5075 -1. Candidate b249 (frames on) found 5218, a form with eight small
+`top-and-bottom` frames in two columns, throwing `NullPointerException` in `PageBreaker.handleFloatLayout`.
+Three mechanisms, each reproduced here from the docx4j session's FOs:
+
+- *The crash* (`~/fidelity-cr030/repro/r37-frames-npe-5218.fo`). The edge was taken at a keep penalty after a
+  paragraph's last line, whose position is the line manager's own, where the next box with content is a nested
+  block of the same paragraph; the restart resolution walked the next box's chain for the line manager, found it
+  as the chain's leaf, and read a position below it that is not there. Now a break is an edge only where the
+  restart from it resolves (`PageBreakingAlgorithm.edgeRestartable`, mirroring the resolution: a leaf position, a
+  list item's, or a manager's own position with the next content box's chain passing through that manager, or
+  the nearest of its ancestors, to a child, or the manager itself as the chain's leaf), and `handleFloatLayout`
+  resolves the same way, with a fallback to the next block of the flow and a warning. A break before a box without
+  content (a block's end marker) is no edge either. The form renders as its control, 4 pages, nothing lost; but
+  its page-top frames are not honoured, since the one break before the picture line their band covers is that keep
+  penalty of an empty inline run, from which the line manager, restarted at its own position, produces nothing
+  new. A limit for now: `top-and-bottom` frames whose band lies in a paragraph's nested picture block.
+- *`table-floating-anchor` -4, page 5* (`~/fidelity-real2/score/fidelity-probes-b248/fop/table-floating-anchor.fo`):
+  case 5's margin-anchored table is CR-023's offset float, case 6's narrow table a `fox:wrap` obstacle, on one
+  page. With the float's intrusion pending, the obstacle's arming took the second-obstacle path of §11.8, whose
+  reference top had never been set, and the pending top collapsed to zero: the line at 156, whose text ends above
+  the float's top, was narrowed. An obstacle met while an offset float is pending is now left for a later list
+  (as r35 did), and the set-driven pending sets the reference top. The line is full width again; page 5's
+  remainder (P07 over the float's table) is FOP's stock layout, the same on r35, r37 and now.
+- *5075 -1*, two empty lines near a column-wide page-anchored table at the page's foot: unread here (the empty
+  lines carry no text to measure by); read on r38 by the gate.

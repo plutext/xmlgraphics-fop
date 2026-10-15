@@ -53,6 +53,7 @@ import org.apache.fop.layoutmgr.AbstractBreaker.PageBreakPosition;
 import org.apache.fop.layoutmgr.WhitespaceManagementPenalty.Variant;
 import org.apache.fop.layoutmgr.inline.FloatLayoutManager;
 import org.apache.fop.layoutmgr.inline.LineLayoutManager;
+import org.apache.fop.layoutmgr.list.ListItemLayoutManager;
 import org.apache.fop.traits.MinOptMax;
 import org.apache.fop.util.ListUtil;
 
@@ -368,6 +369,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 int next = pslm.nextObstacleTopAfter(listStartFlowY);
                 if (next >= 0) {
                     pendingFloatTop = next;
+                    armedTop = next;
                     armedTopInFlow = next;
                     obstacleEdge = true;
                 }
@@ -635,7 +637,13 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             obstacle.setStarted();
             return;
         }
-        boolean first = armedObstacle == null && pendingFloatTop < 0 && !handlingFloat();
+        if (pendingFloatTop >= 0 && !obstacleEdge) {
+            // an offset float's intrusion is pending in this list (fop/CR-023): the obstacle is left for a later
+            // list, which reads its box again after the float's edge when the box lies after it (§11.12; the
+            // anchor probe's page 5, where the pending top had been taken for an obstacle's and zeroed)
+            return;
+        }
+        boolean first = armedObstacle == null && !obstacleEdge && !handlingFloat();
         if (handlingFloat() && (pageStart.line > 0 || handlingEndOfFloat)) {
             // met while a float is on, after a page break inside the list, or at its edge: waits for a later box
             obstacle.setStarted();
@@ -735,14 +743,12 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         if (!first) {
             // a second obstacle of the page while the first is pending: the edge is taken for the earlier top
             if (bandTop >= totalWidth) {
-                if (bandTop < armedTop) {
-                    armedTop = bandTop;
-                }
-            } else if (rewindTo == null) {
-                armedTop = Math.min(armedTop, Math.max(bandTop, pageStart.totalWidth));
-                rewindTo = pageStart;
+                armedTop = Math.min(pendingFloatTop, bandTop);
             } else {
-                armedTop = Math.min(armedTop, Math.max(bandTop, pageStart.totalWidth));
+                armedTop = Math.min(pendingFloatTop, Math.max(bandTop, pageStart.totalWidth));
+                if (rewindTo == null) {
+                    rewindTo = pageStart;
+                }
             }
             pendingFloatTop = armedTop;
             armedTopInFlow = armedTop - pageTopInList;
@@ -952,7 +958,8 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                     || breakClass == Constants.EN_COLUMN) {
                 considerLegalBreak(penalty, position);
             } else if (breakClass == Constants.EN_LINE && pendingFloatTop >= 0 && !handlingFloat()
-                    && !insideNonRestartable(position) && nextLineCrosses(position, pendingFloatTop)) {
+                    && !insideNonRestartable(position) && nextBoxHasContent(position) && edgeRestartable(position)
+                    && nextLineCrosses(position, pendingFloatTop)) {
                 // a line boundary that orphans or widows keep (hook obstacles-in-the-line, fop/CR-024 §11.4):
                 // no page break, but the edge before the first line that would cross a pending band's top,
                 // which considerLegalBreak takes (startPendingFloat) and elementCanEndLine then allows
@@ -1077,9 +1084,17 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         if (takeDeferredObstacle(elementIdx)) {
             return;
         }
-        if (pendingFloatTop >= 0 && !handlingFloat() && !insideNonRestartable(elementIdx)) {
+        if (pendingFloatTop >= 0 && !handlingFloat()) {
+        }
+        if (pendingFloatTop >= 0 && !handlingFloat() && nextLineCrosses(elementIdx, pendingFloatTop)) {
+        }
+        if (pendingFloatTop >= 0 && !handlingFloat() && !insideNonRestartable(elementIdx)
+                && nextBoxHasContent(elementIdx) && edgeRestartable(elementIdx)) {
             // the intrusion cannot start inside a table, which is not restarted from a row (CR-020): a table
-            // starting at this break that reaches the float's top takes the start here, before it
+            // starting at this break that reaches the float's top takes the start here, before it. A break
+            // before a box without content (a block's end marker after its last line) is no edge: the restart
+            // from it would resolve outside the paragraph; the break after the marker, between the blocks, is
+            // (fop/CR-024 §11.12)
             LayoutManager starting = nonRestartableLMOfNextBox(elementIdx);
             if (nextLineCrosses(elementIdx, pendingFloatTop)
                     || (starting != null && widthUpToNextBox(elementIdx) + nonRestartableExtent(elementIdx, starting)
@@ -1104,11 +1119,11 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             // content after the edge starts at, so the FO is laid out below the float (fop/CR-022).
             // at an obstacle's top the lines beside the float change from the first line whose text crosses the
             // top, as at a start edge (§11.8); at a foot, from the first line whose box lies below it
-            boolean reachesEvent = floatEndsAtTop ? nextLineCrosses(elementIdx, floatHeight)
-                    : edgeWidth + textOffset >= floatHeight;
+            boolean reachesEvent = nextBoxHasContent(elementIdx) && (floatEndsAtTop
+                    ? nextLineCrosses(elementIdx, floatHeight) : edgeWidth + textOffset >= floatHeight);
             if (reachesEvent && !handlingEndOfFloat) {
             }
-            if (!handlingEndOfFloat && (reachesEvent || clearsFloatAtNextBox(elementIdx)
+            if (!handlingEndOfFloat && edgeRestartable(elementIdx) && (reachesEvent || clearsFloatAtNextBox(elementIdx)
                     || overflowsBesideFloatAtNextBox(elementIdx)
                     || startsNonRestartableThePageCannotHold(elementIdx, edgeWidth))) {
                 handlingEndOfFloat = true;
@@ -2302,6 +2317,64 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             }
         }
         return true;
+    }
+
+    /**
+     * Whether the content after this break can be read again from it, as PageBreaker.handleFloatLayout resolves
+     * a restart: the break's position is a break possibility the space resolver wrapped, and either a leaf
+     * position (a line's end, read again by its line manager), a list item's, or a manager's own position with the
+     * next box's chain passing through that manager to a child of it. A keep penalty after a paragraph's last
+     * line, with the paragraph's own position, followed by a block-level sibling inside the same block, is none
+     * of these: the resolution walked off the chain there (corpus 5218's form, fop/CR-024 §11.12). Such a break is
+     * no edge; the next legal break is.
+     */
+    private boolean edgeRestartable(int elementIdx) {
+        Position p = getElement(elementIdx).getPosition();
+        if (!(p instanceof SpaceResolver.SpaceHandlingBreakPosition)) {
+            return false;
+        }
+        Position inner = p.getPosition();
+        if (inner == null) {
+            return true;
+        }
+        if (inner.getIndex() != -1 || inner instanceof ListItemLayoutManager.ListItemPosition) {
+            return true;
+        }
+        LayoutManager surrounding = inner.getLM();
+        Position next = positionOfNextContentBox(elementIdx);
+        for (LayoutManager a = surrounding; a != null; a = a.getParent()) {
+            for (Position q = next; q != null; q = nextInChain(q)) {
+                if (q.getLM() == a) {
+                    // the chain's manager below it reads the content again; the break's own manager reads
+                    // itself again where its box is the chain's leaf (a nested block in a line manager)
+                    return nextInChain(q) != null || a == surrounding;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** The position of the first box with content after a break, or null (CR-024 §11.12). */
+    private Position positionOfNextContentBox(int elementIdx) {
+        for (int i = elementIdx; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox() && e.getWidth() > 0) {
+                return e.getPosition();
+            }
+        }
+        return null;
+    }
+
+
+    /** Whether the first box after this break has content (a width), not a block's end marker (CR-024 §11.12). */
+    private boolean nextBoxHasContent(int elementIdx) {
+        for (int i = elementIdx; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox()) {
+                return e.getWidth() > 0;
+            }
+        }
+        return false;
     }
 
     /** The line a box's position chain ends in, or null for a box that is no line (CR-024 §11.3). */

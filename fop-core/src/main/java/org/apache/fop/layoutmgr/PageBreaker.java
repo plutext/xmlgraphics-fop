@@ -1014,6 +1014,23 @@ public class PageBreaker extends AbstractBreaker {
     }
 
     /**
+     * The flow's child after the one a layout manager lies in, or that child itself when it is the last
+     * (fop/CR-024 §11.12).
+     */
+    private LayoutManager nextBlockOfFlowAfter(LayoutManager lm) {
+        LayoutManager child = lm;
+        while (child != null && child.getParent() != childFLM) {
+            child = child.getParent();
+        }
+        if (child == null) {
+            return null;
+        }
+        List<LayoutManager> children = childFLM.getChildLMs();
+        int i = children.indexOf(child);
+        return (i >= 0 && i + 1 < children.size()) ? children.get(i + 1) : child;
+    }
+
+    /**
      * Hook obstacles-in-the-line (fop/CR-024): the breaking algorithm reached the start edge before an obstacle's
      * band. Nothing is drawn, the object being on the page already; the column is narrowed as the obstacle's side
      * rule asks, and the obstacle is handled from here as a float whose foot lies at the band's foot.
@@ -1029,6 +1046,16 @@ public class PageBreaker extends AbstractBreaker {
         // the first foot among them or the first top below
         int top = alg.getArmedTopInFlow();
         int[] active = activeObstaclesAt(top, edgeY);
+        if (active == null) {
+            // the edge lies below every band the pending top belongs to (the band above the page's first legal
+            // break, inside a box that is no line): nothing is beside the lines from here, but the page's later
+            // obstacles are still to come, so the next list is read as after a float's foot, with their tops
+            // pending (§11.12)
+            floatYOffset = edgeY;
+            pendingFloatClearance = 0;
+            handleEndOfFloat(0);
+            return;
+        }
         if (active == null) {
             return;
         }
@@ -1211,11 +1238,40 @@ public class PageBreaker extends AbstractBreaker {
                 } while (position == null || position instanceof SpaceResolver.SpaceHandlingPosition
                         || position instanceof SpaceResolver.SpaceHandlingBreakPosition
                         && position.getPosition().getIndex() == -1);
+                // the manager the break belongs to, or the nearest of its ancestors that the next box's chain
+                // passes through: the content after the edge is the chain's manager below it (a keep penalty
+                // of an empty inline run before a nested block of the same paragraph, hook
+                // obstacles-in-the-line, fop/CR-024 §11.12; Apache's own case is the manager itself)
+                Position nextBox = position;
                 LayoutManager surroundingLM = positionAtBreak.getLM();
-                while (position.getLM() != surroundingLM) {
-                    position = position.getPosition();
+                Position found = null;
+                boolean self = false;
+                for (LayoutManager a = surroundingLM; a != null && found == null; a = a.getParent()) {
+                    for (Position q = nextBox; q != null; q = q.getPosition() == q ? null : q.getPosition()) {
+                        if (q.getLM() == a) {
+                            if (q.getPosition() != null && q.getPosition() != q) {
+                                found = q;
+                            } else if (a == surroundingLM) {
+                                // the break's own manager holds the next box as its leaf (a nested block in a
+                                // line manager): it reads itself again from the break
+                                self = true;
+                            }
+                            break;
+                        }
+                    }
+                    if (self) {
+                        break;
+                    }
                 }
-                restartAtLM = position.getPosition().getLM();
+                if (found != null) {
+                    restartAtLM = found.getPosition().getLM();
+                } else if (self) {
+                    restartAtLM = surroundingLM;
+                } else {
+                    restartAtLM = nextBlockOfFlowAfter(surroundingLM);
+                    log.warn("A float's edge falls before a box outside the paragraph it ends; the content after"
+                            + " the edge is read again from the next block");
+                }
             }
         }
         int nextSequenceStartsOn = getNextBlockList(childLC, Constants.EN_COLUMN, positionAtBreak,
