@@ -217,7 +217,14 @@ the page-top edge at a forced page break restarted one level inside the block ca
 line manager did not survive (now the block itself, 3475); and a clearing band that pushed its own anchor box past
 the page's foot had cleared the page for nothing (8362): the obstacle is now deferred, the page breaks before the
 box as CR-023 breaks before an anchor, and the obstacle is taken up on the page the box lands on. Handed to the
-gate: r33 at `~/fop-renderers/r33-CR-024-e673e56f2/` (sha256 e0a757b2...; r29 to r32 earlier). **docx4j's
+gate: r33 at `~/fop-renderers/r33-CR-024-e673e56f2/` (sha256 e0a757b2...; r29 to r32 earlier). r33's gate (CR-024
+§11.6): control 0 movers; candidate b239 17 movers, 8362 fixed (+1), the probes and corpus gains hold, left 3475
+-30 (traced here under docx4j's managers with its recipe: docx4j's `WordFlowLayoutManager` returns nothing when the
+breaker restarts the flow at a direct child block after an edge between blocks; docx4j's fix, told), 3955 -2 and
+6603 -2 (unread). 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
+(§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
+`docs/release-notes/2.11-docx4j.7.md` (not yet written), §6.6 item 11 narrowed in the Enterprise file (Jason's;
+`git status` first), registry. Then increment 3 (the width provider and `fox:float-x`). **docx4j's
 `WordLineLayoutManager` needs the same boundary break element in its copy** (told 2026-10-15, gated on the
 capability and `PageSequenceLayoutManager.hasObstacles()`); until it is in, its own managers still start the band a
 line late in that shape. The docx4j session (2026-10-15): page-anchored objects stay at their anchor mid-flow

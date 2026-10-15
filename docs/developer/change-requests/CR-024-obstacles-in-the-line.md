@@ -448,3 +448,18 @@ page 3 keeps its content and breaks before the anchor, which lands below the tab
 
 Noted from the same gate, the docx4j session's side: a page-anchored table taller than the room below its
 `tblpY` is clipped by FOP (limit (iv) of §11.1), so docx4j keeps such tables in the flow.
+
+**11.6 The r33 gate (b238, b239; 2026-10-15) and 3475 traced under docx4j's managers.** Control b238 (r33 without
+`fox:wrap`, against r32's) 0 movers. Candidate b239 (with `fox:wrap`, docx4j's edge-only break elements and its
+tall-table guard) against b238: 17 movers; 8362 from -51 to +1 (§11.5 B holds), the probes keep their gains
+(picture 0.73 to 0.96, after-content tables 0.81 to 0.95), 13544 +33, 4621 and 4253 to 1.0, 5075 to Word's pages;
+left 3475 -30, 3955 -2, 6603 -2 (the last two unread). 2189 (§11.5, the foot rule) is not a candidate mover; its
+float's area height is the docx4j session's to measure. 3475 was not fixed by (A) of §11.5 under docx4j's managers,
+so it was traced here with their classpath (its recipe `~/fidelity-cr030/repro/r33-3475-howto.txt`, the renderer's
+classes first): page 6 is a page-sequence of its own, so the band covers the list's start and the edge is the first
+legal break on the page, after the empty break-before paragraph (a break between blocks, `Position:-1(Flow)`,
+parts 0); the breaker then asks the flow to read again from its direct child, the anchor paragraph's block, and
+docx4j's `WordFlowLayoutManager` returns an empty list and reports the flow finished, where FOP's
+`FlowLayoutManager` rewinds its child iterator to that child (`setCurrentChildLM`), resets it and reads on. The
+renderer's path is right up to that call; the fix is docx4j's (told, with the trace). The forced-break restart of
+(A) stands for the shape it addressed.
