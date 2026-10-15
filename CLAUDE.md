@@ -257,8 +257,14 @@ it a keep penalty of an empty run). 5075's two empty lines are unread (no text t
 `~/fop-renderers/r38-CR-024-c79fefc86/` (sha256 b0c25774...) IS the fork's head. **Its pair is in (CR-024 §11.13):
 control b250 one mover, the anchor probe's +4 recovery, events equal; candidate b251 (frames on) 5218 clean, 3955
 and 6603 -2 lines each, so docx4j keeps its hidden band copy for frames and its phase 5 stays as committed. The
-head is gated; `.7` goes nowhere without c79fefc86.** Open, low priority: 6603's and 3955's frames (FOs asked for,
-local only) and 5075's two empty lines. Phase A is otherwise closed; phase B on Jason's word. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
+head is gated.** Then 6603's frames read against Word's PDF (CR-024 §11.14): the clearance from an edge ran to the
+first event only, forgetting a taller band still active there (fixed: `PageBreaker.continueBesideObstacles`, one
+routine for both edges, every consecutive clearing band one clearance); and Word lays a frame's following text
+below the frame, not in the gaps between frames, so `fox:wrap="below"` (`EN_BELOW`) was added for frames, the
+band from the anchor to the foot. ba77807a7, r39 at `~/fop-renderers/r39-CR-024-ba77807a7/` (sha256 f2628a93...)
+IS the fork's head; told to write `below` for frames and rerun them. 3955's -2 does not reproduce under the stock
+managers; 5075's two empty lines unread. `.7` goes nowhere without ba77807a7. Phase A is otherwise closed; phase B
+on Jason's word. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
 `docs/release-notes/2.11-docx4j.7.md` (not yet written), §6.6 item 11 narrowed in the Enterprise file (Jason's;
 `git status` first), registry. Then increment 3 (the width provider and `fox:float-x`). **docx4j's
