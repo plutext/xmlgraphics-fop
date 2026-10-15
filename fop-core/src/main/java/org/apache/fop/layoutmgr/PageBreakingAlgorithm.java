@@ -25,7 +25,8 @@
  * (fop/CR-023), and a line that does not fit beside a float ends it, the line set at its foot (fop/CR-023 §4.2); and
  * hook column-widths, the parts held to a height while columns of unequal width are balanced (fop/CR-026 phase B);
  * and hook obstacles-in-the-line, an obstacle held by a box armed as a virtual float for the page the box lands on,
- * its start edge the first break before its band (fop/CR-024 phase A).
+ * its start edge the first break before its band, a block's last line fitted above the band with the border and
+ * padding the block closes with (fop/CR-024 phase A).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -2349,7 +2350,8 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     /**
      * The text bottom of the first line after the float edge being handled, below where that line is laid: its
      * space-before plus its line height, as the lines are read against a band's top (§11.3), or the box's own
-     * height for a box that is no line; 0 when no box follows the edge (hook obstacles-in-the-line, CR-024 §11.18).
+     * height for a box that is no line, with the border and padding its block closes with where it is the block's
+     * last line (§11.21); 0 when no box follows the edge (hook obstacles-in-the-line, CR-024 §11.18).
      */
     int firstLineTextBottomAfterEdge() {
         if (bestFloatEdgeNode == null) {
@@ -2358,8 +2360,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         for (int i = bestFloatEdgeNode.position; i < par.size(); i++) {
             KnuthElement e = getElement(i);
             if (e.isBox() && e.getWidth() > 0) {
-                LineLayoutManager.LineBreakPosition line = lineOf(e.getPosition());
-                return line == null ? e.getWidth() : line.getSpaceBefore() + line.getLineHeight();
+                return textBottomOfBox(i);
             } else if (e.isForcedBreak() && i != bestFloatEdgeNode.position) {
                 return 0;
             }
@@ -2457,7 +2458,8 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     /**
      * Whether the first line with content after this break would reach below the given height (fop/CR-023): its
      * text, ascent to descent, not the half-leading below it, as a word processor tests a line against an object
-     * (CR-024 §11.3).
+     * (CR-024 §11.3), with the border and padding its block closes with where it is the block's last line
+     * (§11.21).
      */
     private boolean nextLineCrosses(int elementIdx, int top) {
         int bottom = totalWidth;
@@ -2465,9 +2467,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             KnuthElement e = getElement(i);
             if (e.isBox()) {
                 if (e.getWidth() > 0) {
-                    LineLayoutManager.LineBreakPosition line = lineOf(e.getPosition());
-                    int textBottom = line == null ? e.getWidth() : line.getSpaceBefore() + line.getLineHeight();
-                    return bottom + textBottom > top;
+                    return bottom + textBottomOfBox(i) > top;
                 }
             } else if (e.isGlue()) {
                 bottom += e.getWidth();
@@ -2534,6 +2534,47 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             }
         }
         return false;
+    }
+
+    /**
+     * The bottom of a box with content, below its top, as it is read against a band's top: a line's text, its
+     * space-before plus its line height (§11.3), or the box's own height for a box that is no line; and where the
+     * box is the last content of its block, the border and padding the block closes with. A word processor fits a
+     * paragraph's last line above an anchored object together with its after-border and the space inside it (the
+     * border's width counts, the space after the paragraph does not), and when they do not fit, that line alone
+     * goes below the object, whatever the widows: the probes table-floating-page-border-above and -2 read against
+     * Word on 2026-10-16, and a letterhead's empty bordered paragraph after its address table, m1 (CR-024 §11.21).
+     */
+    private int textBottomOfBox(int boxIdx) {
+        KnuthElement e = getElement(boxIdx);
+        LineLayoutManager.LineBreakPosition line = lineOf(e.getPosition());
+        int textBottom = line == null ? e.getWidth() : line.getSpaceBefore() + line.getLineHeight();
+        return textBottom + closingAfterBox(boxIdx);
+    }
+
+    /**
+     * The border and padding a block closes with after this box, where the box is the block's last content: what
+     * the space resolver kept of the after-side border and padding at the break after it, or at the list's end
+     * (the block's own and its enclosing blocks'); 0 where a box with content comes first, the box being no last
+     * line, or a break the resolver did not make (CR-024 §11.21).
+     */
+    private int closingAfterBox(int boxIdx) {
+        for (int i = boxIdx + 1; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            Position p = e.getPosition();
+            if (e.isBox()) {
+                if (e.getWidth() > 0) {
+                    return 0;
+                } else if (p instanceof SpaceResolver.SpaceHandlingPosition) {
+                    return ((SpaceResolver.SpaceHandlingPosition) p).getSpaceResolver()
+                            .borderAndPaddingBeforeBreak();
+                }
+            } else if (e.isPenalty() && p instanceof SpaceResolver.SpaceHandlingBreakPosition) {
+                return ((SpaceResolver.SpaceHandlingBreakPosition) p).getSpaceResolver()
+                        .borderAndPaddingBeforeBreak();
+            }
+        }
+        return 0;
     }
 
     /** The line a box's position chain ends in, or null for a box that is no line (CR-024 §11.3). */

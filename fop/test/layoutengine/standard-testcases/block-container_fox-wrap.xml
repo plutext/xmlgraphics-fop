@@ -52,7 +52,12 @@
       page-sequence separated by a forced page break, each with its own picture: the scan of a list's first page
       stops at a forced break. 20: two top-and-bottom frames anchored at the page's top with a gap between them: the body's
       lines go in the gap, as Word lays a frame's text (the frame-page-bands probe). 21: a frame above every line of its page, anchored at the page's foot (corpus
-      5218): no edge is taken and nothing moves.
+      5218): no edge is taken and nothing moves. 25 to 27: a paragraph's last line fitted above a band together
+      with the border and padding its block closes with (Word's probes of 2026-10-16, m1's bordered empty
+      paragraph): 25: a one-line paragraph whose line fits above a column-wide band but whose 30pt padding and
+      1.44pt border do not goes below the band; 26: with the padding 0 the border fits and the line stays above;
+      27: a two-line paragraph whose second line fits but not with its border: that line alone goes below, the
+      widows notwithstanding.
     </p>
   </info>
   <fo>
@@ -269,6 +274,30 @@
 <fo:block>ga2</fo:block>
 <fo:block>gb0 gb1 gb2 gb3 gb4 gb5 gb6 gb7 gb8 gb9 gb10 gb11 gb12 gb13 gb14 gb15 gb16 gb17 gb18 gb19 gb20 gb21 gb22 gb23 gb24 gb25 gb26 gb27 gb28 gb29 gb30 gb31 gb32 gb33 gb34 gb35 gb36 gb37 gb38 gb39</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>ha-heading</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="122pt" left="72pt" width="451pt" height="100pt" fox:wrap="top-and-bottom" overflow="visible"><fo:block font-size="8pt" line-height="8pt">S</fo:block></fo:block-container></fo:block-container>ha0</fo:block>
+<fo:block padding-bottom="30pt" border-bottom-style="solid" border-bottom-width="1.44pt">hp</fo:block>
+<fo:block>ha1</fo:block>
+<fo:block>ha2</fo:block>
+<fo:block>ha3</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>ia-heading</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="122pt" left="72pt" width="451pt" height="100pt" fox:wrap="top-and-bottom" overflow="visible"><fo:block font-size="8pt" line-height="8pt">S</fo:block></fo:block-container></fo:block-container>ia0</fo:block>
+<fo:block border-bottom-style="solid" border-bottom-width="1.44pt">ip</fo:block>
+<fo:block>ia1</fo:block>
+<fo:block>ia2</fo:block>
+<fo:block>ia3</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>ja-heading</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="138pt" left="72pt" width="451pt" height="100pt" fox:wrap="top-and-bottom" overflow="visible"><fo:block font-size="8pt" line-height="8pt">S</fo:block></fo:block-container></fo:block-container>ja0</fo:block>
+<fo:block padding-bottom="30pt" border-bottom-style="solid" border-bottom-width="1.44pt">jp0 jp1 jp2 jp3 jp4 jp5 jp6 jp7 jp8 jp9 jp10 jp11 jp12 jp13 jp14 jp15 jp16 jp17 jp18 jp19 jp20 jp21 jp22 jp23</fo:block>
+<fo:block>ja1</fo:block>
+<fo:block>ja2</fo:block>
+<fo:block>ja3</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
@@ -359,7 +388,7 @@
     <eval expected="151000" xpath="((//pageViewport)[22]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[8]/@ipd"/>
     <eval expected="451000" xpath="//word[.='ab0']/ancestor::lineArea[1]/@ipd"/>
     <!-- 19: two cases in one page-sequence, a forced page break between them, each a heading, then the anchor paragraph with a page-anchored picture at 136 (band 64 to 164): two pages, each with its heading on it and seven lines beside its picture (the probe document of gate b246, where the scan of a list's first page took the next case's picture for the page before the break) -->
-    <eval expected="29" xpath="count(//pageViewport)"/>
+    <eval expected="32" xpath="count(//pageViewport)"/>
     <eval expected="1" xpath="count((//pageViewport)[23]//word[.='ba-heading'])"/>
     <eval expected="1" xpath="count((//pageViewport)[23]//word[.='ba0'])"/>
     <eval expected="7" xpath="count((//pageViewport)[23]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
@@ -372,12 +401,12 @@
     <eval expected="1" xpath="count((//pageViewport)[25]//flow/block[@bpd='40000' and not(@positioning)])"/>
     <eval expected="1" xpath="count((//pageViewport)[25]//flow/block[@bpd='48000' and not(@positioning)])"/>
     <!-- 21: a column-wide frame at the page's top (8 to 68 in the flow) anchored in the page's last paragraph, the body beginning 300pt down: the band lies above every line, so nothing is cleared, the anchor stays on the page with the frame, and the page is as without the frame -->
-    <eval expected="29" xpath="count(//pageViewport)"/>
+    <eval expected="32" xpath="count(//pageViewport)"/>
     <eval expected="1" xpath="count((//pageViewport)[26]//word[.='anchor'])"/>
     <eval expected="1" xpath="count((//pageViewport)[26]//block[@positioning='fixed'])"/>
     <eval expected="0" xpath="count((//pageViewport)[26]//flow/block[@bpd &gt; 200000 and not(@positioning)]) - 1"/>
     <!-- 22: as 20, with the second frame 10pt below the first's foot (98 to 138 in the flow): the first line (32 to 48) lies above the first, and the line after the first's foot (88 to 104, its text from 90.45 to 101.55) has its text across the second's top at 98, so it is no line in the gap: the clearance runs through both bands, 48 to 138, and the lines go on from there (an 11.35pt gap between a letterhead's frames under a consumer's 12pt line boxes, corpus 6603; §11.18) -->
-    <eval expected="29" xpath="count(//pageViewport)"/>
+    <eval expected="32" xpath="count(//pageViewport)"/>
     <eval expected="451000" xpath="//word[.='ea0']/ancestor::lineArea[1]/@ipd"/>
     <eval expected="1" xpath="count((//pageViewport)[27]//flow/block[@bpd='90000' and not(@positioning)])"/>
     <eval expected="0" xpath="count((//pageViewport)[27]//flow/block[@bpd='40000' and not(@positioning)])"/>
@@ -390,5 +419,21 @@
     <eval expected="1" xpath="count((//pageViewport)[29]//flow/block[@bpd='100000' and not(@positioning)])"/>
     <eval expected="0" xpath="count((//pageViewport)[29]//lineArea[@ipd &lt; 451000 and not(ancestor::block[@positioning])])"/>
     <eval expected="1" xpath="count((//pageViewport)[29]//word[.='gb39'])"/>
+    <!-- 25: a column-wide band at 50 to 150 in the flow (page y 122), a one-line paragraph at 32 to 48 before it with padding-bottom 30pt and a 1.44pt border: the line's text (to 45.55) fits above the band, the line with its padding and border (to 79.44) does not, so the line goes below the band, the edge before it (a clearance of 118pt from 32 to 150), and the lines after it follow its border; before the rule the line stayed above with its padding and border run into the band, the edge before the next paragraph (a clearance of 70.56pt). Word's probe table-floating-page-border-above, cases 1, 5 and 7; m1's empty bordered paragraph (§11.21) -->
+    <eval expected="32" xpath="count(//pageViewport)"/>
+    <eval expected="1" xpath="count((//pageViewport)[30]//word[.='hp'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[30]//flow/block[@bpd='118000' and not(@positioning)])"/>
+    <eval expected="0" xpath="count((//pageViewport)[30]//flow/block[@bpd='70560' and not(@positioning)])"/>
+    <eval expected="1" xpath="count((//pageViewport)[30]//word[.='ha1'])"/>
+    <!-- 26: as 25 without the padding: the line with its border (to 49.44) fits above the band at 50, so it stays above and the next paragraph's line is the first below the band (a clearance of 100.56pt from 49.44 to 150). The probe's cases 3, 4 and 9 (§11.21) -->
+    <eval expected="1" xpath="count((//pageViewport)[31]//flow/block[@bpd='100560' and not(@positioning)])"/>
+    <eval expected="0" xpath="count((//pageViewport)[31]//flow/block[@bpd='118000' and not(@positioning)])"/>
+    <!-- 27: the band at 66 to 166 and a two-line paragraph at 32 to 64 with the padding and border of 25: the second line's text (to 61.55) fits above the band, the line with its padding and border (to 95.44) does not, so the second line alone goes below the band, the edge at the boundary between the two lines that the widows keep (a clearance of 118pt from 48 to 166); the first line stays above. The second probe's cases 4 and 5 (§11.21) -->
+    <eval expected="2" xpath="count((//pageViewport)[32]//lineArea[.//word[starts-with(., 'jp')]])"/>
+    <eval expected="0" xpath="count((//pageViewport)[32]//lineArea[.//word[.='jp19'] and .//word[.='jp20']])"/>
+    <eval expected="1" xpath="count((//pageViewport)[32]//flow/block[@bpd='118000' and not(@positioning)])"/>
+    <eval expected="0" xpath="count((//pageViewport)[32]//flow/block[@bpd='70560' and not(@positioning)])"/>
+    <eval expected="1" xpath="count((//pageViewport)[32]//block[@padding-after='30000'][.//word[.='jp23']])"/>
+    <eval expected="0" xpath="count((//pageViewport)[32]//block[@padding-after='30000'][.//word[.='jp0']])"/>
   </checks>
 </testcase>

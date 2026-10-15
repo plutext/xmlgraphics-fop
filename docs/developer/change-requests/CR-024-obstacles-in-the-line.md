@@ -723,6 +723,33 @@ is no gap left. A labelled copy (PX15 to PX21) is on the share for Jason's Word 
 place. Gated b268 (r43, the frames rule with docx4j's widows and soft-return fixes, 5f584872c): the frame probe
 +32, nothing else moved.
 
+**11.21 A paragraph's last line fitted above a band with its after-border and padding (2026-10-16): m1's 42pt.**
+With §11.20 m1 kept its tables, and the content after the band was still about 42pt high against Word. The docx4j
+session read the cause in the docx: the empty paragraph after the address table carries a bottom border with 30pt
+of border space (`w:pBdr`, `w:space`), and its line fits in the gap above the band where the border and space do
+not; Word lays the whole paragraph below the table, the fork laid the line above with its padding and border run
+into the band. It cut two Word probes to settle the rule, `table-floating-page-border-above` (ten cases) and `-2`
+(eight), one case a page, exact 14pt lines, the flow ending at 142pt, a full-width page-anchored table at 158pt,
+then P and lines a1 to a4; Word's goldens of 2026-10-16 and readings in `~/fidelity-cr030/repro/r45-border-above-band{,-2}.txt`
+(docx4j CR-032 §4.5.3). Word's rule: a paragraph's last line is fitted above the band together with the border and
+padding its block closes with, the border's width counted (probe 2 cases 1 to 3: 156 + 3 goes below, 156 + 1.44 +
+1 = 158.44 below, 156 + 0.5 + 1 = 157.5 above); where they do not fit, that line alone goes below the band, widow
+control on or off (probe 2 cases 4 to 8: two lines split 1+1 and three 2+1, line 1 or lines 1 to 2 above, the rule
+below the table); the space after the paragraph does not count (probe 1 case 2), the space before does (case 6,
+right since §11.3). r45 had 7 of 10 and 2 of 8 at Word's lines; the rest kept every line above, a1 high by 17 to
+46pt. Built: `PageBreakingAlgorithm.textBottomOfBox` is the §11.3 text bottom plus `closingAfterBox`, the border
+and padding the space resolver kept at the break after the box (`SpaceResolver.borderAndPaddingBeforeBreak`, the
+after-side `BorderOrPaddingElement`s of its first part, a `SpaceElement` never counted; at a list's end, its active
+part), 0 where a box with content follows first, so a line that is not its block's last counts nothing; used by
+`nextLineCrosses` (the pending top and the next band's top at a foot) and `firstLineTextBottomAfterEdge` (§11.18).
+The edge falls on the break before the last line, a §11.4 element where the widows keep it, which the restart
+reads again as before; nothing above it moves. Test cases 25 to 27 (a one-line paragraph with padding-after 30pt
+and a 1.44pt border below a band that its line alone fits above; the same without the padding, above; a two-line
+paragraph whose second line alone goes below). Both probes rendered here through the renderfo harness under
+docx4j's managers: every case at Word's lines, a1 within 0.1pt and every rule top within 0.25pt (probe 1 case 1:
+P 209.2, the rule 241.9, a1 254.7 to Word's 209.3, 242.0, 254.7; probe 2 case 7: lines 1 and 2 above, the rule
+269.9 to 270.1, a1 282.7 to 282.8). Jason's order via the docx4j session: in `.7`, before the push.
+
 **11.20 A sliver beside a page-anchored object, and a block wider than the room (2026-10-15): m1's tables lost.**
 Jason found, testing `.7` in the sample, that a letterhead (m1, a user's document, local only) lost both flow tables
 after its page-anchored table, under docx4j's managers; under the stock ones the first. Traced here with the

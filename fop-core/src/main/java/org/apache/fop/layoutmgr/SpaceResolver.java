@@ -15,6 +15,11 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook obstacles-in-the-line, the border and padding a block closes with read at the break after
+ * its last line, which a word processor fits above an anchored object together with that line (fop/CR-024 §11.21).
+ * See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -405,6 +410,29 @@ public final class SpaceResolver {
             }
             performSpaceResolutionRules2to3(secondPart, secondPartLengths);
         }
+    }
+
+    /**
+     * The border and padding the content before this resolver's break closes with: the after-side border and
+     * padding elements kept at the break (a block's own and, after them, its enclosing blocks'), not the space
+     * after them, nor anything discarded at the break. At the end of a list, where there is no break, the
+     * elements after the last content. A word processor fits a paragraph's last line above an anchored object
+     * together with these, and moves the line below the object when they do not fit (hook obstacles-in-the-line,
+     * fop/CR-024 §11.21).
+     * @return the sum of their optimum lengths, in millipoints
+     */
+    public int borderAndPaddingBeforeBreak() {
+        UnresolvedListElementWithLength[] part = breakPoss != null ? firstPart : secondPart;
+        MinOptMax[] lengths = breakPoss != null ? firstPartLengths : secondPartLengths;
+        int sum = 0;
+        if (part != null) {
+            for (int i = 0; i < part.length; i++) {
+                if (part[i] instanceof BorderOrPaddingElement && lengths[i] != null) {
+                    sum += lengths[i].getOpt();
+                }
+            }
+        }
+        return sum;
     }
 
     private MinOptMax sum(MinOptMax[] lengths) {
