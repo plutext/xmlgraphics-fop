@@ -201,7 +201,8 @@ session mirrored and, with a second cause of its own found on r43, has 3955's it
 test took the first fo:block on a position chain, which on the re-read is the paragraph's, not the nested preserved
 block's; fixed there, gated on `.6` too, b269). r42's gates: control b264 0 movers; candidate b265 finishing. r43's
 gates: candidate b268 the frame probe +32, nothing else moved; docx4j's frames committed unpushed on VERSION_17_3_3
-(dd55984bc, 5f584872c); b269 (`.6`) against b266 pending. Both
+(dd55984bc, 5f584872c); b269 (`.6` with those line-manager changes, against b266) 0 movers, so the released renderer's
+output is unchanged but for `w:wrap="none"` frames, which reserve no band. Nothing open between the sessions on frames. Both
 traces were made with `~/fop-session-tools/2026-10-15-renderfo/` (lays a docx4j FO out through docx4j's own FOP path
 with its managers, the renderer's classes first). r42 (70329626b, checkstyle only over d89ccf85f) was the head before. 70329626b is checkstyle only: CI's own command
 (`mvn package checkstyle:check`) found seven violations that the phase A commits 2c4d33c62, c79fefc86, bf0a439c3 and
