@@ -197,7 +197,10 @@ carries CR-024 §11.18 (a band's top inside the first line after an edge is besi
 to 302.25 under docx4j's managers, Word 300.2, the 1.5pt left unread since Word's PDF has no glyph for the empty lines)
 and §11.19 (widows and orphans kept beside an obstacle, `PageSequenceLayoutManager.handlingObstacle()`; 3955's 2+1
 split was Apache's relaxation to 1 beside a float on the re-read, copied in docx4j's line manager, which the docx4j
-session has mirrored uncommitted, waiting on r43). r42's gates: control b264 0 movers; candidate b265 finishing. Both
+session mirrored and, with a second cause of its own found on r43, has 3955's item whole on page 2: its soft-return
+test took the first fo:block on a position chain, which on the re-read is the paragraph's, not the nested preserved
+block's; fixed there, gated on `.6` too, b269). r42's gates: control b264 0 movers; candidate b265 finishing. r43's
+gates queued: control b267 against b264, candidate b268 against b267, b269 (`.6`) against b266. Both
 traces were made with `~/fop-session-tools/2026-10-15-renderfo/` (lays a docx4j FO out through docx4j's own FOP path
 with its managers, the renderer's classes first). r42 (70329626b, checkstyle only over d89ccf85f) was the head before. 70329626b is checkstyle only: CI's own command
 (`mvn package checkstyle:check`) found seven violations that the phase A commits 2c4d33c62, c79fefc86, bf0a439c3 and
