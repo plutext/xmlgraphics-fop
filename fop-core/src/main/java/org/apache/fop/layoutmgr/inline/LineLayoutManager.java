@@ -19,7 +19,9 @@
  * from Apache FOP 2.11: hook inline-access, LineBreakPosition public with getters; and a nested block's positions
  * are not wrapped twice when line breaking runs again, and a line overflow is reported when there is no current child
  * (fop/CR-011); and a line that does not fit beside a side float is marked for the page breaking to set it below the
- * float (fop/CR-023). See README.md, "Changes from Apache FOP 2.11". */
+ * float (fop/CR-023). And hook obstacles-in-the-line, a break element
+ * of infinite penalty at the line boundaries orphans and widows keep, where an obstacle's edge may lie
+ * (fop/CR-024 §11.4). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -74,6 +76,7 @@ import org.apache.fop.layoutmgr.LayoutManager;
 import org.apache.fop.layoutmgr.LeafPosition;
 import org.apache.fop.layoutmgr.ListElement;
 import org.apache.fop.layoutmgr.NonLeafPosition;
+import org.apache.fop.layoutmgr.PageSequenceLayoutManager;
 import org.apache.fop.layoutmgr.Position;
 import org.apache.fop.layoutmgr.PositionIterator;
 import org.apache.fop.layoutmgr.SpaceSpecifier;
@@ -718,6 +721,16 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         isFirstInBlock = (this == getParent().getChildLMs().get(0));
     }
 
+    /**
+     * Whether the page-sequence carries an obstacle (an absolutely positioned block-container with fox:wrap), in
+     * which case the boundaries orphans and widows keep get a break element (fop/CR-024 §11.4); without one the
+     * element list keeps Apache FOP's shape.
+     */
+    private boolean pageSequenceHasObstacles() {
+        PageSequenceLayoutManager pslm = getPSLM();
+        return pslm != null && pslm.hasObstacles();
+    }
+
     private int getEffectiveAlignment(int alignment, int alignmentLast) {
         if (textAlignment != EN_JUSTIFY && textAlignmentLast == EN_JUSTIFY) {
             return 0;
@@ -1145,6 +1158,17 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                                 new LeafPosition(this, p, endIndex),
                                     keep.getPenalty(),
                                     keep.getContext(),
+                                    context));
+                    } else if (returnList.size() > 0 && i > 0 && pageSequenceHasObstacles()) {
+                        // hook obstacles-in-the-line (fop/CR-024 §11.4): a boundary orphans or widows keep is no
+                        // page break (an infinite penalty of class line, which the page breaker never takes),
+                        // but it is where the lines beside an object begin when the object's band starts inside
+                        // the paragraph's first or last lines, so the page breaker can make the edge there and
+                        // read the lines after it again, narrowed, as a word processor narrows them
+                        returnList.add(new BreakElement(
+                                new LeafPosition(this, p, endIndex),
+                                    KnuthElement.INFINITE,
+                                    Constants.EN_LINE,
                                     context));
                     }
                     endIndex = llPoss.getChosenPosition(i).getLeafPos();

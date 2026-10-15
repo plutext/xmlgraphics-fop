@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: hook obstacles-in-the-line, whether a block-container of the page-sequence carries fox:wrap
+ * (fop/CR-024 §11.4). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.fo.pagination;
@@ -46,6 +50,10 @@ import org.apache.fop.traits.WritingModeTraitsGetter;
  * <code>fo:page-sequence</code></a> object.
  */
 public class PageSequence extends AbstractPageSequence implements WritingModeTraitsGetter {
+
+    /** Hook obstacles-in-the-line (fop/CR-024): whether a block-container of this page-sequence carries fox:wrap. */
+    private boolean hasObstacles;
+
 
     private String masterReference;
     private Numeric referenceOrientation;
@@ -549,5 +557,18 @@ public class PageSequence extends AbstractPageSequence implements WritingModeTra
         if (pageSequenceMaster != null) {
             pageSequenceMaster.onlyTryInfinite = b;
         }
+    }
+
+    /**
+     * Hook obstacles-in-the-line (fop/CR-024): an absolutely positioned block-container of this page-sequence
+     * carries {@code fox:wrap}, so the line managers emit the break elements an obstacle's edge may need.
+     */
+    public void noteObstacle() {
+        hasObstacles = true;
+    }
+
+    /** @return whether a block-container of this page-sequence carries {@code fox:wrap} (fop/CR-024) */
+    public boolean hasObstacles() {
+        return hasObstacles;
     }
 }

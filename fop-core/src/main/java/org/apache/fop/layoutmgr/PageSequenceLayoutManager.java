@@ -509,6 +509,11 @@ public class PageSequenceLayoutManager extends AbstractPageSequenceLayoutManager
         return obstacleRegistry;
     }
 
+    /** @return whether a block-container of this page-sequence carries fox:wrap (hook obstacles-in-the-line) */
+    public boolean hasObstacles() {
+        return getPageSequence().hasObstacles();
+    }
+
     /**
      * Hook obstacles-in-the-line (fop/CR-024): where a part's column lies in its page, so that an obstacle given
      * in page coordinates can be set against the lines of the column.

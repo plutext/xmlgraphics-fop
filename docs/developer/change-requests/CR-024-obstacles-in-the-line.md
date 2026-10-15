@@ -369,19 +369,47 @@ every line within 20pt above and 30pt below it, with its text box and width). Ag
 - Case 2 (centred, both sides): text on both sides, 72 to about 210 and from 381.8: phase B. Phase A's `largest`
   reading lays the right side only and will differ here, as §4.2 says.
 
-One rule the fork did not have, shown three times (cases 1, 8 and 9): **a line is beside the object when its text,
-ascent to descent, crosses the band, not when its leading does.** Case 1's line at 187.3 to 198.2 (its pitch box
-to 201.1, crossing the picture's top at 200) runs full width; case 8's line at 187.2 to 198.2 stays above a
-`top-and-bottom` picture at 200; case 9's line at 137.8 to 148.8 stays full width above a picture at 150; and at
-the foot, case 1's line at 291.9 to 302.9 is narrowed since its text crosses 300. FOP's edge tests used the line's
-pitch box (`KnuthBlockBox` width = line-height plus the half-leadings) at both ends, so up to one line at each end
-could differ from Word's, by the leading alone. Built the same day: `nextLineCrosses` tests the next line's text
-box (`LineBreakPosition.getSpaceBefore() + getLineHeight()`), the foot test adds the next line's half-leading above
-its text to the content height, and `deactivateNode` leaves a line whose text lies below the foot where it is (no
-clearance, the content after the edge starting at its top) while a forced edge still clears to the foot, where
-Word puts the next line's pitch top (cases 7 and 8). This serves floats too, which are the same model (§10.5): the
-layout tests that pin the old pitch-box edge move by one line where the leading alone crossed, each re-read against
-the rule, and the gate measures the floating-table corpus on it. For docx4j's own line manager, which gives the
-line its box with the leading below the text (Enterprise CR-001 item 14), the rule reads its position's
-space-before and line-height as it sets them. Test case 10 pins the rule (a band the fourth and eleventh lines cross
-by their leading only).
+One rule the fork did not have, which every reading fits: **Word's line box carries the line's leading above its
+text, and a line is beside the object when that box crosses the band.** At the band's top this is the text's
+bottom edge: case 1's line at 187.3 to 198.2 (its pitch box to 201.1, crossing the picture's top at 200) runs
+full width, case 8's line at 187.2 to 198.2 stays above a `top-and-bottom` picture at 200, case 9's line at 137.8
+to 148.8 stays full width above a picture at 150, and case 1's line at 201.1 is the first narrowed. At the foot it
+is the text's top less the leading: case 6's line at 319.5 is narrowed below a band foot of 318 (its box from
+316.7), and case 1's at 305.6 (box from 302.8) is not, below a foot of 300. Cases 7 and 8 show the same box from
+the other side: below a cleared band the text resumes one leading below the foot (332.7 under 330, 302.8 under
+300), the box's top at the foot. FOP's edge tests used the line's pitch box (`KnuthBlockBox` width = line-height
+plus a half-leading each side), right at the foot within a half-leading and wrong at the top by up to the leading.
+Built the same day: `nextLineCrosses` tests the next line's text bottom (`LineBreakPosition.getSpaceBefore() +
+getLineHeight()`), the foot test takes the next line's box as Word draws it (its pitch top less the half-leading
+below, `-getSpaceAfter()`), and `deactivateNode` leaves a line whose box lies below the foot where it is (no
+clearance, the content after the edge starting at its top) while a forced edge still clears to the foot. This
+serves floats too, which are the same model (§10.5); on the corpus it moved nothing (the docx4j session's control
+gate b233, docx4j HEAD on r31 against `.6`: 0 movers on the four corpora and the probes). For docx4j's own line
+manager, which gives the line its box with the leading below the text (Enterprise CR-001 item 14), the rule reads
+its position's space-before and line-height as it sets them: its foot test is then the text's top, one leading
+below Word's; its pitch question, open in its register. Test case 10 pins the rule (a band the fourth line crosses
+by its leading only, full width; the eleventh beside the container by its box).
+
+**11.4 Two defects from the docx4j session's r31 run of the probes (2026-10-15), fixed.** It rendered the probes
+through docx4j with `fox:wrap` written (its CR-032 phase 5 candidate) and read them against Word's lines
+(`~/fidelity-cr030/readings/2026-10-15-picture-page-square-r31-cand.txt`; reproducers under
+`~/fidelity-cr030/repro/r31-*.fo`, which reproduce here through FOP's stock managers). (i) The band started one line
+late wherever its top fell inside a paragraph's first line (cases 3 to 6 and 9, and the table probe's case 3):
+orphans and widows leave no break element between a paragraph's first and second lines (and last two), so the first
+legal break after the anchor box, where the edge could be made, was after the second line; setting orphans and
+widows to 1 on the reproducer gave Word's lines exactly. Fixed in `LineLayoutManager`: at a boundary orphans or
+widows keep, a `BreakElement` of infinite penalty and class line is emitted, which the page breaker never takes as
+a page break (an infinite penalty), and which `PageBreakingAlgorithm.handlePenaltyAt` considers only when a band is
+pending and the next line would cross its top, so that it becomes the edge (`startPendingFloat` inside
+`considerLegalBreak`, `elementCanEndLine` then allowing it while a float is handled). The element is emitted only
+in a page-sequence that carries an obstacle (`BlockContainer.bind` marks its `PageSequence`, `noteObstacle`;
+`PageSequenceLayoutManager.hasObstacles`): emitted always, it changed the element list's shape and failed eight of
+Apache's element-list tests (`block_space-before_space-after_2`, `block_margin_inherit` and six more), whose areas
+it had not moved. docx4j's line manager emits its own elements with the same orphan and widow gap, so its copy
+needs the same break element where `PageSequenceLayoutManager.hasObstacles()` is true, gated on the capability;
+told. (ii) A container as wide as the column (the probe's case 7, the table probe's case 3) left no
+room on either side, and the lines were laid one word each at zero width down the band, CR-023's overflow rule
+not ending it (the first line after an edge has no break before it to be tested at): `Obstacle.intrusionsIn` now
+returns the whole column when the side the rule names has no room, and `PageBreaker.startObstacle` clears to the
+foot as for `top-and-bottom`. Test cases 11 and 12; on the reproducers, every defect page now reads as Word's
+(page 3's line at 186.1 at 331.0 against Word's 331.1; the table's flow resuming at 208.1 against Word's 209.4).

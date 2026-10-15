@@ -132,7 +132,8 @@ public final class Obstacle {
      * The narrowing of the column the obstacle asks for, by its side rule, as the start and end intrusion
      * adjustments a side float sets: for {@code top-and-bottom} the whole column; for {@code square} the room
      * from the column's start edge to the obstacle's end, or from its start to the column's end edge, the lines
-     * going on the other side. {@code both} is laid as {@code largest} in phase A, which lays a line in one piece.
+     * going on the other side; the whole column where the side the rule names has no room, so that the lines go
+     * below (§11.4). {@code both} is laid as {@code largest} in phase A, which lays a line in one piece.
      *
      * @param roomStart the obstacle's room, start edge, relative to the column's start edge
      * @param roomEnd the obstacle's room, end edge, relative to the column's start edge
@@ -157,6 +158,10 @@ public final class Obstacle {
             textAtStart = false;
         } else {
             textAtStart = freeStart >= freeEnd;
+        }
+        if ((textAtStart ? freeStart : freeEnd) <= 0) {
+            // no room on the side the rule names: the lines go below, as for top-and-bottom (§11.4)
+            return new int[] {columnWidth, 0};
         }
         return textAtStart ? new int[] {0, columnWidth - start} : new int[] {end, 0};
     }

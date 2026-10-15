@@ -1008,9 +1008,10 @@ public class PageBreaker extends AbstractBreaker {
         PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
         int edgeY = pslm.getCurrentPV().getCurrentFlow().getBPD();
         int height = Math.max(0, alg.getArmedBottomInFlow() - edgeY);
-        if (alg.getArmedObstacle().getWrap() == Constants.EN_TOP_AND_BOTTOM) {
-            // no line beside it: the obstacle ends at its start edge, and the content after the edge starts at
-            // its foot, as after an edge forced by clear (fop/CR-022)
+        if (alg.getArmedObstacle().getWrap() == Constants.EN_TOP_AND_BOTTOM || alg.armedObstacleClearsColumn()) {
+            // no line beside it, by its wrap or because the side the rule names has no room (§11.4): the obstacle
+            // ends at its start edge, and the content after the edge starts at its foot, as after an edge forced
+            // by clear (fop/CR-022)
             floatYOffset = edgeY;
             pendingFloatClearance = height;
             handleEndOfFloat(height);

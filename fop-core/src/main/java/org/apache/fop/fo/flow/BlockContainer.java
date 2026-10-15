@@ -115,6 +115,16 @@ public class BlockContainer extends FObj implements BreakPropertySet, WritingMod
         wrap = pList.get(PR_X_WRAP).getEnum(); // fop/CR-024
         wrapSides = pList.get(PR_X_WRAP_SIDES).getEnum();
         wrapDistances = pList.get(PR_X_WRAP_DISTANCES).getString();
+        if (wrap != EN_NONE && (commonAbsolutePosition.absolutePosition == EN_ABSOLUTE
+                || commonAbsolutePosition.absolutePosition == EN_FIXED)) {
+            // the page-sequence's line managers then emit the break elements an obstacle's edge may need
+            for (FONode node = getParent(); node != null; node = node.getParent()) {
+                if (node instanceof org.apache.fop.fo.pagination.PageSequence) {
+                    ((org.apache.fop.fo.pagination.PageSequence) node).noteObstacle();
+                    break;
+                }
+            }
+        }
     }
 
     /** {@inheritDoc} */
