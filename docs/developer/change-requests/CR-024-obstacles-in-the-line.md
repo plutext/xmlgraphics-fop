@@ -723,6 +723,37 @@ is no gap left. A labelled copy (PX15 to PX21) is on the share for Jason's Word 
 place. Gated b268 (r43, the frames rule with docx4j's widows and soft-return fixes, 5f584872c): the frame probe
 +32, nothing else moved.
 
+**11.20 A sliver beside a page-anchored object, and a block wider than the room (2026-10-15): m1's tables lost.**
+Jason found, testing `.7` in the sample, that a letterhead (m1, a user's document, local only) lost both flow tables
+after its page-anchored table, under docx4j's managers; under the stock ones the first. Traced here with the
+renderfo harness: the container is 18pt from the left, 566.75pt wide with 9pt distances, in a 576pt column from
+x=18, so the room at the end side was 0.25pt, and `Obstacle.intrusionsIn` counted it as room (`<= 0` was none).
+The band was a narrowing float with a start intrusion of 575750, not a clearing one; the list restarted at the
+start edge began with a small block, a 6.1pt container and the "Attn" table, all laid beside the band at 0.25pt,
+the table's content gone; the end edge came only before the next text line, which cannot fit beside a float
+(float-overflow-below is a rule for lines), so the clearance to the foot was taken after those three boxes. Not a
+restart defect: the table's elements were there, and the restart variants were not involved. The probes had tables
+after a band's foot (`table-floating-page-after`), never beside one. Two rules: a free side under 1pt beside an
+obstacle is no room (`Obstacle.MIN_ROOM`, a numerical margin, not Word's rule), so the band clears the column as
+top-and-bottom does; and a block-level box that asks for more width than the room beside a band, by its FO (a
+table's inline-progression-dimension when not auto, else the sum of its fixed-layout columns; a block-container's
+width when not auto: `PageBreakingAlgorithm.fixedIPDOf`), goes below the object as a word that does not fit does:
+the end edge is taken before it (`overflowsBesideFloatAtNextBox`), and when it is the first box after the edge,
+where no legal break precedes it (the §11.18 shape), the clearance runs to the band's foot
+(`PageBreaker.continueBesideObstacles`, `firstBoxAfterEdgeFixedIPD`). The widths read are the FO's: a paragraph's
+laid width is the column's at the first reading, which would have made every band clear. Test cases 23 (a 300pt
+fixed-width table first after an edge beside a 100pt room) and 24 (a 0.5pt sliver). m1 under both manager sets:
+Attn at 277, Notice Name at 305, Dear at 415. Against Word (319.9, 347.3, 457.7) everything after the band is 43pt
+high: the start edge fell inside the 31.4pt glue after the anchor paragraph (the band's top at 80878 in the flow,
+the edge at 110126) and the clearance runs from the edge to the foot, so that space is swallowed, where Word keeps
+it below the object; the docx4j session has it as a probe to cut, no content lost. r44 (the two rules as first
+written) was gated b270 against b268 and lost: the probe `table-floating-pair`, plain `fo:float` with no `fox:wrap`
+and at Word's to 0.2pt on r43, -1 line and its page parity to 0.8732; corpus 8985 -7 lines. The second rule had
+been written into the end-edge test of every float, so a fixed-width table beside a text-anchored floating table
+went below it where Apache FOP's placement had matched Word. It is confined to an obstacle's band
+(`handlingObstacle()`); the first (`Obstacle.MIN_ROOM`) never reached a float. Full suite 3927/0, checkstyle and
+spotbugs clean; r45.
+
 **11.19 Widows and orphans beside an obstacle (2026-10-15): 3955's list item.** The docx4j session's 3955 split
 (§11.15, §11.16: a three-line list item 2+1 at page 1's foot with the frame written as an obstacle, whole on page
 2 in its control and in Word) was read here from its element lists under its managers. Both first readings carry

@@ -1092,6 +1092,14 @@ public class PageBreaker extends AbstractBreaker {
                     active = activeObstaclesAt(inside, end);
                 }
             }
+            if (active != null && active[2] == 0 && end == y
+                    && alg.firstBoxAfterEdgeFixedIPD() > columnWidthLessIntrusions(active)) {
+                // the first box after the edge asks for more width than the room beside the band: a table of
+                // fixed width, or a container, that a word processor sets below the object, as it sets a word
+                // that does not fit. The band clears the column for it (§11.20); for a box after it the end edge
+                // does the same (PageBreakingAlgorithm.overflowsBesideFloatAtNextBox)
+                active = new int[] {active[0], active[1], 1};
+            }
             if (active == null || active[2] == 0) {
                 break;
             }
@@ -1134,6 +1142,12 @@ public class PageBreaker extends AbstractBreaker {
         int next = nextObstacleTopAfter(y);
         int textBottom = next < 0 ? 0 : alg.firstLineTextBottomAfterEdge();
         return textBottom > 0 && y + textBottom > next ? next : -1;
+    }
+
+    /** @return the column's width less the start and end intrusions of the active obstacles (§11.20) */
+    private int columnWidthLessIntrusions(int[] active) {
+        PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
+        return pslm.getCurrentPV().getCurrentSpan().getColumnWidth() - active[0] - active[1];
     }
 
     /** @return whether an obstacle of the page begins at the height (§11.8) */

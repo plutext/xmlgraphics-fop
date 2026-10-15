@@ -98,6 +98,9 @@ public final class Obstacle {
         return top + height + distanceAfter;
     }
 
+    /** The least room beside an obstacle that counts as room for the lines: 1pt, in millipoints (§11.20). */
+    public static final int MIN_ROOM = 1000;
+
     /** @return the start edge of the room the lines keep out of: the rectangle's start less the distance start */
     public int getRoomStart() {
         return left - distanceStart;
@@ -159,8 +162,10 @@ public final class Obstacle {
         } else {
             textAtStart = freeStart >= freeEnd;
         }
-        if ((textAtStart ? freeStart : freeEnd) <= 0) {
-            // no room on the side the rule names: the lines go below, as for top-and-bottom (§11.4)
+        if ((textAtStart ? freeStart : freeEnd) < MIN_ROOM) {
+            // no room on the side the rule names: the lines go below, as for top-and-bottom (§11.4). A sliver
+            // under a point is none: a letterhead table 0.25pt short of the column's end edge left lines of that
+            // width beside it, and the flow's table laid there was lost (§11.20)
             return new int[] {columnWidth, 0};
         }
         return textAtStart ? new int[] {0, columnWidth - start} : new int[] {end, 0};

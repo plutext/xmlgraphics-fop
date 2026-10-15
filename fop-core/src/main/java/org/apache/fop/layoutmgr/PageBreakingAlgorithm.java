@@ -1311,8 +1311,86 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                     && ((LineLayoutManager.LineBreakPosition) p).overflowsBesideFloat()) {
                 return true;
             }
+            if (handlingObstacle() && blockWiderThanRoomBesideFloat(p.getLM())) {
+                // an obstacle's band only: beside an fo:float the block keeps Apache FOP's placement (gate b270:
+                // the floating-table probe, at Word's on r43, lost a line with the rule applied to its floats)
+                return true;
+            }
         }
         return false;
+    }
+
+    /**
+     * Whether a block-level box beside the float asks for more width than the room there: a table of fixed width,
+     * or whose fixed columns sum to more, or a container of fixed width, which a word processor sets below the
+     * object as it sets a word that does not fit (hook obstacles-in-the-line, fop/CR-024 §11.20: a letterhead's
+     * page-anchored table left 0.25pt beside it, and the flow's table laid there, 568pt wide, was lost). The width
+     * read is the FO's, not the laid one, which for a paragraph is the column's whatever the column. Applied beside
+     * an obstacle's band only, never beside an fo:float.
+     */
+    private boolean blockWiderThanRoomBesideFloat(LayoutManager lm) {
+        if (!(topLevelLM instanceof PageSequenceLayoutManager)) {
+            return false;
+        }
+        int room = ((PageSequenceLayoutManager) topLevelLM).getCurrentColumnWidth();
+        return fixedIPDOf(lm) > room;
+    }
+
+    /**
+     * The inline size a block-level layout manager's FO fixes: a table's inline-progression-dimension when not
+     * auto, else the sum of its columns' widths under fixed layout; a block-container's when not auto; -1 for
+     * anything else (§11.20).
+     */
+    static int fixedIPDOf(LayoutManager lm) {
+        if (lm instanceof org.apache.fop.layoutmgr.table.TableLayoutManager) {
+            org.apache.fop.layoutmgr.table.TableLayoutManager tlm
+                    = (org.apache.fop.layoutmgr.table.TableLayoutManager) lm;
+            Table table = tlm.getTable();
+            if (table.getInlineProgressionDimension().getOptimum(tlm).getEnum() != Constants.EN_AUTO) {
+                return table.getInlineProgressionDimension().getOptimum(tlm).getLength().getValue(tlm);
+            }
+            if (!table.isAutoLayout()) {
+                int sum = 0;
+                for (Object o : table.getColumns()) {
+                    org.apache.fop.fo.flow.table.TableColumn col = (org.apache.fop.fo.flow.table.TableColumn) o;
+                    if (col != null && col.getColumnWidth() != null) {
+                        sum += col.getColumnWidth().getValue(tlm);
+                    }
+                }
+                return sum;
+            }
+            return -1;
+        } else if (lm instanceof BlockContainerLayoutManager) {
+            BlockContainerLayoutManager bclm = (BlockContainerLayoutManager) lm;
+            BlockContainer bc = (BlockContainer) bclm.getFObj();
+            if (bc.getInlineProgressionDimension().getOptimum(bclm).getEnum() != Constants.EN_AUTO) {
+                return bc.getInlineProgressionDimension().getOptimum(bclm).getLength().getValue(bclm);
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * The inline size the FO fixes for the first box after the float edge being handled, by {@link #fixedIPDOf}
+     * over the box's position chain; -1 when none is fixed or no box follows (§11.20).
+     */
+    int firstBoxAfterEdgeFixedIPD() {
+        if (bestFloatEdgeNode == null) {
+            return -1;
+        }
+        for (int i = bestFloatEdgeNode.position; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox() && e.getWidth() > 0) {
+                int fixed = -1;
+                for (Position p = e.getPosition(); p != null; p = nextInChain(p)) {
+                    fixed = Math.max(fixed, fixedIPDOf(p.getLM()));
+                }
+                return fixed;
+            } else if (e.isForcedBreak() && i != bestFloatEdgeNode.position) {
+                return -1;
+            }
+        }
+        return -1;
     }
 
     private static int clearOf(FObj fo) {

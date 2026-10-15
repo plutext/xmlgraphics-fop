@@ -254,6 +254,21 @@
 <fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="170pt" left="372pt" width="150pt" height="40pt" fox:wrap="top-and-bottom" overflow="visible"><fo:block font-size="8pt" line-height="8pt">G2</fo:block></fo:block-container></fo:block-container></fo:block>
 <fo:block>ea0 ea1 ea2 ea3 ea4 ea5 ea6 ea7 ea8 ea9 ea10 ea11 ea12 ea13 ea14 ea15 ea16 ea17 ea18 ea19 ea20 ea21 ea22 ea23 ea24 ea25 ea26 ea27 ea28 ea29 ea30 ea31 ea32 ea33 ea34 ea35 ea36 ea37 ea38 ea39 ea40 ea41 ea42 ea43 ea44 ea45 ea46 ea47 ea48 ea49 ea50 ea51 ea52 ea53 ea54 ea55 ea56 ea57 ea58 ea59</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>fa-heading</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="172pt" width="351pt" height="100pt" fox:wrap="square" fox:wrap-sides="largest" overflow="visible"><fo:block font-size="8pt" line-height="8pt">T</fo:block></fo:block-container></fo:block-container>fa0</fo:block>
+<fo:block>fa1</fo:block>
+<fo:block>fa2</fo:block>
+<fo:table table-layout="fixed" width="300pt"><fo:table-column column-width="300pt"/><fo:table-body><fo:table-row><fo:table-cell><fo:block>tt0</fo:block></fo:table-cell></fo:table-row></fo:table-body></fo:table>
+<fo:block>fb0 fb1 fb2 fb3 fb4 fb5 fb6 fb7 fb8 fb9 fb10 fb11 fb12 fb13 fb14 fb15 fb16 fb17 fb18 fb19 fb20 fb21 fb22 fb23 fb24 fb25 fb26 fb27 fb28 fb29 fb30 fb31 fb32 fb33 fb34 fb35 fb36 fb37 fb38 fb39</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>ga-heading</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="72pt" width="450.5pt" height="100pt" fox:wrap="square" fox:wrap-sides="largest" overflow="visible"><fo:block font-size="8pt" line-height="8pt">S</fo:block></fo:block-container></fo:block-container>ga0</fo:block>
+<fo:block>ga1</fo:block>
+<fo:block>ga2</fo:block>
+<fo:block>gb0 gb1 gb2 gb3 gb4 gb5 gb6 gb7 gb8 gb9 gb10 gb11 gb12 gb13 gb14 gb15 gb16 gb17 gb18 gb19 gb20 gb21 gb22 gb23 gb24 gb25 gb26 gb27 gb28 gb29 gb30 gb31 gb32 gb33 gb34 gb35 gb36 gb37 gb38 gb39</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
@@ -344,7 +359,7 @@
     <eval expected="151000" xpath="((//pageViewport)[22]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[8]/@ipd"/>
     <eval expected="451000" xpath="//word[.='ab0']/ancestor::lineArea[1]/@ipd"/>
     <!-- 19: two cases in one page-sequence, a forced page break between them, each a heading, then the anchor paragraph with a page-anchored picture at 136 (band 64 to 164): two pages, each with its heading on it and seven lines beside its picture (the probe document of gate b246, where the scan of a list's first page took the next case's picture for the page before the break) -->
-    <eval expected="27" xpath="count(//pageViewport)"/>
+    <eval expected="29" xpath="count(//pageViewport)"/>
     <eval expected="1" xpath="count((//pageViewport)[23]//word[.='ba-heading'])"/>
     <eval expected="1" xpath="count((//pageViewport)[23]//word[.='ba0'])"/>
     <eval expected="7" xpath="count((//pageViewport)[23]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
@@ -357,15 +372,23 @@
     <eval expected="1" xpath="count((//pageViewport)[25]//flow/block[@bpd='40000' and not(@positioning)])"/>
     <eval expected="1" xpath="count((//pageViewport)[25]//flow/block[@bpd='48000' and not(@positioning)])"/>
     <!-- 21: a column-wide frame at the page's top (8 to 68 in the flow) anchored in the page's last paragraph, the body beginning 300pt down: the band lies above every line, so nothing is cleared, the anchor stays on the page with the frame, and the page is as without the frame -->
-    <eval expected="27" xpath="count(//pageViewport)"/>
+    <eval expected="29" xpath="count(//pageViewport)"/>
     <eval expected="1" xpath="count((//pageViewport)[26]//word[.='anchor'])"/>
     <eval expected="1" xpath="count((//pageViewport)[26]//block[@positioning='fixed'])"/>
     <eval expected="0" xpath="count((//pageViewport)[26]//flow/block[@bpd &gt; 200000 and not(@positioning)]) - 1"/>
     <!-- 22: as 20, with the second frame 10pt below the first's foot (98 to 138 in the flow): the first line (32 to 48) lies above the first, and the line after the first's foot (88 to 104, its text from 90.45 to 101.55) has its text across the second's top at 98, so it is no line in the gap: the clearance runs through both bands, 48 to 138, and the lines go on from there (an 11.35pt gap between a letterhead's frames under a consumer's 12pt line boxes, corpus 6603; §11.18) -->
-    <eval expected="27" xpath="count(//pageViewport)"/>
+    <eval expected="29" xpath="count(//pageViewport)"/>
     <eval expected="451000" xpath="//word[.='ea0']/ancestor::lineArea[1]/@ipd"/>
     <eval expected="1" xpath="count((//pageViewport)[27]//flow/block[@bpd='90000' and not(@positioning)])"/>
     <eval expected="0" xpath="count((//pageViewport)[27]//flow/block[@bpd='40000' and not(@positioning)])"/>
     <eval expected="0" xpath="count((//pageViewport)[27]//lineArea[@ipd &lt; 451000 and not(ancestor::block[@positioning])])"/>
+    <!-- 23: a square container at the right leaving 100pt at the start (band 64 to 164), and a 300pt fixed-width table the first box after the edge: the table cannot be laid beside the band, so the band clears the column for it, 64 to 164, and the table and the lines after it go below, full width (a letterhead's page-anchored table with the flow's tables lost beside it, m1; §11.20) -->
+    <eval expected="1" xpath="count((//pageViewport)[28]//word[.='tt0'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[28]//flow/block[@bpd='100000' and not(@positioning)])"/>
+    <eval expected="0" xpath="count((//pageViewport)[28]//lineArea[@ipd &lt; 451000 and not(ancestor::block[@positioning])])"/>
+    <!-- 24: a square container 0.5pt short of the column's end edge: a sliver under a point is no room, so the band clears the column (64 to 164) and the lines go below it, full width; without the minimum the lines beside it were 0.5pt wide (§11.20) -->
+    <eval expected="1" xpath="count((//pageViewport)[29]//flow/block[@bpd='100000' and not(@positioning)])"/>
+    <eval expected="0" xpath="count((//pageViewport)[29]//lineArea[@ipd &lt; 451000 and not(ancestor::block[@positioning])])"/>
+    <eval expected="1" xpath="count((//pageViewport)[29]//word[.='gb39'])"/>
   </checks>
 </testcase>
