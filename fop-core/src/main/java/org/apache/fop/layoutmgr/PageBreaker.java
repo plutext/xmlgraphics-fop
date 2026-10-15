@@ -719,6 +719,11 @@ public class PageBreaker extends AbstractBreaker {
                 // condition that must be satisfied;
                 // otherwise, we may simply need a new page
                 handleBreakTrait(breakClass, emptyContent);
+                // a clearance to a float's or an obstacle's foot belongs to the page the edge lies on: the
+                // content that did not fit below the foot there starts the next page at its top, not that far
+                // down it (corpus 13544, a column-wide page-anchored table ending 12pt above the page's foot;
+                // fop/CR-024 §11.7)
+                pendingFloatClearance = 0;
             }
             pageProvider.setStartOfNextElementList(pslm.getCurrentPageNum(),
                     pslm.getCurrentPV().getCurrentSpan().getCurrentFlowIndex(),

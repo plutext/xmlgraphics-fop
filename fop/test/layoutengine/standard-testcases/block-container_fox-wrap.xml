@@ -45,7 +45,8 @@
       covering the top of a page that a forced break starts (corpus 3475's logo page): the edge is the forced break,
       the block carrying it read again from its start, nothing lost. 14: a column-wide band that would push its own
       anchor past the page's foot (corpus 8362): the page breaks before the anchor, which lands on the next page
-      below the container.
+      below the container. 15: a column-wide band ending 8pt above the page's foot (corpus 13544): the content after
+      the edge starts the next page at its top, the clearance to the foot belonging to the page the edge lies on.
     </p>
   </info>
   <fo>
@@ -186,6 +187,35 @@
 <fo:block>t29</fo:block>
 <fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="72pt" left="72pt" width="451pt" height="400pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>u0 u1 u2 u3 u4 u5 u6 u7 u8 u9 u10 u11 u12 u13 u14 u15 u16 u17 u18 u19 u20 u21 u22 u23 u24 u25 u26 u27 u28 u29 u30 u31 u32 u33 u34 u35 u36 u37 u38 u39 u40 u41 u42 u43 u44 u45 u46 u47 u48 u49 u50 u51 u52 u53 u54 u55 u56 u57 u58 u59</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>v0</fo:block>
+<fo:block>v1</fo:block>
+<fo:block>v2</fo:block>
+<fo:block>v3</fo:block>
+<fo:block>v4</fo:block>
+<fo:block>v5</fo:block>
+<fo:block>v6</fo:block>
+<fo:block>v7</fo:block>
+<fo:block>v8</fo:block>
+<fo:block>v9</fo:block>
+<fo:block>v10</fo:block>
+<fo:block>v11</fo:block>
+<fo:block>v12</fo:block>
+<fo:block>v13</fo:block>
+<fo:block>v14</fo:block>
+<fo:block>v15</fo:block>
+<fo:block>v16</fo:block>
+<fo:block>v17</fo:block>
+<fo:block>v18</fo:block>
+<fo:block>v19</fo:block>
+<fo:block>v20</fo:block>
+<fo:block>v21</fo:block>
+<fo:block>v22</fo:block>
+<fo:block>v23</fo:block>
+<fo:block>v24</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="472pt" left="72pt" width="451pt" height="290pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>w0 w1 w2 w3 w4 w5 w6 w7 w8 w9 w10 w11 w12 w13 w14 w15 w16 w17 w18 w19 w20 w21 w22 w23 w24 w25 w26 w27 w28 w29 w30 w31 w32 w33 w34 w35 w36 w37 w38 w39 w40 w41 w42 w43 w44 w45 w46 w47 w48 w49 w50 w51 w52 w53 w54 w55 w56 w57 w58 w59 w60 w61 w62 w63 w64 w65 w66 w67 w68 w69 w70 w71 w72 w73 w74 w75 w76 w77 w78 w79</fo:block>
+<fo:block>x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 x12 x13 x14 x15 x16 x17 x18 x19</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
@@ -250,5 +280,10 @@
     <eval expected="1" xpath="count((//pageViewport)[17]//block[@positioning='fixed'])"/>
     <eval expected="1" xpath="count((//pageViewport)[17]//flow/block[@bpd='400000' and not(@positioning)])"/>
     <eval expected="1" xpath="count((//pageViewport)[17]//word[.='u0'])"/>
+    <!-- 15: a column-wide container from 400 to 690 in the flow, 8pt above the page's foot, anchored in the paragraph the band starts in: the anchor's lines go below the foot, where no line fits, so they start the next page at its top, not a clearance down it -->
+    <eval expected="25" xpath="count((//pageViewport)[18]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])"/>
+    <eval expected="0" xpath="count((//pageViewport)[19]//flow/block[@bpd &gt; 100000 and not(@positioning)])"/>
+    <eval expected="1" xpath="count((//pageViewport)[19]//word[.='w0'])"/>
+    <eval expected="451000" xpath="//word[.='w0']/ancestor::lineArea[1]/@ipd"/>
   </checks>
 </testcase>

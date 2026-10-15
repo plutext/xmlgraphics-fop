@@ -472,3 +472,22 @@ a block read again after an edge (`floatRestartLM`) gets `SUPPRESS_BREAK_BEFORE`
 it starts. Under docx4j's managers, by its recipe, page 6 then draws 1714 characters against the control's 1713.
 The forced-break restart of (A) never fires on either shape (the page-top edge's element is the keep penalty after
 the forced break, not the break), and is harmless; it stays as a guard.
+
+**11.7 The r34 gate (b241, b242; 2026-10-15): 13544 fixed, the frames withdrawn for now.** Control b241 (r33 to
+r34 alone) 0 movers; candidate b242 15 movers, every gain held, 3475 off the list. Left: 13544 (+33 lines but 4
+pages against Word's 3) and two frame documents, 3955 and 6603, which the docx4j session has taken out of the
+obstacles on its side meanwhile (they keep their measured hidden band copy; gate b243).
+
+13544, reproduced here from `~/fidelity-real/score/b242/fop/16_en-US_tbl_13544.fo`: a column-wide page-anchored
+table at page y 513.8, its band 441.8 to 686.1 in a 697.9pt flow, so it clears the column and leaves 12pt below
+its foot, where the anchor's first line does not fit and goes to page 2. The clearance to the foot (`PageBreaker.
+pendingFloatClearance`, taken by the next part's `addAreas` as its space-before, fop/CR-022) was then applied to
+page 2's first part, which began 240pt down ("Bottle Buddy Planning Sheet" at 311 against the control's 70.3 and
+Word's 76.0). The clearance belongs to the page the edge lies on: `startPart` now drops it when it opens a new
+page, so the content that did not fit below the foot starts the next page at its top (70.5 here). This guards
+CR-022's `clear` and a `top-and-bottom` object at a page's foot the same way. Test case 15.
+
+3955 (an address frame whose own lines were drawn 609pt low in b242) does not reproduce here on r34 with either
+FOP's stock managers or docx4j's (its recipe's classpath, the frame's lines at 147.4 against Word's 149.8); left
+with the docx4j session. 6603 (seven `top-and-bottom` frames on one page, the body 86pt above Word's) is limit
+(ii) of §11.1, several obstacles on one page, the next item for the renderer when the frames come back.
