@@ -706,7 +706,11 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             // the page the box lands on (considerLegalBreak, or handleBox again after the restart)
             int bandHeightInPage = (bandBottom - pageTopInList) - Math.max(bandTop - pageTopInList, 0);
             int boxY = totalWidth - pageTopInList;
-            if (boxY + bandHeightInPage >= pageHeight) {
+            // what the band pushes down is the content laid within it, not its height: a band above every
+            // line of the page (a letterhead's frames anchored at the page's foot, corpus 5218) pushes nothing
+            int pushed = Math.min(bandHeightInPage, contentWithin(pageStart, Math.max(bandTop, pageTopInList),
+                    Math.min(bandBottom, totalWidth)));
+            if (boxY + pushed >= pageHeight) {
                 if (bandHeightInPage + nextContentBoxWidth(box) >= pageHeight) {
                     // no page holds the band and a line below it: the object is drawn where it lands
                     obstacle.setStarted();
@@ -855,6 +859,43 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             }
         }
         return false;
+    }
+
+    /**
+     * The height of the boxes and glue of this list that lie between two heights of it, read from the page's
+     * start node (fop/CR-024 §11.15).
+     */
+    private int contentWithin(KnuthNode pageStart, int from, int to) {
+        int content = 0;
+        int y = pageStart.totalWidth;
+        for (int i = pageStart.position + 1; i < par.size() && y < to; i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox() || e.isGlue()) {
+                int w = e.getWidth();
+                int top = Math.max(y, from);
+                int bottom = Math.min(y + w, to);
+                if (bottom > top) {
+                    content += bottom - top;
+                }
+                y += w;
+            }
+        }
+        return content;
+    }
+
+    /** The lowest foot among the obstacles armed for the page, in list coordinates (fop/CR-024 §11.15). */
+    private int armedBottomInList(int pageTopInList) {
+        int bottom = -1;
+        for (int[] o : armedObstacles) {
+            bottom = Math.max(bottom, o[1] + pageTopInList);
+        }
+        return bottom;
+    }
+
+    /** The top of the page being filled, in list coordinates (fop/CR-024 §11.15). */
+    private int currentPageTopInList() {
+        KnuthNode pageStart = currentPageStart();
+        return pageStart == null ? 0 : pageStart.totalWidth - (pageStart.line == 0 ? listStartFlowY : 0);
     }
 
     /** The active node of the highest part number: the start of the page being filled (fop/CR-024). */
@@ -1105,7 +1146,18 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             if (nextLineCrosses(elementIdx, pendingFloatTop)
                     || (starting != null && widthUpToNextBox(elementIdx) + nonRestartableExtent(elementIdx, starting)
                             > pendingFloatTop)) {
-                startPendingFloat();
+                if (obstacleEdge && !armedObstacles.isEmpty() && widthUpToNextBox(elementIdx)
+                        >= armedBottomInList(currentPageTopInList())) {
+                    // every armed band lies wholly above the next line: nothing is beside the lines, and an
+                    // edge here would clear the page's content down by the bands' height (corpus 5218's
+                    // letterhead frames, anchored at the page's foot; §11.15). The obstacles are given up.
+                    armedObstacles.clear();
+                    armedObstacle = null;
+                    pendingFloatTop = -1;
+                    obstacleEdge = false;
+                } else {
+                    startPendingFloat();
+                }
             }
         }
         if (floatHeight != 0) {

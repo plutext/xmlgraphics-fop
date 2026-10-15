@@ -637,3 +637,27 @@ at 300.2 below the lowest frame's foot at 276.5):
   heading itself lands 82pt below Word's through the FO's own spacing (a 68pt heading block and a 12.6pt paragraph
   written for the hidden band copies), the docx4j session's to read. Test case 20 (two frames anchored at the
   page's top with a gap between, the body below the lower one).
+
+**11.15 The frames on r39 (b253 to b255; 2026-10-15): 5218 and 3955 read.** Control b253 (r39 against b250) 0
+movers; candidate b254 (frames as `below` for no-wrap frames, `square` otherwise) 3955 -2 and 5218 -3 with a page
+over Word; 6603 held, its remaining 81pt the docx4j session's (its footer table's hidden band copy, measured
+against the body's foot where the page's foot is right: b255, 0 movers, 6603's maxDy 22.8 to 16.9).
+
+5218 (`~/fidelity-cr030/repro/r39-frames-below-5218-*.fo`, reproduced here, 5 pages to the control's 4): all
+twenty-four frames are anchored in the empty paragraphs at the flow's start, the eight form rows at the page's
+foot among them, so with `below` every band runs from those anchors and the body after them goes below the
+lowest frame, at the page's foot. That is §11.14's rule, and Word's on 6603, but on 5218 Word keeps the body at
+the same height as the foot frames ("1. ООО И." at x 118 beside a frame at x 130); both documents carry
+`w:wrap="notBeside"`, so Word decides by something else, and which frames get `below` is the writer's choice
+from the docx (told). Two renderer fixes found on the way: the deferral of §11.5 estimated what a clearing band
+pushes down by the band's height, where it is the content laid within the band (`contentWithin`; a band above
+every line pushes nothing); and a pending band wholly above the next line is given up rather than taking an edge
+that would clear the page's content down by its height (`armedBottomInList`). Test case 21 (a column-wide frame at
+the page's top anchored in the page's last paragraph, the body beginning 300pt down: nothing moves).
+
+3955 (a `square` frame, no `below`): the candidate splits a three-line list item at the page's foot where the
+control and Word start it on the next page; widows and orphans are 1, the stock managers render both FOs alike,
+and CR-024 changed none of `ListItemLayoutManager`, `BlockLayoutManager` or `BlockStackingLayoutManager`, in
+`FlowLayoutManager` only `addChildElements` (§11.6), which docx4j's subclass inherits. The restart at an edge
+inside a list item goes through Apache's `ListItemPosition` path and docx4j's `WordListItemLayoutManager`'s
+restart variant, where the difference must lie; offered to compare the element lists.
