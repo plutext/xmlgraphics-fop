@@ -191,7 +191,8 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-15, night. **`fop/CR-024` phase A, the page-anchored half, is MERGED to `2.11-docx4j.7`**
+Last updated 2026-10-15, late, before a `/clear`. **FIRST: run the full fop-core suite on HEAD (the last commit
+ran only the obstacle test file and checkstyle), then package r42 and hand it to the docx4j session.** **`fop/CR-024` phase A, the page-anchored half, is MERGED to `2.11-docx4j.7`**
 (fast-forward on Jason's word, tip f98834c2c; the branch `CR-024-obstacles` is kept at the same commit; built on it
 the same day, cut off `2.11-docx4j.7`; Jason's order of 2026-10-15: phase A alone, the page-anchored half first, since the docx4j session's
 CR-032 phase 4 waits on it; the design is CR-024 §4 as corrected by §10, which overrides §4 where they differ; §11 is
@@ -277,7 +278,16 @@ plain `top-and-bottom` 6603's body went through its frames, a clearance lost in 
 never took the clearance pending from the edge before; fixed 3a572c729, CR-024 §11.17; r41 at
 `~/fop-renderers/r41-CR-024-3a572c729/`, sha256 4c4be43f..., IS the fork's head). With the fix, top-and-bottom on
 6603 gives the gap layout under the stock managers (the heading fits an 11.35pt gap by 0.08pt on FOP's text box)
-and should give Word's 300.2 under docx4j's 12pt line boxes; the probe decides whether `below` stays. Phase A is
+and should give Word's 300.2 under docx4j's 12pt line boxes. **The probe golden came in: Word's rule is plain
+top-and-bottom (cases 1 to 9 to 0.3pt; `w:wrap="none"` gets no band; an at-least frame's band is its at-least
+height), so `below` is DROPPED (the last commit; test case 20 rewritten) and `block-progression-dimension.minimum`
+on a positioned container is now honoured as the least of its extent (the docx4j session will switch to `.minimum`
+for at-least frames once r42 shows it). Open: under docx4j's managers on r41 an empty paragraph of 6603 lands in the
+11.35pt gap at 238.6 (its FO `~/fidelity-cr030/repro/r41-frames-tb-6603.fo`, classpath `r41-frames-cp.txt`; the
+docx is `~/fidelity-real-c2/resaved-nofields/14_de-DE_num_tbl_6603.docx`, run by the recipe in
+`r33-3475-howto.txt` with the renderer's classes first); a trace print at the pending-edge decision was being added
+to `PageBreakingAlgorithm.considerLegalBreak` (not in the tree) to read which paragraph and its line box. Gates
+running on the docx4j side: b261 (r41 control), b262 (candidate), b263 (`.6`).** Phase A is
 closed but for that; phase B on Jason's word. Jason's earlier decision on the frames (2026-10-15, via the docx4j session): the frame
 grouping is committed (docx4j 565895f29, renderer-independent, gated on `.6`: 6603 +4, nothing else; Enterprise
 3b6b38a); frames as obstacles (the writer rule) and the page-foot table rule are held uncommitted until 3955's
