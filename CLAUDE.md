@@ -191,8 +191,14 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-15, late, before a `/clear`. **FIRST: run the full fop-core suite on HEAD (the last commit
-ran only the obstacle test file and checkstyle), then package r42 and hand it to the docx4j session.** **`fop/CR-024` phase A, the page-anchored half, is MERGED to `2.11-docx4j.7`**
+Last updated 2026-10-15, late. **r42 at `~/fop-renderers/r42-CR-024-70329626b/` (sha256 8ab9e4ca...) IS the fork's
+head and was handed to the docx4j session (the full suite 3927/0, checkstyle and spotbugs clean on 70329626b; its gate
+is not read yet; a pass is the frame probe's twelve cases at Word's y with plain top-and-bottom and `.minimum` on
+at-least frames, 6603 and 5218 at Word's pages, control 0 movers). 70329626b is checkstyle only: CI's own command
+(`mvn package checkstyle:check`) found seven violations that the phase A commits 2c4d33c62, c79fefc86, bf0a439c3 and
+98daf581f had recorded as clean (empty `if` shells left where trace prints were stripped, and long comment lines),
+so run CI's exact command, not a bare `checkstyle:check`, before calling a commit clean; origin's tip of the branch
+is 3fa338c0e, before all of CR-024, so CI never saw them.** **`fop/CR-024` phase A, the page-anchored half, is MERGED to `2.11-docx4j.7`**
 (fast-forward on Jason's word, tip f98834c2c; the branch `CR-024-obstacles` is kept at the same commit; built on it
 the same day, cut off `2.11-docx4j.7`; Jason's order of 2026-10-15: phase A alone, the page-anchored half first, since the docx4j session's
 CR-032 phase 4 waits on it; the design is CR-024 §4 as corrected by §10, which overrides §4 where they differ; §11 is
