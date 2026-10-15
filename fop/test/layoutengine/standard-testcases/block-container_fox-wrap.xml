@@ -34,9 +34,11 @@
       of its paragraph, the second: the band begins at 48 in the flow, inside the paragraph's first line, so its
       lines from 32 are beside it. 7: a control without fox:wrap: every line full width. 8: the band begins above the box
       that holds the container (page y 150, the anchor the seventh paragraph): the page's elements are read again
-      from its start with the band known, so the two one-line paragraphs before the anchor are beside it too. 9: the
+      from its start with the band known, so the one-line paragraph before the anchor whose text the band crosses is beside it too. 9: the
       band covers the top of page 2 (page y 72), the anchor mid-page: page 1 ends where it did, and page 2's lines are
-      beside it from its first.
+      beside it from its first. 10: a band that the fourth and eleventh lines cross by their leading only: Word
+      narrows a line whose text crosses the band, not one whose leading does (its readings of 2026-10-15), so both
+      keep the full width.
     </p>
   </info>
   <fo>
@@ -129,6 +131,9 @@
 <fo:block>i51</fo:block>
 <fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="72pt" left="373pt" width="150pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>j0 j1 j2 j3 j4 j5 j6 j7 j8 j9 j10 j11 j12 j13 j14 j15 j16 j17 j18 j19 j20 j21 j22 j23 j24 j25 j26 j27 j28 j29 j30 j31 j32 j33 j34 j35 j36 j37 j38 j39 j40 j41 j42 j43 j44 j45 j46 j47 j48 j49 j50 j51 j52 j53 j54 j55 j56 j57 j58 j59 j60 j61 j62 j63 j64 j65 j66 j67 j68 j69 j70 j71 j72 j73 j74 j75 j76 j77 j78 j79 j80 j81 j82 j83 j84 j85 j86 j87 j88 j89 j90 j91 j92 j93 j94 j95 j96 j97 j98 j99 j100 j101 j102 j103 j104 j105 j106 j107 j108 j109 j110 j111 j112 j113 j114 j115 j116 j117 j118 j119 j120 j121 j122 j123 j124 j125 j126 j127 j128 j129 j130 j131 j132 j133 j134 j135 j136 j137 j138 j139 j140 j141 j142 j143 j144 j145 j146 j147 j148 j149 j150 j151 j152 j153 j154 j155 j156 j157 j158 j159</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="134pt" left="373pt" width="150pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PIC</fo:block></fo:block-container></fo:block-container>k0 k1 k2 k3 k4 k5 k6 k7 k8 k9 k10 k11 k12 k13 k14 k15 k16 k17 k18 k19 k20 k21 k22 k23 k24 k25 k26 k27 k28 k29 k30 k31 k32 k33 k34 k35 k36 k37 k38 k39 k40 k41 k42 k43 k44 k45 k46 k47 k48 k49 k50 k51 k52 k53 k54 k55 k56 k57 k58 k59 k60 k61 k62 k63 k64 k65 k66 k67 k68 k69 k70 k71 k72 k73 k74 k75 k76 k77 k78 k79 k80 k81 k82 k83 k84 k85 k86 k87 k88 k89 k90 k91 k92 k93 k94 k95 k96 k97 k98 k99 k100 k101 k102 k103 k104 k105 k106 k107 k108 k109 k110 k111 k112 k113 k114 k115 k116 k117 k118 k119 k120 k121 k122 k123 k124 k125 k126 k127 k128 k129 k130 k131 k132 k133 k134 k135 k136 k137 k138 k139 k140 k141 k142 k143 k144 k145 k146 k147 k148 k149 k150 k151 k152 k153 k154 k155 k156 k157 k158 k159</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
@@ -158,16 +163,21 @@
     <eval expected="301000" xpath="((//pageViewport)[6]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[4]/@ipd"/>
     <!-- 7: the control: every line full width -->
     <eval expected="0" xpath="count((//pageViewport)[7]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd &lt; 451000])"/>
-    <!-- 8: the band (78 to 178) begins above the box that holds the container, in the seventh paragraph: the page is read again from its start, so h4 and h5 are beside it and the paragraph's lines up to 192 -->
-    <eval expected="451000" xpath="//word[.='h3']/ancestor::lineArea[1]/@ipd"/>
-    <eval expected="301000" xpath="//word[.='h4']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 8: the band (78 to 178) begins above the box that holds the container, in the seventh paragraph: the page is read again from its start, so h5 is beside it (h4's text, 66 to 78, ends at the band's top) and the paragraph's lines up to 176 -->
+    <eval expected="451000" xpath="//word[.='h4']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="301000" xpath="//word[.='h5']/ancestor::lineArea[1]/@ipd"/>
     <eval expected="301000" xpath="//word[.='h-0']/ancestor::lineArea[1]/@ipd"/>
-    <eval expected="8" xpath="count((//pageViewport)[8]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
+    <eval expected="6" xpath="count((//pageViewport)[8]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
     <!-- 9: the band covers the top of page 2, whose anchor paragraph comes after nine one-line paragraphs: page 1 ends where it did, page 2's lines are beside it from its first, seven of them, and the anchor's own first line, below the foot, is full width -->
     <eval expected="43" xpath="count((//pageViewport)[9]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])"/>
     <eval expected="301000" xpath="((//pageViewport)[10]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[1]/@ipd"/>
     <eval expected="451000" xpath="//word[.='j0']/ancestor::lineArea[1]/@ipd"/>
     <eval expected="7" xpath="count((//pageViewport)[10]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
     <eval expected="451000" xpath="((//pageViewport)[10]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[8]/@ipd"/>
+    <!-- 10: the band 62 to 162 crosses the fourth line's box (48 to 64) and the eleventh's (160 to 176) by their leading only: the text, ascent to descent, lies outside it (the 12pt font's text box is 11.1pt in the 16pt line), so both keep the full width and six lines are beside the container, as a word processor lays them -->
+    <eval expected="451000" xpath="((//pageViewport)[11]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[4]/@ipd"/>
+    <eval expected="301000" xpath="((//pageViewport)[11]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[5]/@ipd"/>
+    <eval expected="6" xpath="count((//pageViewport)[11]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
+    <eval expected="451000" xpath="((//pageViewport)[11]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[11]/@ipd"/>
   </checks>
 </testcase>

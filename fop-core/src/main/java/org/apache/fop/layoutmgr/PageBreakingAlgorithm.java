@@ -133,6 +133,8 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     private int floatHeight;
     /** The content height at the float's edge, up to the first box below the float (fop/CR-020). */
     private int floatEdgeWidth;
+    /** How far below the next box's top its text begins, at the edge: the half-leading above the line (CR-024). */
+    private int floatEdgeTextOffset;
     private int floatClearance; // fop/CR-022
     /** fop/CR-023: an offset float's top in list coordinates while its intrusion waits for it, else -1. */
     private int pendingFloatTop = -1;
@@ -884,16 +886,20 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             // the edge is kept for deactivateNode, so the content after the float starts below that space
             // (fop/CR-020).
             int edgeWidth = widthUpToNextBox(elementIdx);
+            // A line lies below the foot when its text does, ascent to descent: the half-leading above the text
+            // may cross the foot, as a word processor lays it (CR-024 §11.3, Word's readings of 2026-10-15)
+            int textOffset = textTopOffsetOfNextBox(elementIdx);
             // A block-level FO whose clear names the float's side must not sit beside it: the break before its
             // first box is the float's edge too, and deactivateNode keeps the float's foot as the height the
             // content after the edge starts at, so the FO is laid out below the float (fop/CR-022).
-            if (!handlingEndOfFloat && (edgeWidth >= floatHeight || clearsFloatAtNextBox(elementIdx)
+            if (!handlingEndOfFloat && (edgeWidth + textOffset >= floatHeight || clearsFloatAtNextBox(elementIdx)
                     || overflowsBesideFloatAtNextBox(elementIdx)
                     || startsNonRestartableThePageCannotHold(elementIdx, edgeWidth))) {
                 handlingEndOfFloat = true;
             }
             if (handlingEndOfFloat) {
                 floatEdgeWidth = edgeWidth;
+                floatEdgeTextOffset = textOffset;
                 // The content after the edge is read again from the layout manager there, which a table
                 // cannot do (it is not restartable): a break inside one is not the edge, which waits for the
                 // first legal break after it. The rows below the float keep the table's width, which the
@@ -2052,14 +2058,20 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         return glue;
     }
 
-    /** Whether the first line with content after this break would reach below the given height (fop/CR-023). */
+    /**
+     * Whether the first line with content after this break would reach below the given height (fop/CR-023): its
+     * text, ascent to descent, not the half-leading below it, as a word processor tests a line against an object
+     * (CR-024 §11.3).
+     */
     private boolean nextLineCrosses(int elementIdx, int top) {
         int bottom = totalWidth;
         for (int i = elementIdx; i < par.size(); i++) {
             KnuthElement e = getElement(i);
             if (e.isBox()) {
                 if (e.getWidth() > 0) {
-                    return bottom + e.getWidth() > top;
+                    LineLayoutManager.LineBreakPosition line = lineOf(e.getPosition());
+                    int textBottom = line == null ? e.getWidth() : line.getSpaceBefore() + line.getLineHeight();
+                    return bottom + textBottom > top;
                 }
             } else if (e.isGlue()) {
                 bottom += e.getWidth();
@@ -2068,6 +2080,31 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             }
         }
         return true;
+    }
+
+    /** The line a box's position chain ends in, or null for a box that is no line (CR-024 §11.3). */
+    private static LineLayoutManager.LineBreakPosition lineOf(Position position) {
+        Position leaf = null;
+        for (Position p = position; p != null; p = nextInChain(p)) {
+            leaf = p;
+        }
+        return (leaf instanceof LineLayoutManager.LineBreakPosition)
+                ? (LineLayoutManager.LineBreakPosition) leaf : null;
+    }
+
+    /**
+     * How far below the top of the first box after this break its text begins: a line's half-leading above the
+     * text (its space-before), 0 for any other box (CR-024 §11.3).
+     */
+    private int textTopOffsetOfNextBox(int elementIdx) {
+        for (int i = elementIdx; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox() && e.getWidth() > 0) {
+                LineLayoutManager.LineBreakPosition line = lineOf(e.getPosition());
+                return line == null ? 0 : line.getSpaceBefore();
+            }
+        }
+        return 0;
     }
 
     /** The intrusion of an offset float starts at this break (fop/CR-023). */
@@ -2114,8 +2151,15 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             // the float's foot, which an edge forced by clear lies before: the difference is the clearance the
             // content after the edge is laid out below (fop/CR-022)
             int edge = Math.max(totalWidth, floatEdgeWidth);
-            floatClearance = Math.max(0, floatHeight - edge);
-            floatHeight = Math.max(floatHeight, edge);
+            if (edge + floatEdgeTextOffset >= floatHeight) {
+                // the next line's text lies below the foot though its leading may not: it stays where it is, and
+                // the content after the edge starts at its top (CR-024 §11.3)
+                floatClearance = 0;
+                floatHeight = edge;
+            } else {
+                floatClearance = Math.max(0, floatHeight - edge);
+                floatHeight = Math.max(floatHeight, edge);
+            }
         }
     }
 

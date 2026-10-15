@@ -350,3 +350,38 @@ registry now ignores, the first registration standing with what the breaker did 
 above the anchor, the two one-line paragraphs before it beside the container) and 9 (the band covering the top of
 page 2, the anchor mid-page, page 1 unchanged and page 2's lines narrowed from its first, the anchor's own first
 line below the foot full width).
+
+**11.3 Word's readings of the nine probes, 2026-10-15, and the text-box rule.** The docx4j session cut
+`picture-page-square.docx` (nine cases, A4, 72pt margins, a 150 x 100pt picture each; its message of 2026-10-15) and
+read Word 365's PDF (`~/fidelity-cr030/readings/2026-10-15-picture-page-square-word.txt`: the picture's rectangle and
+every line within 20pt above and 30pt below it, with its text box and width). Against the model as built:
+
+- Cases 1, 3, 4, 5, 6 (square at the right margin; at x 172 with `largest`, `left`, `right`; the four distances):
+  the lines whose text crosses the band stop at the picture's edge less the distance (364.3 for case 1, 349.3 for
+  case 6), `largest` takes the wider side (the right, from 331.1 = 322 + 9), `left` runs to 163, `right` from
+  331.1. These are increment 1's `intrusionsIn` by construction: the room is the rectangle grown by the distances,
+  the side rule picks the side, and the narrowed width is the column less the room on that side.
+- Case 7 (a full-width picture, 250 to 330): no line in the band, the next line's pitch box starting at the foot
+  (its text at 332.7): the clearance as FOP lays it after an edge. Case 8 (`top-and-bottom`): the same, the lines
+  resuming at 302.8 below a 200 to 300 picture.
+- Case 9 (the picture at page y 150, anchored in the seventh paragraph): Word re-wraps the paragraphs before the
+  anchor, the lines from 151.7 narrowed: increment 2's restart from the page's first break, confirmed.
+- Case 2 (centred, both sides): text on both sides, 72 to about 210 and from 381.8: phase B. Phase A's `largest`
+  reading lays the right side only and will differ here, as §4.2 says.
+
+One rule the fork did not have, shown three times (cases 1, 8 and 9): **a line is beside the object when its text,
+ascent to descent, crosses the band, not when its leading does.** Case 1's line at 187.3 to 198.2 (its pitch box
+to 201.1, crossing the picture's top at 200) runs full width; case 8's line at 187.2 to 198.2 stays above a
+`top-and-bottom` picture at 200; case 9's line at 137.8 to 148.8 stays full width above a picture at 150; and at
+the foot, case 1's line at 291.9 to 302.9 is narrowed since its text crosses 300. FOP's edge tests used the line's
+pitch box (`KnuthBlockBox` width = line-height plus the half-leadings) at both ends, so up to one line at each end
+could differ from Word's, by the leading alone. Built the same day: `nextLineCrosses` tests the next line's text
+box (`LineBreakPosition.getSpaceBefore() + getLineHeight()`), the foot test adds the next line's half-leading above
+its text to the content height, and `deactivateNode` leaves a line whose text lies below the foot where it is (no
+clearance, the content after the edge starting at its top) while a forced edge still clears to the foot, where
+Word puts the next line's pitch top (cases 7 and 8). This serves floats too, which are the same model (§10.5): the
+layout tests that pin the old pitch-box edge move by one line where the leading alone crossed, each re-read against
+the rule, and the gate measures the floating-table corpus on it. For docx4j's own line manager, which gives the
+line its box with the leading below the text (Enterprise CR-001 item 14), the rule reads its position's
+space-before and line-height as it sets them. Test case 10 pins the rule (a band the fourth and eleventh lines cross
+by their leading only).

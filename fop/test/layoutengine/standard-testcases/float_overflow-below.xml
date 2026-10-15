@@ -56,9 +56,9 @@
     <eval expected="1" xpath="count((//pageViewport)[1]//flow/block[@bpd='18000'])"/>
     <eval expected="2" xpath="count((//pageViewport)[1]//lineArea[@ipd='151000'])"/>
     <eval expected="108000" xpath="(//pageViewport)[1]//flow/@bpd"/>
-    <!-- 2: a word wider than the column stays beside the float -->
+    <!-- 2: a word wider than the column stays beside the float; three lines are beside it, the heading and two more: the line at 58 to 74 has its text from 60.45, below the float's foot at 60, and only its leading crosses the foot, so it is full width as a word processor lays it (fop/CR-024 section 11.3) -->
     <eval expected="151000" xpath="//word[starts-with(., 'WWWW')]/ancestor::lineArea[1]/@ipd"/>
-    <eval expected="4" xpath="count((//pageViewport)[2]//lineArea[@ipd='151000'])"/>
+    <eval expected="3" xpath="count((//pageViewport)[2]//lineArea[@ipd='151000'])"/>
     <eval expected="0" xpath="count((//pageViewport)[2]//flow/block[@bpd='18000'])"/>
     <!-- 3: no float -->
     <eval expected="3" xpath="count((//pageViewport)[3]//lineArea[@ipd='451000'])"/>
