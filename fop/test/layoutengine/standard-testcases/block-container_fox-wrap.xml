@@ -50,9 +50,8 @@
       (corpus 6603's frames): the lines are narrowed by every obstacle whose band holds them, the foot of one is
       the start of the rest, and an obstacle's top met while another is on is an event as a foot is. 19: two cases in one
       page-sequence separated by a forced page break, each with its own picture: the scan of a list's first page
-      stops at a forced break. 20: fox:wrap="below", a word processor's frame that text does not wrap around: the
-      content after its anchor goes below it, so two frames anchored at the page's top with a gap between them put
-      the body below the lower one. 21: a frame above every line of its page, anchored at the page's foot (corpus
+      stops at a forced break. 20: two top-and-bottom frames anchored at the page's top with a gap between them: the body's
+      lines go in the gap, as Word lays a frame's text (the frame-page-bands probe). 21: a frame above every line of its page, anchored at the page's foot (corpus
       5218): no edge is taken and nothing moves.
     </p>
   </info>
@@ -241,14 +240,14 @@
 <fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="373pt" width="150pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">P2</fo:block></fo:block-container></fo:block-container>bb0 bb1 bb2 bb3 bb4 bb5 bb6 bb7 bb8 bb9 bb10 bb11 bb12 bb13 bb14 bb15 bb16 bb17 bb18 bb19 bb20 bb21 bb22 bb23 bb24 bb25 bb26 bb27 bb28 bb29 bb30 bb31 bb32 bb33 bb34 bb35 bb36 bb37 bb38 bb39 bb40 bb41 bb42 bb43 bb44 bb45 bb46 bb47 bb48 bb49 bb50 bb51 bb52 bb53 bb54 bb55 bb56 bb57 bb58 bb59 bb60 bb61 bb62 bb63 bb64 bb65 bb66 bb67 bb68 bb69 bb70 bb71 bb72 bb73 bb74 bb75 bb76 bb77 bb78 bb79 bb80 bb81 bb82 bb83 bb84 bb85 bb86 bb87 bb88 bb89 bb90 bb91 bb92 bb93 bb94 bb95 bb96 bb97 bb98 bb99 bb100 bb101 bb102 bb103 bb104 bb105 bb106 bb107 bb108 bb109 bb110 bb111 bb112 bb113 bb114 bb115 bb116 bb117 bb118 bb119</fo:block>
 </fo:flow></fo:page-sequence>
 <fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
-<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="120pt" left="72pt" width="200pt" height="40pt" fox:wrap="below" overflow="visible"><fo:block font-size="8pt" line-height="8pt">F1</fo:block></fo:block-container></fo:block-container></fo:block>
-<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="200pt" left="372pt" width="150pt" height="40pt" fox:wrap="below" overflow="visible"><fo:block font-size="8pt" line-height="8pt">F2</fo:block></fo:block-container></fo:block-container></fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="120pt" left="72pt" width="200pt" height="40pt" fox:wrap="top-and-bottom" overflow="visible"><fo:block font-size="8pt" line-height="8pt">F1</fo:block></fo:block-container></fo:block-container></fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="200pt" left="372pt" width="150pt" height="40pt" fox:wrap="top-and-bottom" overflow="visible"><fo:block font-size="8pt" line-height="8pt">F2</fo:block></fo:block-container></fo:block-container></fo:block>
 <fo:block>ca0 ca1 ca2 ca3 ca4 ca5 ca6 ca7 ca8 ca9 ca10 ca11 ca12 ca13 ca14 ca15 ca16 ca17 ca18 ca19 ca20 ca21 ca22 ca23 ca24 ca25 ca26 ca27 ca28 ca29 ca30 ca31 ca32 ca33 ca34 ca35 ca36 ca37 ca38 ca39 ca40 ca41 ca42 ca43 ca44 ca45 ca46 ca47 ca48 ca49 ca50 ca51 ca52 ca53 ca54 ca55 ca56 ca57 ca58 ca59</fo:block>
 </fo:flow></fo:page-sequence>
 <fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
 <fo:block space-before="300pt">da0 da1 da2 da3 da4 da5 da6 da7 da8 da9 da10 da11 da12 da13 da14 da15 da16 da17 da18 da19 da20 da21 da22 da23 da24 da25 da26 da27 da28 da29 da30 da31 da32 da33 da34 da35 da36 da37 da38 da39</fo:block>
 <fo:block>db0 db1 db2 db3 db4 db5 db6 db7 db8 db9 db10 db11 db12 db13 db14 db15 db16 db17 db18 db19 db20 db21 db22 db23 db24 db25 db26 db27 db28 db29 db30 db31 db32 db33 db34 db35 db36 db37 db38 db39 db40 db41 db42 db43 db44 db45 db46 db47 db48 db49 db50 db51 db52 db53 db54 db55 db56 db57 db58 db59 db60 db61 db62 db63 db64 db65 db66 db67 db68 db69 db70 db71 db72 db73 db74 db75 db76 db77 db78 db79 db80 db81 db82 db83 db84 db85 db86 db87 db88 db89 db90 db91 db92 db93 db94 db95 db96 db97 db98 db99 db100 db101 db102 db103 db104 db105 db106 db107 db108 db109 db110 db111 db112 db113 db114 db115 db116 db117 db118 db119 db120 db121 db122 db123 db124 db125 db126 db127 db128 db129 db130 db131 db132 db133 db134 db135 db136 db137 db138 db139 db140 db141 db142 db143 db144 db145 db146 db147 db148 db149 db150 db151 db152 db153 db154 db155 db156 db157 db158 db159 db160 db161 db162 db163 db164 db165 db166 db167 db168 db169 db170 db171 db172 db173 db174 db175 db176 db177 db178 db179 db180 db181 db182 db183 db184 db185 db186 db187 db188 db189 db190 db191 db192 db193 db194 db195 db196 db197 db198 db199</fo:block>
-<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="80pt" left="72pt" width="451pt" height="60pt" fox:wrap="below" overflow="visible"><fo:block font-size="8pt" line-height="8pt">F</fo:block></fo:block-container></fo:block-container>anchor</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="80pt" left="72pt" width="451pt" height="60pt" fox:wrap="top-and-bottom" overflow="visible"><fo:block font-size="8pt" line-height="8pt">F</fo:block></fo:block-container></fo:block-container>anchor</fo:block>
 </fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
@@ -347,9 +346,11 @@
     <eval expected="1" xpath="count((//pageViewport)[24]//word[.='bb-heading'])"/>
     <eval expected="1" xpath="count((//pageViewport)[24]//word[.='bb0'])"/>
     <eval expected="7" xpath="count((//pageViewport)[24]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
-    <!-- 20: two frames text does not wrap around (fox:wrap="below"), anchored in two empty paragraphs at the page's top, drawn at 48 to 88 and 128 to 168 in the flow with a gap between: the body after their anchors starts below the lower one's foot, at 168, not in the gap (corpus 6603 against Word) -->
+    <!-- 20: two top-and-bottom frames anchored in two empty paragraphs at the page's top, drawn at 48 to 88 and 128 to 168 in the flow with a 40pt gap between: the body's first line (32 to 48) lies above the first, the band 48 to 88 is cleared, two lines go in the gap (88 to 120), the line that would cross 128 is cleared to 168, and the rest follows; Word lays a frame's text in the gaps (the frame-page-bands probe, 2026-10-15) -->
     <eval expected="451000" xpath="//word[.='ca0']/ancestor::lineArea[1]/@ipd"/>
-    <eval expected="1" xpath="count((//pageViewport)[25]//flow/block[@bpd='168000' and not(@positioning)])"/>
+    <eval expected="0" xpath="count((//pageViewport)[25]//lineArea[@ipd &lt; 451000 and not(ancestor::block[@positioning])])"/>
+    <eval expected="1" xpath="count((//pageViewport)[25]//flow/block[@bpd='40000' and not(@positioning)])"/>
+    <eval expected="1" xpath="count((//pageViewport)[25]//flow/block[@bpd='48000' and not(@positioning)])"/>
     <!-- 21: a column-wide frame at the page's top (8 to 68 in the flow) anchored in the page's last paragraph, the body beginning 300pt down: the band lies above every line, so nothing is cleared, the anchor stays on the page with the frame, and the page is as without the frame -->
     <eval expected="26" xpath="count(//pageViewport)"/>
     <eval expected="1" xpath="count((//pageViewport)[26]//word[.='anchor'])"/>

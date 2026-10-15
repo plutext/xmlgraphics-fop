@@ -224,8 +224,7 @@ public class BlockContainer extends FObj implements BreakPropertySet, WritingMod
     /**
      * Hook obstacles-in-the-line (fop/CR-024): how the lines of the page wrap around this container when it is
      * absolutely positioned.
-     * @return EN_NONE, EN_SQUARE, EN_TOP_AND_BOTTOM or EN_BELOW (the content after the container's anchor goes
-     * below it, as after a word processor's frame that text does not wrap around)
+     * @return EN_NONE, EN_SQUARE or EN_TOP_AND_BOTTOM
      */
     public int getWrap() {
         return wrap;

@@ -43,6 +43,7 @@ import org.apache.fop.fo.flow.BlockContainer;
 import org.apache.fop.fo.properties.CommonAbsolutePosition;
 import org.apache.fop.fo.properties.CommonBorderPaddingBackground;
 import org.apache.fop.fo.properties.KeepProperty;
+import org.apache.fop.fo.properties.LengthRangeProperty;
 import org.apache.fop.traits.MinOptMax;
 import org.apache.fop.traits.SpaceVal;
 
@@ -538,6 +539,19 @@ public class BlockContainerLayoutManager extends SpacedBorderedPaddedBlockLayout
         if (autoHeight) {
             //Update content BPD now that it is known
             int newHeight = breaker.deferredAlg.totalWidth;
+            // hook obstacles-in-the-line (fop/CR-024 §11.18): a positioned container with an auto height keeps
+            // block-progression-dimension.minimum as the least of its extent, as a word processor's frame of
+            // "at least" height grows with its text and no further, so its viewport and its obstacle are the
+            // greater of the minimum and the content
+            if (!bpDirectionChanges) {
+                LengthRangeProperty bpd = getBlockContainerFO().getBlockProgressionDimension();
+                if (!bpd.getMinimum(this).isAuto()) {
+                    int minimum = bpd.getMinimum(this).getLength().getValue(this) - getBPIndents();
+                    if (minimum > newHeight) {
+                        newHeight = minimum;
+                    }
+                }
+            }
             if (bpDirectionChanges) {
                 setContentAreaIPD(newHeight);
             } else {

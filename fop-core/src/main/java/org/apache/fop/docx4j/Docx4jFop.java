@@ -246,8 +246,7 @@ public final class Docx4jFop {
      * {@code fo:block-container}: the lines of the page the container lands on wrap around it, as around a side
      * float whose area is already drawn, on the side the side rule names ({@code left}, {@code right}, or the wider
      * side for {@code largest} and, in phase A, {@code both}), keeping the four distances; {@code top-and-bottom}
-     * sends the lines below it, and {@code below} lays the content after the container's anchor below it, as after
-     * a word processor's frame that text does not wrap around. A word processor's page- or margin-anchored picture, text box or table with square
+     * sends the lines below it. A word processor's page- or margin-anchored picture, text box or table with square
      * wrap is such a container, which Apache FOP lays the lines under (fop/CR-024 phase A; Enterprise CR-001
      * item 11). Phase A lays a line in one piece: text on both sides of an obstacle is phase B.
      */

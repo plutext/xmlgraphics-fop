@@ -2733,7 +2733,6 @@ public final class FOPropertyMapping implements Constants {
         m.addEnum("none", getEnumProperty(EN_NONE, "NONE"));
         m.addEnum("square", getEnumProperty(EN_SQUARE, "SQUARE"));
         m.addEnum("top-and-bottom", getEnumProperty(EN_TOP_AND_BOTTOM, "TOP_AND_BOTTOM"));
-        m.addEnum("below", getEnumProperty(EN_BELOW, "BELOW"));
         m.setDefault("none");
         addPropertyMaker("fox:wrap", m);
         m = new EnumProperty.Maker(PR_X_WRAP_SIDES);
