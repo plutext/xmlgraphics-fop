@@ -238,8 +238,11 @@ candidate b245 13 movers, no line lost, the probes and corpus gains as listed th
 word: `2.11-docx4j.7` is at f98834c2c (r35's gated code plus the several-obstacles commit 2c4d33c62, which gets its
 own gate with the frames on r36); the `.7` release note carries CR-024's entries (draft). The fork's baseline for
 later gates is b245 on r35 until r36 is read. Registry `fop/CR-024` stays in_progress (phase B waits on Jason). **Jason accepted 2026-10-15: `fox:float-x` and the width provider are dropped from phase A (CR-024 §11.10); phase A closes with the frames' gate on r36; phase B, text on both sides, on his word.** 13544 still ends a page over Word (its page 2 opens 25pt low,
-the anchor paragraph that did not fit below the table; Word's placement unread). docx4j's side (CR-032 §4.5, its
-register, CR-001 §6.6 item 11) is written and uncommitted until Jason says. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
+the anchor paragraph that did not fit below the table; Word's placement unread). docx4j's side is committed (2026-10-15): docx4j 597b168c9 (CR-032 phase 5, `fox:wrap` on
+page-anchored pictures, text boxes and tables, and `WordLineLayoutManager`'s edge-only breaks; frames still out),
+Enterprise ebde2ed (§6.6 item 11 closed with the fork's line: merged at f98834c2c, hook `obstacles-in-the-line`,
+CR-024 §11, gated b245 on r35), portfolio b4fe7f6 (the `fop/CR-024` entry and its baseline). The frames' r36 pair runs
+when Jason picks it. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
 `docs/release-notes/2.11-docx4j.7.md` (not yet written), §6.6 item 11 narrowed in the Enterprise file (Jason's;
 `git status` first), registry. Then increment 3 (the width provider and `fox:float-x`). **docx4j's
