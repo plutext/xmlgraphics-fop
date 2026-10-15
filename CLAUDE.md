@@ -241,8 +241,15 @@ later gates is b245 on r35 until r36 is read. Registry `fop/CR-024` stays in_pro
 the anchor paragraph that did not fit below the table; Word's placement unread). docx4j's side is committed (2026-10-15): docx4j 597b168c9 (CR-032 phase 5, `fox:wrap` on
 page-anchored pictures, text boxes and tables, and `WordLineLayoutManager`'s edge-only breaks; frames still out),
 Enterprise ebde2ed (§6.6 item 11 closed with the fork's line: merged at f98834c2c, hook `obstacles-in-the-line`,
-CR-024 §11, gated b245 on r35), portfolio b4fe7f6 (the `fop/CR-024` entry and its baseline). The frames' r36 pair runs
-when Jason picks it. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
+CR-024 §11, gated b245 on r35), portfolio b4fe7f6 (the `fop/CR-024` entry and its baseline). The frames' r36 pair ran
+(2026-10-15): its control b246 (frames out, r36 against r35) had 5 movers, all losses, the picture probe 9 pages to
+17, a regression of several-obstacles: a fresh element list after a forced page break kept the page before's
+obstacle set, cleared only when the breaker opened the page, after the list's algorithm had run. FIXED on
+`2.11-docx4j.7` (9ebb77034, CR-024 §11.11: a fresh list drops the set; the pending check from the set only after a
+float's foot; the first-page scan stops at a forced break; test case 19); r37 at `~/fop-renderers/r37-CR-024-9ebb77034/`
+(sha256 7885bd3a...) replaces r36 and IS the fork's head: the frames' pair reruns on it, its control expected at 0
+movers; the other four b246 movers (table-floating-anchor -4, 5075 -1, 6251 -1, 4253's events) were not reproduced
+separately and are read there. `.7` goes nowhere without 9ebb77034. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
 `docs/release-notes/2.11-docx4j.7.md` (not yet written), §6.6 item 11 narrowed in the Enterprise file (Jason's;
 `git status` first), registry. Then increment 3 (the width provider and `fox:float-x`). **docx4j's
