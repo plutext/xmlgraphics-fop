@@ -361,15 +361,22 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             } else if (spanAll) {
                 totalWidth += insertedFootnotesLength;
             }
-            if (!handlingStartOfFloat && pendingFloatTop < 0) {
-                // an obstacle of the page taken up already whose band begins below this list's start: the edge
-                // before it is pending from its top (§11.8)
+            if (listInFlowCoordinates && !handlingStartOfFloat && pendingFloatTop < 0) {
+                // a list after a float's foot, on the same page: an obstacle of the page taken up already whose
+                // band begins below the foot has the edge before it pending from its top (§11.8). A list beside a
+                // float runs to the next event itself, and a fresh list begins a new page or column.
                 int next = pslm.nextObstacleTopAfter(listStartFlowY);
                 if (next >= 0) {
-                    pendingFloatTop = listInFlowCoordinates ? next : next - listStartFlowY;
+                    pendingFloatTop = next;
                     armedTopInFlow = next;
                     obstacleEdge = true;
                 }
+            } else if (!pslm.handlingStartOfFloat() && !listInFlowCoordinates) {
+                // a fresh list begins a new page or column (a forced break, a change of width): the obstacles
+                // taken up on the page before are not its, whatever page the breaker has open (gate b246 on r36:
+                // a probe's cases separated by page breaks, each case's picture found pending at the top of the
+                // next case's list, which then broke after its first line)
+                pslm.clearPageObstacles();
             }
         }
     }
@@ -582,6 +589,11 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 cumulative += e.getWidth();
             } else if (e.isGlue()) {
                 cumulative += e.getWidth();
+            } else if (e.isForcedBreak() && i > par.indexOf(first)) {
+                // the page ends here whatever the height: a box after a forced break lies on a later page, whose
+                // obstacles are armed when that page is walked (a probe's cases separated by page breaks, each
+                // with a page-anchored picture, gate b246 on r36: the next case's picture was taken for this page)
+                break;
             }
             if (cumulative - pageTopInList > pageHeight) {
                 break;

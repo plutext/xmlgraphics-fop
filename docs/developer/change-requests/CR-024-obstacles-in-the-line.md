@@ -548,3 +548,23 @@ the float's far edge, which docx4j already produces with the padding it writes i
 measured that one-sided cost; the attribute would add nothing until a line can be laid in segments. The width
 provider of §10.2 therefore belongs to phase B, where a line's width varies within a band, and is not built in
 phase A. Phase A closes with the frames' gate on r36 (§11.8); phase B waits on Jason's word.
+
+**11.11 The frames' control (b246, 2026-10-15): a regression of §11.8, fixed.** Control b246 (docx4j 597b168c9,
+frames out, on r36, which is the merged head) against b245 on r35: 5 movers, all losses: `picture-page-square`
+0.9564 to 0.7418 and 9 pages to 17, every case's page preceded by a page holding only the case's first line;
+`table-floating-anchor` -4; 5075 -1; 6251 -1; 4253's overflow events up. Reproduced here from
+`~/fidelity-real2/score/fidelity-probes-b246/fop/picture-page-square.fo` (17 pages) and traced. The probe's cases
+are separated by forced page breaks in one page-sequence, which split the flow into several element lists; a fresh
+list after a forced break begins a new page, but the page's obstacle set (§11.8) was cleared only when the breaker
+opened that page, in `startPart`, which comes after the list's algorithm has run. So at the top of case 2's list the
+set still held case 1's picture, whose top was found "pending" from the list's start (`nextObstacleTopAfter`), a
+spurious edge was taken after the page's first line, the breaker started an obstacle that was not active there and
+the page ended, and the case's real picture was handled on the page after. Two fixes in
+`PageBreakingAlgorithm.initialize`: a fresh list, neither beside a float nor after its foot, drops the page's set
+(`clearPageObstacles`), since it begins a new page or column whatever page the breaker has open; and the pending
+check from the set applies to a list after a float's foot only, a list beside a float running to the next event
+itself (on a float list it had taken a second edge one line below the first, for the obstacle just taken up). The
+scan of a list's first page also stops at a forced break, a box after one lying on a later page. Test case 19 (two
+cases in one page-sequence separated by a forced break, each with its picture). The probe renders 9 pages again
+here, page 2's and page 3's pictures as on r35; the other four movers were not reproduced separately and are read
+by the gate on r37.

@@ -48,7 +48,9 @@
       below the container. 15: a column-wide band ending 8pt above the page's foot (corpus 13544): the content after
       the edge starts the next page at its top, the clearance to the foot belonging to the page the edge lies on. 16 to 18: two obstacles on one page
       (corpus 6603's frames): the lines are narrowed by every obstacle whose band holds them, the foot of one is
-      the start of the rest, and an obstacle's top met while another is on is an event as a foot is.
+      the start of the rest, and an obstacle's top met while another is on is an event as a foot is. 19: two cases in one
+      page-sequence separated by a forced page break, each with its own picture: the scan of a list's first page
+      stops at a forced break.
     </p>
   </info>
   <fo>
@@ -229,6 +231,12 @@
 <fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="72pt" width="150pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PA</fo:block></fo:block-container></fo:block-container>aa0 aa1 aa2 aa3 aa4 aa5 aa6 aa7 aa8 aa9 aa10 aa11 aa12 aa13 aa14 aa15 aa16 aa17 aa18 aa19 aa20 aa21 aa22 aa23 aa24 aa25 aa26 aa27 aa28 aa29 aa30 aa31 aa32 aa33 aa34 aa35 aa36 aa37 aa38 aa39 aa40 aa41 aa42 aa43 aa44 aa45 aa46 aa47 aa48 aa49 aa50 aa51 aa52 aa53 aa54 aa55 aa56 aa57 aa58 aa59 aa60 aa61 aa62 aa63 aa64 aa65 aa66 aa67 aa68 aa69 aa70 aa71 aa72 aa73 aa74 aa75 aa76 aa77 aa78 aa79 aa80 aa81 aa82 aa83 aa84 aa85 aa86 aa87 aa88 aa89 aa90 aa91 aa92 aa93 aa94 aa95 aa96 aa97 aa98 aa99 aa100 aa101 aa102 aa103 aa104 aa105 aa106 aa107 aa108 aa109 aa110 aa111 aa112 aa113 aa114 aa115 aa116 aa117 aa118 aa119 aa120 aa121 aa122 aa123 aa124 aa125 aa126 aa127 aa128 aa129 aa130 aa131 aa132 aa133 aa134 aa135 aa136 aa137 aa138 aa139 aa140 aa141 aa142 aa143 aa144 aa145 aa146 aa147 aa148 aa149 aa150 aa151 aa152 aa153 aa154 aa155 aa156 aa157 aa158 aa159</fo:block>
 <fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="184pt" left="373pt" width="150pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">PB</fo:block></fo:block-container></fo:block-container>ab0 ab1 ab2 ab3 ab4 ab5 ab6 ab7 ab8 ab9 ab10 ab11 ab12 ab13 ab14 ab15 ab16 ab17 ab18 ab19 ab20 ab21 ab22 ab23 ab24 ab25 ab26 ab27 ab28 ab29 ab30 ab31 ab32 ab33 ab34 ab35 ab36 ab37 ab38 ab39 ab40 ab41 ab42 ab43 ab44 ab45 ab46 ab47 ab48 ab49 ab50 ab51 ab52 ab53 ab54 ab55 ab56 ab57 ab58 ab59 ab60 ab61 ab62 ab63 ab64 ab65 ab66 ab67 ab68 ab69 ab70 ab71 ab72 ab73 ab74 ab75 ab76 ab77 ab78 ab79 ab80 ab81 ab82 ab83 ab84 ab85 ab86 ab87 ab88 ab89 ab90 ab91 ab92 ab93 ab94 ab95 ab96 ab97 ab98 ab99 ab100 ab101 ab102 ab103 ab104 ab105 ab106 ab107 ab108 ab109 ab110 ab111 ab112 ab113 ab114 ab115 ab116 ab117 ab118 ab119</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>ba-heading</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="373pt" width="150pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">P1</fo:block></fo:block-container></fo:block-container>ba0 ba1 ba2 ba3 ba4 ba5 ba6 ba7 ba8 ba9 ba10 ba11 ba12 ba13 ba14 ba15 ba16 ba17 ba18 ba19 ba20 ba21 ba22 ba23 ba24 ba25 ba26 ba27 ba28 ba29 ba30 ba31 ba32 ba33 ba34 ba35 ba36 ba37 ba38 ba39 ba40 ba41 ba42 ba43 ba44 ba45 ba46 ba47 ba48 ba49 ba50 ba51 ba52 ba53 ba54 ba55 ba56 ba57 ba58 ba59 ba60 ba61 ba62 ba63 ba64 ba65 ba66 ba67 ba68 ba69 ba70 ba71 ba72 ba73 ba74 ba75 ba76 ba77 ba78 ba79 ba80 ba81 ba82 ba83 ba84 ba85 ba86 ba87 ba88 ba89 ba90 ba91 ba92 ba93 ba94 ba95 ba96 ba97 ba98 ba99 ba100 ba101 ba102 ba103 ba104 ba105 ba106 ba107 ba108 ba109 ba110 ba111 ba112 ba113 ba114 ba115 ba116 ba117 ba118 ba119</fo:block>
+<fo:block break-before="page">bb-heading</fo:block>
+<fo:block><fo:block-container height="0pt" overflow="visible" start-indent="0pt" end-indent="0pt"><fo:block-container absolute-position="fixed" top="136pt" left="373pt" width="150pt" height="100pt" fox:wrap="square" overflow="visible"><fo:block font-size="8pt" line-height="8pt">P2</fo:block></fo:block-container></fo:block-container>bb0 bb1 bb2 bb3 bb4 bb5 bb6 bb7 bb8 bb9 bb10 bb11 bb12 bb13 bb14 bb15 bb16 bb17 bb18 bb19 bb20 bb21 bb22 bb23 bb24 bb25 bb26 bb27 bb28 bb29 bb30 bb31 bb32 bb33 bb34 bb35 bb36 bb37 bb38 bb39 bb40 bb41 bb42 bb43 bb44 bb45 bb46 bb47 bb48 bb49 bb50 bb51 bb52 bb53 bb54 bb55 bb56 bb57 bb58 bb59 bb60 bb61 bb62 bb63 bb64 bb65 bb66 bb67 bb68 bb69 bb70 bb71 bb72 bb73 bb74 bb75 bb76 bb77 bb78 bb79 bb80 bb81 bb82 bb83 bb84 bb85 bb86 bb87 bb88 bb89 bb90 bb91 bb92 bb93 bb94 bb95 bb96 bb97 bb98 bb99 bb100 bb101 bb102 bb103 bb104 bb105 bb106 bb107 bb108 bb109 bb110 bb111 bb112 bb113 bb114 bb115 bb116 bb117 bb118 bb119</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
@@ -318,5 +326,13 @@
     <eval expected="6" xpath="count((//pageViewport)[22]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
     <eval expected="151000" xpath="((//pageViewport)[22]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])])[8]/@ipd"/>
     <eval expected="451000" xpath="//word[.='ab0']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 19: two cases in one page-sequence, a forced page break between them, each a heading, then the anchor paragraph with a page-anchored picture at 136 (band 64 to 164): two pages, each with its heading on it and seven lines beside its picture (the probe document of gate b246, where the scan of a list's first page took the next case's picture for the page before the break) -->
+    <eval expected="24" xpath="count(//pageViewport)"/>
+    <eval expected="1" xpath="count((//pageViewport)[23]//word[.='ba-heading'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[23]//word[.='ba0'])"/>
+    <eval expected="7" xpath="count((//pageViewport)[23]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[24]//word[.='bb-heading'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[24]//word[.='bb0'])"/>
+    <eval expected="7" xpath="count((//pageViewport)[24]//lineArea[not(ancestor::block[@positioning='fixed' or @positioning='absolute'])][@ipd='301000'])"/>
   </checks>
 </testcase>

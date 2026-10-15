@@ -1126,6 +1126,11 @@ public class PageBreaker extends AbstractBreaker {
         pageObstacles.add(o);
     }
 
+    /** A fresh element list begins a new page or column: the page's obstacles are dropped (§11.8). */
+    void clearPageObstacles() {
+        pageObstacles.clear();
+    }
+
     /** @return how far below the flow's height at its insertion the float being handled was placed (fop/CR-023) */
     protected int getFloatYShift() {
         return floatYShift;

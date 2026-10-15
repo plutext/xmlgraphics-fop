@@ -524,6 +524,11 @@ public class PageSequenceLayoutManager extends AbstractPageSequenceLayoutManager
         return pageBreaker.nextObstacleTopAfter(y);
     }
 
+    /** A fresh element list begins a new page or column: the page's obstacles are dropped (fop/CR-024 §11.8). */
+    void clearPageObstacles() {
+        pageBreaker.clearPageObstacles();
+    }
+
     /** @return whether the next event of the float being handled is an obstacle's top (fop/CR-024 §11.8) */
     boolean nextEventIsTop() {
         return pageBreaker.nextEventIsTop();
