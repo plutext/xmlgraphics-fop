@@ -18,7 +18,8 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: a block read again after a side float's edge is told so, to keep its resolved space-before
  * (fop/CR-020). And a block read again after an edge
- * serves no break-before again (hook obstacles-in-the-line, fop/CR-024 §11.6). See README.md, "Changes from Apache FOP 2.11". */
+ * serves no break-before again (hook obstacles-in-the-line, fop/CR-024 §11.6). See README.md, "Changes from
+ * Apache FOP 2.11". */
 
 /* $Id$ */
 

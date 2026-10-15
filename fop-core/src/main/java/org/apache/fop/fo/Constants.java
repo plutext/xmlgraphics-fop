@@ -852,13 +852,15 @@ public interface Constants {
     /** A gap per pair of columns of fo:region-body (hook column-widths, fop/CR-026) */
     int PR_X_COLUMN_GAPS = 300;
 
-    /** How the lines of the page wrap around an absolutely positioned block-container (hook obstacles-in-the-line, fop/CR-024) */
+    /** How the lines of the page wrap around an absolutely positioned block-container (hook obstacles-in-the-line,
+     *  fop/CR-024) */
     int PR_X_WRAP = 301;
 
     /** Which side of such a container the lines go on (hook obstacles-in-the-line, fop/CR-024) */
     int PR_X_WRAP_SIDES = 302;
 
-    /** The distances the lines keep from such a container, before after start end (hook obstacles-in-the-line, fop/CR-024) */
+    /** The distances the lines keep from such a container, before after start end (hook obstacles-in-the-line,
+     *  fop/CR-024) */
     int PR_X_WRAP_DISTANCES = 303;
 
     /** Number of property constants defined */

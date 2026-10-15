@@ -903,7 +903,10 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         return null;
     }
 
-    /** @return whether the float start edge being handled is an obstacle's, armed here or pending from the page's set */
+    /**
+     * @return whether the float start edge being handled is an obstacle's, armed here or pending from the
+     * page's set
+     */
     protected boolean hasObstacleEdge() {
         return obstacleEdge;
     }
@@ -1125,10 +1128,6 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         if (takeDeferredObstacle(elementIdx)) {
             return;
         }
-        if (pendingFloatTop >= 0 && !handlingFloat()) {
-        }
-        if (pendingFloatTop >= 0 && !handlingFloat() && nextLineCrosses(elementIdx, pendingFloatTop)) {
-        }
         if (pendingFloatTop >= 0 && !handlingFloat() && !insideNonRestartable(elementIdx)
                 && nextBoxHasContent(elementIdx) && edgeRestartable(elementIdx)) {
             // the intrusion cannot start inside a table, which is not restarted from a row (CR-020): a table
@@ -1173,8 +1172,6 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             // top, as at a start edge (§11.8); at a foot, from the first line whose box lies below it
             boolean reachesEvent = nextBoxHasContent(elementIdx) && (floatEndsAtTop
                     ? nextLineCrosses(elementIdx, floatHeight) : edgeWidth + textOffset >= floatHeight);
-            if (reachesEvent && !handlingEndOfFloat) {
-            }
             if (!handlingEndOfFloat && edgeRestartable(elementIdx) && (reachesEvent || clearsFloatAtNextBox(elementIdx)
                     || overflowsBesideFloatAtNextBox(elementIdx)
                     || startsNonRestartableThePageCannotHold(elementIdx, edgeWidth))) {
