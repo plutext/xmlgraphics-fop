@@ -661,3 +661,14 @@ and CR-024 changed none of `ListItemLayoutManager`, `BlockLayoutManager` or `Blo
 `FlowLayoutManager` only `addChildElements` (§11.6), which docx4j's subclass inherits. The restart at an edge
 inside a list item goes through Apache's `ListItemPosition` path and docx4j's `WordListItemLayoutManager`'s
 restart variant, where the difference must lie; offered to compare the element lists.
+
+**11.16 The frames gated on r40 (b258, b259; 2026-10-15).** Control b258 (r40 against r39) 0 movers. Candidate
+b259 (frames as obstacles): 6603 +4 lines in both corpora, to 1.0000; 3955 -2; nothing else; the probes unchanged.
+The docx4j session's writer rule for frames text does not wrap around (`w:wrap` notBeside or none): `below` when
+the frame's top lies in the page's upper half, `top-and-bottom` in the lower half (6603's letterhead and 5218's
+heading frames `below`, 5218's form rows `top-and-bottom`); 5218 is at Word's 4 pages. The cut is the one its table
+band reservation measured, a reading of two documents rather than a Word rule it can cite; a probe could settle
+it. 3955: the item has no keep and no break in the docx or the FO, and Word leaves the page's last 77pt empty
+though the whole three-line item would fit, so the control's break matches Word by the breaker's luck and the
+obstacle path's 2+1 split is legal; the element-list comparison is deferred until Jason has decided what to keep.
+With this the frames are in phase A's reach too, on docx4j's uncommitted side.

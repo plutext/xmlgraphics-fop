@@ -270,7 +270,10 @@ item split at a page's foot under docx4j's managers only, no CR-024 hunk in the 
 `WordListItemLayoutManager`'s restart to compare). Two renderer fixes from 5218 (7bf13d689): the deferral's push
 estimate from the content within a band, and a band above every line given up; test case 21. r40 at
 `~/fop-renderers/r40-CR-024-7bf13d689/` (sha256 2b4c21e8...) IS the fork's head; `.7` goes nowhere without
-7bf13d689. 5075's two empty lines unread. Phase A is otherwise closed; phase B on Jason's word. The docx4j session's
+7bf13d689. 5075's two empty lines unread. **r40 gated (§11.16): control 0 movers; the frames as obstacles under docx4j's
+writer rule (`below` in the page's upper half, `top-and-bottom` in the lower) put 5218 at Word's pages and 6603 at
+1.0; only 3955 -2 is open, a legal split Word avoids by luck, its element-list comparison deferred.** Phase A is
+closed; phase B on Jason's word; docx4j's frame side and writer rule are uncommitted until he decides what to keep. The docx4j session's
 own status (16:25): CR-040 phase 2 committed unpushed, its frame fixups uncommitted until its gates are read, nothing
 needed from Jason yet. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
