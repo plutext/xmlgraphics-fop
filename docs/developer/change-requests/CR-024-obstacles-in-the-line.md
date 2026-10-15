@@ -529,3 +529,13 @@ with the second's box after the first's foot: the lines beside one at 301pt, bes
 other at 301pt, then full, in each. What remains of the limit: an obstacle met after a page break inside a float's
 list, or at its edge, waits for a later box; and the scan covers a list's first page only, later pages of a long
 list being walked as before.
+
+**11.9 The r35 pair (b244, b245; 2026-10-15): the page-anchored half gated.** Control b244 (docx4j HEAD on r35)
+against b241: 0 movers. Candidate b245 (`fox:wrap` written, frames out) against b244: 13 movers, no line lost:
+`picture-page-square` +63, `table-floating-page-after` +20, the openers +6, `table-floating-anchor` +7, 13544 +33,
+4621 and 4253 to 1.0, 9919 +4, 8362 +1, 13102 +1, 5075 at Word's pages; events equal but for one line overflow each
+in 4253 and 5075. 13544 still ends a page over Word (4 to 3): its page 2 begins about 25pt lower than Word's (the
+heading at 101.9 against 76.0, an empty line at 85.3, the anchor paragraph that did not fit below the table on page
+1); Word's placement of that paragraph is unread. docx4j's side is written up (CR-032 §4.5 as built, its register,
+CR-001 §6.6 item 11), uncommitted until Jason says; the merge of r35's commit (42f51bdd1) to `2.11-docx4j.7` is his
+word; the frames return with r36 (§11.8) as their own gate.

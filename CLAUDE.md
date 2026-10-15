@@ -232,10 +232,13 @@ line with the footer's repeat). Several obstacles on one page is BUILT (2c4d33c6
 obstacles a set on the breaker, the lines narrowed by every obstacle whose band holds them, the foot of one the
 start of the rest, a top an event too, the list's first page scanned for its obstacles before the walk; test
 cases 16 to 18; r36 at `~/fop-renderers/r36-CR-024-2c4d33c62/`, sha256 7be13ae9...), for when the docx4j session
-brings the frames back (it took them out meanwhile, gate b243). The docx4j session's final control and candidate
-pair runs on r35; on its PASS, merge the branch to `2.11-docx4j.7` by fast-forward on Jason's word (r35's commit
-42f51bdd1 is gated; the several-obstacles commit 2c4d33c62 follows its own gate unless the docx4j session gates r36
-as one). 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
+brings the frames back (it took them out meanwhile, gate b243). **The r35 pair is in (CR-024 §11.9): control b244 0 movers;
+candidate b245 13 movers, no line lost, the probes and corpus gains as listed there.** The merge of the branch to
+`2.11-docx4j.7` (r35's commit 42f51bdd1 gated; the several-obstacles commit 2c4d33c62 and the state commits follow,
+the former with the frames' gate on r36) waits on Jason's word, which the docx4j session has asked for; the `.7`
+release note carries CR-024's entries already (draft). 13544 still ends a page over Word (its page 2 opens 25pt low,
+the anchor paragraph that did not fit below the table; Word's placement unread). docx4j's side (CR-032 §4.5, its
+register, CR-001 §6.6 item 11) is written and uncommitted until Jason says. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
 `docs/release-notes/2.11-docx4j.7.md` (not yet written), §6.6 item 11 narrowed in the Enterprise file (Jason's;
 `git status` first), registry. Then increment 3 (the width provider and `fox:float-x`). **docx4j's
