@@ -1,7 +1,9 @@
 # CR-024: obstacles in the line - text on both sides of a float, and around page-anchored objects
 
-Status: PHASE A IN PROGRESS, ordered by Jason 2026-10-15; branch `CR-024-obstacles` off `2.11-docx4j.7`; increments 1
-and 2 (the page-anchored half, with the restart from the page's first break, §11) built 2026-10-15, not yet gated. Designed 2026-10-08, reviewed
+Status: PHASE A, the page-anchored half, MERGED to `2.11-docx4j.7` by fast-forward on Jason's word 2026-10-15
+(tip f98834c2c; gated PASS b245 on r35, §11.9; several obstacles on one page, §11.8, is in the merge and gets its
+own gate with the frames on r36); unreleased, in `docs/release-notes/2.11-docx4j.7.md`. Phase B (text on both
+sides) waits on Jason. Ordered 2026-10-15, built on branch `CR-024-obstacles` the same day (§11). Designed 2026-10-08, reviewed
 2026-10-15 against what the fork learnt since (§10: five changes to the design, the estimate for phase A 2.5 to 3 weeks); Jason asked for it after CR-023 shipped its two hooks, on the question whether
 the floating-table work is one instance of the general case of wrapping around pictures, charts and text boxes. It
 is. Registry key `fop/CR-024`. Enterprise CR-001 §6.6 items 10 (text on both sides of an anchored object) and 11 (wrap

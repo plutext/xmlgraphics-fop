@@ -191,8 +191,9 @@ docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
 
 ## Start here
 
-Last updated 2026-10-15, evening. **`fop/CR-024` phase A is IN PROGRESS on branch `CR-024-obstacles`** (cut off
-`2.11-docx4j.7`; Jason's order of 2026-10-15: phase A alone, the page-anchored half first, since the docx4j session's
+Last updated 2026-10-15, night. **`fop/CR-024` phase A, the page-anchored half, is MERGED to `2.11-docx4j.7`**
+(fast-forward on Jason's word, tip f98834c2c; the branch `CR-024-obstacles` is kept at the same commit; built on it
+the same day, cut off `2.11-docx4j.7`; Jason's order of 2026-10-15: phase A alone, the page-anchored half first, since the docx4j session's
 CR-032 phase 4 waits on it; the design is CR-024 §4 as corrected by §10, which overrides §4 where they differ; §11 is
 the as-built record). Increments 1 and 2 are built and committed (bf0a439c3, 61f53844a): `fox:wrap`, `fox:wrap-sides`,
 `fox:wrap-distances` on an absolutely positioned `fo:block-container`, capability `obstacles-in-the-line` (the 26th),
@@ -233,10 +234,10 @@ obstacles a set on the breaker, the lines narrowed by every obstacle whose band 
 start of the rest, a top an event too, the list's first page scanned for its obstacles before the walk; test
 cases 16 to 18; r36 at `~/fop-renderers/r36-CR-024-2c4d33c62/`, sha256 7be13ae9...), for when the docx4j session
 brings the frames back (it took them out meanwhile, gate b243). **The r35 pair is in (CR-024 §11.9): control b244 0 movers;
-candidate b245 13 movers, no line lost, the probes and corpus gains as listed there.** The merge of the branch to
-`2.11-docx4j.7` (r35's commit 42f51bdd1 gated; the several-obstacles commit 2c4d33c62 and the state commits follow,
-the former with the frames' gate on r36) waits on Jason's word, which the docx4j session has asked for; the `.7`
-release note carries CR-024's entries already (draft). 13544 still ends a page over Word (its page 2 opens 25pt low,
+candidate b245 13 movers, no line lost, the probes and corpus gains as listed there.** MERGED 2026-10-15 on Jason's
+word: `2.11-docx4j.7` is at f98834c2c (r35's gated code plus the several-obstacles commit 2c4d33c62, which gets its
+own gate with the frames on r36); the `.7` release note carries CR-024's entries (draft). The fork's baseline for
+later gates is b245 on r35 until r36 is read. Registry `fop/CR-024` stays in_progress (phase B waits on Jason). 13544 still ends a page over Word (its page 2 opens 25pt low,
 the anchor paragraph that did not fit below the table; Word's placement unread). docx4j's side (CR-032 §4.5, its
 register, CR-001 §6.6 item 11) is written and uncommitted until Jason says. 2189 -2 in the r32 control is the float area's height in docx4j's render, not the foot rule
 (§11.5), docx4j's to measure. On its PASS: merge `CR-024-obstacles` to `2.11-docx4j.7` by fast-forward, release note
