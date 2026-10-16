@@ -45,7 +45,8 @@ Released: `2.11-docx4j.1` (2026-09-25), `2.11-docx4j.2` (2026-10-02), `2.11-docx
 is no `2.11-docx4j.3`: its branch, 2.11 plus `fop/CR-008`, was never released, and its content shipped in
 `.4`. Between releases the fork is consumed as a locally installed snapshot (`mvn install -DskipTests`
 here, then `-Pfo-renderer-fork` in docx4j), currently `2.11-docx4j.8-SNAPSHOT`. docx4j 17.3.1 (2026-10-07) depends on
-`2.11-docx4j.5`, and its next release on `2.11-docx4j.6` or `.7`; 17.3.0 depended on `2.11-docx4j.2`.
+`2.11-docx4j.5`; docx4j 17.3.3 (in preparation, its `VERSION_17_3_3` branch at 0dd167d8e) on `2.11-docx4j.7`;
+17.3.0 depended on `2.11-docx4j.2`.
 
 The marker class `org.apache.fop.docx4j.Docx4jFop` carries the version and the
 names of the hooks the fork has (`capabilities()`); docx4j reads it reflectively.

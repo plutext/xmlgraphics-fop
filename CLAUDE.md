@@ -198,8 +198,8 @@ the pushed branch at the version commit ecaa37c40, tagged `v2.11-docx4j.7` there
 verified from Central (core sha256 4161643c...; `docs/developer/releasing.md`, the sixth release). Work is now on
 `2.11-docx4j.8` (snapshot `2.11-docx4j.8-SNAPSHOT`), cut from ecaa37c40 and added to CI's branch list; the branch is
 local until Jason pushes it. `.7` carries all of CR-024 phase A, `.6`'s content and `fop/CR-027`; the release note
-`docs/release-notes/2.11-docx4j.7.md` is closed but for the docx4j bump line, which the docx4j session sends when its
-read of the published jar (against b273) is in. Two fixes went in after the branch was first pushed, both from Jason's
+`docs/release-notes/2.11-docx4j.7.md` is closed: the docx4j bump line is in (docx4j 0dd167d8e on VERSION_17_3_3,
+for 17.3.3; its gate b281 of the Central jars 0 movers, every event count equal). Two fixes went in after the branch was first pushed, both from Jason's
 testing of m1 in the sample (a user's letterhead, local only): CR-024 §11.20 (1dce69b21, r44 and r45: a sliver under
 1pt beside an object is no room, `Obstacle.MIN_ROOM`, and a table or container whose FO fixes a width greater than the
 room goes below the object, `fixedIPDOf`; r44's rule had reached `fo:float` and lost a floating-table probe and 8985 in
