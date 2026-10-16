@@ -179,8 +179,14 @@ each has one session, and a concurrent build races their `target/classes`.
 repositories; this repository's key is `fop`. CR-020 and its phases are registered as
 `docx4j/CR-020.*` because the CR lives in docx4j; a fork-side CR would be `fop/CR-001`
 with its doc here. When a phase's status changes, tell the docx4j session (it edits the
-docx4j CR's Status line), or, for a fork-side CR, edit the entry and run
-`python3 ../docx4j-portfolio/scripts/tasks.py check` then `accept`.
+docx4j CR's Status line). Since 2026-10-17 (Jason): do not edit `tasks.yaml`,
+`scripts/status-snapshots.yaml` or `docs/dependencies.md` in that repository directly. Send
+the change to the docx4j-portfolio session (working directory `~/git/docx4j-portfolio`;
+`ListAgents` shows it as `docx4j-portfolio-<suffix>`, the suffix changing): the entry id, the
+exact new status, depends_on and notes, and any CR Status line to re-baseline. It applies,
+runs `tasks.py check`, `graph` and `accept`, and commits, naming this session. Only if no
+docx4j-portfolio row is in `ListAgents` may this session edit directly, committing its own
+hunks alone through a temporary index from HEAD, never the shared index.
 
 ## AI attribution in commits
 
