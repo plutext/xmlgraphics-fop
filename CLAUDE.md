@@ -199,6 +199,19 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-10-24. **`fop/CR-028` is BUILT on branch `CR-028-svg-external-resources` off `2.11-docx4j.8`
+(code 63a08b0a2), at Jason's word relayed by the docx4j session ("harden its SVG handling", after Apache POI's apache/poi#1452):
+the option `svg-embedded-resources-only`, on by default, the twenty-seventh capability; an SVG's `image`, `use`, `tref`, font
+or stylesheet reference that is not a `data:` URL is refused and the graphic not drawn (Batik's same-host rule let a file-based
+document read any local file; FOP's own image bridge applied no rule); `docs/developer/change-requests/CR-028-svg-external-resources.md`.
+Full suite 3932/0, checkstyle and spotbugs clean under CI's command. r47 at `~/fop-renderers/r47-CR-028-63a08b0a2/` (sha256
+f15ec867...) handed to the docx4j gate (pass: 0 movers, events equal; docx4j's SVG is `data:` only). The upstream branch
+`FOP-svg-external-resources` in `../fop-upstream-wt` against Apache `main` 7b96ab1a4 carries the same change with the default
+off; JIRA and pull request texts in `docs/upstream/svg-external-resources.txt`, filed and pushed only on Jason's OK here.
+On the gate's PASS: merge to `2.11-docx4j.8` by fast-forward; the `.8` release note (`docs/release-notes/2.11-docx4j.8.md`,
+draft) carries it. Registry `fop/CR-028` goes through the docx4j-portfolio session (the rule under "Registry").** The
+paragraph that follows is the state of 2026-10-16, kept as history.
+
 Last updated 2026-10-16, morning. **`2.11-docx4j.7` is RELEASED: on Maven Central since 2026-10-16, Jason's deploy from
 the pushed branch at the version commit ecaa37c40, tagged `v2.11-docx4j.7` there (the tag local until he pushes it);
 verified from Central (core sha256 4161643c...; `docs/developer/releasing.md`, the sixth release). Work is now on
