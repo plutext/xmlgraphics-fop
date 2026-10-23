@@ -1,6 +1,7 @@
-JIRA text, NOT filed. Fork change fop/CR-028. Drafted 2026-10-24 for Jason's OK; the upstream branch is cut against
-Apache main in ../fop-upstream-wt once the number exists (same code, DEFAULT_SVG_EMBEDDED_RESOURCES_ONLY = false, no
-Docx4jFop capability, no change notices). No existing issue found (JIRA searched 2026-10-24 through the REST API for
+JIRA text, NOT filed. Fork change fop/CR-028. Drafted 2026-10-24 for Jason's OK. Branch FOP-svg-external-resources in
+../fop-upstream-wt (b6bfdc227, local, not pushed) against Apache main 7b96ab1a4: the same code with
+DEFAULT_SVG_EMBEDDED_RESOURCES_ONLY = false, no Docx4jFop capability, no change notices; fop-core suite 3724/0,
+checkstyle clean. Renamed FOP-#### when the number exists. PR text in ../fop-upstream-prs/FOP-svg-external-resources.md. No existing issue found (JIRA searched 2026-10-24 through the REST API for
 "ExternalResourceSecurity" and "checkLoadExternalResource", 0 issues each, and "svg external resource" and "svg file
 local", whose 4 and 12 hits are resource bundles, base URIs, AFP resources and the image cache).
 
