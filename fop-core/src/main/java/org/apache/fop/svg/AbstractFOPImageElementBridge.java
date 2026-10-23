@@ -15,6 +15,11 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the user agent's external-resource rule applied before an image is loaded (fop/CR-028). See
+ * README.md,
+ * "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.svg;
@@ -27,6 +32,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.svg.SVGDocument;
 
 import org.apache.batik.bridge.BridgeContext;
+import org.apache.batik.bridge.BridgeException;
 import org.apache.batik.bridge.SVGImageElementBridge;
 import org.apache.batik.gvt.AbstractGraphicsNode;
 import org.apache.batik.gvt.GraphicsNode;
@@ -71,6 +77,16 @@ public abstract class AbstractFOPImageElementBridge extends SVGImageElementBridg
     protected GraphicsNode createImageGraphicsNode(
                 BridgeContext ctx, Element imageElement, ParsedURL purl) {
         AbstractFOPBridgeContext bridgeCtx = (AbstractFOPBridgeContext)ctx;
+
+        //fop/CR-028: the user agent's external-resource rule, which Batik's own bridge applies and this one,
+        //loading through the image manager, had bypassed
+        String docURL = ((SVGDocument)imageElement.getOwnerDocument()).getURL();
+        ParsedURL pDocURL = docURL != null ? new ParsedURL(docURL) : null;
+        try {
+            ctx.getUserAgent().checkLoadExternalResource(purl, pDocURL);
+        } catch (SecurityException secEx) {
+            throw new BridgeException(ctx, imageElement, secEx, ERR_URI_UNSECURE, new Object[] {purl});
+        }
 
         ImageManager manager = bridgeCtx.getImageManager();
         ImageSessionContext sessionContext = bridgeCtx.getImageSessionContext();

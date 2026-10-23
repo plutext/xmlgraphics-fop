@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the configuration element svg-embedded-resources-only (fop/CR-028). See README.md,
+ * "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.apps;
@@ -58,6 +62,7 @@ public class FopConfParser {
 
     private static final String PREFER_RENDERER = "prefer-renderer";
     private static final String TABLE_BORDER_OVERPAINT = "table-border-overpaint";
+    private static final String SVG_EMBEDDED_RESOURCES_ONLY = "svg-embedded-resources-only";
     private static final String SIMPLE_LINE_BREAKING = "simple-line-breaking";
     private static final String SKIP_PAGE_POSITION_ONLY_ALLOWED = "skip-page-position-only-allowed";
     private static final String LEGACY_SKIP_PAGE_POSITION_ONLY = "legacy-skip-page-position-only";
@@ -294,6 +299,15 @@ public class FopConfParser {
             try {
                 fopFactoryBuilder.setTableBorderOverpaint(
                         cfg.getChild(TABLE_BORDER_OVERPAINT).getValueAsBoolean());
+            } catch (ConfigurationException e) {
+                LogUtil.handleException(LOG, e, false);
+            }
+        }
+
+        if (cfg.getChild(SVG_EMBEDDED_RESOURCES_ONLY, false) != null) {
+            try {
+                fopFactoryBuilder.setSvgEmbeddedResourcesOnly(
+                        cfg.getChild(SVG_EMBEDDED_RESOURCES_ONLY).getValueAsBoolean());
             } catch (ConfigurationException e) {
                 LogUtil.handleException(LOG, e, false);
             }

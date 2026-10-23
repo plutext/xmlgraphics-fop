@@ -15,6 +15,11 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the option svg-embedded-resources-only, external resources other than data: URLs refused
+ * (fop/CR-028). See README.md,
+ * "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.svg;
@@ -28,8 +33,11 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.SAXException;
 
+import org.apache.batik.bridge.EmbededExternalResourceSecurity;
+import org.apache.batik.bridge.ExternalResourceSecurity;
 import org.apache.batik.bridge.FontFamilyResolver;
 import org.apache.batik.bridge.UserAgentAdapter;
+import org.apache.batik.util.ParsedURL;
 
 import org.apache.xmlgraphics.util.UnitConv;
 
@@ -43,6 +51,9 @@ public class SimpleSVGUserAgent extends UserAgentAdapter {
     private AffineTransform currentTransform;
 
     private final FontFamilyResolver fontFamilyResolver;
+
+    /** Option svg-embedded-resources-only (fop/CR-028): see {@link #setEmbeddedResourcesOnly(boolean)}. */
+    private boolean embeddedResourcesOnly;
 
     /**
      * Creates a new user agent.
@@ -151,6 +162,34 @@ public class SimpleSVGUserAgent extends UserAgentAdapter {
     @Override
     public FontFamilyResolver getFontFamilyResolver() {
         return fontFamilyResolver;
+    }
+
+    /**
+     * Sets whether the SVG may load only the external resources embedded in it as {@code data:} URLs
+     * (fop/CR-028). Batik's default rule, applied otherwise, admits any resource on the document's host, and for a
+     * document whose URL is a file that is any file on the machine, since the host of a {@code file:} URL is null
+     * on both sides: an {@code image}, {@code use} or {@code tref} naming {@code file:///etc/passwd} is read into
+     * the output.
+     * @param embeddedOnly true to refuse every external resource that is not a {@code data:} URL
+     */
+    public void setEmbeddedResourcesOnly(boolean embeddedOnly) {
+        this.embeddedResourcesOnly = embeddedOnly;
+    }
+
+    /**
+     * @return whether external resources are restricted to {@code data:} URLs (fop/CR-028)
+     */
+    public boolean isEmbeddedResourcesOnly() {
+        return embeddedResourcesOnly;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ExternalResourceSecurity getExternalResourceSecurity(ParsedURL resourceURL, ParsedURL docURL) {
+        if (embeddedResourcesOnly) {
+            return new EmbededExternalResourceSecurity(resourceURL);
+        }
+        return super.getExternalResourceSecurity(resourceURL, docURL);
     }
 
 }

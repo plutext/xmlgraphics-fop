@@ -252,6 +252,17 @@ public final class Docx4jFop {
      */
     public static final String OBSTACLES_IN_THE_LINE = "obstacles-in-the-line";
 
+    /**
+     * An SVG graphic, inline or external, loads only the external resources embedded in it as {@code data:} URLs,
+     * by default: a {@code file:}, {@code http:} or other reference from {@code image}, {@code use}, {@code tref}, a
+     * font or a stylesheet is refused, the graphic is not drawn and an {@code svgNotBuilt} event says why. Apache
+     * FOP applies Batik's same-host rule, under which a document laid out from a file base URI, the usual case, may
+     * read any file on the machine into the output; and FOP's own image bridge applied no rule at all.
+     * {@code FopFactoryBuilder.setSvgEmbeddedResourcesOnly(false)}, or {@code <svg-embedded-resources-only>false}
+     * in the configuration, restores Batik's rule (fop/CR-028).
+     */
+    public static final String SVG_EMBEDDED_RESOURCES_ONLY = "svg-embedded-resources-only";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -282,6 +293,7 @@ public final class Docx4jFop {
         caps.add(COLUMN_WIDTHS);
         caps.add(COLUMN_BALANCING);
         caps.add(OBSTACLES_IN_THE_LINE);
+        caps.add(SVG_EMBEDDED_RESOURCES_ONLY);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

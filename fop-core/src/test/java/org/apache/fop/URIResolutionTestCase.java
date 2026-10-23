@@ -78,7 +78,10 @@ public class URIResolutionTestCase {
     public static void makeDirs() {
         BACKUP_DIR.mkdirs();
         fopFactory = new FopFactoryBuilder(new File(".").getAbsoluteFile().toURI(),
-                new CustomURIResolver()).build();
+                new CustomURIResolver())
+                //fop/CR-028: the SVG case names an image by a custom scheme, which the fork's default refuses
+                .setSvgEmbeddedResourcesOnly(false)
+                .build();
     }
 
     private static File getTestDir() {

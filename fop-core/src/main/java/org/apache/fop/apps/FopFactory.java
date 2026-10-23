@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the option svg-embedded-resources-only (fop/CR-028). See README.md,
+ * "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.apps;
@@ -248,6 +252,16 @@ public final class FopFactory implements ImageContext {
 
     boolean isTableBorderOverpaint() {
         return config.isTableBorderOverpaint();
+    }
+
+    /**
+     * Whether an SVG graphic may load only the external resources embedded in it as {@code data:} URLs
+     * (fop/CR-028); see {@link FopFactoryConfig#isSvgEmbeddedResourcesOnly()}. Public because the SVG user agents
+     * read it through the image session context's parent.
+     * @return true if SVG external resources are restricted to {@code data:} URLs
+     */
+    public boolean isSvgEmbeddedResourcesOnly() {
+        return config.isSvgEmbeddedResourcesOnly();
     }
 
     boolean isSimpleLineBreaking() {

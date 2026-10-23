@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <fop version="1.0">
 
+  <!-- docx4j-fo-renderer (fop/CR-028): Apache's tests reference bitmaps from SVG relative to the FO, which the
+       fork's default refuses; SVGExternalResourceSecurityTestCase covers the default -->
+  <svg-embedded-resources-only>false</svg-embedded-resources-only>
+
   <!-- Switch off font caching for the purposes of unit testing -->
   <use-cache>false</use-cache>
   <font-base>.</font-base>

@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the option svg-embedded-resources-only taken from the FO user agent (fop/CR-028). See README.md,
+ * "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.svg;
@@ -42,6 +46,7 @@ public class SVGUserAgent extends SimpleSVGUserAgent {
     public SVGUserAgent(FOUserAgent foUserAgent, FontFamilyResolver fontFamilyResolver, AffineTransform at) {
         super(at, fontFamilyResolver, foUserAgent.getSourceResolution());
         this.eventProducer = SVGEventProducer.Provider.get(foUserAgent.getEventBroadcaster());
+        setEmbeddedResourcesOnly(foUserAgent.isSvgEmbeddedResourcesOnly());
     }
 
     /**

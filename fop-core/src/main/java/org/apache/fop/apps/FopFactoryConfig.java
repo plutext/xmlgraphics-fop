@@ -15,6 +15,11 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the option svg-embedded-resources-only, an SVG graphic loading only the resources embedded in it
+ * (fop/CR-028). See README.md,
+ * "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.apps;
@@ -70,6 +75,12 @@ public interface FopFactoryConfig {
      * Defines if FOP should use the parent's layout manager for the content area IPD
      */
     boolean DEFAULT_USE_PARENT_IPD_IMAGE_SCALING = false;
+
+    /**
+     * Whether an SVG graphic may load only the external resources embedded in it (fop/CR-028). On by default in
+     * docx4j-fo-renderer; Apache FOP applies Batik's same-host rule.
+     */
+    boolean DEFAULT_SVG_EMBEDDED_RESOURCES_ONLY = true;
 
     /**
      * Whether accessibility features are switched on.
@@ -179,6 +190,16 @@ public interface FopFactoryConfig {
     boolean isComplexScriptFeaturesEnabled();
 
     boolean isTableBorderOverpaint();
+
+    /**
+     * Whether an SVG graphic, inline or external, may load only the external resources embedded in it as
+     * {@code data:} URLs (fop/CR-028): a {@code file:}, {@code http:} or other reference from {@code image},
+     * {@code use}, {@code tref}, a font or a stylesheet is refused and the graphic is not drawn. When false, Batik's
+     * own rule applies: a resource on the document's host, and any resource at all for a document whose base URI
+     * is a file, since both hosts are then null.
+     * @return true if SVG external resources are restricted to {@code data:} URLs
+     */
+    boolean isSvgEmbeddedResourcesOnly();
 
     boolean isSimpleLineBreaking();
 
