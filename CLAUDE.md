@@ -199,7 +199,15 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
-Last updated 2026-10-24. **`fop/CR-028` is BUILT on branch `CR-028-svg-external-resources` off `2.11-docx4j.8`
+Last updated 2026-10-26. **The working tree is checked out on `CR-028-svg-external-resources` (tip 21a62423d, clean),
+not on `2.11-docx4j.8`; `../fop-upstream-wt` is on `FOP-svg-external-resources` (b6bfdc227, clean, suite 3724/0). Nothing
+of CR-028 is pushed, filed or merged. Waiting on Jason, in order: (1) his OK on the JIRA text in
+`docs/upstream/svg-external-resources.txt`, then post it and rename the upstream branch to its number; (2) his push of
+the upstream branch, then the pull request from `../fop-upstream-prs/FOP-svg-external-resources.md`; (3) the docx4j
+session's gate of r47 (asked 2026-10-24, no result yet), then the merge to `2.11-docx4j.8` by fast-forward and the new
+Status line to the docx4j-portfolio session (registry 7c63661, baselined b2932f7). The fork's default (on) differs from
+the upstream default (off); told the docx4j session. Incidental: `RowFirstPartRoomTestCase`'s change notice names
+CR-012's page-number-zero hook, a copy-paste slip, unfixed.** `fop/CR-028` is BUILT on branch `CR-028-svg-external-resources` off `2.11-docx4j.8`
 (code 63a08b0a2), at Jason's word relayed by the docx4j session ("harden its SVG handling", after Apache POI's apache/poi#1452):
 the option `svg-embedded-resources-only`, on by default, the twenty-seventh capability; an SVG's `image`, `use`, `tref`, font
 or stylesheet reference that is not a `data:` URL is refused and the graphic not drawn (Batik's same-host rule let a file-based
