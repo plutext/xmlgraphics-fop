@@ -3,8 +3,11 @@
 Status: BUILT 2026-10-24 on branch `CR-028-svg-external-resources` off `2.11-docx4j.8` (code 63a08b0a2, full suite 3932/0,
 checkstyle and spotbugs clean under CI's command; r47 at `~/fop-renderers/r47-CR-028-63a08b0a2/`, sha256 f15ec867...), at Jason's word relayed by the
 docx4j session ("harden its SVG handling", after Apache POI's apache/poi#1452). Option `svg-embedded-resources-only`,
-on by default in the fork, the twenty-seventh capability. Test `SVGExternalResourceSecurityTestCase` (§5). Not gated
-yet (§8); JIRA and pull request drafted, not filed (§7). Registry key `fop/CR-028`. Not an Enterprise CR-001 §6.6
+on by default in the fork, the twenty-seventh capability. Test `SVGExternalResourceSecurityTestCase` (§5). Gated PASS
+2026-10-29 (§8). MERGED 2026-10-29 to `2.11-docx4j.8` on Jason's word, by a merge commit (1cdf26fab) since `.8` already
+carried `fop/CR-029`; full suite on the merged tree 3934/0, CI's command clean; unreleased, in
+`docs/release-notes/2.11-docx4j.8.md`; the merged tree's jar r49 at `~/fop-renderers/r49-merge-CR-028-1cdf26fab/`
+(sha256 eee3cba6...). JIRA and pull request drafted, not filed (§7). Registry key `fop/CR-028`. Not an Enterprise CR-001 §6.6
 item: nothing in Word's layout is involved.
 
 ## 1. The exposure
@@ -138,3 +141,9 @@ the default too, which is the one behaviour change: a picture Batik's own bridge
 Pass: 0 movers on the four corpora and the probes, every event count equal. docx4j's SVG carries only `data:`
 references, so a mover would mean the option reached something it should not have (a chart's font, a metafile's
 bitmap). Handed over as the jar's path and sha256 under `~/fop-renderers/`.
+
+PASS 2026-10-29 (the docx4j session; its register's attempts.md 1a9e336): control b285 (docx4j bc842ac66 on the
+released `.7` core) against candidate b287 (the same jars on r47, sha256 checked; 27 hooks against b285's 26, so the
+capability is on), over real, real2, real3, real-c2 and the probes: 0 movers, every event count equal. No corpus
+document references an external SVG resource, so nothing was refused: the option costs nothing where it does not
+fire.
