@@ -7,7 +7,7 @@ on by default in the fork, the twenty-seventh capability. Test `SVGExternalResou
 2026-10-29 (§8). MERGED 2026-10-29 to `2.11-docx4j.8` on Jason's word, by a merge commit (1cdf26fab) since `.8` already
 carried `fop/CR-029`; full suite on the merged tree 3934/0, CI's command clean; unreleased, in
 `docs/release-notes/2.11-docx4j.8.md`; the merged tree's jar r49 at `~/fop-renderers/r49-merge-CR-028-1cdf26fab/`
-(sha256 eee3cba6...). JIRA and pull request drafted, not filed (§7). Registry key `fop/CR-028`. Not an Enterprise CR-001 §6.6
+(sha256 eee3cba6...) gated PASS b288 against b286 (0 movers, events equal, 27 hooks), the fork's baseline for later gates. JIRA and pull request drafted, not filed (§7). Registry key `fop/CR-028`. Not an Enterprise CR-001 §6.6
 item: nothing in Word's layout is involved.
 
 ## 1. The exposure
