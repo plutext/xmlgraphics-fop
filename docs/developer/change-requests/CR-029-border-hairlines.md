@@ -3,8 +3,9 @@
 Status: BUILT 2026-10-29 on branch `CR-029-border-hairlines` off `2.11-docx4j.8` (code 8d73851e9, full suite
 3929/0, checkstyle and spotbugs clean under CI's command; r48 at `~/fop-renderers/r48-CR-029-8d73851e9/`, sha256
 c3fcc19d...), at Jason's word ("yes please", after the investigation in §1). No option and no capability: docx4j
-writes nothing for it. r48 handed to the docx4j gate 2026-10-29 (§7); JIRA and pull request drafted, not filed (§6). Registry key `fop/CR-029`. Not yet an Enterprise CR-001 §6.6 item:
-proposed to the docx4j session as item 52 (§8).
+writes nothing for it. Gated PASS 2026-10-29 on r48 (§7); not merged, which waits on Jason's word. JIRA and pull
+request drafted, not filed (§6). Registry key `fop/CR-029` (portfolio bfbaeb0). Enterprise CR-001 §6.6 item 52
+(Enterprise 7de78cd, §8).
 
 ## 1. The symptom
 
@@ -123,8 +124,16 @@ Nothing moves in layout, so the docx4j gate should read 0 movers and every event
 painted borders, which the scoreboard does not see. The measure is §1's table on the pricing document rendered by the
 candidate: every vertical border 255 at every zoom.
 
+PASS 2026-10-29 (the docx4j session, its register's attempts.md 1bf9827): control b285 (docx4j bc842ac66 on the
+released `.7` core, the `.8` head without CR-028) against candidate b286 (the same jars on r48, sha256 checked, 26
+hooks in both), over real, real2, real3, real-c2 and the probes: 0 movers, every event count equal (linebig 3241,
+line 17612, clip 1552, and the rest). The pricing document rendered by docx4j on r48 (PDF and FO under
+`~/fop-renderers/r48-CR-029-8d73851e9/`, the `.7` control's in `control-2.11-docx4j.7/` beside them; the two FOs
+differ only in a temporary image name): page 2's five vertical rules read 255 at every zoom of 60, 72, 80, 90, 96,
+100, 110, 120 and 144 dpi (re-measured here), where the control read 0 0 0 0 0 at 72 dpi, and page 2 has no clip.
+
 ## 8. Enterprise CR-001 §6.6
 
 Read before proposing (2026-10-29): no item covers how a border is painted. Item 7 (the separate model's half gap
-at the table edge) is layout. Proposed to the docx4j session as item 52, with the mechanism of §2 and this branch;
-it goes in only on its agreement.
+at the table edge) is layout. Proposed to the docx4j session as item 52 and agreed with the gate's pass; added by
+this session as Enterprise 7de78cd (that file alone), in the Open tally until this CR merges.
