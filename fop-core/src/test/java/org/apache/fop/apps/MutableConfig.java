@@ -153,6 +153,10 @@ public final class MutableConfig implements FopFactoryConfig {
         return delegate.isTableBorderOverpaint();
     }
 
+    public boolean isSvgEmbeddedResourcesOnly() {
+        return delegate.isSvgEmbeddedResourcesOnly();
+    }
+
     public boolean isSimpleLineBreaking() {
         return delegate.isSimpleLineBreaking();
     }

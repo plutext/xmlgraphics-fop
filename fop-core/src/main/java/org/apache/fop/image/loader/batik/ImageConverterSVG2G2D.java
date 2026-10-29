@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the option svg-embedded-resources-only passed to the user agent (fop/CR-028). See README.md,
+ * "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.image.loader.batik;
@@ -49,6 +53,7 @@ import org.apache.xmlgraphics.image.loader.impl.ImageXMLDOM;
 import org.apache.xmlgraphics.java2d.Graphics2DImagePainter;
 import org.apache.xmlgraphics.util.UnitConv;
 
+import org.apache.fop.apps.FopFactory;
 import org.apache.fop.svg.SimpleSVGUserAgent;
 
 /**
@@ -125,7 +130,7 @@ public class ImageConverterSVG2G2D extends AbstractImageConverter {
      * @return the newly created user agent
      */
     protected SimpleSVGUserAgent createBatikUserAgent(Map hints) {
-        return new SimpleSVGUserAgent(new AffineTransform(),
+        SimpleSVGUserAgent ua = new SimpleSVGUserAgent(new AffineTransform(),
                 DefaultFontFamilyResolver.SINGLETON,
                 getResolution(hints, ImageProcessingHints.SOURCE_RESOLUTION)) {
             /** {@inheritDoc} */
@@ -146,6 +151,14 @@ public class ImageConverterSVG2G2D extends AbstractImageConverter {
 
 
         };
+        //fop/CR-028: the option svg-embedded-resources-only, read from the factory behind the session context
+        ImageSessionContext sessionContext = (ImageSessionContext)hints.get(
+                ImageProcessingHints.IMAGE_SESSION_CONTEXT);
+        if (sessionContext != null && sessionContext.getParentContext() instanceof FopFactory) {
+            ua.setEmbeddedResourcesOnly(
+                    ((FopFactory)sessionContext.getParentContext()).isSvgEmbeddedResourcesOnly());
+        }
+        return ua;
     }
 
     /**

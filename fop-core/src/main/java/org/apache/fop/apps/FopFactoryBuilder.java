@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the option svg-embedded-resources-only (fop/CR-028). See README.md,
+ * "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.apps;
@@ -355,6 +359,18 @@ public final class FopFactoryBuilder {
         return this;
     }
 
+    /**
+     * Sets whether an SVG graphic may load only the external resources embedded in it as {@code data:} URLs
+     * (fop/CR-028); see {@link FopFactoryConfig#isSvgEmbeddedResourcesOnly()}. Configuration element
+     * {@code svg-embedded-resources-only}.
+     * @param b true to refuse every external resource that is not a {@code data:} URL
+     * @return <code>this</code>
+     */
+    public FopFactoryBuilder setSvgEmbeddedResourcesOnly(boolean b) {
+        fopFactoryConfigBuilder.setSvgEmbeddedResourcesOnly(b);
+        return this;
+    }
+
     public FopFactoryBuilder setSimpleLineBreaking(boolean b) {
         fopFactoryConfigBuilder.setSimpleLineBreaking(b);
         return this;
@@ -436,6 +452,7 @@ public final class FopFactoryBuilder {
         private Map<String, String> hyphPatNames;
 
         private boolean tableBorderOverpaint;
+        private boolean svgEmbeddedResourcesOnly = FopFactoryConfig.DEFAULT_SVG_EMBEDDED_RESOURCES_ONLY;
         private boolean simpleLineBreaking;
 
         private boolean skipPagePositionOnlyAllowed = true;
@@ -578,6 +595,10 @@ public final class FopFactoryBuilder {
             return tableBorderOverpaint;
         }
 
+        public boolean isSvgEmbeddedResourcesOnly() {
+            return svgEmbeddedResourcesOnly;
+        }
+
         public boolean isSimpleLineBreaking() {
             return simpleLineBreaking;
         }
@@ -662,6 +683,8 @@ public final class FopFactoryBuilder {
         void setHyphPatNames(Map<String, String> hyphPatNames);
 
         void setTableBorderOverpaint(boolean b);
+
+        void setSvgEmbeddedResourcesOnly(boolean b);
 
         void setSimpleLineBreaking(boolean b);
 
@@ -774,6 +797,10 @@ public final class FopFactoryBuilder {
         }
 
         public void setTableBorderOverpaint(boolean b) {
+            throwIllegalStateException();
+        }
+
+        public void setSvgEmbeddedResourcesOnly(boolean b) {
             throwIllegalStateException();
         }
 
@@ -890,6 +917,10 @@ public final class FopFactoryBuilder {
 
         public void setTableBorderOverpaint(boolean b) {
             config.tableBorderOverpaint = b;
+        }
+
+        public void setSvgEmbeddedResourcesOnly(boolean b) {
+            config.svgEmbeddedResourcesOnly = b;
         }
 
         public void setSimpleLineBreaking(boolean b) {

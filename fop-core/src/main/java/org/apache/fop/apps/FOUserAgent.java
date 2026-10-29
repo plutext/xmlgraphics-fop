@@ -18,8 +18,8 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook page-number-zero, an option to number a page 0 (fop/CR-012); and hook
  * measured-region-extents, events muted while a header or footer is measured (fop/CR-018); and hook
- * row-first-part-room, a table row's first part at a page's foot needing room for its bottom margin (fop/CR-025). See
- * README.md, "Changes from Apache FOP 2.11". */
+ * row-first-part-room, a table row's first part at a page's foot needing room for its bottom margin (fop/CR-025); and
+ * the option svg-embedded-resources-only (fop/CR-028). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -954,6 +954,15 @@ public class FOUserAgent {
 
     public boolean isTableBorderOverpaint() {
         return factory.isTableBorderOverpaint();
+    }
+
+    /**
+     * Whether an SVG graphic may load only the external resources embedded in it as {@code data:} URLs
+     * (fop/CR-028); see {@link FopFactoryConfig#isSvgEmbeddedResourcesOnly()}.
+     * @return true if SVG external resources are restricted to {@code data:} URLs
+     */
+    public boolean isSvgEmbeddedResourcesOnly() {
+        return factory.isSvgEmbeddedResourcesOnly();
     }
 
     public boolean isSimpleLineBreaking() {
