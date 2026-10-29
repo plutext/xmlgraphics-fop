@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: a solid border whose corners need no mitre is drawn without a clip, which a viewer can lose at
+ * screen resolution (fop/CR-029). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.render.intermediate;
@@ -23,6 +27,9 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.io.IOException;
 
+import org.apache.xmlgraphics.java2d.color.ColorUtil;
+
+import org.apache.fop.fo.Constants;
 import org.apache.fop.traits.BorderProps;
 import org.apache.fop.traits.BorderStyle;
 
@@ -357,6 +364,15 @@ public class BorderPainter {
             if (orientation != 0) {
                 rotateCoordinates(Math.PI * orientation / 2d);
             }
+            if (isDrawnWithoutClip(start, before, end)) {
+                final boolean outer = before.isCollapseOuter();
+                final int sx = outer && start.isCollapseOuter() ? -start.getClippedWidth() : 0;
+                final int ex = outer && end.isCollapseOuter() ? ex1 + end.getClippedWidth() : ex1;
+                drawBorderLine(sx, outery, ex, innery, true, true,
+                        BorderStyle.valueOf(before.getStyle()), before.getColor());
+                restoreGraphicsState();
+                return;
+            }
             final int ellipseSBX = ellipseSBRadiusX;
             final int ellipseSBY = ellipseSBRadiusY;
             final int ellipseBEX = ex1 - ellipseBERadiusX;
@@ -434,6 +450,31 @@ public class BorderPainter {
             }
             restoreGraphicsState();
         }
+    }
+
+    /**
+     * A segment is drawn without the clip that shares its corners out when it is solid, opaque
+     * and square-cornered and each neighbour is absent or solid in the same colour: the corners are
+     * then covered with the same paint either way. Viewers widen a thin line to a whole device pixel
+     * but not a clip path, so a clip narrower than a pixel (half a collapsed border) can hide the
+     * border altogether.
+     */
+    private static boolean isDrawnWithoutClip(BorderSegment start, BorderSegment before,
+            BorderSegment end) {
+        return isSolidAndOpaque(before)
+                && before.getRadiusStart() == 0 && before.getRadiusEnd() == 0
+                && start.getRadiusEnd() == 0 && end.getRadiusStart() == 0
+                && joinsWithoutMitre(before, start) && joinsWithoutMitre(before, end);
+    }
+
+    private static boolean isSolidAndOpaque(BorderSegment segment) {
+        return segment.getStyle() == Constants.EN_SOLID && segment.getColor() != null
+                && segment.getColor().getAlpha() == 255;
+    }
+
+    private static boolean joinsWithoutMitre(BorderSegment segment, BorderSegment neighbour) {
+        return neighbour.getWidth() == 0 || (isSolidAndOpaque(neighbour)
+                && ColorUtil.isSameColor(segment.getColor(), neighbour.getColor()));
     }
 
     private static int correctRadius(double cornerCorrectionFactor, int radius) {

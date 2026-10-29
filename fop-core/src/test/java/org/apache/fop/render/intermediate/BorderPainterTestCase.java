@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: tests that a solid border whose corners need no mitre is drawn without a clip (fop/CR-029). See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 package org.apache.fop.render.intermediate;
 
 import java.awt.Color;
@@ -36,6 +40,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import org.apache.fop.fo.Constants;
 import org.apache.fop.traits.BorderProps;
 import org.apache.fop.traits.BorderProps.Mode;
+import org.apache.fop.traits.BorderStyle;
 
 
 public class BorderPainterTestCase {
@@ -138,6 +143,50 @@ public class BorderPainterTestCase {
         new BorderPainter(graphicsPainter).drawRoundedBorders(new Rectangle(0, 0, 1000, 1000),
                 nullBorderProps, nullBorderProps, nullBorderProps, nullBorderProps);
         verifyZeroInteractions(graphicsPainter);
+    }
+
+    @Test
+    public void drawSolidBordersWithoutClip() throws Exception {
+        // each side's line in its own orientation: from its start to its end, across its whole width
+        drawSolidBordersWithoutClip(Mode.SEPARATE, 0, 0, 1000, 10);
+        drawSolidBordersWithoutClip(Mode.COLLAPSE_INNER, 0, -5, 990, 5);
+        drawSolidBordersWithoutClip(Mode.COLLAPSE_OUTER, -5, -5, 995, 5);
+    }
+
+    private void drawSolidBordersWithoutClip(Mode mode, int x1, int y1, int x2, int y2) throws Exception {
+        GraphicsPainter graphicsPainter = mock(GraphicsPainter.class);
+        BorderProps border = BorderProps.makeRectangular(Constants.EN_SOLID, 10, Color.BLACK, mode);
+        new BorderPainter(graphicsPainter).drawBorders(new Rectangle(0, 0, 1000, 1000),
+                border, border, border, border, Color.WHITE);
+        verify(graphicsPainter, never()).clip();
+        verify(graphicsPainter, times(4)).drawBorderLine(x1, y1, x2, y2, true, true, BorderStyle.SOLID,
+                Color.BLACK);
+        verify(graphicsPainter, times(4)).saveGraphicsState();
+        verify(graphicsPainter, times(4)).restoreGraphicsState();
+    }
+
+    @Test
+    public void drawBordersWithClipWhereCornersNeedIt() throws Exception {
+        BorderProps black = BorderProps.makeRectangular(Constants.EN_SOLID, 10, Color.BLACK, Mode.SEPARATE);
+        BorderProps red = BorderProps.makeRectangular(Constants.EN_SOLID, 10, Color.RED, Mode.SEPARATE);
+        // the red before border and the start and end borders it meets are clipped, the after border is not
+        assertClips(3, red, black, black, black);
+        assertClips(4, BorderProps.makeRectangular(Constants.EN_DASHED, 10, Color.BLACK, Mode.SEPARATE));
+        assertClips(4, BorderProps.makeRectangular(Constants.EN_SOLID, 10, new Color(0, 0, 0, 128),
+                Mode.SEPARATE));
+        assertClips(4, BORDER_PROPS);
+    }
+
+    private void assertClips(int clips, BorderProps border) throws Exception {
+        assertClips(clips, border, border, border, border);
+    }
+
+    private void assertClips(int clips, BorderProps before, BorderProps after, BorderProps start,
+            BorderProps end) throws Exception {
+        GraphicsPainter graphicsPainter = mock(GraphicsPainter.class);
+        new BorderPainter(graphicsPainter).drawBorders(new Rectangle(0, 0, 1000, 1000),
+                before, after, start, end, Color.WHITE);
+        verify(graphicsPainter, times(clips)).clip();
     }
 
     @Test
