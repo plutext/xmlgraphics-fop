@@ -1,0 +1,68 @@
+JIRA, NOT FILED: drafted 2026-10-29 by the fork session, to be posted only on Jason's OK here; the text from
+"Summary" on in JIRA markup, one line per paragraph. Pull request text in ../fop-upstream-prs/FOP-border-hairlines.md.
+fop/CR-029 (docs/developer/change-requests/CR-029-border-hairlines.md); proposed Enterprise CR-001 §6.6 item 52.
+Branch FOP-border-hairlines in ../fop-upstream-wt, one commit on Apache main 7b96ab1a4 (533c0c0e4); the fop-core
+suite gives 3721 tests and 0 failures, and checkstyle is clean. Rename the branch and the commit's subject to
+FOP-NNNN once filed. Component renderer/pdf (also renderer/ps), Affects 2.11 and main, Bug, Minor. Related:
+FOP-2434 (closed as a duplicate of FOP-2536) and FOP-2536 (table-border-overpaint, 2.6). FO reproducer:
+docs/upstream/repro/FOP-border-hairlines.fo (base-14 fonts, no configuration).
+
+Summary
+-------
+Thin borders vanish at screen zoom in poppler-based viewers: each border side is painted through a clip, half
+the border's width for a collapsed table border
+
+Description
+-----------
+BorderPainter.drawBorderSegment paints each side of a border rectangle as a line of the border's width inside a
+clip: a trapezoid that gives the side its share of the two corners, and, for a collapsed border between two
+cells (BorderProps.Mode.COLLAPSE_INNER), only the half of the border on the cell's own side, the neighbouring
+cell painting the other half. So a 0.48pt rule between two cells is painted twice, each time through a clip
+0.24pt wide.
+
+Poppler (Okular, Evince, pdftoppm) widens a thin line, and a filled path that is a single rectangle, to at least
+one whole device pixel, snapping its edges to the pixel grid. It does not do that to a clip. At screen zoom the
+clip is a fraction of a pixel: where the snapped line falls in a pixel the clip barely reaches, nothing is
+painted. The table rules come and go as the user zooms. A word processor's PDF of the same table, which fills a
+rectangle per border, keeps them at every zoom.
+
+FO (attached; base-14 fonts, no configuration): a two-row table, border-collapse="collapse", every cell
+border="0.48pt solid black". Rendered on main with pdftoppm -gray -r N, the darkness of the five vertical
+borders in the first row (0 invisible, 255 black):
+
+{noformat}
+ dpi   main
+  60    14  23  15 197   0
+  72    16  29  16  14   0
+  80    15 197  90 111   0
+  96   166 197 197  90 255
+ 110   166 197  18 177   0
+ 144    19 166 166 177 166
+{noformat}
+
+(A reading near 15 is the cell's text inside the measuring window: the border is gone.) The horizontal rules are
+thinned too, and lost at some zooms. The table's outer edge, whose clip spans the whole border width, is lost as
+well, so the full-width clip of the separate border model is not safe either. table-border-overpaint (FOP-2536)
+does not help: its merged segments are painted through the same half-width clip; with it on, the rules still
+vanished at 60, 72, 80 and 110 dpi.
+
+The clip matters only where the borders meeting at a corner differ: in colour, in style (dashes, double), with a
+radius, or with a translucent colour that would darken where painted twice. Where a side's neighbours are solid
+in its colour, or absent, the corners take the same paint whether each side paints its mitred share or the whole
+corner, and the two cells of a collapsed border resolve to the same border and paint the same line.
+
+Fix (pull request to follow)
+----------------------------
+In BorderPainter.drawBorderSegment: a side that is solid, opaque and square-cornered, whose neighbouring sides
+are absent or solid and opaque in the same colour, is painted as the same line over the same extent without the
+clip. Every other side keeps the clip.
+
+Measured on main with the change, the FO above: every vertical border 255 at 60, 72, 80, 90, 96, 100, 110, 120
+and 144 dpi; the page's clip operators go from 32 to 0. Painted without anti-aliasing at 1200 dpi, the PDF is the
+same but for one pixel at each of the two outer top corners (0.06pt); the PostScript output, painted by
+Ghostscript at 1200 dpi, is pixel for pixel the same. PNG and TIFF output do not go through this painter
+(Java2DPainter's drawBorderRect has five parameters, so AbstractIFPainter's six-parameter method fills
+rectangles), and AFP has its own. Only painting changes, never layout. BorderPainterTestCase gains two tests: solid
+borders of one colour in the three border modes paint four lines and no clip, over the whole side and width; a
+red side among black ones clips itself and the two sides it meets, and dashed, translucent and rounded borders
+clip every side.

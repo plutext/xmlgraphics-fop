@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+  <fo:layout-master-set>
+    <fo:simple-page-master master-name="A4" page-width="595.35pt" page-height="841.95pt"
+        margin-top="39.775pt" margin-left="56.04pt" margin-right="20pt" margin-bottom="40pt">
+      <fo:region-body/>
+    </fo:simple-page-master>
+  </fo:layout-master-set>
+  <fo:page-sequence master-reference="A4">
+    <fo:flow flow-name="xsl-region-body">
+      <fo:table border-collapse="collapse" table-layout="fixed" width="496.37pt">
+        <fo:table-column column-width="170.1pt"/><fo:table-column column-width="156.07pt"/>
+        <fo:table-column column-width="92.2pt"/><fo:table-column column-width="78pt"/>
+        <fo:table-body>
+          <fo:table-row height="41pt">
+            <fo:table-cell border="0.48pt solid black"><fo:block>Scenario</fo:block></fo:table-cell>
+            <fo:table-cell border="0.48pt solid black"><fo:block>Breadth</fo:block></fo:table-cell>
+            <fo:table-cell border="0.48pt solid black"><fo:block>Subscription</fo:block></fo:table-cell>
+            <fo:table-cell border="0.48pt solid black"><fo:block>Silver</fo:block></fo:table-cell>
+          </fo:table-row>
+          <fo:table-row height="23pt">
+            <fo:table-cell border="0.48pt solid black"><fo:block>Scenario 1</fo:block></fo:table-cell>
+            <fo:table-cell border="0.48pt solid black"><fo:block>Single server</fo:block></fo:table-cell>
+            <fo:table-cell border="0.48pt solid black"><fo:block>$995</fo:block></fo:table-cell>
+            <fo:table-cell border="0.48pt solid black"><fo:block>$2495</fo:block></fo:table-cell>
+          </fo:table-row>
+        </fo:table-body>
+      </fo:table>
+    </fo:flow>
+  </fo:page-sequence>
+</fo:root>
