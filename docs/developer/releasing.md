@@ -265,7 +265,7 @@ numbered staging repositories like `orgdocx4j-1095`.
   b288; only `MANIFEST.MF` and the two `maven/` pom files differ. `.7`, built with JDK 17, differed from the
   session's JDK 21 build of the same source. So build a release with JDK 21, as the session's gate jars are built.
 - **Tagged after the deployment was confirmed**: `v2.11-docx4j.8`, annotated, at `b7f6ad8bf`, made by the fork
-  session once the files below were verified; the push, by name, is Jason's.
+  session once the files below were verified, pushed by name by Jason.
 - **Verified from Central after publication**: 68 files, every one answering 200 (the parent pom; for each of
   the four modules its pom, jar, sources and javadoc; each with `.asc`, `.md5` and `.sha1`); every md5 and sha1 as
   stated; every signature good, by `C641C2A9AFA87A3B` as for `.6` and `.7` (see Signing); the core manifest's

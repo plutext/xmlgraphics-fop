@@ -204,12 +204,12 @@ hunks alone through a temporary index from HEAD, never the shared index.
 Last updated 2026-10-30. **`2.11-docx4j.8` is RELEASED: on Maven Central since 2026-10-30, Jason's deploy (JDK 21, on
 this machine) from the pushed branch at the version commit b7f6ad8bf, verified from Central (68 files, checksums and
 signatures good, 27 capabilities; core sha256 1292e531...; the published classes byte for byte r49's, the gated jar),
-tagged `v2.11-docx4j.8` there (made here, local until Jason pushes it by name). It carries `fop/CR-028` and
+tagged `v2.11-docx4j.8` there (made here, pushed by name by Jason the same day). It carries `fop/CR-028` and
 `fop/CR-029`; the release note `docs/release-notes/2.11-docx4j.8.md` is closed but for its docx4j line: the docx4j
 session (docx4j-12) reads the Central jars against b288 and moves `docx4j-export-fo` to `.8` for docx4j 17.3.5, and
 sends the gate number and commit. Registry `fop/release-2.11-docx4j.8` done (portfolio 0c7afbd). Work is now on
-`2.11-docx4j.9` (snapshot `2.11-docx4j.9-SNAPSHOT`), cut from b7f6ad8bf and added to CI's branch list; local until
-Jason pushes it. Nothing is ordered for `.9`. Still waiting on Jason: his OK on the two JIRA texts and his push of
+`2.11-docx4j.9` (snapshot `2.11-docx4j.9-SNAPSHOT`), cut from b7f6ad8bf and added to CI's branch list; pushed by
+Jason 2026-10-30, CI green on it (run 41014099946). Nothing is ordered for `.9`. Still waiting on Jason: his OK on the two JIRA texts and his push of
 the two upstream branches, as below; and for CR-028, whether the report goes to Apache as a public JIRA or privately
 to security@apache.org (raised 2026-10-30; the fork's own docs describing it went public with the `.8` push). Apache
 `main` is two commits past the upstream branches' base 7b96ab1a4 (FOP-3363, FOP-3366), no Apache release; re-check
