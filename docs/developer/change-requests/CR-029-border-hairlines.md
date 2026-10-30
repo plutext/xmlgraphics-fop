@@ -4,7 +4,8 @@ Status: BUILT 2026-10-29 on branch `CR-029-border-hairlines` off `2.11-docx4j.8`
 3929/0, checkstyle and spotbugs clean under CI's command; r48 at `~/fop-renderers/r48-CR-029-8d73851e9/`, sha256
 c3fcc19d...), at Jason's word ("yes please", after the investigation in §1). No option and no capability: docx4j
 writes nothing for it. Gated PASS 2026-10-29 on r48 (§7). MERGED 2026-10-29 to `2.11-docx4j.8` by fast-forward
-on Jason's word (tip a14709f7b), unreleased, in `docs/release-notes/2.11-docx4j.8.md`. JIRA and pull request drafted,
+on Jason's word (tip a14709f7b). RELEASED in `2.11-docx4j.8` (Maven Central 2026-10-30, version commit b7f6ad8bf;
+`docs/release-notes/2.11-docx4j.8.md`). JIRA and pull request drafted,
 not filed (§6). Registry key `fop/CR-029` (portfolio bfbaeb0). Enterprise CR-001 §6.6 item 52
 (Enterprise 7de78cd, §8).
 

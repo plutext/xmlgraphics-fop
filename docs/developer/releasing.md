@@ -131,7 +131,10 @@ Three secret keys are on this machine; only one is ultimately trusted:
     rsa4096/873D9B7B  Jason Harrop (gpg2) <jharrop@gmail.com>
 
 `maven-gpg-plugin` uses gpg's default key unless told otherwise, so pass
-`-Dgpg.keyname=873D9B7B` if the default is not that one. The `--pinentry-mode
+`-Dgpg.keyname=873D9B7B` if the default is not that one. What Central serves is signed with another of them,
+though: `.6`, `.7` and `.8` are all signed by `C641C2A9AFA87A3B` (rsa2048, 2011, `Jason Harrop
+<jason@plutext.org>`), checked with `gpg --verify` against the published `.asc` on 2026-10-30. Keep to that key
+unless Jason says otherwise; a consumer pinning the signer would notice a change. The `--pinentry-mode
 loopback` argument is already configured, which is what lets `-Dgpg.passphrase=`
 work without a prompt.
 
@@ -250,6 +253,27 @@ numbered staging repositories like `orgdocx4j-1095`.
   carries no property reference; `SpaceResolver.borderAndPaddingBeforeBreak` (the last fix) present.
 - The release note was closed on the next branch, as before. The next development version is
   `2.11-docx4j.8-SNAPSHOT`, on branch `2.11-docx4j.8`, cut from the release commit and added to CI's branch list.
+
+## Proven by the seventh release, 2.11-docx4j.8 on 2026-10-30
+
+- **Released by Jason from the pushed branch** at the version commit `b7f6ad8bf` (the `revision` and the `<scm>`
+  lines, nothing else). The branch's 14 commits since `.7` were pushed first and CI was green on their tip
+  `fbbdfe358` (run 41003253600), then on the version commit (run 41008116868). Built on this machine with
+  `JAVA_HOME=/usr/lib/jvm/java-21-openjdk` (the manifest's `Build-Jdk` is 21.0.12).
+- **Built with the gate's JDK, the published classes are the gated ones.** The published core's 2692 entries are
+  byte for byte those of r49, the jar the fork session built from the merged tree and the docx4j session gated as
+  b288; only `MANIFEST.MF` and the two `maven/` pom files differ. `.7`, built with JDK 17, differed from the
+  session's JDK 21 build of the same source. So build a release with JDK 21, as the session's gate jars are built.
+- **Tagged after the deployment was confirmed**: `v2.11-docx4j.8`, annotated, at `b7f6ad8bf`, made by the fork
+  session once the files below were verified; the push, by name, is Jason's.
+- **Verified from Central after publication**: 68 files, every one answering 200 (the parent pom; for each of
+  the four modules its pom, jar, sources and javadoc; each with `.asc`, `.md5` and `.sha1`); every md5 and sha1 as
+  stated; every signature good, by `C641C2A9AFA87A3B` as for `.6` and `.7` (see Signing); the core manifest's
+  `Implementation-Version` is `2.11-docx4j.8`; no published pom carries `${revision}` or a parent;
+  `Docx4jFop.version()` is `2.11-docx4j.8` and `capabilities()` names 27, `svg-embedded-resources-only` new.
+  Core jar sha256 `1292e53155effe1a3383907154acfd887a89ed26d69b8a0fd6bb0b5b53eaddb3`.
+- The release note was closed on the next branch, as before. The next development version is
+  `2.11-docx4j.9-SNAPSHOT`, on branch `2.11-docx4j.9`, cut from the release commit and added to CI's branch list.
 
 ## Two things that look wrong and are not
 
