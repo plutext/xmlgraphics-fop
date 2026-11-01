@@ -82,6 +82,9 @@ release, so "derived from Apache FOP 2.12" is exact, and nothing past it is need
   which `.7` and `.8` already ship. The gate is what establishes it.
 - **`2.11-docx4j.9`** (cut 2026-10-30 from `.8`'s version commit, pushed, CI green, nothing on it but docs) never
   ships, like `.3`. Leave it alone; CI's list keeps it.
+- **NOTICE** (the root file, packaged into each jar as `META-INF/NOTICE`) says "derived from Apache FOP 2.12" and
+  that the changes from 2.12 are listed in the README. Fixed after the gate (r50 carries the 2.11 text), when the
+  docx4j session found it on 2026-11-01. A resource only; the classes are r50's.
 - **Change notices** keep "derived from Apache FOP 2.11": each says what its file was modified from when it was
   changed. The README's heading "Changes from Apache FOP 2.11" keeps its name because every notice cites it. The text
   under it now names the 2.12 release as the comparison.
