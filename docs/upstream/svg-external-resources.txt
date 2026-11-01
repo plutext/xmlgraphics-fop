@@ -1,42 +1,44 @@
-JIRA text, NOT filed. Fork change fop/CR-028. Drafted 2026-10-24 for Jason's OK. Branch FOP-svg-external-resources in
-../fop-upstream-wt (b6bfdc227, local, not pushed) against Apache main 7b96ab1a4: the same code with
-DEFAULT_SVG_EMBEDDED_RESOURCES_ONLY = false, no Docx4jFop capability, no change notices; fop-core suite 3724/0,
-checkstyle clean. Renamed FOP-#### when the number exists. PR text in ../fop-upstream-prs/FOP-svg-external-resources.md. No existing issue found (JIRA searched 2026-10-24 through the REST API for
-"ExternalResourceSecurity" and "checkLoadExternalResource", 0 issues each, and "svg external resource" and "svg file
-local", whose 4 and 12 hits are resource bundles, base URIs, AFP resources and the image cache).
+JIRA text, NOT filed. Fork change fop/CR-028. Drafted 2026-10-24 for Jason's OK; REWRITTEN 2026-11-01 after Apache FOP
+2.12 (Batik 1.20): re-measured on 2.12's binary distribution and on main at 1301bcf74, the affected version now 2.12,
+and the "second cause" (FOP's image bridge bypassing the rule) withdrawn as wrong (CR-028 section 2.1). Whether it goes
+as a public JIRA or privately to security@apache.org is Jason's call (raised 2026-10-30). Branch
+FOP-svg-external-resources in ../fop-upstream-wt (b6bfdc227, local, not pushed) against Apache main 7b96ab1a4 still
+carries the image-bridge hunk; before it is pushed, drop that hunk (AbstractFOPImageElementBridge back to Apache's),
+rebase on current main, and re-run the fop-core suite, checkstyle and SVGExternalResourceSecurityTestCase there, so
+the PR text's counts are measured on what is sent. Renamed FOP-#### when the number exists. PR text in
+../fop-upstream-prs/FOP-svg-external-resources.md. No existing issue found (JIRA searched 2026-10-24 through the REST
+API for "ExternalResourceSecurity" and "checkLoadExternalResource", 0 issues each, and "svg external resource" and
+"svg file local", whose 4 and 12 hits are resource bundles, base URIs, AFP resources and the image cache; to search
+again before filing).
 
 Project:          FOP
 Issue Type:       Improvement
-Affects Version:  2.11 and main
+Affects Version:  2.12 (and main)
 Component:        svg
 
 Summary
 -------
-An SVG can read local files into the output; add an option restricting an SVG's external resources to data: URLs,
-and apply the user agent's rule in FOP's own image bridge
+An SVG can read local files into the output; add an option restricting an SVG's external resources to data: URLs
 
 Description
 -----------
 Batik admits an SVG's external resources (image, use, tref, @font-face sources, stylesheets) through the user agent's
 getExternalResourceSecurity. FOP's user agents (SimpleSVGUserAgent, SVGUserAgent, the transcoders') keep
 UserAgentAdapter's default, DefaultExternalResourceSecurity: a resource is admitted when its host equals the
-document's host, and a file: URL has a null host on both sides. The document URL of an fo:instream-foreign-object is
-the FO's base URI, and of an external SVG graphic the file's own URI, so for a document laid out from a file base URI,
-the command line's case, an SVG may name any file on the machine:
+document's host, and a file: URL has a null host on both sides. Batik 1.20 adds a check that the protocols match,
+which a file: resource beside a file: document passes. The document URL of an fo:instream-foreign-object is the FO's
+base URI, and of an external SVG graphic the file's own URI, so for a document laid out from a file base URI, the
+command line's case, an SVG may name any file on the machine:
 
     <use xlink:href="file:///home/user/private.svg#g"/>
     <image xlink:href="file:///home/user/photo.png"/>
     <text><tref xlink:href="file:///home/user/private.svg#t"/></text>
 
-and the fragment, the picture and the text are drawn into the PDF. Measured on main (the fork at 2.11 plus main at
-c2d7e0aca) with a probe FO: all three drawn, inline and as an external graphic; with an http: base URI Batik refuses
-them. Apache POI had the same shape in its SVGUserAgent and fixed it in apache/poi#1452 (2026-10-20) by returning
-EmbededExternalResourceSecurity, data: URLs only.
-
-A second cause is FOP's own: AbstractFOPImageElementBridge.createImageGraphicsNode (the image bridge of
-PDFBridgeContext, PSBridgeContext and the generic one) loads the picture through the image manager and never calls
-userAgent.checkLoadExternalResource, which Batik's SVGImageElementBridge calls before loading. So on the PDF and
-PostScript paths an SVG image is admitted whatever rule the user agent has, and whatever the document URL.
+and the fragment, the picture and the text are drawn into the PDF. Measured with a probe FO carrying those three
+references, in an inline SVG and in an external one, on FOP 2.12 as released (fop-2.12-bin, Batik 1.20) and on main
+at 1301bcf74: from a file: base URI, all three are drawn, inline and as an external graphic. From an http: base
+URI, Batik refuses them. Apache POI had the same shape in its SVGUserAgent and fixed it in apache/poi#1452
+(2026-10-20) by returning EmbededExternalResourceSecurity, data: URLs only.
 
 The FO's own URLs (external-graphic, basic-link) go through FOP's ResourceResolver, which a deployment restricts;
 Batik's loads do not.
@@ -50,11 +52,10 @@ Proposed change (pull request to follow)
    project to decide.
 2. SimpleSVGUserAgent.setEmbeddedResourcesOnly(boolean): when set, getExternalResourceSecurity returns
    EmbededExternalResourceSecurity(resourceURL). SVGUserAgent sets it from the FOUserAgent; ImageConverterSVG2G2D sets
-   it from the FopFactory behind the image session context in its hints.
-3. AbstractFOPImageElementBridge calls checkLoadExternalResource(purl, docURL) before loading and throws
-   BridgeException(ERR_URI_UNSECURE) on refusal, as Batik's bridge does. This applies under the default rule too: a
-   picture Batik would refuse (a file: picture in an http: document) is now refused by FOP's bridge as well.
-4. The transcoders keep Batik's rule and their KEY_ALLOW_EXTERNAL_RESOURCES hint.
+   it from the FopFactory behind the image session context in its hints. Batik's own bridges then refuse anything
+   but data: (its SVGImageElementBridge asks the user agent in buildImageGraphicsNode, before FOP's image bridges
+   take over in createImageGraphicsNode).
+3. The transcoders keep Batik's rule and their KEY_ALLOW_EXTERNAL_RESOURCES hint.
 
 A refused resource surfaces as the existing svgNotBuilt event; the graphic is not drawn, the page is.
 
@@ -67,18 +68,16 @@ option off (the default upstream).
 
 PULL REQUEST description (../fop-upstream-prs/, titled when the number exists)
 ------------------------------------------------------------------------------
-TITLE: FOP-####: option svg-embedded-resources-only, and the user agent's external-resource rule applied in FOP's
-image bridge
+TITLE: FOP-####: option svg-embedded-resources-only, an SVG's external resources restricted to data: URLs
 
 Fixes [FOP-####](https://issues.apache.org/jira/browse/FOP-####).
 
 Batik admits an SVG's external resources (`image`, `use`, `tref`, fonts, stylesheets) through the user agent's
-`getExternalResourceSecurity`; FOP's user agents keep Batik's default, same host as the document, and a `file:` URL
-has no host on either side. So for a document laid out from a file base URI, the command line's case, an inline or
-external SVG may `use`, `tref` or `image` any file on the machine into the output. FOP's own image bridge,
-`AbstractFOPImageElementBridge`, loads through the image manager and never asks the user agent at all, so on the PDF
-and PostScript paths an SVG `image` was admitted whatever the rule. Apache POI fixed the same shape in its
-`SVGUserAgent` (apache/poi#1452).
+`getExternalResourceSecurity`; FOP's user agents keep Batik's default, same host as the document (and, from Batik
+1.20, the same protocol), and a `file:` URL has no host on either side. So for a document laid out from a file base
+URI, the command line's case, an inline or external SVG may `use`, `tref` or `image` any file on the machine into
+the output: measured on 2.12 and on `main`. Apache POI fixed the same shape in its `SVGUserAgent`
+(apache/poi#1452).
 
 **The change.**
 - Option `svg-embedded-resources-only` (`FopFactoryConfig`, `FopFactoryBuilder`, `FopConfParser`, `FopFactory`,
@@ -86,9 +85,6 @@ and PostScript paths an SVG `image` was admitted whatever the rule. Apache POI f
 - `SimpleSVGUserAgent.setEmbeddedResourcesOnly(boolean)`: when set, `getExternalResourceSecurity` returns Batik's
   `EmbededExternalResourceSecurity`, `data:` URLs only. `SVGUserAgent` takes it from the `FOUserAgent`;
   `ImageConverterSVG2G2D` from the `FopFactory` behind the image session context in its hints.
-- `AbstractFOPImageElementBridge.createImageGraphicsNode` calls `checkLoadExternalResource(purl, docURL)` before
-  loading and throws `BridgeException(ERR_URI_UNSECURE)` on refusal, exactly as `SVGImageElementBridge` does. Under
-  the default rule this refuses only what Batik's own bridge already refuses.
 - The transcoders keep Batik's rule and `KEY_ALLOW_EXTERNAL_RESOURCES`.
 
 A refused resource is the existing `svgNotBuilt` event; the graphic is not drawn, the page is.
@@ -98,6 +94,7 @@ points, five inline SVGs and the same five as external graphics (a rectangle, a 
 fragment, a `file:` image, a `use` of another file's fragment), rendered to PDF (read back with PDFBox's renderer)
 and to PNG, each row's centre pixel read. With the option on, the two file rows are blank in both outputs and four
 `svgNotBuilt` events are raised on the PDF path; with it off, all ten are drawn and no event is raised. A fifth
-test checks the user agent alone. With the change, the fop-core suite passes and checkstyle reports 0 violations.
+test checks the user agent alone. With the change, the fop-core suite passes and checkstyle reports 0 violations
+[counts to be re-measured on the rebased branch before posting].
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

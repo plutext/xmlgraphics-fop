@@ -7,7 +7,9 @@ on by default in the fork, the twenty-seventh capability. Test `SVGExternalResou
 2026-10-29 (§8). MERGED 2026-10-29 to `2.11-docx4j.8` on Jason's word, by a merge commit (1cdf26fab) since `.8` already
 carried `fop/CR-029`; full suite on the merged tree 3934/0, CI's command clean; RELEASED in `2.11-docx4j.8` (Maven
 Central 2026-10-30, version commit b7f6ad8bf; `docs/release-notes/2.11-docx4j.8.md`); the merged tree's jar r49 at `~/fop-renderers/r49-merge-CR-028-1cdf26fab/`
-(sha256 eee3cba6...) gated PASS b288 against b286 (0 movers, events equal, 27 hooks), the fork's baseline for later gates. JIRA and pull request drafted, not filed (§7). Registry key `fop/CR-028`. Not an Enterprise CR-001 §6.6
+(sha256 eee3cba6...) gated PASS b288 against b286 (0 movers, events equal, 27 hooks), the fork's baseline for later gates. JIRA and pull request drafted, not filed (§7).
+2026-11-01: re-measured on Apache FOP 2.12 and `main` 1301bcf74, the hole unchanged; §2's "second cause" RETRACTED
+(§2.1). Registry key `fop/CR-028`. Not an Enterprise CR-001 §6.6
 item: nothing in Word's layout is involved.
 
 ## 1. The exposure
@@ -50,7 +52,36 @@ A second cause, FOP's own: `AbstractFOPImageElementBridge.createImageGraphicsNod
 `PDFBridgeContext`, `PSBridgeContext`, `GenericFOPBridgeContext`) loads the picture through FOP's image manager and
 never calls `checkLoadExternalResource`, which Batik's own `SVGImageElementBridge` calls first; only its fallback to
 the superclass does. So on the PDF and PostScript paths an SVG `image` was admitted whatever the user agent's rule,
-and whatever the document URL.
+and whatever the document URL. **WRONG, retracted 2026-11-01 (§2.1)**: Batik's bridge asks before FOP's override is
+reached.
+
+### 2.1 Re-measured on Apache FOP 2.12, and a retraction (2026-11-01)
+
+Re-measured for the JIRA draft after Apache released 2.12 with Batik 1.20, whose `DefaultExternalResourceSecurity`
+adds a check that the resource's protocol is the document's. Run on Apache's own binary distribution
+(`fop-2.12-bin.tar.gz`, sha512 checked against Apache's) and on Apache `main` at 1301bcf74 (built in
+`../fop-upstream-wt`, Batik 1.19.0-SNAPSHOT), with the probe of §2 (`~/fop-session-tools/2026-10-24-cr028-svg-probe/`):
+
+| base URI | Apache FOP 2.12 | `main` 1301bcf74 |
+|---|---|---|
+| the FO's directory (`file:`) | inline and external: `USEFRAG` (the `use`), `TREFTEXT` (the `tref`), four pictures (the `file:` one and the `data:` one in each) | the same |
+| `http://example.invalid/doc/` | the inline SVG refused at the `use`, `svgNotBuilt`; the external SVG not resolved | the same |
+
+So the hole is open in Apache FOP 2.12: a `file:` resource beside a `file:` document has the same protocol and the
+same null host, and Batik 1.20 admits it. The option keeps its purpose.
+
+The retraction. The claim above about `AbstractFOPImageElementBridge` was read from FOP's source and never
+measured on its own; the probe and §5's test refuse the picture through the user agent's rule however the bridge
+behaves. Batik's `SVGImageElementBridge.buildImageGraphicsNode` parses the URL, calls its private
+`checkLoadExternalResource(ctx, e, purl)`, which asks `UserAgent.checkLoadExternalResource(purl, docURL)`, and only
+then calls `createImageGraphicsNode`, the method FOP overrides. The bytecode is the same in Batik 1.19 and 1.20. An
+SVG holding only a `file:` picture (`<image xlink:href="file:///…/secret.png"/>`), laid out from an `http:` base URI
+to PDF, is refused with Batik's "uri.unsecure" `BridgeException` thrown from `buildImageGraphicsNode`. Nothing is
+drawn on Apache FOP 2.12, on `main`, and on r43, a pre-CR-028 fork jar on Batik 1.19 (scratch `cr028-imgonly/`). So
+FOP's bridge never admitted what the rule refuses. §3's bridge check adds nothing (the call is made twice, the second
+always passing) and is harmless; it stays in the fork rather than gate a no-op removal. It goes from the upstream
+pull request (§7). The `2.11-docx4j.8` release note and the README repeated the claim. The README is corrected, and
+the `2.12-docx4j.1` note carries the correction.
 
 docx4j's exposure today: none found by the docx4j session. docx4j never hands a document's own SVG to the renderer;
 the SVG it renders is its own (metafiles replayed as SVG with their bitmaps as `data:` URLs, charts). It becomes
@@ -74,7 +105,8 @@ One option, `svg-embedded-resources-only`, in the factory configuration like `ta
 - `AbstractFOPImageElementBridge.createImageGraphicsNode` calls `checkLoadExternalResource(purl, docURL)` before
   loading, exactly as Batik's bridge does, and throws Batik's `BridgeException` with `ERR_URI_UNSECURE` on refusal.
   This applies under either rule: with the option off, a `file:` picture in an SVG whose document has an `http:` URL
-  is now refused on the PDF path as Batik refuses it elsewhere.
+  is now refused on the PDF path as Batik refuses it elsewhere. (Redundant, 2026-11-01: Batik's
+  `buildImageGraphicsNode` has already refused it by then, §2.1.)
 - `PreloaderSVG`'s user agent only sizes the document; no resource is loaded through it, so it is left.
 - The transcoders are left on Batik's rule and hint: their input is an SVG file whose relative pictures are the
   normal case, and docx4j does not use them. Recorded as open.
@@ -130,11 +162,12 @@ the next released fork version, `2.11-docx4j.8`.
 ## 7. Upstream
 
 The same code with the default off, so that Apache FOP's behaviour is unchanged until a user opts in; whether a
-later major release should turn it on is Apache's call and the JIRA says so. The `image` bridge check applies under
-the default too, which is the one behaviour change: a picture Batik's own bridge would refuse (a `file:` picture in an
-`http:` document) is now refused by FOP's bridge as well. JIRA text and pull request description in
-`docs/upstream/svg-external-resources.txt`, to be filed on Jason's word; the upstream branch is cut against Apache
-`main` in `../fop-upstream-wt` when the number exists.
+later major release should turn it on is Apache's call and the JIRA says so. The `image` bridge check was
+described as the one behaviour change under the default; it is none (§2.1), and it goes from the pull request: the
+JIRA draft was rewritten on 2026-11-01 without it, and the upstream branch `FOP-svg-external-resources` (b6bfdc227,
+local, against `main` 7b96ab1a4) still carries the hunk, to be dropped and the branch re-checked on current `main`
+before it is pushed. JIRA text and pull request description in `docs/upstream/svg-external-resources.txt`, to be
+filed on Jason's word, publicly or to security@apache.org as he decides; the branch is renamed when the number exists.
 
 ## 8. Gate (the docx4j session)
 
