@@ -80,6 +80,22 @@ release, so "derived from Apache FOP 2.12" is exact, and nothing past it is need
   with `FopCapabilitiesTest`. That is the docx4j session's change. The warning is the only effect on a docx4j built
   for `2.11`, as far as the code shows: its layout managers subclass internals that 2.12 leaves as c2d7e0aca had them,
   which `.7` and `.8` already ship. The gate is what establishes it.
+- **docx4j's move, done 2026-11-01 on Jason's order** (the docx4j session; docx4j 27bf221d4 and 3b2e597b0, local and
+  unpushed until `2.12-docx4j.1` is on Central and its pom drops -SNAPSHOT): `fo.renderer.version`
+  `2.12-docx4j.1-SNAPSHOT`, `-Papache-fop` on Apache FOP 2.12, Batik 1.20 and commons 2.12, `BUILT_FOR_LINE = "2.12"`
+  (a FOP of another line warns, not refused, `aFopOfAnotherLineIsWarnedAbout`). Two findings there:
+  - Batik 1.20 brings `xml-apis-ext` (the `org.w3c.dom.svg` interfaces) only through `batik-css` and `batik-parser`.
+    Past docx4j's exclusions it no longer arrived, and every SVG failed with
+    `NoClassDefFoundError: org/w3c/dom/svg/SVGDocument` (13 export-fo-tests errors). `docx4j-export-fo` now declares
+    `xml-apis-ext` 1.3.04 itself. The fork's own dependency tree still has it (through `batik-css`, in r50's
+    `deps-runtime.txt`), so nothing changes here; the release note warns consumers who exclude.
+  - docx4j's `LBP` called `Leader.setRuleStyle(int)` directly, which does not compile against Apache FOP 2.12, where
+    FOP-3325 (CR-009 §3.2) is released. It now calls it by reflection everywhere and no longer branches on
+    `rule-style-int`. The fork keeps the member and the capability: a name is never removed while its hook exists.
+  - Tests: on the fork (built from bb92342d3, classes identical to r50) core-tests 2340/0, export-fo 247/0,
+    export-fo-tests 865/0 (9 skipped), digsig 138/0, both bundles built; on Apache FOP 2.12 export-fo 247/0 and
+    export-fo-tests 865/0. Gate b299 (that docx4j on r50) against b293: one mover, 5361's clock, events equal.
+    b299 is the 2.12 line's baseline (register 7684ccb); the Central jars are gated against it.
 - **`2.11-docx4j.9`** (cut 2026-10-30 from `.8`'s version commit, pushed, CI green, nothing on it but docs) never
   ships, like `.3`. Leave it alone; CI's list keeps it.
 - **NOTICE** (the root file, packaged into each jar as `META-INF/NOTICE`) says "derived from Apache FOP 2.12" and
