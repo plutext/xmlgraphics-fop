@@ -18,14 +18,14 @@
 <project basedir="." name="fop">
 
   <property name="name" value="fop"/>
-  <property name="version" value="2.11"/>
+  <property name="version" value="2.12"/>
   <property name="dist.bin.dir" value="${basedir}/dist-bin"/>
   <property name="dist.src.dir" value="${basedir}/dist-src"/>
   <property name="dist.bin.result.dir" value="${dist.bin.dir}/${name}-${version}"/>
   <property name="dist.src.result.dir" value="${dist.src.dir}/${name}-${version}"/>
   
   <property name="build.dir" value="${basedir}/build"/>
-  <property name="build.javadocs.dir" value="${basedir}/../fop-core/target/site/apidocs"/>
+  <property name="build.javadocs.dir" value="${basedir}/../fop-core/target/reports/apidocs"/>
 
   <fileset dir="${basedir}/.." id="dist.bin">
     <include name="KEYS"/>

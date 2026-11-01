@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: Apache main's FOP-3304 expectation (the pdfaExtension prefix) left out, as it comes from
- * an xmlgraphics-commons no release has (fop/CR-009). See README.md, "Changes from Apache FOP 2.11". */
-
 /* $Id$ */
 
 package org.apache.fop.render.pdf;
@@ -181,7 +177,7 @@ public class PDFAMetadataTestCase {
         Metadata meta = PDFMetadata.createXMPFromPDFDocument(doc);
 
         XMPProperty schemas = meta.getProperty(XMPConstants.PDF_A_EXTENSION, "schemas");
-        assertProperties(schemas, XMPConstants.PDF_A_EXTENSION, "schemas", null, null);
+        assertProperties(schemas, XMPConstants.PDF_A_EXTENSION, "schemas", "pdfaExtension", null);
         assertNotNull("When PDF/A and PDF/UA are both active, we need to add an "
                 + "extension element to avoid validation errors from PDF/A validators", schemas);
 

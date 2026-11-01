@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: Apache main's FOP-3311 and FOP-3326 left out, as they need xmlgraphics-commons API no
- * release has (fop/CR-009). See README.md, "Changes from Apache FOP 2.11". */
-
 /* $Id$ */
 
 package org.apache.fop.render.ps;
@@ -121,5 +117,9 @@ public class ImageEncoderPNG implements ImageEncoder {
         filter += " /Colors " + (numberOfInterleavedComponents > 2 ? 3 : 1);
         filter += " /BitsPerComponent " + image.getBitDepth() + " >> /FlateDecode";
         return filter;
+    }
+
+    public String getAdditionalFilter() {
+        return "";
     }
 }

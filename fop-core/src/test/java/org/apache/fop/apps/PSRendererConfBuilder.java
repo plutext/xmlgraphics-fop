@@ -15,17 +15,15 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: Apache main's FOP-3311 and FOP-3326 left out, as they need xmlgraphics-commons API no
- * release has (fop/CR-009). See README.md, "Changes from Apache FOP 2.11". */
-
 /* $Id$ */
 
 package org.apache.fop.apps;
 
 import org.apache.fop.apps.FopConfBuilder.RendererConfBuilder;
 import static org.apache.fop.render.ps.PSRendererOption.AUTO_ROTATE_LANDSCAPE;
+import static org.apache.fop.render.ps.PSRendererOption.COMPRESS_STREAMS;
 import static org.apache.fop.render.ps.PSRendererOption.DSC_COMPLIANT;
+import static org.apache.fop.render.ps.PSRendererOption.JPEG_COMPRESSION;
 import static org.apache.fop.render.ps.PSRendererOption.LANGUAGE_LEVEL;
 import static org.apache.fop.render.ps.PSRendererOption.OPTIMIZE_RESOURCES;
 import static org.apache.fop.render.ps.PSRendererOption.SAFE_SET_PAGE_DEVICE;
@@ -61,6 +59,16 @@ public final class PSRendererConfBuilder extends RendererConfBuilder {
 
     public PSRendererConfBuilder setOptimizeResources(boolean value) {
         createTextElement(OPTIMIZE_RESOURCES, String.valueOf(value));
+        return this;
+    }
+
+    public PSRendererConfBuilder setJPEGCompression(String jpegCompression) {
+        createTextElement(JPEG_COMPRESSION, jpegCompression);
+        return this;
+    }
+
+    public PSRendererConfBuilder setCompressStream(boolean value) {
+        createTextElement(COMPRESS_STREAMS, String.valueOf(value));
         return this;
     }
 }

@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: Apache main's FOP-3311 and FOP-3326 left out, as they need xmlgraphics-commons API no
- * release has (fop/CR-009). See README.md, "Changes from Apache FOP 2.11". */
-
 /* $Id$ */
 
 package org.apache.fop.render.ps;
@@ -42,6 +38,8 @@ public enum PSRendererOption implements RendererConfigOption {
     /** Indicates whether the PostScript output should be DSC compliant, default: true*/
     DSC_COMPLIANT("dsc-compliant", true),
     RENDERING_MODE("rendering", PSRenderingMode.QUALITY),
+    JPEG_COMPRESSION("jpeg-compression", null),
+    COMPRESS_STREAMS("compress-streams", false),
     ACROBAT_DOWNSAMPLE("acrobat-downsample", false);
 
     private final String name;

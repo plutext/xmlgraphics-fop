@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: Apache main's FOP-3311 and FOP-3326 left out, as they need xmlgraphics-commons API no
- * release has (fop/CR-009). See README.md, "Changes from Apache FOP 2.11". */
-
 /* $Id$ */
 
 package org.apache.fop.render.ps;
@@ -41,7 +37,9 @@ import org.apache.fop.render.RendererConfig;
 import org.apache.fop.util.LogUtil;
 import static org.apache.fop.render.ps.PSRendererOption.ACROBAT_DOWNSAMPLE;
 import static org.apache.fop.render.ps.PSRendererOption.AUTO_ROTATE_LANDSCAPE;
+import static org.apache.fop.render.ps.PSRendererOption.COMPRESS_STREAMS;
 import static org.apache.fop.render.ps.PSRendererOption.DSC_COMPLIANT;
+import static org.apache.fop.render.ps.PSRendererOption.JPEG_COMPRESSION;
 import static org.apache.fop.render.ps.PSRendererOption.LANGUAGE_LEVEL;
 import static org.apache.fop.render.ps.PSRendererOption.OPTIMIZE_RESOURCES;
 import static org.apache.fop.render.ps.PSRendererOption.RENDERING_MODE;
@@ -93,6 +91,14 @@ public final class PSRendererConfig implements RendererConfig {
         return (Boolean) params.get(ACROBAT_DOWNSAMPLE);
     }
 
+    public Boolean isCompressStreams() {
+        return (Boolean) params.get(COMPRESS_STREAMS);
+    }
+
+    public String getJPEGCompressionRatio() {
+        return (String) params.get(JPEG_COMPRESSION);
+    }
+
     /**
      * The PostScript renderer configuration data parser.
      */
@@ -133,6 +139,7 @@ public final class PSRendererConfig implements RendererConfig {
                 setBoolConfigParam(cfg, SAFE_SET_PAGE_DEVICE);
                 setBoolConfigParam(cfg, DSC_COMPLIANT);
                 setBoolConfigParam(cfg, ACROBAT_DOWNSAMPLE);
+                setBoolConfigParam(cfg, COMPRESS_STREAMS);
                 Configuration child = cfg.getChild("rendering");
                 if (child != null) {
                     config.params.put(RENDERING_MODE,
@@ -140,6 +147,9 @@ public final class PSRendererConfig implements RendererConfig {
                                                    RENDERING_MODE.getDefaultValue().toString())
                                                 .toUpperCase(Locale.ENGLISH)));
                 }
+                setConfigParameter(JPEG_COMPRESSION,
+                        cfg.getChild(JPEG_COMPRESSION.getName())
+                                .getValue((String) JPEG_COMPRESSION.getDefaultValue()));
             }
         }
 

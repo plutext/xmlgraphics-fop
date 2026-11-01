@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: Apache main's FOP-3311 and FOP-3326 left out, as they need xmlgraphics-commons API no
- * release has (fop/CR-009). See README.md, "Changes from Apache FOP 2.11". */
-
 /* $Id$ */
 
 package org.apache.fop.render.ps;
@@ -38,6 +34,7 @@ import org.apache.fop.render.ps.extensions.PSExtensionAttachment;
 import org.apache.fop.render.ps.extensions.PSSetupCode;
 import static org.apache.fop.render.ps.PSRendererOption.ACROBAT_DOWNSAMPLE;
 import static org.apache.fop.render.ps.PSRendererOption.AUTO_ROTATE_LANDSCAPE;
+import static org.apache.fop.render.ps.PSRendererOption.JPEG_COMPRESSION;
 import static org.apache.fop.render.ps.PSRendererOption.LANGUAGE_LEVEL;
 import static org.apache.fop.render.ps.PSRendererOption.OPTIMIZE_RESOURCES;
 
@@ -61,6 +58,8 @@ public class PSRenderingUtil {
     private boolean autoRotateLandscape;
     private int languageLevel = PSGenerator.DEFAULT_LANGUAGE_LEVEL;
     private boolean acrobatDownsample;
+    private boolean compressStreams;
+    private String jpegCompressionRatio;
 
     /** Determines whether the PS file is generated in two passes to minimize file size */
     private boolean optimizeResources;
@@ -94,6 +93,10 @@ public class PSRenderingUtil {
         obj = userAgent.getRendererOptions().get(ACROBAT_DOWNSAMPLE.getName());
         if (obj != null) {
             setAcrobatDownsample(booleanValueOf(obj));
+        }
+        obj = userAgent.getRendererOptions().get(JPEG_COMPRESSION.getName());
+        if (obj != null) {
+            setJPEGCompressionRatio((String) obj);
         }
     }
 
@@ -296,6 +299,25 @@ public class PSRenderingUtil {
 
     public boolean isAcrobatDownsample() {
         return acrobatDownsample;
+    }
+
+    public void setJPEGCompressionRatio(String jpegCompressionRatio) {
+        this.jpegCompressionRatio = jpegCompressionRatio;
+    }
+
+    public String getJPEGCompressionRatio() {
+        return jpegCompressionRatio;
+    }
+
+    public void setCompressStreams(boolean b) {
+        compressStreams = b;
+        if (b && !optimizeResources) {
+            throw new UnsupportedOperationException("compress-streams requires optimize-resources in fop.xconf");
+        }
+    }
+
+    public boolean isCompressStreams() {
+        return compressStreams;
     }
 
     /**

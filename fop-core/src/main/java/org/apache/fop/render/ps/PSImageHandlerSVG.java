@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 
-/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
- * from Apache FOP 2.11: Apache main's FOP-3311 and FOP-3326 left out, as they need xmlgraphics-commons API no
- * release has (fop/CR-009). See README.md, "Changes from Apache FOP 2.11". */
-
 /* $Id$ */
 
 package org.apache.fop.render.ps;
@@ -98,7 +94,7 @@ public class PSImageHandlerSVG implements ImageHandler {
 
             MaskedImage mi = convertToRGB(ImageIO.read(is));
             BufferedImage ri = mi.getImage();
-            ImageEncoder encoder = ImageEncodingHelper.createRenderedImageEncoder(ri);
+            ImageEncoder encoder = ImageEncodingHelper.createRenderedImageEncoder(ri, gen.getJPEGCompressionRatio());
             Dimension imgDim = new Dimension(ri.getWidth(), ri.getHeight());
             String imgDescription = ri.getClass().getName();
             ImageEncodingHelper helper = new ImageEncodingHelper(ri);
