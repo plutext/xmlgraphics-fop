@@ -1,7 +1,7 @@
 # CR-030: Apache FOP 2.12, and the `2.12-docx4j` line
 
-Status: BUILT 2026-11-01 on Jason's word ("start 2.12-docx4j.1"), not yet gated, unreleased, local until Jason
-pushes. Branch `2.12-docx4j.1`, cut from `2.11-docx4j.9` at cc98fa4c0; the merge of Apache's `fop-2_12` at 69e912b39
+Status: BUILT 2026-11-01 on Jason's word ("start 2.12-docx4j.1"), gated PASS the same day (b298 on r50, §6),
+unreleased, local until Jason pushes. Branch `2.12-docx4j.1`, cut from `2.11-docx4j.9` at cc98fa4c0; the merge of Apache's `fop-2_12` at 69e912b39
 is 263be37e7; the line commit follows it, after CR-028's re-measurement (d90c25b07). CI's command green (§6). Registry key `fop/CR-030`. The earlier merges are
 `fop/CR-009` (`main` at ab5d6eba6) and `fop/CR-027` (`main` at c2d7e0aca); this one takes Apache's 2.12 release.
 
@@ -108,6 +108,16 @@ release, so "derived from Apache FOP 2.12" is exact, and nothing past it is need
   2.12 dependencies, Batik 1.20 and xmlgraphics-commons 2.12, not 1.19 and 2.11. The core jar alone on `.8`'s
   classpath would leave the PostScript classes linking against the wrong commons, and would not measure Batik 1.20.
   The `FopCapabilities` line warning is expected until docx4j moves `BUILT_FOR_LINE`.
+- **PASS 2026-11-01** (the docx4j session; Enterprise attempts.md 3c6dc9b): b298, the r50 jars (sha256 checked) on
+  b297's classpath with all nineteen Batik jars at 1.20 and xmlgraphics-commons 2.12, no 1.19 or 2.11 jar left,
+  against b297. b297 is b294's jars rescored with docx4j's harness date fix c1e83f95c, and has 0 movers against b295.
+  Result: 0 movers on real, real2, real3, real-c2 and the probes; every scoreboard and `classes.txt` identical; every
+  event count equal per document (totals linebig 3241, line 17612, clip 1552, bcov 1273, bcovi 514, region 73, body
+  19, glyph 63, font 8, other 87). The renderer line: "docx4j-fo-renderer 2.12-docx4j.1-SNAPSHOT", 27 hooks, `.8`'s
+  list; the line warning once per JVM. Against b294 itself, one mover, 5361 +4: b294's rendering date, which its old
+  harness misread, not the renderer. b298 on r50 is the fork's baseline for later gates. The script is
+  `~/fidelity-cr030/gate-b297-b298.sh`, the classpath `~/fidelity-cr030/cp-b298-r50.txt`. docx4j stays on `.8`
+  until Jason orders the move, which brings `BUILT_FOR_LINE = "2.12"` and a gate of the Central release.
 
 ## 7. Upstream
 

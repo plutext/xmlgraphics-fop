@@ -212,9 +212,10 @@ Last updated 2026-11-01. **Work is on `2.12-docx4j.1` (snapshot `2.12-docx4j.1-S
 (`docs/developer/change-requests/CR-030-apache-fop-2.12.md`) records it. Pins are Apache 2.12's: Batik 1.20,
 xmlgraphics-commons 2.12, ant 1.10.18, bouncycastle 1.86 (`jdk15to18`, provided). CR-009's three commons
 workarounds are undone (the FOP-3311 and FOP-3326 reverts and d9f000cdc's PDF/A test expectation): fifteen files are
-Apache's again. CI's command green on JDK 21: 3936/0, 4 skipped, checkstyle 0, spotbugs 0. Not gated yet: r50 to the
-docx4j session, which must run with Batik 1.20 and commons 2.12 and must move `FopCapabilities.BUILT_FOR_LINE` to
-`"2.12"` in the docx4j release that takes it. `2.11-docx4j.9` never ships. Everything is local until Jason pushes
+Apache's again. CI's command green on JDK 21: 3936/0, 4 skipped, checkstyle 0, spotbugs 0. GATED PASS: b298 on r50
+(`~/fop-renderers/r50-CR-030-bb92342d3/`) against b297, run with Batik 1.20 and commons 2.12: 0 movers, events equal, 27
+hooks; b298 on r50 is the baseline for later gates. Registry `fop/CR-030` in_progress (portfolio 5b9c9dc). docx4j stays on
+`.8` until Jason orders the move, which brings `FopCapabilities.BUILT_FOR_LINE = "2.12"`. `2.11-docx4j.9` never ships. Everything is local until Jason pushes
 `2.12-docx4j.1` (and `.9`'s two docs commits, da6c8a00a and cc98fa4c0, which it carries). Release note draft
 `docs/release-notes/2.12-docx4j.1.md`. **CR-028 retraction, found re-measuring for the JIRA draft on Apache FOP 2.12
 (its binary, Batik 1.20) and `main` 1301bcf74:** the hole stands (from a file base URI the `use` fragment, `tref` text and
