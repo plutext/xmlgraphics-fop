@@ -39,7 +39,7 @@ import java.util.Set;
 public final class Docx4jFop {
 
     /** The Apache FOP line this renderer is based on. */
-    public static final String APACHE_FOP_LINE = "2.11";
+    public static final String APACHE_FOP_LINE = "2.12";
 
     /** {@code LineBreakUtils.setLineBreakPairProperty}: one cell of the line-break pair table overridden. */
     public static final String PAIR_TABLE = "pair-table";
@@ -301,8 +301,8 @@ public final class Docx4jFop {
     }
 
     /**
-     * The renderer's version, e.g. {@code 2.11-docx4j.1}, from the jar manifest, or
-     * {@code 2.11-docx4j.development} when the classes are not loaded from the built jar.
+     * The renderer's version, e.g. {@code 2.12-docx4j.1}, from the jar manifest, or
+     * {@code 2.12-docx4j.development} when the classes are not loaded from the built jar.
      * @return the version string
      */
     public static String version() {

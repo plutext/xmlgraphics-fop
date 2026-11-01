@@ -1,17 +1,16 @@
 # docx4j FO renderer (`docx4j-fo-renderer`)
 
-> This is a modified distribution derived from Apache FOP: from its `main`
-> branch after the 2.11 release (Apache's own version there is still
-> 2.11.0-SNAPSHOT). It is maintained by Plutext/docx4j and is not an Apache
+> This is a modified distribution derived from Apache FOP: from its 2.12
+> release. It is maintained by Plutext/docx4j and is not an Apache
 > Software Foundation release. Apache FOP is a trademark of the Apache Software
 > Foundation.
 
-This branch (`2.11-docx4j.9`) is an upstream-tracking fork of
+This branch (`2.12-docx4j.1`) is an upstream-tracking fork of
 [Apache FOP](https://xmlgraphics.apache.org/fop/), the XSL-FO formatter
 [docx4j](https://www.docx4java.org/) uses for docx to PDF. It exists so that
 docx4j's Word-layout-fidelity work can change FOP where reflection or
 subclassing cannot reach, with every general fix sent upstream and the fork
-degrading gracefully: `docx4j-export-fo` runs on Apache FOP 2.11 too, with the
+degrading gracefully: `docx4j-export-fo` runs on Apache FOP of the same line too, with the
 rules that need a fork-only hook switched off. The design is docx4j's
 [CR-020](https://github.com/plutext/docx4j/blob/VERSION_17_1_1/docs/developer/change-requests/CR-020-fo-renderer-fork.md).
 
@@ -22,7 +21,7 @@ when they are.
 
 ## Coordinates
 
-| Apache FOP 2.11                        | this fork (`org.docx4j`)        |
+| Apache FOP 2.12                        | this fork (`org.docx4j`)        |
 |----------------------------------------|---------------------------------|
 | `org.apache.xmlgraphics:fop-parent`    | `docx4j-fo-renderer-parent`     |
 | `org.apache.xmlgraphics:fop`           | `docx4j-fo-renderer`            |
@@ -30,13 +29,14 @@ when they are.
 | `org.apache.xmlgraphics:fop-events`    | `docx4j-fo-renderer-events`     |
 | `org.apache.xmlgraphics:fop-util`      | `docx4j-fo-renderer-util`       |
 
-Versions are `2.11-docx4j.N`: the Apache FOP line first, the fork's release
-after. Up to `2.11-docx4j.2` the base was the 2.11 release. From `2.11-docx4j.4` it is Apache's `main`
-after 2.11, merged at ab5d6eba6 (2026-09-29) and again at c2d7e0aca (2026-10-08, `fop/CR-027`), which Apache
-itself still versions `2.11.0-SNAPSHOT`. So
-the line stays `2.11`, and docx4j's line check (`FopCapabilities.BUILT_FOR_LINE`) still holds: docx4j
-17.3.0 runs on it, through the `rule-style-int` member below. `fop/CR-009` records the merge and the
-reasons for the name. The automatic module names are Apache's (`org.apache.xmlgraphics.fop.core`
+Versions are `<line>-docx4j.N`: the Apache FOP line first, the fork's release after. From `2.12-docx4j.1` the
+base is the Apache FOP 2.12 release (2026-10-20; its branch `fop-2_12` at 69e912b39, merged by `fop/CR-030`), with
+Batik 1.20 and xmlgraphics-commons 2.12, and the line is `2.12`. docx4j's line check (`FopCapabilities.BUILT_FOR_LINE`)
+must say `2.12` for it; a docx4j built for `2.11` warns at start-up. Before that, up to `2.11-docx4j.2` the base was
+the 2.11 release, and from `2.11-docx4j.4` to `2.11-docx4j.8` Apache's `main` after 2.11, merged at ab5d6eba6
+(2026-09-29) and at c2d7e0aca (2026-10-08, `fop/CR-027`), which Apache then versioned `2.11.0-SNAPSHOT`, so the line
+stayed `2.11` (`fop/CR-009` §6 gives the reasons; docx4j 17.3.0 ran on it through the `rule-style-int` member below).
+The automatic module names are Apache's (`org.apache.xmlgraphics.fop.core`
 and so on), for the same reason the packages are. `fop-sandbox`, `fop-servlet`
 and the transcoders are in the tree but not built.
 
@@ -44,10 +44,12 @@ Released: `2.11-docx4j.1` (2026-09-25), `2.11-docx4j.2` (2026-10-02), `2.11-docx
 `2.11-docx4j.5` (2026-10-07), `2.11-docx4j.6` (2026-10-09), `2.11-docx4j.7` (2026-10-16) and `2.11-docx4j.8`
 (2026-10-30), all on Maven Central, tagged `v2.11-docx4j.N` here; `docs/release-notes/` says what each contains. There
 is no `2.11-docx4j.3`: its branch, 2.11 plus `fop/CR-008`, was never released, and its content shipped in
-`.4`. Between releases the fork is consumed as a locally installed snapshot (`mvn install -DskipTests`
-here, then `-Pfo-renderer-fork` in docx4j), currently `2.11-docx4j.9-SNAPSHOT`. docx4j 17.3.1 (2026-10-07) depends on
+`.4`. Nor a `2.11-docx4j.9`: its branch was cut after `.8` and gave way to `2.12-docx4j.1` before anything was
+ordered for it. Between releases the fork is consumed as a locally installed snapshot (`mvn install -DskipTests`
+here, then `-Pfo-renderer-fork` in docx4j), currently `2.12-docx4j.1-SNAPSHOT`. docx4j 17.3.1 (2026-10-07) depends on
 `2.11-docx4j.5`; docx4j 17.3.3 (in preparation, its `VERSION_17_3_3` branch at 0dd167d8e) on `2.11-docx4j.7`;
-17.3.0 depended on `2.11-docx4j.2`.
+docx4j 17.3.5 (in preparation, its `VERSION_17_3_5` branch at 9d6952973) on `2.11-docx4j.8`; 17.3.0 depended on
+`2.11-docx4j.2`.
 
 The marker class `org.apache.fop.docx4j.Docx4jFop` carries the version and the
 names of the hooks the fork has (`capabilities()`); docx4j reads it reflectively.
@@ -79,9 +81,12 @@ present is harmless, so list all four and stay correct if docx4j changes which i
 <dependency>
   <groupId>org.apache.xmlgraphics</groupId>
   <artifactId>fop</artifactId>
-  <version>2.11</version>
+  <version>2.12</version>
 </dependency>
 ```
+
+Take the Apache FOP release of the line your `docx4j-export-fo` was built for, the one its
+`FopCapabilities.BUILT_FOR_LINE` names: `2.11` up to docx4j 17.3.5.
 
 Check the result with `mvn dependency:tree`: no `org.docx4j:docx4j-fo-renderer*` should
 remain. Leaving one alongside Apache FOP is the hazard above, and which of the two wins is
@@ -89,9 +94,9 @@ then decided by classpath order.
 
 ## Changes from Apache FOP 2.11
 
-Since `2.11-docx4j.4` the comparison is with Apache's `main`, at ab5d6eba6 and from `2.11-docx4j.7` at c2d7e0aca
-(`fop/CR-027`), not with the 2.11 release; the
-heading keeps its name because every change notice cites it. Every modified file carries a change notice
+Since `2.12-docx4j.1` the comparison is with the Apache FOP 2.12 release (`fop-2_12` at 69e912b39, `fop/CR-030`);
+from `2.11-docx4j.4` to `.8` it was with Apache's `main`, at ab5d6eba6 and from `2.11-docx4j.7` at c2d7e0aca
+(`fop/CR-027`). The heading keeps its name because every change notice cites it. Every modified file carries a change notice
 under its licence header. Each change is either an upstream fix waiting to be released, a docx4j hook
 that FOP would not want, or an upstream commit left out; the table says which.
 
@@ -117,7 +122,7 @@ that FOP would not want, or an upstream commit left out; the table says which.
 | A TrueType or OpenType font's descender is not taken from an OS/2 `sTypoDescender` above the baseline, a sign error in the font: Wingdings 1 to 3, Lucida Sans, Lucida Fax and Lucida Sans Typewriter have +420 where their hhea descender is −432, and FOP took it, so a line in Wingdings came out about half the height Word gives it, with the glyphs higher. And `guessVerticalMetricsFromGlyphBBox` replaces a font's ascender and descender with the bounds of its `d` and `p` glyphs only when it found both: a font without them whose ascender and descender together exceed the em (Wingdings once its OS/2 values are refused, most Noto fonts for scripts other than Latin, MT Extra, Algerian) got an ascender and descender of 0. Capability `ascender-descender` (`fop/CR-015`, Enterprise CR-001 item 40) | `OpenFont` | [FOP-1896](https://issues.apache.org/jira/browse/FOP-1896), open since 2011, whose 2011 patch made the same two changes; comment posted 2026-10-05 (id 18123196, `docs/upstream/typo-descender.txt`); branch `FOP-1896`; [apache/xmlgraphics-fop#119](https://github.com/apache/xmlgraphics-fop/pull/119) open |
 | A precomposed letter that a font's substitutions split into its base and a combining mark, as Cambria Regular's `ccmp` does, publishes each piece for its glyph: the base its plain letter and the mark its combining character. `fop/CR-002` had given the base glyph the precomposed letter, so every plain use of that glyph read accented (a as à, α as ά), a regression from Apache FOP since 2.11-docx4j.2 (`fop/CR-016`, Enterprise CR-001 item 42) | `MultiByteFont` | A correction to FOP-3345, pushed to [apache/xmlgraphics-fop#116](https://github.com/apache/xmlgraphics-fop/pull/116) 2026-10-05 (696830652), with a comment there |
 | A side float ends at the break before the first line lying wholly below its foot: the space between two paragraphs is counted, where only a line box reaching the foot ended the float, so after a space that carried the next line below the float that line was still narrowed; and the space at the float's edge is kept, where it was discarded as at a page break (`space-after` of the paragraph beside the float, `space-before` of the one after it) (`fop/CR-020`, Enterprise CR-001 item 44) | `PageBreakingAlgorithm`, `PageBreaker`, `FlowLayoutManager`, `BlockStackingLayoutManager`, `BlockLayoutManager`, `LayoutContext` | [FOP-3355](https://issues.apache.org/jira/browse/FOP-3355) filed (`docs/upstream/float-edge-after-space.txt`); branch `FOP-3355`, stacked on `FOP-3354`; [apache/xmlgraphics-fop#124](https://github.com/apache/xmlgraphics-fop/pull/124) open |
-| A side float whose end falls inside a table ends at the first break after it, where the re-layout from a row threw `NoSuchElementException` in `LMiter.next` (a table's layout manager cannot be restarted; its rows share the width it set once, so nothing is drawn differently) (`fop/CR-020`, Enterprise CR-001 item 45, the signature of item 20) | `PageBreakingAlgorithm` | [FOP-3354](https://issues.apache.org/jira/browse/FOP-3354) filed (`docs/upstream/float-edge-inside-table.txt`); branch `FOP-3354`; [apache/xmlgraphics-fop#123](https://github.com/apache/xmlgraphics-fop/pull/123) open |
+| A side float whose end falls inside a table ends at the first break after it, where the re-layout from a row threw `NoSuchElementException` in `LMiter.next` (a table's layout manager cannot be restarted; its rows share the width it set once, so nothing is drawn differently) (`fop/CR-020`, Enterprise CR-001 item 45, the signature of item 20) | `PageBreakingAlgorithm` | [FOP-3354](https://issues.apache.org/jira/browse/FOP-3354) filed (`docs/upstream/float-edge-inside-table.txt`); branch `FOP-3354`; [apache/xmlgraphics-fop#123](https://github.com/apache/xmlgraphics-fop/pull/123) applied to Apache `main` 2026-10-09 (bed50fc76), after 2.12's branch was cut, so not in Apache FOP 2.12; the fork keeps its own |
 | A font entry with `simulate-style` synthesises a style per face, as Word does: an italic triplet is sheared only where the face's italic angle is 0, so an italic face declared for a bold italic is not slanted twice; a bold triplet is stroked only where the face's weight class is below 700; and the stroke is 1/35 em, Word's at every size, where FOP stroked a fixed 0.31543pt, Word's at 11.04pt only. Capability `simulate-style-per-face` (`fop/CR-021`, Enterprise CR-001 item 46) | `PDFPainter` | [FOP-3356](https://issues.apache.org/jira/browse/FOP-3356) filed (`docs/upstream/simulate-style-per-face.txt`); branch `FOP-3356`; [apache/xmlgraphics-fop#125](https://github.com/apache/xmlgraphics-fop/pull/125) merged to Apache `main` 2026-10-07 (c2d7e0aca); in the fork's base since `fop/CR-027` |
 | The `clear` property is honoured on a block-level FO (`fo:block`, `fo:block-container`, `fo:table`, `fo:list-block`) after a side float: an FO whose `clear` names the float's side ends the float at the break before it and is laid out at the float's foot, full width, where FOP reads `clear` on `fo:float` only and set the FO beside the float (a table drawn over a text box). Capability `clear-after-side-float` (`fop/CR-022`, CR-020 §7, Enterprise CR-001 item 45's text) | `PageBreakingAlgorithm`, `PageBreaker`, `AbstractBreaker`, `fo.flow.Block`, `BlockContainer`, `ListBlock`, `fo.flow.table.Table` | Not filed: an extension of XSL's `clear` to block-level FOs, as CSS has it; draft `docs/upstream/clear-after-side-float.txt`, Jason's call |
 | A side float's edge is taken at the break where it falls: the edge search had re-activated the node at an edge on a page within its adjustment range and walked on to the page's forced break (the "edge" then inside whatever was there), had never offered a break under a keep as the edge, and threw `NullPointerException` in `PageBreakingAlgorithm.handleFloat` when a deferred edge (the fix above) met a forced break inside a table. A table the page cannot hold now starts at the float's foot; a float that still cannot end is given up with a warning (`fop/CR-022` §3.5, corpus document 4083) | `PageBreakingAlgorithm` | Not filed yet; stacks on FOP-3355 and FOP-3354, where Apache `main` fails first on the same document |
@@ -128,7 +133,6 @@ that FOP would not want, or an upstream commit left out; the table says which.
 | `fox:wrap`, `fox:wrap-sides` and `fox:wrap-distances` on an absolutely positioned `fo:block-container`: the lines of the page the container lands on wrap around it, as around a side float whose area is already drawn. The container's layout manager registers an obstacle (its rectangle, grown by the four distances, page-relative for `fixed`, relative to the box that holds it for `absolute`) with the page-sequence's registry; the page breaker, meeting the box that holds it (a word processor's anchored object is a fixed container in a zero-height wrapper at its anchor paragraph's head), sets the band against the page's body and the part's column, narrows the column by the side rule (`left`, `right`; `largest` and, in phase A, `both` the wider side) as a float's intrusion adjustment does, and holds the intrusion pending from the band's top as an offset float's (`fop/CR-023`), so the start edge is the first legal break before a line would cross the top and the foot ends it as a float's foot does; `top-and-bottom` ends at its start edge with a clearance to the foot. A band that begins above the box, on the box's page, is honoured from its top: the breaking algorithm drops its active nodes and reads the page's elements again from its start node with the band pending (`BreakingAlgorithm.rewindRequested`, `removeAllNodes`), or, where the band covers the page's top, takes the page's start as the edge and begins the new page with the lines narrowed (CR-024 §10.1, §11.2); a band above the start of a list that began mid-page is honoured from that start. The page's obstacles are a set (`PageBreaker`): the lines at any height are narrowed by every obstacle whose band holds it, the foot of one is the start of the rest, an obstacle's top met while another is on is an event as a foot is (the lines change from the first line whose text crosses it), and the boxes of a list's first page are scanned for their obstacles before the page is walked (§11.8). A line is beside an obstacle, or a float, when its box as a word processor draws it, the leading above the text, crosses the band (Word's readings of the nine page-anchored picture probes, CR-024 §11.3): at the band's top the text's bottom edge, at the foot the pitch top less the half-leading below, both read from the next line's `LineBreakPosition`; a line whose box lies below the foot stays where it is, with no clearance. At the line boundaries orphans and widows keep, `LineLayoutManager` emits, in a page-sequence that carries an obstacle (`PageSequence.hasObstacles()`, marked by the container when bound), a break element of infinite penalty that only a pending obstacle's edge may use, so a band beginning inside a paragraph's first line is honoured from that line (§11.4); a container with no room on the side the rule names clears the column as top-and-bottom does, and a clearance runs over every consecutive clearing band as one, what is still beside the lines at its end taking over (§11.14); a clearing band that would push the box holding the obstacle past the page's foot makes the page break before the box instead, as CR-023 breaks before an anchor, and the obstacle is taken up on the page the box lands on (§11.5); the edge at a forced page break restarts at the block carrying the break, and a block read again after an edge serves no break-before again (`FlowLayoutManager`, with `FLOAT_RESTART`: served again it came back alone and the flow, finished from the first reading, lost the block's content under docx4j's managers, §11.6); a clearance to a foot belongs to the page the edge lies on, and a part that opens a new page drops it (§11.7, which guards `clear` at a page's foot too); a band whose top falls inside the first line after an edge is beside that line, read from the first box after the edge, and a clearing one extends the clearance to its foot (§11.18); the lines beside an obstacle keep the FO's widows and orphans (`PageSequenceLayoutManager.handlingObstacle()`), where Apache FOP relaxes both to 1 beside a side float, the §11.4 element marking the boundaries on the re-read path too and admitted at a band's foot (§11.19); `block-progression-dimension.minimum` on the container is the least of its extent (`BlockContainerLayoutManager`), a word processor's "at least" frame; a free side under 1pt beside an obstacle is no room (`Obstacle.MIN_ROOM`), and a table or block-container whose FO fixes a width greater than the room beside a band goes below the object (`PageBreakingAlgorithm.fixedIPDOf`: the end edge before it, or the clearance to the foot when it is the first box after the edge; §11.20); a paragraph's last line is fitted above a band together with the border and padding its block closes with (`PageBreakingAlgorithm.textBottomOfBox`, `SpaceResolver.borderAndPaddingBeforeBreak`: the border's width counts, the space after the paragraph does not), and where they do not fit that line alone goes below the object, whatever the widows (§11.21, Word's two border probes). Capability `obstacles-in-the-line` (`fop/CR-024` phase A, Enterprise CR-001 item 11) | `fo.Constants`, `fo.FOPropertyMapping`, `fo.extensions.ExtensionElementMapping`, `fo.flow.BlockContainer`, `layoutmgr.Obstacle` (new), `layoutmgr.ObstacleRegistry` (new), `layoutmgr.BlockContainerLayoutManager`, `layoutmgr.PageSequenceLayoutManager`, `layoutmgr.PageProvider`, `layoutmgr.BreakingAlgorithm`, `layoutmgr.PageBreakingAlgorithm`, `layoutmgr.PageBreaker`, `layoutmgr.FlowLayoutManager`, `layoutmgr.SpaceResolver`, `layoutmgr.inline.LineLayoutManager`, `fo.pagination.PageSequence` | Not sent: a `fox:` extension beyond XSL 1.1, the fork's (CR-024 §8) |
 | An SVG graphic, inline or external, loads only the external resources embedded in it as `data:` URLs, by default: a `file:`, `http:` or other reference from `image`, `use`, `tref`, a font or a stylesheet is refused, the graphic is not drawn and an `svgNotBuilt` event says why. Batik's rule, which Apache FOP applies, admits a resource on the document's host, and a document laid out from a file base URI, the usual case, has the same null host as any file on the machine, so an SVG could read a local file into the output. Batik 1.20's added protocol check does not change that (measured on Apache FOP 2.12). `AbstractFOPImageElementBridge` also asks the user agent before loading; Batik's own bridge already has by then, so that check adds nothing (an earlier claim here that FOP's bridge applied no rule was wrong, `fop/CR-028` §2). `FopFactoryBuilder.setSvgEmbeddedResourcesOnly(false)`, or `<svg-embedded-resources-only>false</svg-embedded-resources-only>` in the configuration, restores Batik's rule. Option `svg-embedded-resources-only` (`fop/CR-028`, after Apache POI's fix of the same shape, apache/poi#1452) | `apps.FopFactoryConfig`, `apps.FopFactoryBuilder`, `apps.FopConfParser`, `apps.FopFactory`, `apps.FOUserAgent`, `svg.SimpleSVGUserAgent`, `svg.SVGUserAgent`, `svg.AbstractFOPImageElementBridge`, `image.loader.batik.ImageConverterSVG2G2D` | JIRA and pull request drafted (`docs/upstream/svg-external-resources.txt`), to be filed on Jason's word, the option off by default upstream |
 | A solid border is drawn without the clip that shares its corners out, where its corners need none: a side that is solid, opaque and square-cornered, whose neighbouring sides are absent or solid in the same colour. FOP drew every side as a line inside a clip, and for a collapsed border between cells a clip of half the border's width; a viewer that widens a thin line to a whole device pixel does not widen a clip, so at screen zoom in poppler (Okular, Evince) a 0.5pt table rule came and went with the zoom, where Word's filled rectangles hold. The borders are drawn the same; different colours or styles at a corner, radii and translucent colours keep the clip (`fop/CR-029`) | `render.intermediate.BorderPainter` | Not sent yet: JIRA and pull request drafted (`docs/upstream/border-hairlines.txt`), branch `FOP-border-hairlines` |
-| Apache `main`'s FOP-3311 (a JPEG compression ratio for PostScript `RenderedImage`s) and FOP-3326 (compressed PostScript graphics) are left out: both call `xmlgraphics-commons` API that only its unreleased 2.11.0-SNAPSHOT has, and a Maven Central release cannot depend on a snapshot. PostScript output only; docx4j never writes it (`fop/CR-009` §3.1) | `render/ps/*` (12 files) | Upstream's own; they come back when an `xmlgraphics-commons` release carries the API |
 
 ### Hooks
 

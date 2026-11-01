@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`docx4j-fo-renderer`: an upstream-tracking fork of Apache FOP 2.11, maintained for
+`docx4j-fo-renderer`: an upstream-tracking fork of Apache FOP 2.12 (of 2.11 up to `2.11-docx4j.8`), maintained for
 docx4j's docx-to-PDF path. The Java packages stay `org.apache.fop`; the Maven
 coordinates are `org.docx4j:docx4j-fo-renderer[-core|-events|-util]`, versions
-`2.11-docx4j.N`. `README.md` is the authoritative description: the coordinates, the
-table of changes from Apache FOP 2.11 with their upstream status, and the hooks with
+`2.12-docx4j.N` (`2.11-docx4j.N` before; `fop/CR-030`). `README.md` is the authoritative description: the coordinates, the
+table of changes from Apache FOP (its heading still says 2.11, which the change notices cite) with their upstream status, and the hooks with
 their `Docx4jFop` capability names. Keep that README current; it is what docx4j's
 `FopCapabilities` probe and a consumer's support question rely on.
 
@@ -56,15 +56,20 @@ session routed an edit to the wrong peer on that inference, is why.
 
 ## Branches and remotes
 
-- **`2.11-docx4j.9` is the fork's branch. Work on it; release from it.** It carries the
-  `revision` property that sets the version (`2.11-docx4j.9-SNAPSHOT`), so a release changes one
+- **`2.12-docx4j.1` is the fork's branch. Work on it; release from it.** It carries the
+  `revision` property that sets the version (`2.12-docx4j.1-SNAPSHOT`), so a release changes one
   line there; see `docs/developer/releasing.md`. Do not count it against `trunk`, which tracks
   Apache's `main` and so diverges from the fork's base.
 - **One branch per release line, named for the version it will ship** (Jason, 2026-10-03, replacing
-  his 2026-09-25 rule of one long-lived branch whatever the version). When `2.11-docx4j.N` ships,
-  cut `2.11-docx4j.N+1` from it, move the `revision` there, and add the new name to
-  `.github/workflows/maven.yml`. The branch is not the tag: the release is `v2.11-docx4j.N`.
-- `2.11-docx4j.8` is the previous branch: the release was tagged `v2.11-docx4j.8` on it at b7f6ad8bf
+  his 2026-09-25 rule of one long-lived branch whatever the version). When `<line>-docx4j.N` ships,
+  cut `<line>-docx4j.N+1` from it, move the `revision` there, and add the new name to
+  `.github/workflows/maven.yml`. The branch is not the tag: the release is `v<line>-docx4j.N`. A new Apache
+  release starts a new line at `.1` (`fop/CR-030`: `Docx4jFop.APACHE_FOP_LINE` moves with it, and docx4j's
+  `FopCapabilities.BUILT_FOR_LINE` must follow).
+- `2.12-docx4j.1` was cut 2026-11-01 from `2.11-docx4j.9` (cc98fa4c0), Apache 2.12 merged into it by `fop/CR-030`
+  (263be37e7). `2.11-docx4j.9` (cut from b7f6ad8bf on 2026-10-30, pushed, docs only) never ships, like `.3`. Leave it
+  alone.
+- `2.11-docx4j.8` is the previous released branch: the release was tagged `v2.11-docx4j.8` on it at b7f6ad8bf
   (2026-10-30). Leave it alone. `.9` was cut from that commit.
 - `2.11-docx4j.7` is the branch before that, tagged `v2.11-docx4j.7` at ecaa37c40 (2026-10-16); `.8` was cut
   from that commit. Leave it alone.
@@ -84,7 +89,7 @@ session routed an edit to the wrong peer on that inference, is why.
   release: that shipped from `2f5030172` on it, tagged `v2.11-docx4j.1`.
 - `.github/workflows/maven.yml` names the branches twice and must gain each new one. A stale list there fails silently: no runs at all looks exactly like no
   failures. It was missed in the 2026-09-26 rename for that reason. To read the runs, name the
-  repository: `gh run list -R plutext/xmlgraphics-fop --branch 2.11-docx4j.9`; a bare `gh run list`
+  repository: `gh run list -R plutext/xmlgraphics-fop --branch 2.12-docx4j.1`; a bare `gh run list`
   here resolves to Apache's repository through the `upstream` remote and shows Apache's runs.
 - `trunk` tracks Apache's `main`. Remotes: `origin` = plutext/xmlgraphics-fop,
   `upstream` = apache/xmlgraphics-fop, `metanorma` and `chunlin` = the two forks whose
@@ -101,9 +106,9 @@ session routed an edit to the wrong peer on that inference, is why.
   `main` the import order differs from 2.11's (static imports directly under the others, no blank
   line) and no file carries the fork's change notice.
 - An upstream-bound fix is done twice: on its own `FOP-####` branch against `trunk`
-  for the PR, and on `2.11-docx4j.9` for the fork. A docx4j-only hook goes on
-  `2.11-docx4j.9` only.
-- Merge `upstream/main` into `2.11-docx4j.9` at least at every Apache release and
+  for the PR, and on `2.12-docx4j.1` for the fork. A docx4j-only hook goes on
+  `2.12-docx4j.1` only.
+- Merge `upstream/main` into `2.12-docx4j.1` at least at every Apache release and
   whenever a fix sent from here lands upstream.
 
 ## Build and test commands
@@ -112,7 +117,7 @@ Apache FOP's own Maven build, Java 8 and later (Java 11 or 21 here):
 
 ```bash
 mvn -B package checkstyle:check spotbugs:check     # what CI runs on every push (.github/workflows/maven.yml)
-mvn install -DskipTests                            # the snapshot docx4j consumes (2.11-docx4j.9-SNAPSHOT)
+mvn install -DskipTests                            # the snapshot docx4j consumes (2.12-docx4j.1-SNAPSHOT)
 mvn -pl fop-core -am test -Dtest=SomeTestCase       # one test class; -am is needed, see below
 mvn -pl fop-core test -Dtest=LayoutEngineTestSuite  # FOP's layout tests (fop/test/layoutengine/standard-testcases) - slow;
                                                     # one file: -Dfop.layoutengine.single=name.xml
@@ -153,7 +158,7 @@ helped. So one round trip per item:
 3. Message it: branch, commit, what changed in one paragraph, the §6.6 item or JIRA it
    serves, and what a pass would look like. It runs the gate and replies pass or fail with
    the measurement; a fail comes back with the scoreboard reading, not a guess.
-4. On a pass, merge to `2.11-docx4j.9`; it records the item in CR-020 §8. Where the change
+4. On a pass, merge to `2.12-docx4j.1`; it records the item in CR-020 §8. Where the change
    closes or narrows a §6.6 item, update that item here too, with the fork commit and the
    mechanism, and tell the Enterprise session. On a fail, the change stays on its branch,
    and if the fail taught something about FOP, that goes in §6.6 as well.
@@ -200,6 +205,26 @@ hunks alone through a temporary index from HEAD, never the shared index.
   modified Apache file; this is an Apache-2.0 derivative, not a Plutext original).
 
 ## Start here
+
+Last updated 2026-11-01. **Work is on `2.12-docx4j.1` (snapshot `2.12-docx4j.1-SNAPSHOT`), on Jason's word "start
+2.12-docx4j.1": cut from `2.11-docx4j.9` at cc98fa4c0, Apache's 2.12 release (`fop-2_12` at 69e912b39) merged at
+263be37e7, then the line commit (revision, `Docx4jFop.APACHE_FOP_LINE = "2.12"`, CI's branch lists, docs); `fop/CR-030`
+(`docs/developer/change-requests/CR-030-apache-fop-2.12.md`) records it. Pins are Apache 2.12's: Batik 1.20,
+xmlgraphics-commons 2.12, ant 1.10.18, bouncycastle 1.86 (`jdk15to18`, provided). CR-009's three commons
+workarounds are undone (the FOP-3311 and FOP-3326 reverts and d9f000cdc's PDF/A test expectation): fifteen files are
+Apache's again. CI's command green on JDK 21: 3936/0, 4 skipped, checkstyle 0, spotbugs 0. Not gated yet: r50 to the
+docx4j session, which must run with Batik 1.20 and commons 2.12 and must move `FopCapabilities.BUILT_FOR_LINE` to
+`"2.12"` in the docx4j release that takes it. `2.11-docx4j.9` never ships. Everything is local until Jason pushes
+`2.12-docx4j.1` (and `.9`'s two docs commits, da6c8a00a and cc98fa4c0, which it carries). Release note draft
+`docs/release-notes/2.12-docx4j.1.md`. **CR-028 retraction, found re-measuring for the JIRA draft on Apache FOP 2.12
+(its binary, Batik 1.20) and `main` 1301bcf74:** the hole stands (from a file base URI the `use` fragment, `tref` text and
+`file:` picture are drawn; Batik 1.20's protocol check does not close it), but the "second cause", FOP's
+`AbstractFOPImageElementBridge` bypassing the user agent's rule, was wrong: Batik's `SVGImageElementBridge`
+checks in `buildImageGraphicsNode` before FOP's `createImageGraphicsNode` override, in 1.19 and 1.20 (bytecode, and
+measured on 2.12, `main` and r43). The fork's bridge check is redundant, harmless. CR-028 §2, the README row, the
+`.8` correction in the `2.12-docx4j.1` draft note and the JIRA draft say so; the upstream branch
+`FOP-svg-external-resources` still carries that hunk, to drop before the PR. The JIRA's public-or-security@ question is
+still Jason's.** The paragraph that follows is the state of 2026-10-30, kept as history.
 
 Last updated 2026-10-30. **`2.11-docx4j.8` is RELEASED: on Maven Central since 2026-10-30, Jason's deploy (JDK 21, on
 this machine) from the pushed branch at the version commit b7f6ad8bf, verified from Central (68 files, checksums and
@@ -380,8 +405,9 @@ an Apache release, whichever first (today `main` is seven commits past CR-027's 
 has, and a 2.12.0-SNAPSHOT bump with snapshot Batik and commons; a day's merge, pom and workflow conflicts only). Read Enterprise CR-001 §6.6 before
 proposing anything, as the section above says.
 
-**State.** `2.11-docx4j.8` is on Maven Central (2026-10-30, released by Jason from the pushed branch at b7f6ad8bf,
-`fop/CR-028` and `fop/CR-029`; the seventh release in `docs/developer/releasing.md`); work is on `2.11-docx4j.9`.
+**State.** Work is on `2.12-docx4j.1` (2026-11-01, `fop/CR-030`: the base is the Apache FOP 2.12 release); there is no
+`2.11-docx4j.9`. `2.11-docx4j.8` is on Maven Central (2026-10-30, released by Jason from the pushed branch at b7f6ad8bf,
+`fop/CR-028` and `fop/CR-029`; the seventh release in `docs/developer/releasing.md`).
 What follows is the `.7` state, kept as history. `2.11-docx4j.7` is on Maven Central (2026-10-16, released by Jason from the pushed branch), tagged
 `v2.11-docx4j.7` at `ecaa37c40`, verified from Central (the sixth release in `docs/developer/releasing.md`; core sha256
 4161643c...); `docs/release-notes/2.11-docx4j.7.md` says what it carries: `fop/CR-027` (Apache `main` at c2d7e0aca)
