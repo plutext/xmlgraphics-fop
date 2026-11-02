@@ -206,7 +206,7 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
-Last updated 2026-11-02. **`fop/CR-031` (Word mode, docx4j CR-071 phase 1) is MERGED to `2.12-docx4j.1` by
+Last updated 2026-11-02, evening. **`fop/CR-031` (Word mode, docx4j CR-071 phase 1) is MERGED to `2.12-docx4j.1` by
 fast-forward at e5f0a7d12** (code 27ed437d3; `docs/developer/change-requests/CR-031-word-layout.md`). Jason accepted
 CR-071 ("D1 to D11 as recommended, except for D9 where we decide on (a)"), so the move ships in `2.12-docx4j.1`.
 docx4j's copy of FOP's layout managers is now the fork's: `WordLineLayoutManager extends LineLayoutManager` behind
@@ -228,7 +228,15 @@ Both loops now skip the glue, merged at 531bf4f9c. Gate b307 on r54: 4253 and 13
 mode's emergency break now measures against the column; a marked line's overflow is reported only from
 `addInlineArea`; and beside an obstacle, a boundary that the orphans keep is an edge before a marked line. Merged at
 2fe0ff3dd. Gate b309 on r55: 0 corpus movers, the probe +7, `line`/`linebig` falling only (17776 to 8382, 3243 to 61).
-**b309 on r55 is now the baseline.** The move alone is tagged `CR-031-phase1` (3d9a41143; local, not pushed). To trace a gate mover here,
+Then §11, on Word's `float-gap-tables` probe and Jason's ruling via docx4j-12 that the fork does it for `fo:float`: a
+table or block-container whose FO fixes a width greater than the room beside a side float goes below it (CR-024 §11.20's
+rule, no longer confined to obstacles; the width read past the space resolver's auxiliary box; a block that fixes no
+width never wider, since two overlapping floats leave a negative room, 8985 in b312); and a float's intrusion ends at a
+forced page break, where it had narrowed the next page (the probe loss that kept the rule from floats in b270).
+Capability `wide-block-below-float`, the twenty-ninth. Merged at a7fff982b. Gate b314 on r57 against b311: 6 movers, all
+toward Word. **b314 on r57 is now the baseline.** docx4j's step 2 (floating wide tables) is not kept; its guards are
+docx4j's. Open: a float's anchor's first word in a sliver stays beside it (pinned in `TableBesideFloatTestCase`); a
+second floating table beside a first runs past the margin. The move alone is tagged `CR-031-phase1` (3d9a41143; local, not pushed). To trace a gate mover here,
 run RenderFo on the gate's own classpath file (`~/fidelity-cr030/cp-b30N.txt`), one pass, with the changed classes as
 a javac overlay. Read positions with mutool, not pdftotext's columns. docx4j 17.3.6 waits on `2.12-docx4j.1` on
 Central, which is Jason's call, as is the push of `2.12-docx4j.1` and of the tag. The paragraph that follows is the state of 2026-11-01, kept

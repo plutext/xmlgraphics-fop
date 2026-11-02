@@ -700,6 +700,19 @@ b309; it is identical to b309, with 0 movers and events equal.
   - Step 2 stays out until docx4j stops floating a table taller than a page, or one whose anchor falls beside a
     float that leaves less room than its width.
 
+**Gates on r57** (a7fff982b, core sha256 a72b443a...; docx4j-12, 2026-11-02; register: Enterprise 1786122).
+
+- **b314, r57 alone, against b311: PASS.** 6 movers, all gaining lines: `table-floating-pair` +7 (0.9225 to 0.9718),
+  `table-floating-anchor` +9 (0.9000 to 1.0000, 5 pages to Word's 6), 13419 +2, 9775 +3, 11741 +4, 937 +4 (13 pages
+  to 14, docx4j's break order, above). 8985 back to 0, and nothing else differs from b312. Events equal but line 8382
+  to 8380. 29 hooks, `wide-block-below-float` among them.
+- **b315, r57 with step 2:** as b313. Step 2 is not kept. Its guards are docx4j's: a room of at least about 1pt, no
+  float taller than a page, and no float anchored beside an earlier float that leaves too little room. They are to
+  be gated on `wide-block-below-float` on Jason's word.
+
+Merged to `2.12-docx4j.1` by fast-forward at a7fff982b, on gate 1's pass and Jason's ruling that the fork does this
+for `fo:float`. **b314 on r57 is the fork's baseline for later gates.**
+
 **Open, recorded:**
 
 - The first line of a float's own anchor block stays beside the float when it fits neither the room nor any width
