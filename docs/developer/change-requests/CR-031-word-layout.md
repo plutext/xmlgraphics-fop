@@ -1,8 +1,9 @@
 # CR-031: Word layout in the fork's layout managers (docx4j CR-071 phase 1)
 
-Status: BUILT 2026-11-02 at 27ed437d3, not gated. CI's command on JDK 21: 4077 tests, 0 failures, 5 skipped;
-checkstyle 0; spotbugs 0. r51 (`~/fop-renderers/r51-CR-031-27ed437d3/`, core sha256 98eb2a20...) went to docx4j-12
-for CR-071 phase 2's gate against b302. In progress since the same day, on Jason's acceptance of docx4j CR-071
+Status: DONE 2026-11-02 for phase 1: built at 27ed437d3, gated PASS, merged to `2.12-docx4j.1` by fast-forward
+(e5f0a7d12), unreleased, local until Jason pushes. CI's command on JDK 21: 4077 tests, 0 failures, 5 skipped;
+checkstyle 0; spotbugs 0. r51 (`~/fop-renderers/r51-CR-031-27ed437d3/`, core sha256 98eb2a20...) passed CR-071
+phase 2's gate (§5.1). Phase 3 (§6) is open, its baseline b304. In progress since the same day, on Jason's acceptance of docx4j CR-071
 ("CR-071 D1 to D11 as recommended, except for D9 where we decide on (a)"). docx4j-12 relayed the acceptance; it is recorded in docx4j a72346619. The work
 is on branch `CR-031-word-layout`, cut from `2.12-docx4j.1` at a5e22789f. Phase 1 starts from docx4j's copy after
 CR-071's phase 0, 9ec0e1045, which added only FOP-3331's and FOP-3333's hunks and `FirstWordBesideFloatTest`
@@ -229,6 +230,36 @@ table back after Word mode can call it too.
    hooks.
 3. On a pass, `CR-031-word-layout` is merged to `2.12-docx4j.1` by fast-forward, and the README's hooks and changes
    tables get their rows. Then comes the release runbook for `2.12-docx4j.1` on Jason's word.
+
+### 5.1 The gate, 2026-11-02 (docx4j-12)
+
+PASS. Two gates on r51's core, events and util with b302's other jars, against b302:
+
+- b303: phase 2's `docx4j-export-fo`, docx4j's copy still in the jar but unused;
+- b304: the copy deleted, docx4j 69bbd4dc0 (unpushed), the committed code; its bytecode is b304's but for line
+  numbers.
+
+Both had 0 movers. Every scoreboard and `classes.txt` is byte-identical to b302's in real, real2, real3, real-c2 and
+the probes. The event counts are equal (linebig 3243, line 17776, clip 1552, bcov 1276, bcovi 516, region 73, body 18,
+glyph 63, font 8, other 87), and the renderer reports 28 hooks with `word-layout`.
+
+docx4j's side, as phase 2 built it:
+
+- `setWordLayout` gets every `docx4j.convert.out.fo.wordLayout.*` key, a system property over `docx4j.properties`;
+- `setWordLayoutFontMetrics` gets the lookup as §3.1 specifies;
+- no maker override and no `applyWordPairTable` call; `TableWriter` calls `WordBreakOpportunities.breakBefore`
+  through a method handle;
+- docx4j's own `ElementMapping` registration is gone, so the fork's is the only one for the namespace;
+- docx4j's `WordLayoutAttributesTest` checks that the 19 attribute constants of `WordLayoutElementMapping` equal
+  docx4j's.
+
+`docx4j-export-fo`'s 110 tests and `docx4j-export-fo-tests`' 872 pass on r51, Word and non-Word FOP mixed in one JVM.
+docx4j-12 saw no pair-table interference there, and docx4j calls `restoreFopPairTable` nowhere. On Apache FOP 2.12,
+51 `docx4j-export-fo-tests` methods need Word mode and skip themselves. docx4j's 20 test classes for the copy are
+deleted. Every test method of its 19 manager tests is among the cases ported here (§4), by name; `FopHooksTest`'s six
+tested the deleted class. The fork's code was built from `git archive` of 27ed437d3 into docx4j-12's scratch Maven
+repository, so nothing went into `~/.m2`. Enterprise register a99d2b8 records the gates and notes the move under
+§6.6 items 16, 22, 27, 28, 29, 36, 37, 38, 40 and 50.
 
 ## 6. Phase 3: CR-023 §4.2's mark under Word mode (D11)
 

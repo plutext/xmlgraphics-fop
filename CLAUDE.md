@@ -206,6 +206,21 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-02. **`fop/CR-031` (Word mode, docx4j CR-071 phase 1) is MERGED to `2.12-docx4j.1` by
+fast-forward at e5f0a7d12** (code 27ed437d3; `docs/developer/change-requests/CR-031-word-layout.md`). Jason accepted
+CR-071 ("D1 to D11 as recommended, except for D9 where we decide on (a)"), so the move ships in `2.12-docx4j.1`.
+docx4j's copy of FOP's layout managers is now the fork's: `WordLineLayoutManager extends LineLayoutManager` behind
+`FopFactoryBuilder.setWordLayout(Map)` and `setWordLayoutFontMetrics(BiFunction)`, capability `word-layout`, the
+twenty-eighth. Gated PASS by docx4j-12 (CR-031 §5.1): b303 and b304 on r51 (`~/fop-renderers/r51-CR-031-27ed437d3/`)
+against b302, 0 movers, scoreboards byte-identical, events equal, 28 hooks. docx4j 69bbd4dc0 deleted its copy
+(unpushed); Enterprise a99d2b8. **b304 on r51 is the baseline for later gates.** The UAX #14 pair-table flip is
+process-wide: Word tests here call `WordBreakOpportunities.restoreFopPairTable()` `@AfterClass`, or FOP's
+`LineBreakStatusTestCase` fails. A change to `LineLayoutManager` now reaches Word mode through the seams marked "Word
+mode's seam"; run the 19 ported Word tests with it. Open: phase 3, CR-023 §4.2's mark under Word mode (D11, CR-031
+§6), the fork's first and then a docx4j gate; nothing started. docx4j 17.3.6 waits on `2.12-docx4j.1` on Central,
+which is Jason's call, as is the push of `2.12-docx4j.1`. The paragraph that follows is the state of 2026-11-01, kept
+as history.
+
 Last updated 2026-11-01. **Work is on `2.12-docx4j.1` (snapshot `2.12-docx4j.1-SNAPSHOT`), on Jason's word "start
 2.12-docx4j.1": cut from `2.11-docx4j.9` at cc98fa4c0, Apache's 2.12 release (`fop-2_12` at 69e912b39) merged at
 263be37e7, then the line commit (revision, `Docx4jFop.APACHE_FOP_LINE = "2.12"`, CI's branch lists, docs); `fop/CR-030`
