@@ -564,3 +564,25 @@ b307's FOs.
 - 28 hooks;
 - events equal except `line` and `linebig`, which fall by the marked lines reported in discarded passes (8985 and
   13986 measured above).
+
+**Gate b309, r55 (2fe0ff3dd, core sha256 3674656d...) against b308: PASS** (docx4j-12, 2026-11-02).
+
+b308 was a control on b307's classpath, since the probe's golden is newer than b307: 0 movers, events equal to b307's.
+
+- 0 movers in the corpora, and no text lost.
+- `float-gap-words` +7 lines, parity 0.8556 to 0.8944. Case 3 has "in" alone at x 499.3, y 215.4, then
+  "reprehenderit in voluptate..." at x 72, y 428.6; case 5 has the long word at x 72, y 260.3. These match the
+  measurements here.
+- **Events.** Only `line` and `linebig` moved, and every change is a fall: linebig 3243 to 61, line 17776 to 8382.
+  - 8985: linebig 3129 to 1, line 9516 to 275.
+  - 13986: linebig 34 to 1, line 139 to 0.
+  - 719 and 11256: linebig 20 to 12 each.
+  - 2823: linebig 4 to 0. 6293: 1 to 0.
+  - 12851, 2189 and 1616: a few lines each.
+  - clip, bcov, bcovi, region, body, glyph, font and other are equal.
+- 28 hooks.
+
+Merged to `2.12-docx4j.1` by fast-forward at 2fe0ff3dd, on Jason's word that it ships in `.1`. **b309 on r55 is the
+fork's baseline for later gates.** Enterprise §6.6 item 8 has Word's rule and this gate (eee2bcd); the register
+has 6c3d971.
+
