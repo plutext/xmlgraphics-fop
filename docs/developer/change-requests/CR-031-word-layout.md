@@ -1,7 +1,9 @@
 # CR-031: Word layout in the fork's layout managers (docx4j CR-071 phase 1)
 
-Status: IN PROGRESS from 2026-11-02, on Jason's acceptance of docx4j CR-071 ("CR-071 D1 to D11 as recommended,
-except for D9 where we decide on (a)"). docx4j-12 relayed the acceptance; it is recorded in docx4j a72346619. The work
+Status: BUILT 2026-11-02 at 27ed437d3, not gated. CI's command on JDK 21: 4077 tests, 0 failures, 5 skipped;
+checkstyle 0; spotbugs 0. r51 (`~/fop-renderers/r51-CR-031-27ed437d3/`, core sha256 98eb2a20...) went to docx4j-12
+for CR-071 phase 2's gate against b302. In progress since the same day, on Jason's acceptance of docx4j CR-071
+("CR-071 D1 to D11 as recommended, except for D9 where we decide on (a)"). docx4j-12 relayed the acceptance; it is recorded in docx4j a72346619. The work
 is on branch `CR-031-word-layout`, cut from `2.12-docx4j.1` at a5e22789f. Phase 1 starts from docx4j's copy after
 CR-071's phase 0, 9ec0e1045, which added only FOP-3331's and FOP-3333's hunks and `FirstWordBesideFloatTest`
 (checked). Under D9(a) the move lands in `2.12-docx4j.1`, whose
