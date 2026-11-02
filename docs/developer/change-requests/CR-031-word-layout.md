@@ -551,9 +551,14 @@ b307's FOs.
 - A word wider than the column, beside a float, stays there, overflowing. The first pass splits it into one mapping
   per character, which the float's re-layout cannot split again. Word sets it below and breaks it at the column's
   width (case 4). The test pins today's behaviour so that a fix changes it deliberately.
-- At an obstacle's start edge inside a paragraph that has a preserved linefeed (`linefeed-treatment="preserve"`),
-  the line before the linefeed is laid twice, in both modes. This was found in a probe, not on the corpus: docx4j
-  writes a soft return as a block, not a linefeed.
+- At an obstacle's start edge inside a paragraph that has a preserved linefeed in its own text
+  (`linefeed-treatment="preserve"` on the paragraph), the line before the linefeed is laid twice, in both modes.
+  This was found in a probe, not on the corpus.
+  - docx4j writes a soft return as a nested block holding the linefeed, and a second soft return straight after the
+    first as another such block with a space. A footnote uses U+2028.
+  - Probed at the same edge, both of docx4j's nested forms are laid once, in both modes. Only the linefeed in the
+    paragraph's own text doubles, and docx4j does not write that.
+  - b309 shows no doubled line on the corpora.
 
 **Pass criteria** for the gate, against b307 on r54 (docx4j-12's):
 
