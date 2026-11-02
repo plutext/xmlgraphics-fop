@@ -54,6 +54,7 @@ import org.apache.fop.fo.properties.PropertyCache;
 import org.apache.fop.fonts.FontManager;
 import org.apache.fop.hyphenation.HyphenationTreeCache;
 import org.apache.fop.layoutmgr.LayoutManagerMaker;
+import org.apache.fop.layoutmgr.word.WordBreakOpportunities;
 import org.apache.fop.layoutmgr.word.WordLayoutSettings;
 import org.apache.fop.render.ImageHandlerRegistry;
 import org.apache.fop.render.RendererConfig;
@@ -122,6 +123,11 @@ public final class FopFactory implements ImageContext {
         this.xmlHandlers = new XMLHandlerRegistry();
         this.imageHandlers = new ImageHandlerRegistry();
         rendererConfig = new HashMap<String, RendererConfig>();
+        // Word mode (fop/CR-031): Word's corrections to UAX #14's pair table, which the text managers read while they
+        // build their elements; process-wide, as WordBreakOpportunities.applyWordPairTable says
+        if (config.getWordLayout() != null && config.getWordLayout().breakOpportunities()) {
+            WordBreakOpportunities.applyWordPairTable();
+        }
     }
 
     /**

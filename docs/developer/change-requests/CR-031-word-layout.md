@@ -2,7 +2,9 @@
 
 Status: IN PROGRESS from 2026-11-02, on Jason's acceptance of docx4j CR-071 ("CR-071 D1 to D11 as recommended,
 except for D9 where we decide on (a)"). docx4j-12 relayed the acceptance; it is recorded in docx4j a72346619. The work
-is on branch `CR-031-word-layout`, cut from `2.12-docx4j.1`. Under D9(a) the move lands in `2.12-docx4j.1`, whose
+is on branch `CR-031-word-layout`, cut from `2.12-docx4j.1` at a5e22789f. Phase 1 starts from docx4j's copy after
+CR-071's phase 0, 9ec0e1045, which added only FOP-3331's and FOP-3333's hunks and `FirstWordBesideFloatTest`
+(checked). Under D9(a) the move lands in `2.12-docx4j.1`, whose
 Central release waits on this CR (`fop/CR-030`), and docx4j 17.3.6 waits with it. Registry key `fop/CR-031`.
 
 The design is docx4j's CR-071, `../docx4j/docs/developer/change-requests/CR-071-word-layout-in-the-fo-renderer.md`.
@@ -100,6 +102,14 @@ and FOP-3349), `BlockLayoutManager` 2, `ListItemLayoutManager` 10, `FlowLayoutMa
   call-time reads come to the same thing.
 - Capability `word-layout`, `Docx4jFop.WORD_LAYOUT`, the twenty-eighth. It also covers D6's break-opportunity entry
   point.
+- **Font metrics, a second setter (found in the port, agreed with docx4j-12, docx4j c0e6bf6c1).** The copy's
+  `wordLine` called docx4j-core at runtime, `PhysicalFonts.get` and `WordLineMetrics.get`, for a run's ascent share
+  `(winAscent + externalLeading) / lineHeightFactor()`. The fork cannot depend on docx4j, so docx4j passes the lookup:
+  - `FopFactoryBuilder.setWordLayoutFontMetrics(BiFunction<String, String, Double>)` takes (the run's `docx4j:font`
+    or `null`, FOP's full font name) and returns the share or `null`;
+  - it is read as `WordLayoutSettings.ascentShare`, and the block-text check stays in the fork;
+  - JDK types only, it takes effect only with Word mode on, and the order of the two calls does not matter;
+  - without it, the block font's ratio is used, as the copy does when it finds no metrics.
 
 ### 3.2 The `docx4j:` namespace
 
@@ -114,40 +124,71 @@ and FOP-3349), `BlockLayoutManager` 2, `ListItemLayoutManager` 10, `FlowLayoutMa
 
 ### 3.3 The line manager (D2)
 
-- **Placement.** The branches go into the 14 members of the fork's `LineLayoutManager.java`. The new members go
-  beside it, in `org.apache.fop.layoutmgr.inline`, in the same package so they need no reflection:
-  - `WordLineLayout` holds a block's Word state, read in the constructor, and the line manager's new members;
-  - `WordLineBreakingAlgorithm extends LineLayoutManager.LineBreakingAlgorithm` is the greedy breaker. It overrides
-    `BreakingAlgorithm`'s methods, constructed with a qualified `llm.super(...)`.
-- **The edit to Apache's file** is the branches, plus the visibility that `WordLineLayout` and the breaker need: the
-  inner breaker, `Paragraph` and the fields they read become package-private. `LBP`'s accessors become direct field
-  reads.
-- **The 38 unchanged members and Apache's code in the 14 stay the fork's own**, so Apache's changes to them arrive by
-  merge.
+- **Placement, as built.** The class beside the line manager is a subclass,
+  `org.apache.fop.layoutmgr.inline.WordLineLayoutManager extends LineLayoutManager`. `BlockLayoutManager` makes it in
+  Word mode. It holds only the Word members: the 38 unchanged members, the copy's duplicated state, and Apache's code
+  in the 14 are the superclass's.
+  - Its greedy breaker is an inner class, `WordLineBreakingAlgorithm extends LineBreakingAlgorithm`, so the copied
+    greedy members keep their implicit access to the line manager's state.
+  - The copy's 4,725 lines become 3,100. The other 1,600 were the copy's FOP code and `LBP`'s accessors.
+- **The edit to Apache's `LineLayoutManager.java`** is seams (each commented "Word mode's seam"), the inline
+  postprocessing, and visibility. Off, the seams return Apache's values and the postprocessing's Word branches are
+  neutral (`linesBefore` null, `pendingLeading` 0).
+  - The breaker's seams: `lineTextAlign`, `lineAlignDifference`, `hasWordLineBox` and `makeWordLineBreakPosition`,
+    plus `marksOverflowBesideFloat`, which is D11.
+  - The manager's seams: `processInlineElements` and `endingParagraph` in `collectInlineKnuthElements`;
+    `hasLeadingBelowLines` and `linesAcrossSoftReturns` in `postProcessLineBreaks`, whose leading glue and widows
+    across soft returns are inline; `hyphenatable` and `forPatternLookup` in `getHyphenContext`; and `lineAlignment`,
+    `isTab` and `lineAreasAdded` in `addInlineArea`.
+  - `findOptimalBreakingPoints` is overridden whole: it is Word's driver, one greedy pass. The restart guard for an
+    empty paragraph list overrides `getNextKnuthElements` and then calls `super`.
+  - Visibility: the manager's state, `Paragraph`, the inner breaker with its state, `findOptimalBreakingPoints`,
+    `findHyphenationPoints`, `handlingObstacle` and `pageSequenceHasObstacles` are package-private. `Paragraph` gains
+    `justifyLastLine()`.
+  - The member diff against the copy, normalised for `LBP`, matches but for the seams and D11
+    (`cr071/norm.py` in the scratchpad).
+- **`LBP` goes.** Its line-position accessors become the fork's getters (`inline-access`). Its leader logic is now
+  `org.apache.fop.layoutmgr.inline.WordLeaders`, calling the `leader-placement` and `inline-access` accessors
+  directly, with `Leader.setRuleStyle(int)` (`rule-style-int`).
 
 ### 3.4 The other managers
 
-- **`BlockLayoutManager`:** in Word mode, `createLineManager` makes the line manager with Word's state, and the
-  `justify-soft-return` follow-up of `WordBlockLayoutManager.createWordLineManager` goes with it.
-- **`FlowLayoutManager`:** in Word mode, `getNextKnuthElements` runs `moveLeadingBehindBreaks` and `boundKeepChains`.
-  Their bodies are static helpers in `org.apache.fop.layoutmgr.word`, and their four keep-chain settings join the map.
-- **`ListItemLayoutManager`:** the Word overrides become branches where they change FOP's code. Where they add to it,
-  they become helpers.
-- **`PageNumberCitationLayoutManager`:** a branch in `getAllocationIPD`.
-- **`LayoutManagerMapping`:** stays Apache's. The switch is read from each FO's user agent, so no maker override is
-  needed. docx4j stops setting one in phase 2.
+- **`BlockLayoutManager`:** in Word mode, `createLineManager` makes `WordLineLayoutManager`, and the
+  `justify-soft-return` follow-up of `WordBlockLayoutManager.createWordLineManager` goes with it. That is a branch,
+  since FOP's method is private; `WordBlockLayoutManager` goes.
+- **The flow, list-item and page-number citation managers move as subclasses, as built.** Each of docx4j's overrides
+  calls `super` and then adds to the result, so nothing of FOP's is copied:
+  - `WordFlowLayoutManager`, in `org.apache.fop.layoutmgr`, with its four keep-chain settings read from the settings;
+  - `WordListItemLayoutManager`, in `org.apache.fop.layoutmgr.list`, through `getBodyList()` (`inline-access`);
+  - `WordPageNumberCitationLayoutManager`, in `org.apache.fop.layoutmgr.inline`.
+  `LayoutManagerMapping` makes them where the FO's user agent has Word mode, in `makeFlowLayoutManager` and the
+  list-item and citation makers, so no maker override is needed. docx4j stops setting one in phase 2.
+  `LayoutManagerMapping` is the only place FOP builds the five managers, so Word mode reaches the same blocks the
+  copy did.
 - **`LeadingGlue`:** moves to `org.apache.fop.layoutmgr.word`.
 
 ### 3.5 Break opportunities (D6)
 
 `org.apache.fop.layoutmgr.word.WordBreakOpportunities` holds docx4j's class's rules with a public static entry point,
-`breakBefore`. docx4j's `TableWriter` calls it by reflection while it writes the FO, before any factory exists. The
-UAX #14 pair-table flip (§6.6 item 29) goes through the fork's existing `LineBreakUtils.setLineBreakPairProperty`
-(`pair-table`), with no reflection. It is applied when a factory is built with Word mode on and `breakOpportunities`
-true.
+`breakBefore(CharSequence)`. Its other public statics are unchanged: `noBreakAfter`, `noBreakBetween`,
+`noBreakBeforePerCent`, `breakBetween`, `breakAtSeam`, `startsSolidusLedWord` and `applyWordPairTable`. docx4j's
+`TableWriter` calls `breakBefore` by reflection while it writes the FO, before any factory exists.
+
+The UAX #14 pair-table flip (§6.6 item 29) goes through the fork's existing `LineBreakUtils.setLineBreakPairProperty`
+(`pair-table`), with no reflection. `FopFactory`'s constructor applies it when the factory has Word mode on and
+`breakOpportunities` is true.
 
 The flip is process-wide, as it is today in docx4j. It reaches any FOP layout in the same JVM after the first Word-mode
 factory is built. That is a recorded limit, unchanged by the move.
+
+fop-core's own suite measured that reach on 2026-11-02. CI's command failed one test,
+`LineBreakStatusTestCase.testNextChar`, case `"EX CL ! ) break"`. FOP's table allows no break at the space before
+`!`, and Word's correction (`breakAfterSpacesBeforePunctuation`) allows one, and the Word tests had run earlier in the
+same JVM.
+
+The product's behaviour stays docx4j's. For the suite, `WordBreakOpportunities.restoreFopPairTable()` puts back the
+cells the flip changed, which it now records, and each Word test class calls it `@AfterClass`. A host that needs FOP's
+table back after Word mode can call it too.
 
 ### 3.6 What else changes in the moved code
 
@@ -162,9 +203,18 @@ factory is built. That is a recorded limit, unchanged by the move.
 
 ## 4. Tests (D7)
 
-- docx4j's 19 manager-level tests move to `fop-core/src/test/java/org/apache/fop/layoutmgr/word/`. Each builds its
-  factory with `setWordLayout`, and the 7 that set system properties pass the map instead.
+- docx4j's 19 manager-level tests at phase 0 (9ec0e1045) move, renamed `*TestCase` for surefire. A test that calls a
+  package-private static lives in that class's package: `DeclaredBaselineLine`, `LetterSpacingWidth`,
+  `NumberingLabelLeaderSpace` and `TabStop` in `layoutmgr.inline`; `KeepChainBound` and `WordLeading` in `layoutmgr`.
+  The rest are in `layoutmgr.word`.
+- Each builds its factory with `setWordLayout(WordLayoutTestSupport.settings())`. That test class gathers the
+  `docx4j.convert.out.fo.wordLayout.*` system properties into the map, which is docx4j's resolution without its
+  `docx4j.properties` file. So the tests that set a property keep doing so.
+- `LetterSpacingWidth` took Liberation Serif from docx4j's fonts module. It now uses fop-core's own DejaVu LGC Serif:
+  any font with GSUB and GPOS tables takes the complex-script path, which is what the test compares.
 - `FopHooksTest` has no counterpart: `FopHooks` goes.
+- Measured 2026-11-02: 141 run (with `WordLayoutSettingsTestCase`), 0 failures, 1 skipped.
+  `fopItselfStillHasTheDefect` skips on its own `Assume`: the fork fixed that defect in CR-010.
 - FOP's own suite, run with Word mode off, is the test that off means Apache FOP.
 - `Docx4jFopTestCase`'s capability count goes to 28.
 
@@ -194,7 +244,10 @@ FOP-2860 as the precedent for such an option (CR-071 §7); it is not drafted.
 ## 8. Increments
 
 1. The settings, switch, capability, element mapping and `LeadingGlue`. Word mode can be reached but does nothing
-   yet; FOP's suite and a settings test are green.
+   yet; FOP's suite and a settings test are green. Committed 2b8758511.
 2. The line manager, the block manager's branch and the break opportunities: this CR's bulk.
 3. The list item, flow and page-number citation managers.
 4. The 19 tests, checkstyle, spotbugs, the full suite and the drop.
+
+Increments 2 to 4 were built together on 2026-11-02 and committed as one. The capability is advertised from that
+commit, which is when Word mode is whole.

@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: in Word mode the flow, list items and page-number citations are Word's managers (fop/CR-031). See
+ * README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 
 package org.apache.fop.layoutmgr;
@@ -90,9 +94,11 @@ import org.apache.fop.layoutmgr.inline.PageNumberCitationLastLayoutManager;
 import org.apache.fop.layoutmgr.inline.PageNumberCitationLayoutManager;
 import org.apache.fop.layoutmgr.inline.PageNumberLayoutManager;
 import org.apache.fop.layoutmgr.inline.TextLayoutManager;
+import org.apache.fop.layoutmgr.inline.WordPageNumberCitationLayoutManager;
 import org.apache.fop.layoutmgr.inline.WrapperLayoutManager;
 import org.apache.fop.layoutmgr.list.ListBlockLayoutManager;
 import org.apache.fop.layoutmgr.list.ListItemLayoutManager;
+import org.apache.fop.layoutmgr.list.WordListItemLayoutManager;
 import org.apache.fop.layoutmgr.table.TableAndCaptionLayoutManager;
 import org.apache.fop.layoutmgr.table.TableCaptionLayoutManager;
 import org.apache.fop.layoutmgr.table.TableLayoutManager;
@@ -221,7 +227,9 @@ public class LayoutManagerMapping implements LayoutManagerMaker {
     /** {@inheritDoc} */
     public FlowLayoutManager makeFlowLayoutManager(
             PageSequenceLayoutManager pslm, Flow flow) {
-        return new FlowLayoutManager(pslm, flow);
+        // Word mode (fop/CR-031): the flow moves a paragraph's last leading behind its break and bounds keep chains
+        return flow.getUserAgent().getWordLayout() != null ? new WordFlowLayoutManager(pslm, flow)
+                : new FlowLayoutManager(pslm, flow);
     }
 
     /** {@inheritDoc} */
@@ -357,7 +365,9 @@ public class LayoutManagerMapping implements LayoutManagerMaker {
     public static class ListItemLayoutManagerMaker extends Maker {
         /** {@inheritDoc} */
          public void make(FONode node, List lms, FOUserAgent userAgent) {
-             lms.add(new ListItemLayoutManager((ListItem) node));
+             // Word mode (fop/CR-031): the list item's last line's leading stays discardable
+             lms.add(node.getUserAgent().getWordLayout() != null ? new WordListItemLayoutManager((ListItem) node)
+                     : new ListItemLayoutManager((ListItem) node));
          }
     }
 
@@ -389,7 +399,10 @@ public class LayoutManagerMapping implements LayoutManagerMaker {
     public static class PageNumberCitationLayoutManagerMaker extends Maker {
         /** {@inheritDoc} */
          public void make(FONode node, List lms, FOUserAgent userAgent) {
-            lms.add(new PageNumberCitationLayoutManager((PageNumberCitation) node));
+            // Word mode (fop/CR-031): an unresolved citation is measured as a page number
+            lms.add(node.getUserAgent().getWordLayout() != null
+                    ? new WordPageNumberCitationLayoutManager((PageNumberCitation) node)
+                    : new PageNumberCitationLayoutManager((PageNumberCitation) node));
          }
     }
 

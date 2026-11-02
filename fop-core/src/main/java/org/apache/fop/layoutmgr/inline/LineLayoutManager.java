@@ -21,7 +21,9 @@
  * (fop/CR-011); and a line that does not fit beside a side float is marked for the page breaking to set it below the
  * float (fop/CR-023). And hook obstacles-in-the-line, a break element
  * of infinite penalty at the line boundaries orphans and widows keep, where an obstacle's edge may lie
- * (fop/CR-024 §11.4). See README.md, "Changes from Apache FOP 2.11". */
+ * (fop/CR-024 §11.4). And Word mode (fop/CR-031): the seams WordLineLayoutManager overrides, the Word lines' leading
+ * glue and widows across soft returns in postProcessLineBreaks, CR-023's mark left out under Word mode, and the
+ * manager's state package-private for that subclass. See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -80,6 +82,7 @@ import org.apache.fop.layoutmgr.PageSequenceLayoutManager;
 import org.apache.fop.layoutmgr.Position;
 import org.apache.fop.layoutmgr.PositionIterator;
 import org.apache.fop.layoutmgr.SpaceSpecifier;
+import org.apache.fop.layoutmgr.word.LeadingGlue;
 import org.apache.fop.traits.MinOptMax;
 
 /**
@@ -109,8 +112,9 @@ public class LineLayoutManager extends InlineStackingLayoutManager
      */
     private static Log log = LogFactory.getLog(LineLayoutManager.class);
 
-    private final Block fobj;
-    private boolean isFirstInBlock;
+    // the state below is package-private (private in Apache FOP) for WordLineLayoutManager (fop/CR-031)
+    final Block fobj;
+    boolean isFirstInBlock;
 
     /**
      * Private class to store information about inline breaks.
@@ -261,35 +265,35 @@ public class LineLayoutManager extends InlineStackingLayoutManager
     }
 
 
-    private int bidiLevel = -1;
-    private int textAlignment = EN_JUSTIFY;
-    private int textAlignmentLast;
-    private int effectiveAlignment;
-    private Length textIndent;
-    private Length lastLineEndIndent;
-    private CommonHyphenation hyphenationProperties;
-    private Numeric hyphenationLadderCount;
-    private int wrapOption = EN_WRAP;
-    private int whiteSpaceTreament;
+    int bidiLevel = -1;
+    int textAlignment = EN_JUSTIFY;
+    int textAlignmentLast;
+    int effectiveAlignment;
+    Length textIndent;
+    Length lastLineEndIndent;
+    CommonHyphenation hyphenationProperties;
+    Numeric hyphenationLadderCount;
+    int wrapOption = EN_WRAP;
+    int whiteSpaceTreament;
     //private LayoutProps layoutProps;
 
-    private final Length lineHeight;
-    private final int lead;
-    private final int follow;
-    private AlignmentContext alignmentContext;
+    final Length lineHeight;
+    final int lead;
+    final int follow;
+    AlignmentContext alignmentContext;
 
-    private int baselineOffset = -1;
+    int baselineOffset = -1;
 
-    private List<KnuthSequence> knuthParagraphs;
+    List<KnuthSequence> knuthParagraphs;
 
-    private LineLayoutPossibilities lineLayouts;
-    private LineLayoutPossibilities[] lineLayoutsList;
-    private int ipd;
+    LineLayoutPossibilities lineLayouts;
+    LineLayoutPossibilities[] lineLayoutsList;
+    int ipd;
     /**
      * When layout must be re-started due to a change of IPD, there is no need
      * to perform hyphenation on the remaining Knuth sequence once again.
      */
-    private boolean hyphenationPerformed;
+    boolean hyphenationPerformed;
 
     /**
      * This class is used to remember
@@ -307,23 +311,25 @@ public class LineLayoutManager extends InlineStackingLayoutManager
     }
 
     // this class represents a paragraph
-    private static class Paragraph extends InlineKnuthSequence {
+    static class Paragraph extends InlineKnuthSequence {
 
         private static final long serialVersionUID = 5862072380375189105L;
 
         /** Number of elements to ignore at the beginning of the list. */
-        private int ignoreAtStart;
+        int ignoreAtStart;
         /** Number of elements to ignore at the end of the list. */
-        private int ignoreAtEnd;
+        int ignoreAtEnd;
 
         // space at the end of the last line (in millipoints)
-        private MinOptMax lineFiller;
-        private final int textAlignment;
-        private final int textAlignmentLast;
-        private final int textIndent;
-        private final int lastLineEndIndent;
+        MinOptMax lineFiller;
+        final int textAlignment;
+        /** Not final in Word mode (fop/CR-031): a paragraph which ends at a soft return has its last line justified,
+         *  which is known only when the break's block sequence arrives ({@link #justifyLastLine()}). */
+        int textAlignmentLast;
+        final int textIndent;
+        final int lastLineEndIndent;
         // the LM which created the paragraph
-        private final LineLayoutManager layoutManager;
+        final LineLayoutManager layoutManager;
 
         Paragraph(LineLayoutManager llm, int alignment, int alignmentLast,
                          int indent, int endIndent) {
@@ -333,6 +339,17 @@ public class LineLayoutManager extends InlineStackingLayoutManager
             textAlignmentLast = alignmentLast;
             textIndent = indent;
             lastLineEndIndent = endIndent;
+        }
+
+        /** Word mode (fop/CR-031): this paragraph ends at a soft return, so Word justifies its last line. Called
+         *  before {@link #endSequence()}, which puts the filler glue in for a last line that is not justified. */
+        void justifyLastLine() {
+            textAlignmentLast = EN_JUSTIFY;
+        }
+
+        /** @return the paragraph's own text-align-last, the block's but where {@link #justifyLastLine()} set it */
+        int textAlignmentLast() {
+            return textAlignmentLast;
         }
 
         @Override
@@ -419,15 +436,16 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         }
     }
 
-    private class LineBreakingAlgorithm extends BreakingAlgorithm {
-        private final LineLayoutManager thisLLM;
-        private final int pageAlignment;
-        private int activePossibility;
-        private int addedPositions;
-        private final int textIndent;
-        private final int lineHeight;
-        private final int lead;
-        private final int follow;
+    // package-private, with its state, for WordLineLayoutManager's greedy breaker (fop/CR-031)
+    class LineBreakingAlgorithm extends BreakingAlgorithm {
+        final LineLayoutManager thisLLM;
+        final int pageAlignment;
+        int activePossibility;
+        int addedPositions;
+        final int textIndent;
+        final int lineHeight;
+        final int lead;
+        final int follow;
         private static final double MAX_DEMERITS = 10e6;
 
         public LineBreakingAlgorithm(int pageAlign, int textAlign, int textAlignLast, int indent, int fillerWidth,
@@ -460,6 +478,10 @@ public class LineLayoutManager extends InlineStackingLayoutManager
             int endIndent;
             int difference = bestActiveNode.difference;
             int textAlign = (bestActiveNode.line < total) ? alignment : alignmentLast;
+            // Word mode (fop/CR-031): a line with a tab on it is aligned as its tab stop says, by the width
+            // without the tab's overhang past the line; elsewhere these are the alignment and difference above
+            int alignDifference = lineAlignDifference(bestActiveNode, par, difference);
+            textAlign = lineTextAlign(bestActiveNode, par, textAlign);
 
             switch (textAlign) {
             case Constants.EN_START:
@@ -467,11 +489,11 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                 endIndent = difference > 0 ? difference : 0;
                 break;
             case Constants.EN_END:
-                startIndent = difference;
+                startIndent = alignDifference;
                 endIndent = 0;
                 break;
             case Constants.EN_CENTER:
-                startIndent = difference / 2;
+                startIndent = alignDifference / 2;
                 endIndent = startIndent;
                 break;
             default:
@@ -533,7 +555,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                        ? 0 : ((Paragraph) par).lineFiller.getShrink()),
                    bestActiveNode.availableStretch,
                    difference, ratio, startIndent, endIndent);
-            if (lack < 0) {
+            if (lack < 0 && marksOverflowBesideFloat()) {
                 // A line that does not fit beside a side float but would fit the column without it is marked,
                 // and the page breaking sets it, with the rest of its paragraph, below the float (fop/CR-023)
                 int intrusion = getPSLM().getStartIntrusionAdjustment() + getPSLM().getEndIntrusionAdjustment();
@@ -549,6 +571,37 @@ public class LineLayoutManager extends InlineStackingLayoutManager
          */
         public void resetAlgorithm() {
             activePossibility = -1;
+        }
+
+        /** Word mode's seam (fop/CR-031): the alignment of a line, which a tab on it may change.
+         *  @return textAlign, here */
+        int lineTextAlign(KnuthNode node, KnuthSequence par, int textAlign) {
+            return textAlign;
+        }
+
+        /** Word mode's seam (fop/CR-031): the width a line is aligned by.
+         *  @return difference, here */
+        int lineAlignDifference(KnuthNode node, KnuthSequence par, int difference) {
+            return difference;
+        }
+
+        /** Whether a line that overflows beside a side float is marked for CR-023's rule: not in Word mode until
+         *  that is gated on its own (fop/CR-031 §6). */
+        boolean marksOverflowBesideFloat() {
+            return true;
+        }
+
+        /** Word mode's seam (fop/CR-031): whether a line is sized by Word's line box. */
+        boolean hasWordLineBox() {
+            return false;
+        }
+
+        /** Word mode's seam (fop/CR-031): the position of a line sized by Word's line box, where
+         *  {@link #hasWordLineBox()}. */
+        LineBreakPosition makeWordLineBreakPosition(KnuthSequence par, int firstElementIndex,
+                int lastElementIndex, int availableShrink, int availableStretch, int difference, double ratio,
+                int startIndent, int endIndent) {
+            throw new IllegalStateException("no Word line box");
         }
 
         private LineBreakPosition makeLineBreakPosition(KnuthSequence par, int firstElementIndex, int lastElementIndex,
@@ -622,6 +675,9 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                                              availableShrink, availableStretch,
                                              difference, ratio, 0, startIndent, endIndent,
                                              0, ipd, 0, 0, 0);
+            } else if (hasWordLineBox()) {
+                return makeWordLineBreakPosition(par, firstElementIndex, lastElementIndex, availableShrink,
+                        availableStretch, difference, ratio, startIndent, endIndent);
             } else {
                 return new LineBreakPosition(thisLLM,
                                              knuthParagraphs.indexOf(par),
@@ -682,7 +738,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
     }
 
 
-    private int constantLineHeight = 12000;
+    int constantLineHeight = 12000;
 
     /**
      * Create a new Line Layout Manager.
@@ -726,7 +782,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
      * which case the boundaries orphans and widows keep get a break element (fop/CR-024 §11.4); without one the
      * element list keeps Apache FOP's shape.
      */
-    private boolean pageSequenceHasObstacles() {
+    boolean pageSequenceHasObstacles() {
         PageSequenceLayoutManager pslm = getPSLM();
         return pslm != null && pslm.hasObstacles();
     }
@@ -738,7 +794,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
      * split 2+1 at a page's foot on a page with a frame, corpus 3955). The band's edges within those lines are
      * served by the §11.4 break elements instead.
      */
-    private boolean handlingObstacle() {
+    boolean handlingObstacle() {
         PageSequenceLayoutManager pslm = getPSLM();
         return pslm != null && pslm.handlingObstacle();
     }
@@ -859,6 +915,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         InlineLevelLayoutManager curLM;
         while ((curLM = (InlineLevelLayoutManager) getChildLM()) != null) {
             List<KnuthSequence> inlineElements = curLM.getNextKnuthElements(inlineLC, effectiveAlignment);
+            processInlineElements(curLM, inlineElements);
             if (inlineElements == null || inlineElements.size() == 0) {
                 /* curLM.getNextKnuthElements() returned null or an empty list;
                  * this can happen if there is nothing more to layout,
@@ -871,6 +928,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
 
                 // finish last paragraph before a new block sequence
                 if (!firstSeq.isInlineSequence()) {
+                    endingParagraph(lastPar, true);
                     lastPar.endParagraph();
                     ElementListObserver.observe(lastPar, "line", null);
                     lastPar = null;
@@ -956,6 +1014,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         }
 
         if (lastPar != null) {
+            endingParagraph(lastPar, false);
             lastPar.endParagraph();
             ElementListObserver.observe(lastPar, "line", fobj.getId());
             if (log.isTraceEnabled()) {
@@ -963,6 +1022,22 @@ public class LineLayoutManager extends InlineStackingLayoutManager
             }
         }
         log.trace(trace);
+    }
+
+    /**
+     * Word mode's seam (fop/CR-031): the passes over a child's elements before they join a paragraph.
+     * @param curLM the child
+     * @param inlineElements its elements, possibly null or empty
+     */
+    void processInlineElements(InlineLevelLayoutManager curLM, List<KnuthSequence> inlineElements) {
+    }
+
+    /**
+     * Word mode's seam (fop/CR-031): a paragraph is about to end.
+     * @param par the paragraph
+     * @param atBlockSequence true where a block-level sequence ends it, false where the manager's content does
+     */
+    void endingParagraph(Paragraph par, boolean atBlockSequence) {
     }
 
     /**
@@ -1002,7 +1077,8 @@ public class LineLayoutManager extends InlineStackingLayoutManager
      * @param isLastPar flag indicating whether currPar is the last paragraph
      * @return the line layout possibilities for the paragraph
      */
-    private LineLayoutPossibilities findOptimalBreakingPoints(int alignment, Paragraph currPar,
+    // package-private for WordLineLayoutManager, whose breaking is greedy (fop/CR-031)
+    LineLayoutPossibilities findOptimalBreakingPoints(int alignment, Paragraph currPar,
                                                               boolean isLastPar) {
         // use the member lineLayouts, which is read by LineBreakingAlgorithm.updateData1 and 2
         lineLayouts = new LineLayoutPossibilities();
@@ -1111,15 +1187,36 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         List<ListElement> returnList = new LinkedList<>();
 
         int endIndex = -1;
+        // Word mode (fop/CR-031): the previous line's extra leading, emitted after the break possibility that
+        // follows the line (glue after a taken break is dropped, so the last line of a page keeps only its text
+        // box); and the widows and orphans counted across a paragraph's soft returns. Neither, elsewhere.
+        int pendingLeading = 0;
+        int[] linesBefore = linesAcrossSoftReturns();
         for (int p = 0; p < knuthParagraphs.size(); p++) {
             // penalty between paragraphs
-            if (p > 0) {
+            if (p > 0 && linesBefore != null && !breakAllowedBefore(linesBefore[p], linesBefore)) {
+                // within the widows or orphans counted across the soft returns
+                if (pageSequenceHasObstacles()) {
+                    returnList.add(new BreakElement(new Position(this), KnuthElement.INFINITE, Constants.EN_LINE,
+                            context));
+                } else {
+                    returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, new Position(this), false));
+                }
+                if (pendingLeading > 0) {
+                    returnList.add(new LeadingGlue(pendingLeading));
+                    pendingLeading = 0;
+                }
+            } else if (p > 0) {
                 Keep keep = getKeepTogether();
                 returnList.add(new BreakElement(
                             new Position(this),
                             keep.getPenalty(),
                             keep.getContext(),
                             context));
+                if (pendingLeading > 0) {
+                    returnList.add(new LeadingGlue(pendingLeading));
+                    pendingLeading = 0;
+                }
             }
 
             LineLayoutPossibilities llPoss = lineLayoutsList[p];
@@ -1161,9 +1258,12 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                         orphans = 1;
                         widows = 1;
                     }
+                    boolean outsideWidowsAndOrphans = linesBefore != null
+                            ? breakAllowedBefore(linesBefore[p] + i, linesBefore)
+                            : i >= orphans && i <= llPoss.getChosenLineCount() - widows;
                     if (returnList.size() > 0
                             && i > 0 //if i==0 break generated above already
-                            && i >= orphans && i <= llPoss.getChosenLineCount() - widows) {
+                            && outsideWidowsAndOrphans) {
                         // penalty allowing a page break between lines
                         Keep keep = getKeepTogether();
                         returnList.add(new BreakElement(
@@ -1182,6 +1282,13 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                                     KnuthElement.INFINITE,
                                     Constants.EN_LINE,
                                     context));
+                    } else if (i > 0 && pendingLeading > 0) {
+                        // no break allowed here: the leading glue must not become one
+                        returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, null, true));
+                    }
+                    if (i > 0 && pendingLeading > 0) {
+                        returnList.add(new LeadingGlue(pendingLeading));
+                        pendingLeading = 0;
                     }
                     endIndex = llPoss.getChosenPosition(i).getLeafPos();
                     // create a list of the FootnoteBodyLM handling footnotes
@@ -1195,9 +1302,12 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                     if (baselineOffset < 0) {
                         baselineOffset = lbp.spaceBefore + lbp.baseline;
                     }
+                    // a Word line's leading (its spaceAfter) goes into a LeadingGlue after the next break
+                    // possibility; FOP's lines keep it in the box
+                    boolean leadingBelow = hasLeadingBelowLines();
+                    int boxHeight = lbp.lineHeight + lbp.spaceBefore + (leadingBelow ? 0 : lbp.spaceAfter);
                     if (floats.isEmpty()) {
-                        returnList.add(new KnuthBlockBox(lbp.lineHeight + lbp.spaceBefore + lbp.spaceAfter,
-                                footnoteList, lbp, false));
+                        returnList.add(new KnuthBlockBox(boxHeight, footnoteList, lbp, false));
                     } else {
                         // add a line with height zero and no content and attach float to it
                         returnList.add(new KnuthBlockBox(0, Collections.emptyList(), null, false, floats));
@@ -1206,15 +1316,43 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                         returnList.add(new BreakElement(new LeafPosition(this, p, previousEndIndex), keep
                                 .getPenalty(), keep.getContext(), context));
                         // add the original line where the float was but without the float now
-                        returnList.add(new KnuthBlockBox(lbp.lineHeight + lbp.spaceBefore + lbp.spaceAfter,
-                                footnoteList, lbp, false));
+                        returnList.add(new KnuthBlockBox(boxHeight, footnoteList, lbp, false));
+                    }
+                    if (leadingBelow) {
+                        pendingLeading = lbp.spaceAfter;
                     }
                     previousEndIndex = endIndex;
                 }
             }
         }
+        if (pendingLeading > 0) {
+            // the last line's leading, which the flow's Word mode moves behind the break possibility it adds after
+            // this block; the empty box keeps the list from ending in glue, which the flow would take for a break
+            // possibility of its own and add no penalty (BlockStackingLayoutManager.addInBetweenBreak)
+            returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, null, true));
+            returnList.add(new LeadingGlue(pendingLeading));
+            returnList.add(new KnuthBox(0, null, true));
+        }
 
         return returnList;
+    }
+
+    /** Word mode's seam (fop/CR-031): whether each line's leading goes below it as glue. @return false here */
+    boolean hasLeadingBelowLines() {
+        return false;
+    }
+
+    /** Word mode's seam (fop/CR-031): the lines before each of the manager's Knuth paragraphs, where widows and
+     *  orphans are counted across its soft returns. @return null here: each paragraph counts its own */
+    int[] linesAcrossSoftReturns() {
+        return null;
+    }
+
+    /** Whether a page may break before the line {@code line}, counted from 0 across the soft returns, by the
+     *  block's widows and orphans (fop/CR-031). */
+    boolean breakAllowedBefore(int line, int[] linesBefore) {
+        int total = linesBefore[linesBefore.length - 1];
+        return line >= fobj.getOrphans() && line <= total - fobj.getWidows();
     }
 
     private void createElements(List<ListElement> list, LineLayoutPossibilities llPoss,
@@ -1469,7 +1607,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
      *
      * @param currPar the paragraph whose words will be hyphenated
      */
-    private void findHyphenationPoints(Paragraph currPar) {
+    void findHyphenationPoints(Paragraph currPar) {
         // hyphenate every word
         ListIterator currParIterator = currPar.listIterator(currPar.ignoreAtStart);
         // list of TLM involved in hyphenation
@@ -1622,6 +1760,10 @@ public class LineLayoutManager extends InlineStackingLayoutManager
     }
 
     private HyphContext getHyphenContext(StringBuffer sbChars) {
+        // Word mode (fop/CR-031): a word Word leaves whole gets no hyphenation point at all
+        if (!hyphenatable(sbChars)) {
+            return null;
+        }
         // Find all hyphenation points in this word
         // (get in an array of offsets)
         // hyphenationProperties are from the block level?.
@@ -1639,7 +1781,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                                hyphenationProperties.country.getString(),
                                getFObj().getUserAgent().getHyphenationResourceResolver(),
                                getFObj().getUserAgent().getHyphenationPatternNames(),
-                               sbChars.toString(),
+                               forPatternLookup(sbChars),
                                hyphenationProperties.hyphenationRemainCharacterCount.getValue(),
                                hyphenationProperties.hyphenationPushCharacterCount.getValue(),
                                getFObj().getUserAgent());
@@ -1656,6 +1798,17 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         } else {
             return null;
         }
+    }
+
+    /** Word mode's seam (fop/CR-031): whether a word may be hyphenated. @return true here */
+    boolean hyphenatable(CharSequence word) {
+        return true;
+    }
+
+    /** Word mode's seam (fop/CR-031): the word as the hyphenation patterns are asked about it.
+     *  @return the word, here */
+    String forPatternLookup(StringBuffer word) {
+        return word.toString();
     }
 
     @Override
@@ -1708,8 +1861,10 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         int startElementIndex = lbp.startIndex;
         int endElementIndex = lbp.getLeafPos();
 
-        LineArea lineArea = new LineArea(
-                (lbp.getLeafPos() < seq.size() - 1 ? textAlignment : textAlignmentLast),
+        // Word mode (fop/CR-031): a line with a tab on it is aligned as its tab stop says
+        int lineAlignment = lineAlignment(seq, startElementIndex, endElementIndex,
+                lbp.getLeafPos() < seq.size() - 1 ? textAlignment : textAlignmentLast);
+        LineArea lineArea = new LineArea(lineAlignment,
                 lbp.difference, lbp.availableStretch, lbp.availableShrink);
         lineArea.setChangeBarList(getChangeBarList());
 
@@ -1745,7 +1900,8 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         KnuthElement lastElement = (KnuthElement) seqIterator.next();
         // the TLM which created the last KnuthElement in this line
         LayoutManager lastLM = lastElement.getLayoutManager();
-        if (lastElement.isGlue()) {
+        // (Word mode, fop/CR-031: a line ending in a tab keeps it, the tab being no space)
+        if (lastElement.isGlue() && !isTab((KnuthGlue) lastElement)) {
             // Remove trailing spaces if allowed so
             if (whiteSpaceTreament == EN_IGNORE_IF_SURROUNDING_LINEFEED
                     || whiteSpaceTreament == EN_IGNORE
@@ -1766,7 +1922,12 @@ public class LineLayoutManager extends InlineStackingLayoutManager
             // ignore KnuthGlue and KnuthPenalty objects
             // at the beginning of the line
             seqIterator = seq.listIterator(startElementIndex);
-            while (seqIterator.hasNext() && !((KnuthElement) seqIterator.next()).isBox()) {
+            while (seqIterator.hasNext()) {
+                KnuthElement e = (KnuthElement) seqIterator.next();
+                // (Word mode, fop/CR-031: a line broken at a tab begins with it, measured from the line's start)
+                if (e.isBox() || e.isGlue() && isTab((KnuthGlue) e)) {
+                    break;
+                }
                 startElementIndex++;
             }
         }
@@ -1791,6 +1952,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
             lc.setLeadingSpace(lc.getTrailingSpace());
             lc.setTrailingSpace(new SpaceSpecifier(false));
         }
+        lineAreasAdded(seq, startElementIndex, endElementIndex, lineArea);
 
         // if display-align is distribute, add space after
         if (context.getSpaceAfter() > 0
@@ -1802,6 +1964,23 @@ public class LineLayoutManager extends InlineStackingLayoutManager
             BidiResolver.reorder(lineArea);
         }
         parentLayoutManager.addChildArea(lineArea);
+    }
+
+    /** Word mode's seam (fop/CR-031): the alignment of a line, which a tab on it may change.
+     *  @return alignment, here */
+    int lineAlignment(KnuthSequence seq, int from, int to, int alignment) {
+        return alignment;
+    }
+
+    /** Word mode's seam (fop/CR-031): whether a glue is a tab, which is no space to drop at a line's ends.
+     *  @return false here */
+    boolean isTab(KnuthGlue glue) {
+        return false;
+    }
+
+    /** Word mode's seam (fop/CR-031): a line's inline areas have been added (its page-number tabs and leaders
+     *  are settled here). */
+    void lineAreasAdded(KnuthSequence seq, int from, int to, LineArea lineArea) {
     }
 
     /**

@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: a block read again after a side float's edge keeps its resolved space-before
- * (fop/CR-020). See README.md, "Changes from Apache FOP 2.11". */
+ * (fop/CR-020); and in Word mode its lines are WordLineLayoutManager's (fop/CR-031). See README.md, "Changes from
+ * Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -43,6 +44,7 @@ import org.apache.fop.fonts.FontInfo;
 import org.apache.fop.fonts.FontTriplet;
 import org.apache.fop.layoutmgr.inline.InlineLevelLayoutManager;
 import org.apache.fop.layoutmgr.inline.LineLayoutManager;
+import org.apache.fop.layoutmgr.inline.WordLineLayoutManager;
 import org.apache.fop.traits.MinOptMax;
 import org.apache.fop.traits.SpaceVal;
 
@@ -234,7 +236,10 @@ public class BlockLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
      */
     private LineLayoutManager createLineManager(LayoutManager firstlm) {
         LineLayoutManager llm;
-        llm = new LineLayoutManager(getBlockFO(), lineHeight, lead, follow);
+        // Word mode (fop/CR-031): the line manager with Word's line breaking and line rules
+        boolean word = getBlockFO().getUserAgent().getWordLayout() != null;
+        llm = word ? new WordLineLayoutManager(getBlockFO(), lineHeight, lead, follow)
+                : new LineLayoutManager(getBlockFO(), lineHeight, lead, follow);
         List<LayoutManager> inlines = new java.util.ArrayList<LayoutManager>();
         inlines.add(firstlm);
         while (proxyLMiter.hasNext()) {
@@ -243,6 +248,11 @@ public class BlockLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
                 inlines.add(lm);
             } else {
                 proxyLMiter.previous();
+                // Word mode: the block that ends this run of inlines is what the line before it ends at, and where
+                // the paragraph is one whose soft returns Word justifies, that block is a soft return
+                if (word && ((WordLineLayoutManager) llm).isJustifySoftReturn()) {
+                    ((WordLineLayoutManager) llm).setFollowedBySoftReturn(true);
+                }
                 break;
             }
         }

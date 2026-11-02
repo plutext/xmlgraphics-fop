@@ -303,6 +303,7 @@ public final class Docx4jFop {
         caps.add(COLUMN_BALANCING);
         caps.add(OBSTACLES_IN_THE_LINE);
         caps.add(SVG_EMBEDDED_RESOURCES_ONLY);
+        caps.add(WORD_LAYOUT);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

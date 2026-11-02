@@ -26,9 +26,11 @@ package org.apache.fop.apps;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import org.xml.sax.SAXException;
 
@@ -65,6 +67,11 @@ public final class FopFactoryBuilder {
     private final FopFactoryConfig config;
 
     private FopFactoryConfigBuilder fopFactoryConfigBuilder;
+
+    // Word mode's settings and font metrics, as last set (fop/CR-031)
+    private Map<String, String> wordLayout;
+
+    private BiFunction<String, String, Double> wordLayoutAscentShare;
 
     /**
      * A builder class for {@link FopFactory} which can be used for setting configuration. This is
@@ -382,7 +389,25 @@ public final class FopFactoryBuilder {
      * @return <code>this</code>
      */
     public FopFactoryBuilder setWordLayout(Map<String, String> settings) {
-        fopFactoryConfigBuilder.setWordLayout(settings == null ? null : new WordLayoutSettings(settings));
+        wordLayout = settings == null ? null : new HashMap<String, String>(settings);
+        fopFactoryConfigBuilder.setWordLayout(wordLayout == null ? null
+                : new WordLayoutSettings(wordLayout, wordLayoutAscentShare));
+        return this;
+    }
+
+    /**
+     * Word mode's font metrics (fop/CR-031): the share of a run's line pitch above its baseline, which docx4j knows
+     * for the document's fonts; see {@link WordLayoutSettings#ascentShare(String, String)}. No effect while Word
+     * mode is off. JDK types only, as {@link #setWordLayout(Map)}.
+     * @param ascentShare from the document font a run names (or {@code null}) and the full name of the font FOP
+     *     renders it in, the share, or {@code null} where it is not known
+     * @return <code>this</code>
+     */
+    public FopFactoryBuilder setWordLayoutFontMetrics(BiFunction<String, String, Double> ascentShare) {
+        wordLayoutAscentShare = ascentShare;
+        if (wordLayout != null) {
+            fopFactoryConfigBuilder.setWordLayout(new WordLayoutSettings(wordLayout, wordLayoutAscentShare));
+        }
         return this;
     }
 

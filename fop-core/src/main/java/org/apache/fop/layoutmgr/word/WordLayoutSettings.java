@@ -25,6 +25,7 @@ package org.apache.fop.layoutmgr.word;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import org.apache.fop.layoutmgr.KnuthElement;
 
@@ -68,11 +69,23 @@ public final class WordLayoutSettings {
 
     private final Map<String, String> values;
 
+    private final BiFunction<String, String, Double> ascentShare;
+
     /**
      * The settings from docx4j's resolved properties.
      * @param settings the values by property name; {@code null} is taken as empty
      */
     public WordLayoutSettings(Map<String, String> settings) {
+        this(settings, null);
+    }
+
+    /**
+     * The settings from docx4j's resolved properties, and docx4j's font metrics.
+     * @param settings the values by property name; {@code null} is taken as empty
+     * @param ascentShare see {@link #ascentShare(String, String)}; may be {@code null}
+     */
+    public WordLayoutSettings(Map<String, String> settings, BiFunction<String, String, Double> ascentShare) {
+        this.ascentShare = ascentShare;
         Map<String, String> copy = new HashMap<String, String>();
         if (settings != null) {
             for (Map.Entry<String, String> e : settings.entrySet()) {
@@ -82,6 +95,19 @@ public final class WordLayoutSettings {
             }
         }
         values = Collections.unmodifiableMap(copy);
+    }
+
+    /**
+     * Word's share of a run's line pitch above its baseline, {@code (usWinAscent + external leading) / line
+     * height} of the font Word lays the run out in. The answer is docx4j's: it knows the document's fonts, which FOP
+     * may render in a substitute, and their metrics ({@code org.docx4j.fonts.WordLineMetrics}), so docx4j passes the
+     * lookup ({@code FopFactoryBuilder.setWordLayoutFontMetrics}).
+     * @param documentFont the document font the run names ({@code docx4j:font}), or {@code null}
+     * @param physicalFont the full name of the font FOP renders the run in
+     * @return the share, or {@code null} where it is not known (the block font's share is then used)
+     */
+    public Double ascentShare(String documentFont, String physicalFont) {
+        return ascentShare == null ? null : ascentShare.apply(documentFont, physicalFont);
     }
 
     private String value(String name) {

@@ -66,7 +66,8 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.COLUMN_BALANCING));
         assertTrue(Docx4jFop.has(Docx4jFop.OBSTACLES_IN_THE_LINE));
         assertTrue(Docx4jFop.has(Docx4jFop.SVG_EMBEDDED_RESOURCES_ONLY));
-        assertEquals(27, Docx4jFop.capabilities().size());
+        assertTrue(Docx4jFop.has(Docx4jFop.WORD_LAYOUT));
+        assertEquals(28, Docx4jFop.capabilities().size());
     }
 
     @Test

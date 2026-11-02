@@ -37,6 +37,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -57,6 +58,12 @@ import org.apache.fop.events.EventListener;
  * through the user agent; docx4j's defaults and parsing; and the {@code docx4j:} namespace accepted on an FO.
  */
 public class WordLayoutSettingsTestCase {
+
+    /** FOP's own pair table back for the tests that follow in this JVM (fop/CR-031 §3.5). */
+    @AfterClass
+    public static void restoreFopPairTable() {
+        WordLayoutTestSupport.restoreFopPairTable();
+    }
 
     private static final String P = WordLayoutSettings.PREFIX;
 
