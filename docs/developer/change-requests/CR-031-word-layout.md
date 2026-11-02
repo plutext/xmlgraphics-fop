@@ -3,7 +3,9 @@
 Status: DONE 2026-11-02 for phase 1: built at 27ed437d3, gated PASS, merged to `2.12-docx4j.1` by fast-forward
 (e5f0a7d12), unreleased, local until Jason pushes. CI's command on JDK 21: 4077 tests, 0 failures, 5 skipped;
 checkstyle 0; spotbugs 0. r51 (`~/fop-renderers/r51-CR-031-27ed437d3/`, core sha256 98eb2a20...) passed CR-071
-phase 2's gate (§5.1). Phase 3 (§6) is built and gated PASS (b306 on r53), on branch `CR-031-phase3`, not merged. In progress since the same day, on Jason's acceptance of docx4j CR-071
+phase 2's gate (§5.1). Phase 3 (§6) is DONE too: gated PASS (b306 on r53) and merged to `2.12-docx4j.1` by fast-forward at c4ba99965 on
+Jason's word (2026-11-02: "it is enough to make a git tag for move alone with no change in output"); the move alone
+is tagged `CR-031-phase1` at 3d9a41143. In progress since the same day, on Jason's acceptance of docx4j CR-071
 ("CR-071 D1 to D11 as recommended, except for D9 where we decide on (a)"). docx4j-12 relayed the acceptance; it is recorded in docx4j a72346619. The work
 is on branch `CR-031-word-layout`, cut from `2.12-docx4j.1` at a5e22789f. Phase 1 starts from docx4j's copy after
 CR-071's phase 0, 9ec0e1045, which added only FOP-3331's and FOP-3333's hunks and `FirstWordBesideFloatTest`
@@ -346,8 +348,12 @@ says of the stock managers.
 - 8985, 4253 and 13986 render page for page as b304 at 30 dpi.
 
 The mark under Word layout, with the white-space exception, is inert on docx4j's corpora. Enterprise CR-001 §6.6
-item 8 records it (875c24f), and the fidelity register records b305 and b306 (129fa78, bc2da5b). Phase 3 stays on
-`CR-031-phase3` until Jason decides whether it ships in `2.12-docx4j.1` or later.
+item 8 records it (875c24f), and the fidelity register records b305 and b306 (129fa78, bc2da5b).
+
+Jason decided it ships in `2.12-docx4j.1`, with a tag for the move alone (2026-11-02: "it is enough to make a git tag
+for move alone with no change in output"). The tag is `CR-031-phase1`, annotated, at 3d9a41143: `2.12-docx4j.1`
+before phase 3, its code 27ed437d3 (r51). `CR-031-phase3` was merged by fast-forward at c4ba99965. The head's code
+is r53's.
 
 ### 6.1 r52, as first built (db7f31150): gated FAIL, superseded by §6.2
 
