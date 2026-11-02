@@ -1146,6 +1146,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         super(block, lh, l, f);
         inCell = inTableCell(block);
         inStaticContent = inStaticContent(block);
+        widthFromFlow = widthFromFlow(block);
         wordLineBox = foreignLength(block, WordLayoutElementMapping.LINE_BOX);
         wordBaseline = foreignLength(block, WordLayoutElementMapping.BASELINE);
         String rule = foreignAttribute(block, WordLayoutElementMapping.LINE_RULE);
@@ -2832,6 +2833,8 @@ public class WordLineLayoutManager extends LineLayoutManager {
     /** Whether this block is set in a header or footer (an fo:static-content), where a
      *  trailing tab which reaches no stop takes no line.  @since 17.2.0 */
     private final boolean inStaticContent;
+    /** Whether this block's measure is the flow's, which a side float narrows ({@link #widthFromFlow}). */
+    private final boolean widthFromFlow;
 
     /** How far past the measure {@code available} a word of this block may run before
      *  it is broken, in millipoints.  @since 17.2.0 */
@@ -3119,6 +3122,47 @@ public class WordLineLayoutManager extends LineLayoutManager {
         return false;
     }
 
+    /**
+     * The widest line this paragraph can have, which {@link #emergencyBreaks} measures a word against. Beside a side
+     * float or an obstacle it is the column's width, not the room beside it: FOP narrows the flow's width by the
+     * intrusion ({@code PageSequenceLayoutManager.getCurrentColumnWidth}). Word never breaks a word in that room; the
+     * first word that does not fit takes the rest of its paragraph below the float, which CR-023 section 4.2's mark
+     * does here (Word's float-gap-words probe, 2026-11-02; fop/CR-031 §10). A word wider than the column goes below
+     * too and is broken there at the column's width. A block whose measure is a cell's or a container's is not
+     * narrowed by the float, so its measure stands.
+     * @return the measure, with the intrusion where the measure is the flow's
+     */
+    private int widestLine() {
+        if (!widthFromFlow) {
+            return ipd;
+        }
+        return ipd + getPSLM().getStartIntrusionAdjustment() + getPSLM().getEndIntrusionAdjustment();
+    }
+
+    /**
+     * Whether a block's measure is the flow's: the flow is reached walking up through blocks, lists and wrappers,
+     * with no table cell, block-container, float, footnote or inline container in between.
+     * @param block the block
+     * @return whether a side float's intrusion narrows the block's lines
+     */
+    static boolean widthFromFlow(org.apache.fop.fo.FONode block) {
+        for (org.apache.fop.fo.FONode n = block == null ? null : block.getParent();
+                n != null; n = n.getParent()) {
+            if (n instanceof org.apache.fop.fo.pagination.Flow) {
+                return !(n instanceof org.apache.fop.fo.pagination.StaticContent);
+            }
+            if (n instanceof org.apache.fop.fo.flow.table.TableCell
+                    || n instanceof org.apache.fop.fo.flow.BlockContainer
+                    || n instanceof org.apache.fop.fo.flow.Float
+                    || n instanceof org.apache.fop.fo.flow.Footnote
+                    || n instanceof org.apache.fop.fo.flow.FootnoteBody
+                    || n instanceof org.apache.fop.fo.flow.InlineContainer) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     /** Whether this block is set in an fo:static-content (a header or footer). */
     static boolean inStaticContent(org.apache.fop.fo.FONode block) {
         for (org.apache.fop.fo.FONode n = block == null ? null : block.getParent();
@@ -3398,7 +3442,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         // Word's last resort, after every legal break the document itself offers:
         // a word too long for any line is broken inside it (see emergencyBreaks)
         if (canWrap) {
-            emergencyBreaks(currPar, ipd);
+            emergencyBreaks(currPar, widestLine());
         }
         int allowedBreaks = !canWrap ? BreakingAlgorithm.ONLY_FORCED_BREAKS
                 : (canHyphenate ? BreakingAlgorithm.ALL_BREAKS : BreakingAlgorithm.NO_FLAGGED_PENALTIES);

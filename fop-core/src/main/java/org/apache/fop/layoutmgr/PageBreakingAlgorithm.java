@@ -26,7 +26,8 @@
  * hook column-widths, the parts held to a height while columns of unequal width are balanced (fop/CR-026 phase B);
  * and hook obstacles-in-the-line, an obstacle held by a box armed as a virtual float for the page the box lands on,
  * its start edge the first break before its band, a block's last line fitted above the band with the border and
- * padding the block closes with (fop/CR-024 phase A).
+ * padding the block closes with (fop/CR-024 phase A); and a line that does not fit the room beside an obstacle ends
+ * the band at a boundary the orphans keep (fop/CR-031 §10).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -1012,11 +1013,15 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             } else if (breakClass == Constants.EN_LINE && floatHeight != 0 && handlingObstacle()
                     && nextBoxHasContent(position) && edgeRestartable(position)
                     && (handlingEndOfFloat || (floatEndsAtTop ? nextLineCrosses(position, floatHeight)
-                            : widthUpToNextBox(position) + lineBoxTopOffsetOfNextBox(position) >= floatHeight))) {
+                            : widthUpToNextBox(position) + lineBoxTopOffsetOfNextBox(position) >= floatHeight)
+                        || overflowsBesideFloatAtNextBox(position))) {
                 // and the edge at an obstacle's foot, or at the next band's top, within those lines: the lines
                 // beside a band keep their widows and orphans (§11.19), so the boundary is where the lines
                 // widen again, which considerLegalBreak takes as the end edge (the foot found by handleBox at
-                // the box across it, or by the test considerLegalBreak makes at a legal break)
+                // the box across it, or by the test considerLegalBreak makes at a legal break); and before a line
+                // that does not fit the room beside the band, which a word processor sets below the object with
+                // the rest of its paragraph whatever the orphans (CR-023 §4.2's mark; Word's float-gap-words
+                // case 3, fop/CR-031 §10)
                 considerLegalBreak(penalty, position);
             }
         }

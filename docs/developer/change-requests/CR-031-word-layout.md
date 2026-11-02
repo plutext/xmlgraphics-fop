@@ -485,3 +485,82 @@ Merged to `2.12-docx4j.1` by fast-forward at 531bf4f9c. **b307 on r54 is the for
 Enterprise §6.6 items 49 and 11 record the fix (a46b319), the fidelity register records it (a695703), and docx4j
 17.3.6's CHANGELOG notes it, since docx4j 17.3.5 has the defect through its own copy.
 
+
+## 10. Word never breaks a word in the room beside a float (2026-11-02)
+
+**Word's rule.** docx4j-12's probe `float-gap-words` (docx4j 83edc5fac; Jason's golden, Word 365, recorded in
+docx4j's word-layout-rules §6.8 at 19a1ec1dc) answers §6.2's open question. Word never breaks a word in the room
+beside a float or a page-anchored object. The first word that does not fit takes the rest of its paragraph below the
+object.
+
+- Case 3: a page-anchored table leaves 24pt, 4253's shape. A full-width line, then "in" in the room, then
+  "reprehenderit" and the rest below.
+- Case 5: a square-wrapped picture leaves 60pt. The 150pt word starts the first line below the picture.
+- Case 4: a word wider than the column goes below the float and is broken there at the column's width.
+
+On r54, Word mode broke case 3's paragraph down the 24pt gap and case 5's word beside the picture. So r52's
+emergency-break change (§6.1) was Word's rule after all.
+
+Jason, 2026-11-02: build it now, and ship it in `2.12-docx4j.1`. docx4j-12 asked that the discarded passes'
+overflow reports be kept out of the event counts.
+
+**As built**, on branch `CR-031-gap-words`, cut from `2.12-docx4j.1` at cef1f6b5e:
+
+1. **The emergency break measures a word against the column.** This is r52's `widestLine()` and `widthFromFlow()`
+   (§6.1). Where the block's measure is the flow's, the width is the column's; inside a table cell, block-container,
+   float, footnote or inline container it is the block's own measure. A word that fits the column overflows the
+   room beside the float, is marked, and goes with the rest of its paragraph to the float's foot. Word mode only.
+2. **A marked line's overflow is reported only when it is laid out as it is.**
+   - `updateData2` holds the report in the `LineBreakPosition` (`overflowToReport`, `overflowLine`), and
+     `addInlineArea` reports it once.
+   - A line the page breaking moves is laid out again at full width, so its marked position never reaches
+     `addInlineArea`. A line laid in a pass the page breaking discards never does either.
+   - A marked line kept where it is, because the edge could not be taken there, is still reported.
+   - Unmarked overflows are reported as before. This is the base line manager's code, so FOP's own layout reports
+     a moved line no more either.
+3. **Beside an obstacle, a marked line ends the band at a boundary that the orphans keep.**
+   - After an obstacle's start edge, the paragraph is read again. Its first lines beside the band keep its orphans
+     (CR-024 §11.19), so the break between "in" and "reprehenderit" was an infinite penalty, and the edge waited for
+     the next ordinary break after the third line.
+   - `PageBreakingAlgorithm.handlePenaltyAt` already took such a boundary as an obstacle's edge at its foot or at
+     the next band's top. It now does so before a marked line too.
+   - Side floats need no such rule: FOP relaxes widows and orphans to 1 beside them.
+   - This applies to FOP's own layout too.
+
+**Measured here** with the gate's classpath (`~/fidelity-cr030/cp-b307.txt`, r54) and the changed classes as an
+overlay. The probe was rendered by the gate's own `Fidelity.renderOne`; the corpus documents by RenderFo from
+b307's FOs.
+
+- **`float-gap-words`:**
+  - Case 3 is Word's: "in" alone at y 215.4 (Word 215.3), then "reprehenderit in voluptate..." full width at 428.6
+    (Word 428.7).
+  - Case 5 is Word's: the long word at y 260.3 (Word 260.2), x 72, full width.
+  - Pages 1, 2 and 4 are unchanged. Cases 1, 2 and 4 keep their tables in the flow, which is docx4j's
+    `FLOAT_MAX_SHARE`, docx4j-12's next step.
+- **Corpus documents:** 13986, 8985, 4253, 13544 and 10598 have text and page counts identical to r54's.
+- **Overflow warnings fall:** 13986 from 173 to 1, and 8985 from 12,645 to 276. 4253, 13544 and 10598 are
+  unchanged. The gone reports are marked lines in passes beside a float that the page breaking discarded; 8985's are
+  lines at 0pt beside the two floats that fill its column.
+- **`OverflowBesideFloatTestCase` now has six cases.** Three are new, and each fails without the change:
+  - a 228pt word beside the float goes below it, whole;
+  - a moved line reports no overflow;
+  - beside an obstacle, "in" stays in the 24pt room and "reprehenderit" goes below whatever the orphans.
+
+**Open, recorded and not traced:**
+
+- A word wider than the column, beside a float, stays there, overflowing. The first pass splits it into one mapping
+  per character, which the float's re-layout cannot split again. Word sets it below and breaks it at the column's
+  width (case 4). The test pins today's behaviour so that a fix changes it deliberately.
+- At an obstacle's start edge inside a paragraph that has a preserved linefeed (`linefeed-treatment="preserve"`),
+  the line before the linefeed is laid twice, in both modes. This was found in a probe, not on the corpus: docx4j
+  writes a soft return as a block, not a linefeed.
+
+**Pass criteria** for the gate, against b307 on r54 (docx4j-12's):
+
+- `float-gap-words` cases 3 and 5 are at Word's lines;
+- corpus movers only where a word was broken in the room beside a float or an obstacle, each moving that word and the
+  rest of its paragraph below;
+- no text lost;
+- 28 hooks;
+- events equal except `line` and `linebig`, which fall by the marked lines reported in discarded passes (8985 and
+  13986 measured above).

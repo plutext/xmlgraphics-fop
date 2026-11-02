@@ -23,7 +23,8 @@
  * of infinite penalty at the line boundaries orphans and widows keep, where an obstacle's edge may lie
  * (fop/CR-024 §11.4). And Word mode (fop/CR-031): the seams WordLineLayoutManager overrides, the Word lines' leading
  * glue and widows across soft returns in postProcessLineBreaks, and the manager's state package-private for that
- * subclass. See README.md, "Changes from Apache FOP 2.11". */
+ * subclass; a line CR-023 marks reports its overflow only when it is laid out unmoved (fop/CR-031 §10). See
+ * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -138,6 +139,10 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         private final int baseline;
         /** fop/CR-023: the line's content did not fit beside a side float but would fit the column without it */
         private boolean overflowsBesideFloat;
+        /** fop/CR-031 §10: a marked line's overflow, reported when the line is laid out as it is */
+        int overflowToReport;
+        /** fop/CR-031 §10: the marked line's number in its paragraph, for that report */
+        int overflowLine;
 
         /**
          * docx4j-fo-renderer hook {@code inline-access}: public, so that a consumer's line
@@ -529,40 +534,51 @@ public class LineLayoutManager extends InlineStackingLayoutManager
             }
 
             int lack = difference + bestActiveNode.availableShrink;
+            int firstElementIndex = bestActiveNode.line > 1 ? bestActiveNode.previous.position + 1 : 0;
+            // A line that does not fit beside a side float but would fit the column without it is marked,
+            // and the page breaking sets it, with the rest of its paragraph, below the float (fop/CR-023)
+            boolean marked = false;
+            if (lack < 0 && marksOverflowBesideFloat(par, firstElementIndex, bestActiveNode.position)) {
+                int intrusion = getPSLM().getStartIntrusionAdjustment() + getPSLM().getEndIntrusionAdjustment();
+                marked = intrusion > 0 && -lack <= intrusion;
+            }
+            int overflowToReport = 0;
             // if this LLM is nested inside a BlockContainerLayoutManager that is constraining
             // the available width and thus responsible for the overflow then we do not issue
             // warning event here and instead let the BCLM handle that at a later stage
             if (lack < 0 && !handleOverflow(-lack)) {
-                InlineLevelEventProducer eventProducer
-                    = InlineLevelEventProducer.Provider.get(
-                        getFObj().getUserAgent().getEventBroadcaster());
-                // curChildLM is null on the float re-layout pass (PageBreaker.handleFloatLayout)
-                if (curChildLM == null || curChildLM.getFObj() == null) {
-                    eventProducer.lineOverflows(this, getFObj().getName(), bestActiveNode.line,
-                            -lack, getFObj().getLocator());
+                if (marked) {
+                    // a marked line is reported only if it is laid out as it is, not moved below the float or laid
+                    // in a pass beside the float that the page breaking discards (fop/CR-031 §10)
+                    overflowToReport = -lack;
                 } else {
-                    eventProducer.lineOverflows(this, curChildLM.getFObj().getName(), bestActiveNode.line,
-                        -lack, curChildLM.getFObj().getLocator());
+                    InlineLevelEventProducer eventProducer
+                        = InlineLevelEventProducer.Provider.get(
+                            getFObj().getUserAgent().getEventBroadcaster());
+                    // curChildLM is null on the float re-layout pass (PageBreaker.handleFloatLayout)
+                    if (curChildLM == null || curChildLM.getFObj() == null) {
+                        eventProducer.lineOverflows(this, getFObj().getName(), bestActiveNode.line,
+                                -lack, getFObj().getLocator());
+                    } else {
+                        eventProducer.lineOverflows(this, curChildLM.getFObj().getName(), bestActiveNode.line,
+                            -lack, curChildLM.getFObj().getLocator());
+                    }
                 }
             }
 
             //log.debug("LLM> (" + (lineLayouts.getLineNumber(activePossibility) - addedPositions)
             //    + ") difference = " + difference + " ratio = " + ratio);
             LineBreakPosition lbp = makeLineBreakPosition(par,
-                   (bestActiveNode.line > 1 ? bestActiveNode.previous.position + 1 : 0),
+                   firstElementIndex,
                    bestActiveNode.position,
                    bestActiveNode.availableShrink - (addedPositions > 0
                        ? 0 : ((Paragraph) par).lineFiller.getShrink()),
                    bestActiveNode.availableStretch,
                    difference, ratio, startIndent, endIndent);
-            if (lack < 0 && marksOverflowBesideFloat(par,
-                    bestActiveNode.line > 1 ? bestActiveNode.previous.position + 1 : 0, bestActiveNode.position)) {
-                // A line that does not fit beside a side float but would fit the column without it is marked,
-                // and the page breaking sets it, with the rest of its paragraph, below the float (fop/CR-023)
-                int intrusion = getPSLM().getStartIntrusionAdjustment() + getPSLM().getEndIntrusionAdjustment();
-                if (intrusion > 0 && -lack <= intrusion) {
-                    lbp.setOverflowsBesideFloat(true);
-                }
+            if (marked) {
+                lbp.setOverflowsBesideFloat(true);
+                lbp.overflowToReport = overflowToReport;
+                lbp.overflowLine = bestActiveNode.line;
             }
             lineLayouts.addBreakPosition(lbp, activePossibility);
             addedPositions++;
@@ -1858,6 +1874,15 @@ public class LineLayoutManager extends InlineStackingLayoutManager
      */
     private void addInlineArea(LayoutContext context, LineBreakPosition lbp,
             boolean isLastPosition) {
+
+        if (lbp.overflowToReport > 0) {
+            // a line marked beside a side float and laid out as it is, not moved below the float: its overflow is
+            // real, and reported now, once (fop/CR-031 §10)
+            InlineLevelEventProducer.Provider.get(getFObj().getUserAgent().getEventBroadcaster())
+                    .lineOverflows(this, getFObj().getName(), lbp.overflowLine, lbp.overflowToReport,
+                            getFObj().getLocator());
+            lbp.overflowToReport = 0;
+        }
 
         KnuthSequence seq = knuthParagraphs.get(lbp.parIndex);
         int startElementIndex = lbp.startIndex;
