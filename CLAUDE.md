@@ -219,8 +219,12 @@ process-wide: Word tests here call `WordBreakOpportunities.restoreFopPairTable()
 mode's seam"; run the 19 ported Word tests with it. Phase 3 (D11, CR-031 §6.2), CR-023 §4.2's mark under Word mode
 with no mark on a line of white space only, is MERGED too at c4ba99965 on Jason's word. r52 failed b305: an empty
 paragraph beside two column-filling floats was marked, and measuring the emergency break against the column put about
-1,100 overflows into discarded passes. r53 passed b306 against b304 with 0 movers, events equal. **b306 on r53 is now
-the baseline.** The move alone is tagged `CR-031-phase1` (3d9a41143; local, not pushed). To trace a gate mover here,
+1,100 overflows into discarded passes. r53 passed b306 against b304 with 0 movers, events equal. Then §9, at docx4j-12's report and Jason's wish: Word mode
+laid a paragraph twice at a restart after it. Its last-line `LeadingGlue` sits behind the break with the paragraph's
+block as position, and `PageBreaker.handleFloatLayout` and `RestartAtLM` read again from the next positioned element.
+Both loops now skip the glue, merged at 531bf4f9c. Gate b307 on r54: 4253 and 13544 at an obstacle's edge, and 10598
+(CR-026 §8's "blank kept at the restart") to Word's 8 pages, nothing else moving. **b307 on r54 is now the
+baseline.** The move alone is tagged `CR-031-phase1` (3d9a41143; local, not pushed). To trace a gate mover here,
 run RenderFo on the gate's own classpath file (`~/fidelity-cr030/cp-b30N.txt`), one pass, with the changed classes as
 a javac overlay. Read positions with mutool, not pdftotext's columns. docx4j 17.3.6 waits on `2.12-docx4j.1` on
 Central, which is Jason's call, as is the push of `2.12-docx4j.1` and of the tag. The paragraph that follows is the state of 2026-11-01, kept

@@ -217,7 +217,8 @@ the last blank line, that line is re-laid in column 2, and the forced break ends
 Word's once a line has spilled. The extra is at the column's head: the first line at y=76.1 in the gate's PDF, 63.8 in
 Word's, 61.5 in the stock render; a space-before or leading glue kept at the head of a restarted list is the suspect
 (FOP's `BlockLayoutManager` resets its spaces on a restart and keeps them only under the float-restart flag, CR-020).
-Sent to the docx4j session 2026-10-08 to fix on its side; r24 stands for the gate.
+Sent to the docx4j session 2026-10-08 to fix on its side; r24 stands for the gate. *Resolved 2026-11-02, see the
+end of the next paragraph.*
 
 **Measured further (2026-10-08): the head of page 3's column 1 holds the blank paragraph that spilled past column 2
 of page 2, which FOP's stock restart loses and docx4j's managers keep.** At the page-2 boundary both paths break at
@@ -237,6 +238,13 @@ blank would be XSL-correct and would move the stock output away from Word on thi
 behaviour, recorded here with the probes, for upstream if it matters. Asked of the docx4j session: which paragraph
 carries each `w:br type="column"` (an empty paragraph holding the break mapped to an 11.5pt block is the mapping to
 look at), and the line pitch that makes the column 11pt taller than Word's, §6.6 territory rather than columns.
+*Resolved 2026-11-02 (`fop/CR-031` §9, gate b307): the blank that docx4j's managers kept was that paragraph laid
+twice.*
+- Word mode's leading glue moves behind the break after the paragraph, and its position is that paragraph's block.
+- `RestartAtLM` read again from the next element with a position, which was the glue, so it read the blank
+  paragraph a second time at the next column's head.
+- With the restart skipping the glue, 10598 is at Word's 8 pages, parity 0.9654 (from 0.7527 at 9).
+- Apache's drop of a blank spill, above, is unchanged.
 
 **The docx4j session's answer (2026-10-08).** Six of the seven column breaks are paragraphs of their own (an empty
 `w:p` whose only run holds the `w:br`), mapped as `break-before="column"` on the block whose own line opens the next

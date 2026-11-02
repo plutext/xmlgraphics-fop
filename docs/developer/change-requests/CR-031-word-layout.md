@@ -466,3 +466,22 @@ of page 2, and the run gained a page. FOP's own layout was right.
 - no text lost;
 - events equal outside the documents that move;
 - 28 hooks.
+
+**Gate b307, r54 (531bf4f9c, core sha256 b23356e8...) against b306: PASS** (docx4j-12, 2026-11-02).
+
+- 28 hooks, the probes identical, and events equal (linebig 3243, line 17776, clip 1552, bcov 1276, bcovi 516,
+  region 73, body 18, glyph 63, font 8, other 87).
+- Three documents changed, each toward Word, with no text lost:
+  - real3 `14_es-DO_tbl_4253`: the doubled client line is gone. Candidate lines went from 22 to 16, all 16
+    matched, and its words are exactly Word's (54 to 45; Word 45).
+  - real `16_en-US_tbl_13544`, an obstacle's edge: a doubled "Name" line is gone. +1 line, 4 pages to Word's 3,
+    parity 0.9815 to 0.9907.
+  - real `15_en-IN_num_10598`, unequal columns, so a change of width at each column boundary. Its duplicate was a
+    blank paragraph, so its words are unchanged at Word's 2,129. +80 lines, 9 pages to Word's 8, parity 0.7527 to
+    0.9654. This is the blank "kept at the restart" of CR-026 §8, and Enterprise §6.6 item 49 retracts it as a
+    pitch question.
+
+Merged to `2.12-docx4j.1` by fast-forward at 531bf4f9c. **b307 on r54 is the fork's baseline for later gates.**
+Enterprise §6.6 items 49 and 11 record the fix (a46b319), the fidelity register records it (a695703), and docx4j
+17.3.6's CHANGELOG notes it, since docx4j 17.3.5 has the defect through its own copy.
+
