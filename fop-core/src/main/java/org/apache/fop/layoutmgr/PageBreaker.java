@@ -22,7 +22,8 @@
  * hook float-offset, the float placed at its target top (fop/CR-023); and hook column-widths, columns of unequal
  * width balanced before a span="all" block by trial (fop/CR-026 phase B); and hook obstacles-in-the-line, an
  * obstacle taken up at its start edge as a float whose area is already drawn (fop/CR-024 phase A); and the content
- * after an edge read from the block after a Word line's leading, not from the block the leading closes (fop/CR-031).
+ * after an edge read from the block after a Word line's leading, not from the block the leading closes (fop/CR-031);
+ * and a float's intrusion ended at a forced page break (fop/CR-031 §11).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -193,7 +194,35 @@ public class PageBreaker extends AbstractBreaker {
     /** {@inheritDoc} */
     protected int getNextBlockList(LayoutContext childLC,
             int nextSequenceStartsOn) {
+        if (handlingStartOfFloat && !firstPart && startsNewPageOrColumn(nextSequenceStartsOn)) {
+            endFloatAtForcedBreak();
+        }
         return getNextBlockList(childLC, nextSequenceStartsOn, null, null, null);
+    }
+
+    private static boolean startsNewPageOrColumn(int breakClass) {
+        return breakClass == Constants.EN_ANY || breakClass == Constants.EN_PAGE || breakClass == Constants.EN_COLUMN
+                || breakClass == Constants.EN_ODD_PAGE || breakClass == Constants.EN_EVEN_PAGE;
+    }
+
+    /**
+     * The list before ended at a forced break with a float's foot, or an obstacle's band, still below it: the float
+     * is on the page before, so the list after the break starts at the column's full width, read as a fresh list.
+     * Kept on, the intrusion narrowed the next page's lines and the list there was broken as beside the float, its
+     * foot measured from where the float began on the page before (two floats of one anchor whose foot lay below
+     * the paragraphs before a page break: the next page's text 109pt in from the margin, and with a table that does
+     * not fit beside a float sent below it (fop/CR-031 §11), that table's content lost; docx4j's floating-table probe,
+     * gate b270).
+     */
+    private void endFloatAtForcedBreak() {
+        handlingStartOfFloat = false;
+        handlingEndOfFloat = false;
+        intrusionPending = false;
+        obstacleFloat = false;
+        floatHeight = 0;
+        pslm.setStartIntrusionAdjustment(0);
+        pslm.setEndIntrusionAdjustment(0);
+        childFLM.handleFloatOff();
     }
 
     /** {@inheritDoc} */

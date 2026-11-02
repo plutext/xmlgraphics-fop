@@ -27,7 +27,8 @@
  * and hook obstacles-in-the-line, an obstacle held by a box armed as a virtual float for the page the box lands on,
  * its start edge the first break before its band, a block's last line fitted above the band with the border and
  * padding the block closes with (fop/CR-024 phase A); and a line that does not fit the room beside an obstacle ends
- * the band at a boundary the orphans keep (fop/CR-031 §10).
+ * the band at a boundary the orphans keep (fop/CR-031 §10); and a table wider than the room beside a side float ends
+ * the float before it, as beside an obstacle (fop/CR-031 §11).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -1309,7 +1310,8 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     /**
      * Whether the next box is a line that did not fit beside the float but would fit without it (marked by
      * LineLayoutManager): the edge is here, and the clearance sets the line, with the rest of its paragraph, at
-     * the float's foot, as a word processor moves a word that does not fit beside a table (fop/CR-023 §4.2).
+     * the float's foot, as a word processor moves a word that does not fit beside a table (fop/CR-023 §4.2); or
+     * starts a block that asks for more width than the room beside the float (§11.20, fop/CR-031 §11).
      */
     private boolean overflowsBesideFloatAtNextBox(int elementIdx) {
         for (Position p = positionOfNextBox(elementIdx); p != null; p = nextInChain(p)) {
@@ -1317,9 +1319,15 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                     && ((LineLayoutManager.LineBreakPosition) p).overflowsBesideFloat()) {
                 return true;
             }
-            if (handlingObstacle() && blockWiderThanRoomBesideFloat(p.getLM())) {
-                // an obstacle's band only: beside an fo:float the block keeps Apache FOP's placement (gate b270:
-                // the floating-table probe, at Word's on r43, lost a line with the rule applied to its floats)
+        }
+        // beside an fo:float too, as Word sets a table that does not fit the room beside a floating table
+        // (docx4j's float-gap-tables probe, fop/CR-031 §11). The rule was confined to obstacles at first, since
+        // gate b270 lost the floating-table probe's case 3; that loss was a float's intrusion kept on past a
+        // forced page break (PageBreaker.endFloatAtForcedBreak), not this rule. The block's first box is read
+        // past an auxiliary one, which the space resolver puts before a table's border-before after a space
+        // (the probe's tables, each after its anchor's space-after: the edge was found inside the table only)
+        for (Position p = positionOfNextNonAuxiliaryBox(elementIdx); p != null; p = nextInChain(p)) {
+            if (blockWiderThanRoomBesideFloat(p.getLM())) {
                 return true;
             }
         }
@@ -1431,6 +1439,16 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         for (int i = elementIdx; i < par.size(); i++) {
             KnuthElement e = getElement(i);
             if (e.isBox()) {
+                return e.getPosition();
+            }
+        }
+        return null;
+    }
+
+    private Position positionOfNextNonAuxiliaryBox(int elementIdx) {
+        for (int i = elementIdx; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox() && !e.isAuxiliary()) {
                 return e.getPosition();
             }
         }

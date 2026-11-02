@@ -591,3 +591,83 @@ Merged to `2.12-docx4j.1` by fast-forward at 2fe0ff3dd, on Jason's word that it 
 fork's baseline for later gates.** Enterprise §6.6 item 8 has Word's rule and this gate (eee2bcd); the register
 has 6c3d971.
 
+
+## 11. A table that does not fit the room beside a float goes below it (2026-11-02)
+
+**Word's rule.** docx4j-12's probe `float-gap-tables` (docx4j 2dd54769f; Jason's golden, recorded in docx4j's
+word-layout-rules §6.8, s68gaptables, at 7963264c6). Each case has a left floating table of 307.3pt (298.3pt and a 9pt
+column for its distance from the text), which leaves 144pt of a 451.3pt column. Word treats the table after it as it
+treats a word: it goes beside the float if it fits the room, and below the float if it doesn't. The width form makes
+no difference.
+
+- Case 1, a 100pt table: beside.
+- Case 2, a 200pt fixed table: below.
+- Case 3, a fixed 200pt table with percentage cells: below.
+- Case 4, a 44% table (about 199pt): below.
+- Case 5, a second floating table anchored on a later paragraph: Word draws it at its own anchor, over the first.
+- Case 6, a 200pt table beside a page-anchored floating table: below, as CR-024 §11.20 has it beside an obstacle.
+
+docx4j writes each following table with `table-layout="fixed"` and its width in points (case 4's as 198.55pt), so
+`PageBreakingAlgorithm.fixedIPDOf` reads all of them.
+
+Jason ruled, via docx4j-12 on 2026-11-02, that the fork implements the rule for `fo:float`, not only for obstacles.
+docx4j's step 2, which floats any wide table that has room, is gated on top of this.
+
+**What had kept the rule from floats.** CR-024 §11.20 confined it to obstacles because gate b270 lost a line of
+`table-floating-pair` when it reached `fo:float`. Re-measured here, the loss was not this rule's.
+
+- On that probe's page 2, two left floats anchored on one paragraph stack down to y 631. The paragraphs beside them
+  end at y 354, and the next paragraph has `break-before="page"`.
+- The page-breaking list ends at the forced break with the float still on, since no edge was reached. The list after
+  it was fetched with the float's intrusion still set (`PageBreaker.getNextBlockList` serves no break trait while a
+  float is handled). It was then broken as beside the float, with the foot measured from where the float began on
+  page 2.
+- So page 3's text started 109pt in from the margin (P07 at x 181, Word's at x 72), in b309 too; docx4j-12 had
+  noted that page as off.
+- With the table rule on floats, the full-width tables on page 3 were "wider than the room" beside a float that
+  wasn't there. They went below it, and case 3's tables and lines were lost.
+- This is Apache FOP's own behaviour as well: in FOP's layout the same FO narrows the next page.
+
+**As built**, on branch `CR-031-gap-tables`, cut from `2.12-docx4j.1` at 41b868ed1:
+
+1. **A float ends at a forced page break.** When a list that began beside a float, or an obstacle's band, ends at a
+   forced break to a new page or column with the float's foot still below it, the next list is fetched as a fresh
+   one: the intrusion is reset, and the float's state is cleared (`PageBreaker.endFloatAtForcedBreak`). A span change
+   is left as it was.
+2. **The table rule applies beside `fo:float`.** `overflowsBesideFloatAtNextBox` no longer asks
+   `handlingObstacle()`. A table or block-container whose FO fixes a width greater than the room beside the float
+   ends the float before it, and the table starts at the float's foot.
+3. **The block's first box is read past an auxiliary one.** An anchor's `space-after` followed by a table's
+   `border-before` puts the space resolver's auxiliary box, with no position, between the break and the table's
+   first row. The test saw an empty chain there, fired only at the break between the rows, and that edge was
+   deferred out of the table, so the table stayed beside the float and only the paragraph after it went below. The
+   width test now reads the next non-auxiliary box. The line mark's test (CR-023 §4.2) is unchanged.
+4. **Capability `wide-block-below-float`**, the twenty-ninth, so that docx4j can gate its step 2 on it.
+
+Both changes apply in FOP's own layout as well as in Word mode, as CR-023 §4.2 and CR-024 §11.20 do.
+
+**Measured here** on b309's classpath (`~/fidelity-cr030/cp-b309.txt`, r55), one pass, with the changed classes as an
+overlay. The control renders both probes byte for byte as the gate's PDFs did.
+
+- **`float-gap-tables`, with step 2's FO** (b310's): lines within 1.5pt of Word's, 171 of 281 to 206.
+  - Cases 1 to 4 are at Word's lines throughout. T2 at y 431.6, x 77.6 (Word 431.6, 77.8); T3 at 417.3 (417.4);
+    T4 at 403.6 (403.6); the paragraphs after them full width at Word's y.
+  - Case 6 goes below as well, 35.6pt lower than Word throughout: Word draws the page-anchored float at the page's
+    top, and step 2's FO anchors it in the text.
+  - Case 5 is unchanged: the second floating table is set in the 144pt room beside the first and runs past the
+    margin. Open.
+- **`table-floating-pair`** (the same FO in b309 and b310): 119 of 142 lines within 1.5pt to 138. Page 3 is Word's: P07
+  at x 72, the full-width tables at x 77.6, P08 at y 304.2 (Word 304.1). Pages 1 and 2 are unchanged.
+- **b309's FOs** of 9832, 1616, 6705, 4083, 8236 and 3229: identical with and without the change (text and warnings).
+- **Step 2's FOs** of the same six:
+  - 9832 is back to b309's 286 words and Word's 3 pages; step 2 alone has 250 words and 2 pages.
+  - 8236 is back to 349 words; step 2 alone has 347.
+  - 3229 has 307 lines within 1.5pt where step 2 alone has 120.
+  - 1616, 6705 and 4083 are identical with and without the change. 6705 loses 263 words under step 2: three of its
+    five floated tables are drawn short, one of them not at all. Not traced yet.
+- **`TableBesideFloatTestCase`**, three cases, in Word mode and FOP's own:
+  - a 100pt table beside a 307pt float stays beside it;
+  - a 200pt table goes below it, past the auxiliary box;
+  - the page after a forced break under a float is full width.
+
+  The second and third fail without the change, in both modes.

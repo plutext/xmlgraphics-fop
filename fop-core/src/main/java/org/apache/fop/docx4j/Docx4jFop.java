@@ -272,6 +272,15 @@ public final class Docx4jFop {
      */
     public static final String WORD_LAYOUT = "word-layout";
 
+    /**
+     * A table or block-container whose FO fixes a width greater than the room beside a side float goes below the
+     * float, as Word sets a table that does not fit beside a floating table; one that fits stays beside it. Before,
+     * the rule held beside an obstacle's band only (fop/CR-024 §11.20), and beside an fo:float the table was laid in
+     * the room and overflowed it. With it, a float's intrusion ends at a forced page break, where it had narrowed the
+     * next page's lines (fop/CR-031 §11; Enterprise CR-001 item 8).
+     */
+    public static final String WIDE_BLOCK_BELOW_FLOAT = "wide-block-below-float";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -304,6 +313,7 @@ public final class Docx4jFop {
         caps.add(OBSTACLES_IN_THE_LINE);
         caps.add(SVG_EMBEDDED_RESOURCES_ONLY);
         caps.add(WORD_LAYOUT);
+        caps.add(WIDE_BLOCK_BELOW_FLOAT);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 
