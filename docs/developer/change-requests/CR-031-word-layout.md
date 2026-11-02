@@ -614,7 +614,10 @@ Jason ruled, via docx4j-12 on 2026-11-02, that the fork implements the rule for 
 docx4j's step 2, which floats any wide table that has room, is gated on top of this.
 
 **What had kept the rule from floats.** CR-024 §11.20 confined it to obstacles because gate b270 lost a line of
-`table-floating-pair` when it reached `fo:float`. Re-measured here, the loss was not this rule's.
+`table-floating-pair`, and 7 lines of 8985, when it reached `fo:float`. They had two causes. The probe's loss was not
+this rule's but a float kept on past a forced page break, below. 8985's was this rule's: a defect in it, found by gate
+b312 and fixed for r57 (point 5 of the build below). r56's first account here called both losses the page break's;
+that was wrong for 8985.
 
 - On that probe's page 2, two left floats anchored on one paragraph stack down to y 631. The paragraphs beside them
   end at y 354, and the next paragraph has `break-before="page"`.
@@ -643,6 +646,11 @@ docx4j's step 2, which floats any wide table that has room, is gated on top of t
    deferred out of the table, so the table stayed beside the float and only the paragraph after it went below. The
    width test now reads the next non-auxiliary box. The line mark's test (CR-023 §4.2) is unchanged.
 4. **Capability `wide-block-below-float`**, the twenty-ninth, so that docx4j can gate its step 2 on it.
+5. **A block whose FO fixes no width is never wider than the room** (r57). `fixedIPDOf` returns -1 for such a
+   block, and the test was `fixedIPDOf(lm) > room`. Between two floats that overlap, the room is negative. On 8985's
+   page 13 a left float of 223.9pt and a right one of 191.5pt leave -1.85pt of a 413.55pt column, so -1 > -1850 sent
+   each of the nine empty paragraphs there below the floats, and "4. Cultural." from y 439.7 (Word's 439.7) to 605.3.
+   The test is now `fixed >= 0 && fixed > room`.
 
 Both changes apply in FOP's own layout as well as in Word mode, as CR-023 §4.2 and CR-024 §11.20 do.
 
@@ -665,9 +673,43 @@ overlay. The control renders both probes byte for byte as the gate's PDFs did.
   - 3229 has 307 lines within 1.5pt where step 2 alone has 120.
   - 1616, 6705 and 4083 are identical with and without the change. 6705 loses 263 words under step 2: three of its
     five floated tables are drawn short, one of them not at all. Not traced yet.
-- **`TableBesideFloatTestCase`**, three cases, in Word mode and FOP's own:
+- **`TableBesideFloatTestCase`**, three cases in r56 (five in r57, below), in Word mode and FOP's own:
   - a 100pt table beside a 307pt float stays beside it;
   - a 200pt table goes below it, past the auxiliary box;
   - the page after a forced break under a float is full width.
 
   The second and third fail without the change, in both modes.
+
+**Gates on r56** (docx4j-12, 2026-11-02). b311 is a control on cp-b309, since `float-gap-tables`' golden is newer than
+b309; it is identical to b309, with 0 movers and events equal.
+
+- **b312, r56 alone, against b311:** 7 movers; events equal except line 8382 to 8380.
+  - Toward Word: `table-floating-pair` +7 (0.9225 to 0.9718), `table-floating-anchor` +9 (0.9000 to 1.0000, 5 pages
+    to Word's 6), 13419 +2, 9775 +3, 11741 +4.
+  - 937 +4 lines, but 13 pages to 14 (Word 13). The forced-break fix is right there. docx4j turns the anchor
+    paragraph's `w:br type="page"` into `break-before="page"` on the block that wraps the floating table, so the
+    page break comes before the table; b311 dropped that break, and the table was on page 1 by luck. docx4j moves
+    the break after the table.
+  - Away from Word: 8985 -7 (0.9609 to 0.9569), the negative room above.
+- **b313, r56 with docx4j's step 2, against b311:** 19 movers.
+  - Toward Word: `float-gap-tables` +25 (0.7758 to 0.8648), `table-floating-wide-anchor-text` +15, `float-gap-words`
+    +14, b312's two probes, and 3229 +9 (12 pages to Word's 11).
+  - Away from Word: 9832 -2, 6705 -9, 4083 -8 and 1616 -13, as on b310. 9832's remaining loss is step 2 floating
+    two 518.75pt tables in a 518.8pt column; docx4j will float a table only where it leaves about 1pt of room.
+  - Events: linebig 61 to 70, line 8382 to 8733, bcov 1276 to 1288, bcovi 516 to 562.
+  - Step 2 stays out until docx4j stops floating a table taller than a page, or one whose anchor falls beside a
+    float that leaves less room than its width.
+
+**Open, recorded:**
+
+- The first line of a float's own anchor block stays beside the float when it fits neither the room nor any width
+  there: 9832 under step 2, "August" alone in a 0.05pt room at x 561.2, past the column's edge, and the rest of the
+  line below the float. The float's start edge is the break before that line, and no break precedes it in the list
+  read beside the float, so CR-023's mark cannot move it. Obstacles have the clearance for a first box after the edge
+  (CR-024 §11.18, §11.20); floats have none. `TableBesideFloatTestCase` pins it. docx4j's 1pt room rule keeps the
+  corpus from reaching it.
+- A second floating table anchored beside a first is set in the room beside it, and runs past the margin where it
+  does not fit (`float-gap-tables` case 5; 6705's second float under step 2). Word draws it at its own anchor, over
+  the first.
+- A float taller than the page is cut at the page's foot (6705's first float under step 2): `fo:float` does not
+  split.

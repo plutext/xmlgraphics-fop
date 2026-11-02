@@ -1322,10 +1322,11 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         }
         // beside an fo:float too, as Word sets a table that does not fit the room beside a floating table
         // (docx4j's float-gap-tables probe, fop/CR-031 §11). The rule was confined to obstacles at first, since
-        // gate b270 lost the floating-table probe's case 3; that loss was a float's intrusion kept on past a
-        // forced page break (PageBreaker.endFloatAtForcedBreak), not this rule. The block's first box is read
-        // past an auxiliary one, which the space resolver puts before a table's border-before after a space
-        // (the probe's tables, each after its anchor's space-after: the edge was found inside the table only)
+        // gate b270 lost the floating-table probe's case 3 and 8985: the first was a float's intrusion kept on
+        // past a forced page break (PageBreaker.endFloatAtForcedBreak), the second the rule taking an unfixed
+        // width for wider than a negative room. The block's first box is read past an auxiliary one, which the
+        // space resolver puts before a table's border-before after a space (the probe's tables, each after its
+        // anchor's space-after: the edge was found inside the table only)
         for (Position p = positionOfNextNonAuxiliaryBox(elementIdx); p != null; p = nextInChain(p)) {
             if (blockWiderThanRoomBesideFloat(p.getLM())) {
                 return true;
@@ -1339,15 +1340,18 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
      * or whose fixed columns sum to more, or a container of fixed width, which a word processor sets below the
      * object as it sets a word that does not fit (hook obstacles-in-the-line, fop/CR-024 §11.20: a letterhead's
      * page-anchored table left 0.25pt beside it, and the flow's table laid there, 568pt wide, was lost). The width
-     * read is the FO's, not the laid one, which for a paragraph is the column's whatever the column. Applied beside
-     * an obstacle's band only, never beside an fo:float.
+     * read is the FO's, not the laid one, which for a paragraph is the column's whatever the column. Beside an
+     * fo:float too since fop/CR-031 §11. A block whose FO fixes no width is never wider: between two floats that
+     * overlap, the room is negative, and the -1 that says no width was fixed had sent every empty paragraph there
+     * below the floats (corpus 8985's page 13, -1.85pt, gate b312; and b270's 8985 loss before).
      */
     private boolean blockWiderThanRoomBesideFloat(LayoutManager lm) {
         if (!(topLevelLM instanceof PageSequenceLayoutManager)) {
             return false;
         }
+        int fixed = fixedIPDOf(lm);
         int room = ((PageSequenceLayoutManager) topLevelLM).getCurrentColumnWidth();
-        return fixedIPDOf(lm) > room;
+        return fixed >= 0 && fixed > room;
     }
 
     /**

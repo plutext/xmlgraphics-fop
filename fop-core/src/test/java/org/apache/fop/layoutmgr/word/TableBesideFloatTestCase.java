@@ -63,6 +63,8 @@ public class TableBesideFloatTestCase {
             + "<fo:block-container width=\"307pt\" height=\"100pt\"><fo:block>FLOAT</fo:block></fo:block-container>"
             + "</fo:float>anchor</fo:block>";
 
+    private static final String EMPTY = "<fo:block white-space-treatment=\"preserve\"> </fo:block>";
+
     private static String table(String name, int width) {
         return "<fo:block><fo:table table-layout=\"fixed\" width=\"" + width + "pt\" border-collapse=\"collapse\" "
                 + "border=\"0.48pt solid black\"><fo:table-column column-width=\"" + (width / 2) + "pt\"/>"
@@ -80,6 +82,16 @@ public class TableBesideFloatTestCase {
             + SEQ + ANCHOR + "<fo:block>before-break</fo:block>"
             + "<fo:block break-before=\"page\">after-break one two three four five six seven eight nine ten eleven "
             + "twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twenty-one</fo:block>" + END
+            // two floats that overlap by 4pt, a negative room between them, and empty paragraphs after (8985's page 13)
+            + SEQ + "<fo:block><fo:float float=\"left\"><fo:block-container width=\"230pt\" height=\"60pt\">"
+            + "<fo:block>LEFT</fo:block></fo:block-container></fo:float><fo:float float=\"right\">"
+            + "<fo:block-container width=\"225pt\" height=\"60pt\"><fo:block>RIGHT</fo:block></fo:block-container>"
+            + "</fo:float></fo:block>" + EMPTY + EMPTY + EMPTY + EMPTY + EMPTY
+            + "<fo:block>after-overlap</fo:block>" + END
+            // a float leaving 0.05pt, and its anchor's own first word (9832 under docx4j's step 2)
+            + SEQ + "<fo:block><fo:float float=\"left\"><fo:block-container width=\"450.95pt\" height=\"60pt\">"
+            + "<fo:block>NARROW</fo:block></fo:block-container></fo:float>August 2015-November 2015 Trail My Car "
+            + "Solutions one two three four five six seven eight nine ten</fo:block>" + END
             + "</fo:root>";
 
     private static Document wordLayout;
@@ -142,5 +154,27 @@ public class TableBesideFloatTestCase {
         assertBoth("144000", "(//pageViewport)[3]//word[.='before-break']/ancestor::lineArea[1]/@ipd");
         assertBoth("451000", "(//pageViewport)[4]//word[.='after-break']/ancestor::lineArea[1]/@ipd");
         assertBoth("451000", "(//pageViewport)[4]//word[.='fifteen']/ancestor::lineArea[1]/@ipd");
+    }
+
+    @Test
+    public void aBlockOfNoFixedWidthStaysBesideFloatsThatOverlap() throws Exception {
+        // the room between the floats is -4pt; a paragraph fixes no width, so it is never wider than the room, and the
+        // anchor's line and the four empty paragraphs above the floats' foot stay beside them (8985, gate b312). Word
+        // mode only: FOP's own layout marks a line of white space that overflows the room (CR-023 §4.2), and sends
+        // the empty paragraphs below (fop/CR-031 §6.2)
+        assertEquals("5", xpath.evaluate("count((//pageViewport)[5]//lineArea[@ipd='0'])", wordLayout));
+        assertBoth("451000", "//word[.='after-overlap']/ancestor::lineArea[1]/@ipd");
+    }
+
+    /**
+     * The first line of a float's own anchor block stays beside the float, though it fits neither the room (0.05pt)
+     * nor any width beside the float: the float's start edge is the break before that line, and no break precedes
+     * it in the list read beside the float, so CR-023's mark cannot move it; the rest of the paragraph goes below.
+     * Word sets the line below the float (9832's golden). Open, fop/CR-031 §11; pinned so that a fix changes it.
+     */
+    @Test
+    public void theAnchorsFirstWordStaysInASliverBesideTheFloat() throws Exception {
+        assertBoth("50", "//word[.='August']/ancestor::lineArea[1]/@ipd");
+        assertBoth("451000", "//word[starts-with(., '2015-November')]/ancestor::lineArea[1]/@ipd");
     }
 }
