@@ -17,7 +17,7 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: the option svg-embedded-resources-only, an SVG graphic loading only the resources embedded in it
- * (fop/CR-028). See README.md,
+ * (fop/CR-028); and Word mode's settings (fop/CR-031). See README.md,
  * "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -36,6 +36,7 @@ import org.apache.fop.apps.io.InternalResourceResolver;
 import org.apache.fop.configuration.Configuration;
 import org.apache.fop.fonts.FontManager;
 import org.apache.fop.layoutmgr.LayoutManagerMaker;
+import org.apache.fop.layoutmgr.word.WordLayoutSettings;
 
 /**
  * The configuration data for a {@link FopFactory} instance.
@@ -200,6 +201,13 @@ public interface FopFactoryConfig {
      * @return true if SVG external resources are restricted to {@code data:} URLs
      */
     boolean isSvgEmbeddedResourcesOnly();
+
+    /**
+     * Word mode's settings (fop/CR-031, docx4j CR-071): where set, the layout managers break lines greedily and lay
+     * them out by Word's rules, reading these settings; where {@code null}, the default, they are Apache FOP's.
+     * @return the settings, or {@code null} where Word mode is off
+     */
+    WordLayoutSettings getWordLayout();
 
     boolean isSimpleLineBreaking();
 

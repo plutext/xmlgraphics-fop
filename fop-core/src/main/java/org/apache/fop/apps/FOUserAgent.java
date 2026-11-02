@@ -19,7 +19,8 @@
  * Apache FOP 2.11: hook page-number-zero, an option to number a page 0 (fop/CR-012); and hook
  * measured-region-extents, events muted while a header or footer is measured (fop/CR-018); and hook
  * row-first-part-room, a table row's first part at a page's foot needing room for its bottom margin (fop/CR-025); and
- * the option svg-embedded-resources-only (fop/CR-028). See README.md, "Changes from Apache FOP 2.11". */
+ * the option svg-embedded-resources-only (fop/CR-028); and Word mode's settings (fop/CR-031). See README.md, "Changes
+ * from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -66,6 +67,7 @@ import org.apache.fop.fo.properties.PropertyCache;
 import org.apache.fop.fonts.FontManager;
 import org.apache.fop.hyphenation.HyphenationTreeCache;
 import org.apache.fop.layoutmgr.LayoutManagerMaker;
+import org.apache.fop.layoutmgr.word.WordLayoutSettings;
 import org.apache.fop.render.ImageHandlerRegistry;
 import org.apache.fop.render.Renderer;
 import org.apache.fop.render.RendererConfig;
@@ -963,6 +965,15 @@ public class FOUserAgent {
      */
     public boolean isSvgEmbeddedResourcesOnly() {
         return factory.isSvgEmbeddedResourcesOnly();
+    }
+
+    /**
+     * Word mode's settings (fop/CR-031, docx4j CR-071), which the layout managers read: where set, they break lines
+     * greedily and lay them out by Word's rules; see {@link FopFactoryConfig#getWordLayout()}.
+     * @return the settings, or {@code null} where Word mode is off, the default
+     */
+    public WordLayoutSettings getWordLayout() {
+        return factory.getWordLayout();
     }
 
     public boolean isSimpleLineBreaking() {

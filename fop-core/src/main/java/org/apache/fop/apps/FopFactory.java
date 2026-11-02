@@ -16,8 +16,8 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
- * Apache FOP 2.11: the option svg-embedded-resources-only (fop/CR-028). See README.md,
- * "Changes from Apache FOP 2.11". */
+ * Apache FOP 2.11: the option svg-embedded-resources-only (fop/CR-028); and Word mode's settings (fop/CR-031). See
+ * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -54,6 +54,7 @@ import org.apache.fop.fo.properties.PropertyCache;
 import org.apache.fop.fonts.FontManager;
 import org.apache.fop.hyphenation.HyphenationTreeCache;
 import org.apache.fop.layoutmgr.LayoutManagerMaker;
+import org.apache.fop.layoutmgr.word.WordLayoutSettings;
 import org.apache.fop.render.ImageHandlerRegistry;
 import org.apache.fop.render.RendererConfig;
 import org.apache.fop.render.RendererConfig.RendererConfigParser;
@@ -262,6 +263,14 @@ public final class FopFactory implements ImageContext {
      */
     public boolean isSvgEmbeddedResourcesOnly() {
         return config.isSvgEmbeddedResourcesOnly();
+    }
+
+    /**
+     * Word mode's settings (fop/CR-031); see {@link FopFactoryConfig#getWordLayout()}.
+     * @return the settings, or {@code null} where Word mode is off
+     */
+    WordLayoutSettings getWordLayout() {
+        return config.getWordLayout();
     }
 
     boolean isSimpleLineBreaking() {

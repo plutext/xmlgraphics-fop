@@ -263,6 +263,15 @@ public final class Docx4jFop {
      */
     public static final String SVG_EMBEDDED_RESOURCES_ONLY = "svg-embedded-resources-only";
 
+    /**
+     * Word mode: Word's greedy line breaking and the layout rules around it (the line box and the leading below it,
+     * tab stops and leaders, the hyphenation zone, emergency breaks, list items, page-number citations), in the
+     * fork's own layout managers, turned on by {@code FopFactoryBuilder.setWordLayout(Map)} with docx4j's settings
+     * and off by default; and the {@code docx4j:} namespace it reads, and {@code WordBreakOpportunities}' entry
+     * point for an FO writer (fop/CR-031, docx4j CR-071; Enterprise CR-001 item 4).
+     */
+    public static final String WORD_LAYOUT = "word-layout";
+
     private static final Set<String> CAPABILITIES;
 
     static {

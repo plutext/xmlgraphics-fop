@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.11: the delegates of the options svg-embedded-resources-only (fop/CR-028) and Word mode's settings
+ * (fop/CR-031). See README.md, "Changes from Apache FOP 2.11". */
+
 package org.apache.fop.apps;
 
 import java.net.URI;
@@ -29,6 +33,7 @@ import org.apache.fop.apps.io.InternalResourceResolver;
 import org.apache.fop.configuration.Configuration;
 import org.apache.fop.fonts.FontManager;
 import org.apache.fop.layoutmgr.LayoutManagerMaker;
+import org.apache.fop.layoutmgr.word.WordLayoutSettings;
 
 /**
  * This is a mutable implementation of the {@link FopFactoryConfig} to be used for testing purposes.
@@ -155,6 +160,10 @@ public final class MutableConfig implements FopFactoryConfig {
 
     public boolean isSvgEmbeddedResourcesOnly() {
         return delegate.isSvgEmbeddedResourcesOnly();
+    }
+
+    public WordLayoutSettings getWordLayout() {
+        return delegate.getWordLayout();
     }
 
     public boolean isSimpleLineBreaking() {

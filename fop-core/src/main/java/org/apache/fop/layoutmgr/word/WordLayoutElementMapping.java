@@ -1,0 +1,141 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.12: Word mode's docx4j: namespace, moved from docx4j-export-fo (fop/CR-031, docx4j CR-071). See
+ * README.md, "Changes from Apache FOP 2.11". */
+
+/* $Id$ */
+
+package org.apache.fop.layoutmgr.word;
+
+import java.util.HashMap;
+
+import org.apache.fop.fo.ElementMapping;
+
+/**
+ * The {@code docx4j:} namespace of Word mode (fop/CR-031, docx4j CR-071), moved from docx4j's
+ * {@code org.docx4j.fop.wordlayout.WordLayoutElementMapping} with its attribute names unchanged. Registered so that
+ * its attributes on {@code fo:block}, {@code fo:root} and the inline FOs are accepted (FOP rejects attributes in an
+ * unknown namespace as invalid properties) and kept as the FO's foreign attributes, where the Word-mode managers
+ * read them. docx4j writes them only when the renderer advertises {@code word-layout}. No elements are defined.
+ *
+ * <p>On {@code fo:block}:</p>
+ * <ul>
+ * <li>{@code docx4j:line-box}: the height of the text box of each line (Word's single-spacing pitch for the
+ * paragraph's font: ascent, descent and external leading); the difference between the block's line-height and this
+ * is the extra leading Word puts below the text, which is dropped at the bottom of a page;</li>
+ * <li>{@code docx4j:baseline}: where Word puts the baseline within that box (ascent plus external leading for "auto"
+ * spacing);</li>
+ * <li>{@code docx4j:line-rule}: auto, exact or atLeast ({@code w:lineRule}), which decides where any difference
+ * between the block's line-height and the box goes: below as droppable leading, above, or nowhere (clipped).</li>
+ * </ul>
+ * <p>and on {@code fo:root}:</p>
+ * <ul>
+ * <li>{@code docx4j:space-shrink}: how far the spaces of a justified line may be compressed to pull a word in (see
+ * {@link #SPACE_SHRINK});</li>
+ * <li>{@code docx4j:hyphenation-zone}, {@code docx4j:hyphen-limit} and {@code docx4j:hyphenate-caps}: the
+ * document's hyphenation settings (see {@link #HYPHENATION_ZONE}).</li>
+ * </ul>
+ */
+public class WordLayoutElementMapping extends ElementMapping {
+
+    /** The namespace. */
+    public static final String URI = "http://docx4j.org/fop/word-layout";
+
+    public static final String LINE_BOX = "line-box";
+    public static final String BASELINE = "baseline";
+    /** auto | exact | atLeast: how the block's line-height relates to the box. */
+    public static final String LINE_RULE = "line-rule";
+    /** on a list item's first block: the label's natural ascent, part of its first line */
+    public static final String LABEL_ASCENT = "label-ascent";
+    /** on a list item's <b>label</b> block: the {@code w:suff} separator the level puts
+     *  between the number and the text - "tab" or "space".  Absent for "nothing", and
+     *  absent from a list block docx4j did not write for a numbered paragraph.  Word
+     *  writes that separator as one space glyph in the PDF's text layer;
+     *  the list item manager puts it in ours. */
+    public static final String LABEL_SUFFIX = "label-suffix";
+    /** on a small-caps span: the fraction of the run's size its glyphs are drawn at.
+     *  Word scales a small-caps run's glyphs, not its line, so the line is sized from the
+     *  declared size; without this FOP takes a line's ascent from the 80% inline where
+     *  that inline is a block's only content. */
+    public static final String SMALL_CAPS = "small-caps";
+    /** on fo:root: how far this document's Word engine may compress the spaces of a
+     *  justified line to pull a word in, as a fraction of their natural width.  Word
+     *  only does that from compatibility mode 15 (the Word 2013 layout engine); for
+     *  an older document docx4j writes 0. */
+    public static final String SPACE_SHRINK = "space-shrink";
+
+    /** on fo:root: w:hyphenationZone in twips - the largest gap this document's Word
+     *  engine tolerates at the end of a line before it hyphenates the next word.
+     * */
+    public static final String HYPHENATION_ZONE = "hyphenation-zone";
+    /** on fo:root: w:consecutiveHyphenLimit - how many lines in a row may end in a
+     *  hyphen.  Absent, or 0, means no limit. */
+    public static final String HYPHEN_LIMIT = "hyphen-limit";
+    /** on fo:root: "false" for w:doNotHyphenateCaps - a word in all capitals is not
+     *  hyphenated. */
+    public static final String HYPHENATE_CAPS = "hyphenate-caps";
+
+    /** on fo:root: "true" for w:compat/w:noTabHangInd - a hanging indent makes no
+     *  implicit tab stop at the paragraph's left indent.  Off in every compatibility
+     *  mode, so it is written only for a document which states the flag. */
+    public static final String NO_TAB_HANG_IND = "no-tab-hang-ind";
+    /** on a justified paragraph's fo:block: the line that ends at each of its soft returns
+     *  is justified, as Word justifies it unless w:compat/w:doNotExpandShiftReturn is set.
+     * */
+    public static final String JUSTIFY_SOFT_RETURN = "justify-soft-return";
+
+    /** on an fo:leader: it stands in for a w:tab, and the line manager
+     *  gives it the width from the x it starts at to the tab stop it reaches. */
+    public static final String TAB = "tab";
+    /** on the <b>stretching</b> fo:leader of a table-of-contents entry: it came from a
+     *  {@code w:tab} with a {@code w:leader}, so the line manager puts its
+     *  characters on Word's grid - but it is not laid out against the stops and gets no
+     *  width from the line manager, which is why it is not {@link #TAB}.  The value is
+     *  the {@code w:leader} kind. */
+    public static final String TOC_LEADER = "toc-leader";
+    /** on an fo:page-number-citation: the shape of the number Word last wrote there,
+     *  which the page-number citation manager measures the citation by while its
+     *  page is unknown. */
+    public static final String PLACEHOLDER = "placeholder";
+    /** on a paragraph's fo:block: its custom tab stops, "pos:align:leader;..." in
+     *  twips from the left margin (w:val="clear" stops included: they clear the
+     *  default stops before them). */
+    public static final String TABS = "tabs";
+    /** with {@link #TABS}: the default tab interval in twips (w:defaultTabStop). */
+    public static final String TAB_DEFAULT = "tab-default";
+    /** with {@link #TABS}: "left:firstLineOffset" in twips, the paragraph's indents,
+     *  which put the stops and the running x in one frame. */
+    public static final String TAB_IND = "tab-ind";
+
+    public WordLayoutElementMapping() {
+        namespaceURI = URI;
+    }
+
+    @Override
+    protected void initialize() {
+        if (foObjs == null) {
+            foObjs = new HashMap<String, Maker>(); // attributes only
+        }
+    }
+
+    @Override
+    public String getStandardPrefix() {
+        return "docx4j";
+    }
+}

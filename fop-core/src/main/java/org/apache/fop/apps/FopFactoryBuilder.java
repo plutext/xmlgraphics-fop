@@ -16,8 +16,8 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
- * Apache FOP 2.11: the option svg-embedded-resources-only (fop/CR-028). See README.md,
- * "Changes from Apache FOP 2.11". */
+ * Apache FOP 2.11: the option svg-embedded-resources-only (fop/CR-028); and the switch and settings of Word mode,
+ * setWordLayout (fop/CR-031). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -42,6 +42,7 @@ import org.apache.fop.apps.io.ResourceResolverFactory;
 import org.apache.fop.configuration.Configuration;
 import org.apache.fop.fonts.FontManager;
 import org.apache.fop.layoutmgr.LayoutManagerMaker;
+import org.apache.fop.layoutmgr.word.WordLayoutSettings;
 
 /**
  * This is the builder class for {@link FopFactory}. Setters can be chained to
@@ -371,6 +372,20 @@ public final class FopFactoryBuilder {
         return this;
     }
 
+    /**
+     * Turns Word mode on with these settings, or off with {@code null}, the default (fop/CR-031, docx4j CR-071);
+     * see {@link FopFactoryConfig#getWordLayout()}. The keys are docx4j's property names,
+     * {@code docx4j.convert.out.fo.wordLayout.*}, and the values the strings docx4j resolved for them
+     * ({@link WordLayoutSettings}). JDK types only, so that a caller compiled against Apache FOP can reach it by
+     * reflection.
+     * @param settings the settings by property name, or {@code null} for Apache FOP's layout
+     * @return <code>this</code>
+     */
+    public FopFactoryBuilder setWordLayout(Map<String, String> settings) {
+        fopFactoryConfigBuilder.setWordLayout(settings == null ? null : new WordLayoutSettings(settings));
+        return this;
+    }
+
     public FopFactoryBuilder setSimpleLineBreaking(boolean b) {
         fopFactoryConfigBuilder.setSimpleLineBreaking(b);
         return this;
@@ -453,6 +468,8 @@ public final class FopFactoryBuilder {
 
         private boolean tableBorderOverpaint;
         private boolean svgEmbeddedResourcesOnly = FopFactoryConfig.DEFAULT_SVG_EMBEDDED_RESOURCES_ONLY;
+
+        private WordLayoutSettings wordLayout;
         private boolean simpleLineBreaking;
 
         private boolean skipPagePositionOnlyAllowed = true;
@@ -599,6 +616,10 @@ public final class FopFactoryBuilder {
             return svgEmbeddedResourcesOnly;
         }
 
+        public WordLayoutSettings getWordLayout() {
+            return wordLayout;
+        }
+
         public boolean isSimpleLineBreaking() {
             return simpleLineBreaking;
         }
@@ -685,6 +706,8 @@ public final class FopFactoryBuilder {
         void setTableBorderOverpaint(boolean b);
 
         void setSvgEmbeddedResourcesOnly(boolean b);
+
+        void setWordLayout(WordLayoutSettings settings);
 
         void setSimpleLineBreaking(boolean b);
 
@@ -801,6 +824,10 @@ public final class FopFactoryBuilder {
         }
 
         public void setSvgEmbeddedResourcesOnly(boolean b) {
+            throwIllegalStateException();
+        }
+
+        public void setWordLayout(WordLayoutSettings settings) {
             throwIllegalStateException();
         }
 
@@ -921,6 +948,10 @@ public final class FopFactoryBuilder {
 
         public void setSvgEmbeddedResourcesOnly(boolean b) {
             config.svgEmbeddedResourcesOnly = b;
+        }
+
+        public void setWordLayout(WordLayoutSettings settings) {
+            config.wordLayout = settings;
         }
 
         public void setSimpleLineBreaking(boolean b) {
