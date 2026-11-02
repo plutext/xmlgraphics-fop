@@ -40,6 +40,7 @@ import org.apache.fop.fonts.Font;
 import org.apache.fop.fonts.FontInfo;
 import org.apache.fop.fonts.FontTriplet;
 import org.apache.fop.layoutmgr.BreakingAlgorithm;
+import org.apache.fop.layoutmgr.KnuthBox;
 import org.apache.fop.layoutmgr.KnuthElement;
 import org.apache.fop.layoutmgr.KnuthGlue;
 import org.apache.fop.layoutmgr.KnuthPenalty;
@@ -116,6 +117,25 @@ public class WordLineLayoutManager extends LineLayoutManager {
         int lineAlignDifference(KnuthNode node, KnuthSequence par, int difference) {
             int from = node.line > 1 ? node.previous.position + 1 : 0;
             return lineHasTab(par, from, node.position) ? alignDifference(node, difference) : difference;
+        }
+
+        /**
+         * CR-023 section 4.2's mark, but not on a line that holds nothing but white space: Word lays an empty
+         * paragraph beside a float however little room it leaves, where the mark would set it below the float
+         * (12_es-ES 8985: ten empty paragraphs between two floating tables that fill the column; fop/CR-031 §6.2).
+         */
+        @Override
+        boolean marksOverflowBesideFloat(KnuthSequence par, int from, int to) {
+            for (int i = Math.max(0, from); i <= to && i < par.size(); i++) {
+                Object e = par.get(i);
+                if (e instanceof KnuthBox && !((KnuthBox) e).isAuxiliary() && ((KnuthBox) e).getWidth() > 0) {
+                    org.apache.fop.fonts.GlyphMapping m = mappingOf(e);
+                    if (m == null || !m.isSpace) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         @Override
@@ -1126,7 +1146,6 @@ public class WordLineLayoutManager extends LineLayoutManager {
         super(block, lh, l, f);
         inCell = inTableCell(block);
         inStaticContent = inStaticContent(block);
-        widthFromFlow = widthFromFlow(block);
         wordLineBox = foreignLength(block, WordLayoutElementMapping.LINE_BOX);
         wordBaseline = foreignLength(block, WordLayoutElementMapping.BASELINE);
         String rule = foreignAttribute(block, WordLayoutElementMapping.LINE_RULE);
@@ -2813,8 +2832,6 @@ public class WordLineLayoutManager extends LineLayoutManager {
     /** Whether this block is set in a header or footer (an fo:static-content), where a
      *  trailing tab which reaches no stop takes no line.  @since 17.2.0 */
     private final boolean inStaticContent;
-    /** Whether this block's measure is the flow's, which a side float narrows ({@link #widthFromFlow}). */
-    private final boolean widthFromFlow;
 
     /** How far past the measure {@code available} a word of this block may run before
      *  it is broken, in millipoints.  @since 17.2.0 */
@@ -3102,45 +3119,6 @@ public class WordLineLayoutManager extends LineLayoutManager {
         return false;
     }
 
-    /**
-     * The widest line this paragraph can have, which {@link #emergencyBreaks} measures a word against. Beside a side
-     * float it is the column's width, not the room beside the float: FOP narrows the flow's width by the float's
-     * intrusion ({@code PageSequenceLayoutManager.getCurrentColumnWidth}), and a word that fits the column is moved
-     * below the float, as Word moves it, by CR-023 section 4.2's mark (fop/CR-031 section 6), not broken inside.
-     * A block whose measure is a cell's or a container's is not narrowed by the float, so its measure stands.
-     * @return the measure, with the float's intrusion where the measure is the flow's
-     */
-    private int widestLine() {
-        if (!widthFromFlow) {
-            return ipd;
-        }
-        return ipd + getPSLM().getStartIntrusionAdjustment() + getPSLM().getEndIntrusionAdjustment();
-    }
-
-    /**
-     * Whether a block's measure is the flow's: the flow is reached walking up through blocks, lists and wrappers,
-     * with no table cell, block-container, float, footnote or inline container in between.
-     * @param block the block
-     * @return whether a side float's intrusion narrows the block's lines
-     */
-    static boolean widthFromFlow(org.apache.fop.fo.FONode block) {
-        for (org.apache.fop.fo.FONode n = block == null ? null : block.getParent();
-                n != null; n = n.getParent()) {
-            if (n instanceof org.apache.fop.fo.pagination.Flow) {
-                return !(n instanceof org.apache.fop.fo.pagination.StaticContent);
-            }
-            if (n instanceof org.apache.fop.fo.flow.table.TableCell
-                    || n instanceof org.apache.fop.fo.flow.BlockContainer
-                    || n instanceof org.apache.fop.fo.flow.Float
-                    || n instanceof org.apache.fop.fo.flow.Footnote
-                    || n instanceof org.apache.fop.fo.flow.FootnoteBody
-                    || n instanceof org.apache.fop.fo.flow.InlineContainer) {
-                return false;
-            }
-        }
-        return false;
-    }
-
     /** Whether this block is set in an fo:static-content (a header or footer). */
     static boolean inStaticContent(org.apache.fop.fo.FONode block) {
         for (org.apache.fop.fo.FONode n = block == null ? null : block.getParent();
@@ -3420,7 +3398,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         // Word's last resort, after every legal break the document itself offers:
         // a word too long for any line is broken inside it (see emergencyBreaks)
         if (canWrap) {
-            emergencyBreaks(currPar, widestLine());
+            emergencyBreaks(currPar, ipd);
         }
         int allowedBreaks = !canWrap ? BreakingAlgorithm.ONLY_FORCED_BREAKS
                 : (canHyphenate ? BreakingAlgorithm.ALL_BREAKS : BreakingAlgorithm.NO_FLAGGED_PENALTIES);

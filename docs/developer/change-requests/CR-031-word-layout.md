@@ -269,7 +269,75 @@ Phase 3 turns it on as a separate commit with its own gate. It also re-measures 
 "float-overflow-below measured inert on docx4j's tables". That reading went through docx4j's managers, which never set
 the mark, so it may not say what the rule does under Word layout.
 
-### 6.1 As built, 2026-11-02 (branch `CR-031-phase3`, not gated)
+### 6.2 The r52 gate, and r53 (2026-11-02)
+
+**Gate b305, r52 against b304: FAIL** (docx4j-12; the run used b304's classpath with r52's core). It found three
+things.
+
+1. **One mover, the wrong way.** real3 `12_es-ES_tradnl_sdt_fields1_num_tbl_8985` lost 7 matched lines, parity
+   0.9609 to 0.9569, pages 13 to 47 different.
+   - On page 13, b304 matches Word. b305 ended that page four lines into the paragraph after two side-by-side tables.
+   - The "Adyacencias" table looked about 3 characters further left in b305, but that came from pdftotext's columns.
+     Read with `mutool`, both tables are at the same x and y in b304 and b305.
+2. **One change that is not a mover.** In real3 `14_es-DO_tbl_4253`, a line beside a table was no longer split into
+   fragments. That text is a docx4j duplicate, which Word does not paint.
+3. **Events.** `line` rose 17776 to 18822 and `linebig` 3243 to 3304, in 9 documents. Seven of the nine render
+   identically. 13986 alone added 854. docx4j-12 confirmed that `line` and `linebig` are both FOP's
+   `lineOverflows`, split at its 50pt message.
+
+**Traced here** with the RenderFo harness (`~/fop-session-tools/2026-10-15-renderfo/`) on the gate's classpath
+(`~/fidelity-cr030/cp-b305.txt`). One-pass renders of r51 and r52 reproduce b304 and b305 page for page. Each of
+r52's two changes was then laid alone over the r52 jar.
+
+- **8985 is the mark alone.** The emergency change alone renders b304.
+  - Page 13's two floating tables, 223.9pt left and 191.5pt right, take the whole column: the lines beside them have
+    0pt.
+  - Ten empty paragraphs (`white-space-treatment="preserve"`, one space) follow the tables. In b304, as in Word's
+    page, nine of them are laid beside the floats and the tenth below.
+  - Under the mark, the second empty paragraph's line overflowed its 0pt by the space's 3.336pt and was marked. The
+    page breaking took the float's edge there and set the rest below the floats at full width, 20.7pt each. That
+    pushed the paragraph after them 165pt down, off the page.
+- **The events are the emergency change alone.** 13986 logged 173 overflow warnings on r51 and 1,051 on r52. The
+  float layout lays the rest of the flow beside the float in a pass whose result it discards. Measured against the
+  column, a word wider than the narrowed line is no longer split in that pass, so it overflows there and is
+  reported. 8985's warnings on r52 differ from r51's by the same -27 the gate saw.
+
+**r53, as built:**
+
+- **The emergency change is reverted.** Word mode again splits a word too wide for the room beside the float, against
+  that room, as docx4j's copy did. It cost about a thousand overflow events per gate, from passes that are thrown
+  away, and measured no gain: 4253's changed text is docx4j's duplicate. Whether Word moves such a word below the
+  float, as CR-023 assumes from tables, or breaks it beside the float has not been read from Word. A Word probe
+  would settle it.
+- **The mark is set under Word mode, but not on a line that holds nothing but white space.** The seam is now
+  `marksOverflowBesideFloat(par, from, to)` in the base, returning true. `WordLineBreakingAlgorithm` returns true
+  only where the line holds a box of nonzero width that is not auxiliary and is not a space mapping.
+- **Measured on the gate's classpath:**
+  - 8985 renders as b304 on every page, with r51's 12,645 overflow warnings;
+  - 4253 renders as b304;
+  - 13986 gives r51's 173 warnings.
+- **`OverflowBesideFloatTestCase` has three cases; each fails without the change it tests.**
+  1. A 228pt SVG, which no break can split, beside a float leaving 151pt in a 451pt column. Its line and the rest of
+     its paragraph go to the float's foot at full width, after the 18pt clearance. This fails on the merged code.
+  2. A word wider than the column stays beside the float, as in FOP's layout.
+  3. Two floats that fill the column, then five empty paragraphs. The anchor's line and the four empty paragraphs
+     above the floats' foot stay beside them at 0pt. This fails with the mark on every line.
+- **FOP's own layout is unchanged by r53.** It keeps CR-023's rule as released. On case 3 it moves the empty
+  paragraphs below the floats, keeping one beside, which on 8985's evidence is not what Word does. That is recorded
+  here, not changed: FOP's layout is not docx4j's path.
+
+**Pass criteria for r53's gate** (against b304 on r51):
+
+- movers only on pages with a side float, each a line or a paragraph's tail moved from beside the float to its foot;
+- no text lost;
+- every event count equal outside the documents that move: the mark changes no report, and a line it moves is an
+  overflow b304 already reported;
+- 28 hooks.
+
+The likeliest reading is 0 movers, meaning the mark is inert under Word layout on docx4j's corpora, as §6.6 item 8
+says of the stock managers.
+
+### 6.1 r52, as first built (db7f31150): gated FAIL, superseded by §6.2
 
 Turning the mark on alone would not have reached CR-023's own case under Word mode. This was measured on the first
 two sequences of `float_overflow-below.xml`, laid out in Word mode on `2.12-docx4j.1` at e5f0a7d12. The float is
@@ -307,16 +375,7 @@ sequences, Word mode reported one event before (the 528pt word) and two after (t
 the moved line). Not reporting a marked line would also hide a real overflow wherever the page breaking cannot take
 the edge, so the report stays as CR-023 has it.
 
-**Pass criteria for the gate**, docx4j's, against b304 on r51:
-
-- movers only on pages with a side float (text-box bands, floating tables, square pictures), each a line or a
-  paragraph's tail moved from beside the float to its foot;
-- no text lost;
-- event counts equal except `lineOverflows`, which may rise by the lines moved. These are presumably the gate's
-  `line` and `linebig` buckets; docx4j-12 to confirm.
-- 28 hooks.
-
-The gate also re-measures Enterprise §6.6 item 8's "inert on docx4j's tables".
+The pass criteria r52 went to the gate with allowed `lineOverflows` to rise by the lines moved, and nothing else.
 
 Noted, unchanged and not traced: a word wider than the column, beside a float, is not emergency-split in Word mode,
 before this change or after it. The first pass splits it at the column's width. On the float's re-layout that split

@@ -555,7 +555,8 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                        ? 0 : ((Paragraph) par).lineFiller.getShrink()),
                    bestActiveNode.availableStretch,
                    difference, ratio, startIndent, endIndent);
-            if (lack < 0) {
+            if (lack < 0 && marksOverflowBesideFloat(par,
+                    bestActiveNode.line > 1 ? bestActiveNode.previous.position + 1 : 0, bestActiveNode.position)) {
                 // A line that does not fit beside a side float but would fit the column without it is marked,
                 // and the page breaking sets it, with the rest of its paragraph, below the float (fop/CR-023)
                 int intrusion = getPSLM().getStartIntrusionAdjustment() + getPSLM().getEndIntrusionAdjustment();
@@ -583,6 +584,13 @@ public class LineLayoutManager extends InlineStackingLayoutManager
          *  @return difference, here */
         int lineAlignDifference(KnuthNode node, KnuthSequence par, int difference) {
             return difference;
+        }
+
+        /** Word mode's seam (fop/CR-031 §6.2): whether an overflowing line, its elements from and to, may be
+         *  marked for CR-023's rule.
+         *  @return true, here */
+        boolean marksOverflowBesideFloat(KnuthSequence par, int from, int to) {
+            return true;
         }
 
         /** Word mode's seam (fop/CR-031): whether a line is sized by Word's line box. */
