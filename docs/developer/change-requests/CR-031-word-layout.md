@@ -269,6 +269,59 @@ Phase 3 turns it on as a separate commit with its own gate. It also re-measures 
 "float-overflow-below measured inert on docx4j's tables". That reading went through docx4j's managers, which never set
 the mark, so it may not say what the rule does under Word layout.
 
+### 6.1 As built, 2026-11-02 (branch `CR-031-phase3`, not gated)
+
+Turning the mark on alone would not have reached CR-023's own case under Word mode. This was measured on the first
+two sequences of `float_overflow-below.xml`, laid out in Word mode on `2.12-docx4j.1` at e5f0a7d12. The float is
+300pt wide, leaving 151pt beside it in a 451pt column.
+
+- The 228pt word fits the column but not the room beside the float. Word mode's emergency break split it beside the
+  float, as `Wwwwwwwwwwwwwwwww` and `wwwwwwwww`. The line therefore never overflowed, and the mark had nothing to
+  mark. FOP's own layout sets that word's line at the float's foot, full width.
+- The emergency break measured the word against the line manager's `ipd`. That is the flow's width less the float's
+  intrusion (`PageSequenceLayoutManager.getCurrentColumnWidth`). Yet its javadoc calls the measure "the widest line
+  the paragraph can have: a word narrower than that can always be moved to a line where it fits".
+
+So phase 3 is two changes:
+
+1. **The mark is set under Word mode.** The seam `marksOverflowBesideFloat` and its Word override are removed, and
+   `updateData2` is CR-023's again.
+2. **`emergencyBreaks` takes `widestLine()`.** Where the block's measure is the flow's, that is the column's width:
+   `ipd` plus the start and end intrusion. Otherwise it is `ipd`.
+   - `widthFromFlow` decides which, once per block. It walks up to the flow through blocks, lists and wrappers.
+   - A table cell, block-container, float, footnote or inline container ends the walk with `ipd`. The float does not
+     narrow those; their measure is their own.
+
+With both, Word mode lays these sequences as FOP's own layout does:
+
+- the first line beside the float, then the word's line and the rest at the float's foot, 451pt wide, after the
+  18pt clearance;
+- a word wider than the column stays beside the float, as in FOP's layout;
+- a word in a table cell beside the float is still broken against the cell's 151pt.
+
+`OverflowBesideFloatTestCase` has these three cases. Without the change its first case fails and the other two pass.
+
+**Events.** A moved line is reported once as overflowing (`lineOverflows`). The report comes from the breaking pass
+beside the float, before the page breaking moves the line, and FOP's own layout under CR-023 does the same. On these
+sequences, Word mode reported one event before (the 528pt word) and two after (that word, plus the 77pt overflow of
+the moved line). Not reporting a marked line would also hide a real overflow wherever the page breaking cannot take
+the edge, so the report stays as CR-023 has it.
+
+**Pass criteria for the gate**, docx4j's, against b304 on r51:
+
+- movers only on pages with a side float (text-box bands, floating tables, square pictures), each a line or a
+  paragraph's tail moved from beside the float to its foot;
+- no text lost;
+- event counts equal except `lineOverflows`, which may rise by the lines moved. These are presumably the gate's
+  `line` and `linebig` buckets; docx4j-12 to confirm.
+- 28 hooks.
+
+The gate also re-measures Enterprise §6.6 item 8's "inert on docx4j's tables".
+
+Noted, unchanged and not traced: a word wider than the column, beside a float, is not emergency-split in Word mode,
+before this change or after it. The first pass splits it at the column's width. On the float's re-layout that split
+is not taken, and the line overflows by 528pt. docx4j's copy did the same, since phase 2 was a pure move (b303, b304).
+
 ## 7. Upstream
 
 Nothing is sent. Word mode is docx4j's. Greedy breaking as an option alone could be offered to Apache later, with

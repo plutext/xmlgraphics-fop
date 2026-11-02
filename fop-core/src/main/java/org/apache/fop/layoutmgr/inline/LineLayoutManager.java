@@ -22,8 +22,8 @@
  * float (fop/CR-023). And hook obstacles-in-the-line, a break element
  * of infinite penalty at the line boundaries orphans and widows keep, where an obstacle's edge may lie
  * (fop/CR-024 §11.4). And Word mode (fop/CR-031): the seams WordLineLayoutManager overrides, the Word lines' leading
- * glue and widows across soft returns in postProcessLineBreaks, CR-023's mark left out under Word mode, and the
- * manager's state package-private for that subclass. See README.md, "Changes from Apache FOP 2.11". */
+ * glue and widows across soft returns in postProcessLineBreaks, and the manager's state package-private for that
+ * subclass. See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -555,7 +555,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
                        ? 0 : ((Paragraph) par).lineFiller.getShrink()),
                    bestActiveNode.availableStretch,
                    difference, ratio, startIndent, endIndent);
-            if (lack < 0 && marksOverflowBesideFloat()) {
+            if (lack < 0) {
                 // A line that does not fit beside a side float but would fit the column without it is marked,
                 // and the page breaking sets it, with the rest of its paragraph, below the float (fop/CR-023)
                 int intrusion = getPSLM().getStartIntrusionAdjustment() + getPSLM().getEndIntrusionAdjustment();
@@ -583,12 +583,6 @@ public class LineLayoutManager extends InlineStackingLayoutManager
          *  @return difference, here */
         int lineAlignDifference(KnuthNode node, KnuthSequence par, int difference) {
             return difference;
-        }
-
-        /** Whether a line that overflows beside a side float is marked for CR-023's rule: not in Word mode until
-         *  that is gated on its own (fop/CR-031 §6). */
-        boolean marksOverflowBesideFloat() {
-            return true;
         }
 
         /** Word mode's seam (fop/CR-031): whether a line is sized by Word's line box. */
