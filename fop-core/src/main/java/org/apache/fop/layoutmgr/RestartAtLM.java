@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+/* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
+ * Apache FOP 2.12: the content after a change of width read from the block after a Word line's leading, not from
+ * the block the leading closes (fop/CR-031). See README.md, "Changes from Apache FOP 2.11". */
+
 /* $Id$ */
 package org.apache.fop.layoutmgr;
 
@@ -24,6 +28,7 @@ import java.util.LinkedList;
 
 import org.apache.fop.events.EventBroadcaster;
 import org.apache.fop.layoutmgr.inline.LineLayoutManager;
+import org.apache.fop.layoutmgr.word.LeadingGlue;
 
 /**
  * Class to find the restart layoutmanager for changing IPD
@@ -88,13 +93,17 @@ class RestartAtLM {
             if (breaker.positionAtBreak != null && breaker.positionAtBreak.getIndex() == -1) {
                 Position position;
                 Iterator iter = blockList.listIterator(positionIndex + 1);
+                KnuthElement nextElement;
+                // a Word line's leading behind the break belongs to the block before it, which it would read
+                // again (fop/CR-031 §9)
                 do {
-                    KnuthElement nextElement = (KnuthElement) iter.next();
+                    nextElement = (KnuthElement) iter.next();
                     position = nextElement.getPosition();
                 } while (position == null
                         || position instanceof SpaceResolver.SpaceHandlingPosition
                         || position instanceof SpaceResolver.SpaceHandlingBreakPosition
-                        && position.getPosition().getIndex() == -1);
+                        && position.getPosition().getIndex() == -1
+                        || nextElement instanceof LeadingGlue);
                 LayoutManager surroundingLM = breaker.positionAtBreak.getLM();
                 while (position.getLM() != surroundingLM) {
                     position = position.getPosition();

@@ -21,7 +21,8 @@
  * flow (fop/CR-020); the content after an edge forced by clear is laid out at the float's foot (fop/CR-022);
  * hook float-offset, the float placed at its target top (fop/CR-023); and hook column-widths, columns of unequal
  * width balanced before a span="all" block by trial (fop/CR-026 phase B); and hook obstacles-in-the-line, an
- * obstacle taken up at its start edge as a float whose area is already drawn (fop/CR-024 phase A).
+ * obstacle taken up at its start edge as a float whose area is already drawn (fop/CR-024 phase A); and the content
+ * after an edge read from the block after a Word line's leading, not from the block the leading closes (fop/CR-031).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -49,6 +50,7 @@ import org.apache.fop.layoutmgr.BreakingAlgorithm.KnuthNode;
 import org.apache.fop.layoutmgr.PageBreakingAlgorithm.PageBreakingLayoutListener;
 import org.apache.fop.layoutmgr.inline.LineLayoutManager;
 import org.apache.fop.layoutmgr.list.ListItemLayoutManager;
+import org.apache.fop.layoutmgr.word.LeadingGlue;
 import org.apache.fop.traits.MinOptMax;
 
 /**
@@ -1307,12 +1309,16 @@ public class PageBreaker extends AbstractBreaker {
             } else {
                 Position position;
                 Iterator iter = blockList.listIterator(floatPosition + 1);
+                KnuthElement nextElement;
+                // a Word line's leading behind the break belongs to the block before it, which it would read
+                // again (fop/CR-031 §9)
                 do {
-                    KnuthElement nextElement = (KnuthElement) iter.next();
+                    nextElement = (KnuthElement) iter.next();
                     position = nextElement.getPosition();
                 } while (position == null || position instanceof SpaceResolver.SpaceHandlingPosition
                         || position instanceof SpaceResolver.SpaceHandlingBreakPosition
-                        && position.getPosition().getIndex() == -1);
+                        && position.getPosition().getIndex() == -1
+                        || nextElement instanceof LeadingGlue);
                 // the manager the break belongs to, or the nearest of its ancestors that the next box's chain
                 // passes through: the content after the edge is the chain's manager below it (a keep penalty
                 // of an empty inline run before a nested block of the same paragraph, hook

@@ -414,3 +414,55 @@ FOP-2860 as the precedent for such an option (CR-071 §7); it is not drafted.
 
 Increments 2 to 4 were built together on 2026-11-02 and committed as one. The capability is advertised from that
 commit, which is when Word mode is whole.
+
+## 9. A paragraph laid twice at a restart after a Word line's leading (2026-11-02)
+
+**Reported** by docx4j-12, at Jason's wish that it be fixed. real3 `14_es-DO_tbl_4253`, page 1:
+
+- The client line ("Cliente: Universidad Iberoamericana – Cap Cana.") is laid at Word's place, above a
+  page-anchored table that has `fox:wrap="square"`.
+- The same paragraph is then laid again, broken down the 23.75pt gap beside the table, with its tail below the
+  table.
+- The second copy starts 10pt (the paragraph's space-after) below the first.
+- docx4j's copy did the same (b302, b304), so the defect came across in the move. FOP's own layout lays the
+  paragraph once, and so does Word mode without the `fox:wrap` attributes.
+
+**Traced** on the gate's classpath (`~/fidelity-cr030/cp-b306.txt`, r53) with an overlay of `PageBreaker` that
+prints each edge restart.
+
+- In Word mode a paragraph's last line carries its leading below it as a `LeadingGlue`, 2.93pt here. The flow
+  manager moves that glue behind the break possibility after the paragraph, so a page break taken there discards
+  it (§3.3, `LeadingGlue`).
+- The glue's position chain is the paragraph's own block: `NonLeafPosition[flow] > NonLeafPosition[block]`.
+- The obstacle's edge fell at that break, a flow-level penalty with index -1. `PageBreaker.handleFloatLayout`
+  chooses the block to read again from the next element after the break with a position. That loop is Apache's
+  float restart, which CR-024 also uses for obstacles.
+- That element was the glue. The restart resolved to the client paragraph's block, which was read again from its
+  start, beside the obstacle.
+- In FOP's own layout the next such element is the following block's line, so the restart is right.
+- The page breaking's own checks (`edgeRestartable`, `positionOfNextContentBox`) look at the next box with content.
+  They saw the right block, so the edge was allowed.
+
+FOP's restart for a change of width (`RestartAtLM`) has the same loop. A probe showed it reached: Word-mode
+paragraphs on a wide first page, followed by narrower pages. The last paragraph of page 1 was laid again at the top
+of page 2, and the run gained a page. FOP's own layout was right.
+
+**The fix.** Both loops skip a `LeadingGlue`, which exists only in Word mode, so FOP's own layout is unchanged.
+`PageBreaker` and `RestartAtLM` carry the change notice; `RestartAtLM` is a modified Apache file from here on.
+
+- 4253, rendered with the fix as an overlay on the gate's classpath: one page, its text identical to docx4j-12's
+  render without `fox:wrap` (`nowrap.pdf`), the client line once at Word's place.
+- The page's three empty paragraphs lie at the same y in the gap beside the table, where `nowrap.pdf` has them at
+  the left margin. They draw nothing.
+- `LeadingGlueRestartTestCase` has two cases, an obstacle's edge after a paragraph and a page of another width.
+  Both fail without the fix and pass with it.
+
+**Pass criteria** for the gate, against b306 on r53:
+
+- 4253 moves toward Word: one copy, nothing drawn in the gap;
+- other movers only where a Word-mode paragraph was laid twice, each losing its duplicate: at an obstacle's edge, at
+  a change of page width, or at a side float's edge, which takes the same `handleFloatLayout` path (not probed
+  here);
+- no text lost;
+- events equal outside the documents that move;
+- 28 hooks.
