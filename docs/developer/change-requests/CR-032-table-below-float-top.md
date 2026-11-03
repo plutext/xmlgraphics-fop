@@ -201,4 +201,12 @@ Branch `CR-032-4083-page2` from `2.12-docx4j.1`. Files: `PageBreakingAlgorithm.j
 `nextBoxHasContent`, `nonRestartableLMOfNextBox`), `FlowLayoutManager.java` (`clearKeepsPending` on entry). No
 layout test changed expectation: the layout suite and the Word-mode tests 824/0, CI's command as the status says.
 Word's `float-top-crossing-table`, `float-foot-crossing` and `float-three-pages` through docx4j's path unchanged at
-Word's rows and anchors. Measured on 4083's b326 FO through RenderFo as §7 says. Gate: docx4j-12 against b326.
+Word's rows and anchors. Measured on 4083's b326 FO through RenderFo as §7 says.
+
+**Gated PASS 2026-11-04 (docx4j-12): b327, r61's core (sha256 41dd82f7...) on cp-b326, against b326.** One mover,
+4083 +4 lines (0.8762 to 0.8893) in both copies, page 2 Word's; events equal but bcovi 562 to 570, the same four
+block-containers of 4083 reported once more from the re-read, no new overflow; nothing else moved. Merged to
+`2.12-docx4j.1` by fast-forward. Then docx4j e005410ff (a floating table whose anchor block carries a break-before
+other than auto stays in the flow, before the break: B.7's yes/no table, as §7's last point read it) gated b328
+against b327: 4083 +5 (to 0.9055, above its 0.9023 from before step 2), bcovi 246 to 224, no other mover. **b328 is
+the fork's baseline for later gates.**
