@@ -28,7 +28,8 @@
  * its start edge the first break before its band, a block's last line fitted above the band with the border and
  * padding the block closes with (fop/CR-024 phase A); and a line that does not fit the room beside an obstacle ends
  * the band at a boundary the orphans keep (fop/CR-031 §10); and a table wider than the room beside a side float ends
- * the float before it, as beside an obstacle (fop/CR-031 §11).
+ * the float before it, as beside an obstacle (fop/CR-031 §11); and a table that would reach an offset float's top
+ * takes the start edge before it through a keep-with-next (fop/CR-032).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -1006,10 +1007,16 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 considerLegalBreak(penalty, position);
             } else if (breakClass == Constants.EN_LINE && pendingFloatTop >= 0 && !handlingFloat()
                     && !insideNonRestartable(position) && nextBoxHasContent(position) && edgeRestartable(position)
-                    && nextLineCrosses(position, pendingFloatTop)) {
+                    && (nextLineCrosses(position, pendingFloatTop)
+                            || nonRestartableReaches(position, pendingFloatTop))) {
                 // a line boundary that orphans or widows keep (hook obstacles-in-the-line, fop/CR-024 §11.4):
                 // no page break, but the edge before the first line that would cross a pending band's top,
-                // which considerLegalBreak takes (startPendingFloat) and elementCanEndLine then allows
+                // which considerLegalBreak takes (startPendingFloat) and elementCanEndLine then allows; and a
+                // keep-with-next (an infinite penalty of class line) before a table that would reach the top of
+                // a pending float: the edge is before the table all the same, as a word processor sets such a
+                // table below a floating table and leaves the heading kept with it where it is (Word's
+                // float-top-crossing-table probe, case 2; fop/CR-032). Without this the table was set full width
+                // over the float, no edge being offered inside it (corpus 4083's date table)
                 considerLegalBreak(penalty, position);
             } else if (breakClass == Constants.EN_LINE && floatHeight != 0 && handlingObstacle()
                     && nextBoxHasContent(position) && edgeRestartable(position)
@@ -1151,10 +1158,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             // before a box without content (a block's end marker after its last line) is no edge: the restart
             // from it would resolve outside the paragraph; the break after the marker, between the blocks, is
             // (fop/CR-024 §11.12)
-            LayoutManager starting = nonRestartableLMOfNextBox(elementIdx);
-            if (nextLineCrosses(elementIdx, pendingFloatTop)
-                    || (starting != null && widthUpToNextBox(elementIdx) + nonRestartableExtent(elementIdx, starting)
-                            > pendingFloatTop)) {
+            if (nextLineCrosses(elementIdx, pendingFloatTop) || nonRestartableReaches(elementIdx, pendingFloatTop)) {
                 if (obstacleEdge && !armedObstacles.isEmpty() && widthUpToNextBox(elementIdx)
                         >= armedBottomInList(currentPageTopInList())) {
                     // every armed band lies wholly above the next line: nothing is beside the lines, and an
@@ -1301,6 +1305,15 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         return extent;
     }
 
+    /**
+     * Whether a non-restartable layout manager (a table's) starting after this break would reach below the given
+     * height with its elements: the edge is then before the table, which cannot take one inside (fop/CR-023).
+     */
+    private boolean nonRestartableReaches(int elementIdx, int top) {
+        LayoutManager starting = nonRestartableLMOfNextBox(elementIdx);
+        return starting != null && widthUpToNextBox(elementIdx) + nonRestartableExtent(elementIdx, starting) > top;
+    }
+
     /** Whether this break lies inside a non-restartable layout manager, a table's (fop/CR-023). */
     private boolean insideNonRestartable(int elementIdx) {
         LayoutManager inside = nonRestartableLMOfNextBox(elementIdx);
@@ -1390,7 +1403,9 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
 
     /**
      * The inline size the FO fixes for the first box after the float edge being handled, by {@link #fixedIPDOf}
-     * over the box's position chain; -1 when none is fixed or no box follows (§11.20).
+     * over the box's position chain; -1 when none is fixed or no box follows (§11.20). The box is read past an
+     * auxiliary one, which the space resolver puts before a table's border-before after a space and which has no
+     * position (fop/CR-031 §11's reading for the end edge; fop/CR-032 for the start edge).
      */
     int firstBoxAfterEdgeFixedIPD() {
         if (bestFloatEdgeNode == null) {
@@ -1398,7 +1413,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         }
         for (int i = bestFloatEdgeNode.position; i < par.size(); i++) {
             KnuthElement e = getElement(i);
-            if (e.isBox() && e.getWidth() > 0) {
+            if (e.isBox() && e.getWidth() > 0 && !e.isAuxiliary()) {
                 int fixed = -1;
                 for (Position p = e.getPosition(); p != null; p = nextInChain(p)) {
                     fixed = Math.max(fixed, fixedIPDOf(p.getLM()));

@@ -23,7 +23,8 @@
  * width balanced before a span="all" block by trial (fop/CR-026 phase B); and hook obstacles-in-the-line, an
  * obstacle taken up at its start edge as a float whose area is already drawn (fop/CR-024 phase A); and the content
  * after an edge read from the block after a Word line's leading, not from the block the leading closes (fop/CR-031);
- * and a float's intrusion ended at a forced page break (fop/CR-031 §11).
+ * and a float's intrusion ended at a forced page break (fop/CR-031 §11); and a table wider than the room beside an
+ * offset float, at the float's start edge, set below the float with nothing beside it (fop/CR-032).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -1048,11 +1049,28 @@ public class PageBreaker extends AbstractBreaker {
      */
     private void resolvePendingIntrusion(PageBreakingAlgorithm alg) {
         PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
-        pslm.setStartIntrusionAdjustment(savedStartIntrusion);
-        pslm.setEndIntrusionAdjustment(savedEndIntrusion);
         // the float's top below the flow's height here, both in the page: exact whichever block the resolved
         // space between the blocks at this break was given to
         int edgeY = pslm.getCurrentPV().getCurrentFlow().getBPD();
+        int fixed = alg.firstBoxAfterEdgeFixedIPD();
+        if (fixed >= 0 && fixed > pslm.getCurrentColumnWidth() - savedStartIntrusion - savedEndIntrusion) {
+            // the first box after the edge asks for more width than the room beside the float: a table of fixed
+            // width that would reach the float's top, which a word processor sets wholly below the float, its
+            // first row included, and leaves nothing beside the float (Word's float-top-crossing-table probe;
+            // corpus 4083's date table, set beside the float past the margin). The content after the edge starts
+            // at the float's foot, as after an end edge forced by clear (fop/CR-022), and the float is over: the
+            // rule beside an obstacle's band (CR-024 §11.20, continueBesideObstacles) for fo:float (fop/CR-032)
+            intrusionPending = false;
+            pslm.setStartIntrusionAdjustment(0);
+            pslm.setEndIntrusionAdjustment(0);
+            int clearance = Math.max(0, floatTopY + floatHeight - edgeY);
+            pendingFloatClearance += clearance;
+            floatYOffset = edgeY;
+            handleEndOfFloat(clearance);
+            return;
+        }
+        pslm.setStartIntrusionAdjustment(savedStartIntrusion);
+        pslm.setEndIntrusionAdjustment(savedEndIntrusion);
         handleStartOfFloat(floatHeight, edgeY, Math.max(0, floatTopY - edgeY), false);
     }
 

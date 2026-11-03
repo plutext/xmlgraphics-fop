@@ -17,7 +17,8 @@
 
 /* Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.12: a table that does not fit the room beside a side float goes below it, and a float's intrusion
- * ends at a forced page break (fop/CR-031 section 11). See README.md, "Changes from Apache FOP 2.11". */
+ * ends at a forced page break (fop/CR-031 section 11); a table that would cross an offset float's top goes wholly
+ * below the float, through a keep-with-next (fop/CR-032). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -65,6 +66,11 @@ public class TableBesideFloatTestCase {
 
     private static final String EMPTY = "<fo:block white-space-treatment=\"preserve\"> </fo:block>";
 
+    /** An anchor whose left float lies 40pt below the anchor block's top (fop/CR-032). */
+    private static final String OFFSET_ANCHOR = "<fo:block space-after=\"8pt\"><fo:float float=\"left\" "
+            + "fox:float-offset=\"40pt\"><fo:block-container width=\"307pt\" height=\"100pt\"><fo:block>FLOAT"
+            + "</fo:block></fo:block-container></fo:float>anchor</fo:block>";
+
     private static String table(String name, int width) {
         return "<fo:block><fo:table table-layout=\"fixed\" width=\"" + width + "pt\" border-collapse=\"collapse\" "
                 + "border=\"0.48pt solid black\"><fo:table-column column-width=\"" + (width / 2) + "pt\"/>"
@@ -73,7 +79,8 @@ public class TableBesideFloatTestCase {
                 + "</fo:block></fo:table-cell></fo:table-row></fo:table-body></fo:table></fo:block>";
     }
 
-    private static final String FO = "<fo:root xmlns:fo=\"http://www.w3.org/1999/XSL/Format\">"
+    private static final String FO = "<fo:root xmlns:fo=\"http://www.w3.org/1999/XSL/Format\" "
+            + "xmlns:fox=\"http://xmlgraphics.apache.org/fop/extensions\">"
             + "<fo:layout-master-set><fo:simple-page-master master-name=\"A4\" page-width=\"595pt\" "
             + "page-height=\"842pt\" margin=\"72pt\"><fo:region-body/></fo:simple-page-master>"
             + "</fo:layout-master-set>"
@@ -92,7 +99,23 @@ public class TableBesideFloatTestCase {
             + SEQ + "<fo:block><fo:float float=\"left\"><fo:block-container width=\"450.95pt\" height=\"60pt\">"
             + "<fo:block>NARROW</fo:block></fo:block-container></fo:float>August 2015-November 2015 Trail My Car "
             + "Solutions one two three four five six seven eight nine ten</fo:block>" + END
+            // a table whose second row would cross the top of an offset float, without and with a keep-with-next
+            // heading before it (Word's float-top-crossing-table probe, fop/CR-032)
+            + SEQ + OFFSET_ANCHOR + tallTable("CROSS") + "<fo:block>after-cross</fo:block>" + END
+            + SEQ + OFFSET_ANCHOR + "<fo:block keep-with-next=\"always\">kept-heading</fo:block>" + tallTable("KEPT")
+            + "<fo:block>after-kept</fo:block>" + END
             + "</fo:root>";
+
+    /** A 200pt table of two 30pt rows: wider than the 144pt beside the float, its second row across the float's top. */
+    private static String tallTable(String name) {
+        return "<fo:block><fo:table table-layout=\"fixed\" width=\"200pt\" border-collapse=\"collapse\" "
+                + "border=\"0.48pt solid black\"><fo:table-column column-width=\"100pt\"/>"
+                + "<fo:table-column column-width=\"100pt\"/><fo:table-body><fo:table-row height=\"30pt\">"
+                + "<fo:table-cell><fo:block>" + name + "</fo:block></fo:table-cell><fo:table-cell><fo:block>x"
+                + "</fo:block></fo:table-cell></fo:table-row><fo:table-row height=\"30pt\">"
+                + "<fo:table-cell><fo:block>two</fo:block></fo:table-cell><fo:table-cell><fo:block>y"
+                + "</fo:block></fo:table-cell></fo:table-row></fo:table-body></fo:table></fo:block>";
+    }
 
     private static Document wordLayout;
 
@@ -176,5 +199,33 @@ public class TableBesideFloatTestCase {
     public void theAnchorsFirstWordStaysInASliverBesideTheFloat() throws Exception {
         assertBoth("50", "//word[.='August']/ancestor::lineArea[1]/@ipd");
         assertBoth("451000", "//word[starts-with(., '2015-November')]/ancestor::lineArea[1]/@ipd");
+    }
+
+    /**
+     * A table wider than the room beside an offset float, whose second row would cross the float's top, goes wholly
+     * below the float, its first row included, and nothing is set beside the float (Word's float-top-crossing-table
+     * probe, fop/CR-032). The float's foot is 140pt below the anchor's top; the anchor's line and space-after take
+     * 24pt, so the clearance before the table is 116pt. Before this the start edge before the table set the table
+     * beside the float, 200pt in a 144pt room.
+     */
+    @Test
+    public void aTableCrossingAnOffsetFloatsTopGoesBelowTheFloat() throws Exception {
+        assertBoth("451000", "(//pageViewport)[7]//word[.='CROSS']/ancestor::block[4]/@ipd");
+        assertBoth("1", "count((//pageViewport)[7]//flow/block[@bpd='116000'])");
+        assertBoth("451000", "(//pageViewport)[7]//word[.='after-cross']/ancestor::lineArea[1]/@ipd");
+    }
+
+    /**
+     * The same through a keep-with-next heading: the heading stays where it is, full width above the float's top,
+     * and the table alone goes below the float (the probe's case 2; corpus 4083's date table, which the keep had left
+     * full width over the float, no edge being offered before it). The clearance is 100pt, the heading's 16pt less.
+     */
+    @Test
+    public void aKeptTableCrossingAnOffsetFloatsTopGoesBelowTheFloatAlone() throws Exception {
+        assertBoth("451000", "(//pageViewport)[8]//word[.='kept-heading']/ancestor::lineArea[1]/@ipd");
+        assertBoth("100000",
+                "(//pageViewport)[8]//word[.='kept-heading']/ancestor::block[1]/following-sibling::block[1]/@bpd");
+        assertBoth("451000", "(//pageViewport)[8]//word[.='KEPT']/ancestor::block[4]/@ipd");
+        assertBoth("451000", "(//pageViewport)[8]//word[.='after-kept']/ancestor::lineArea[1]/@ipd");
     }
 }
