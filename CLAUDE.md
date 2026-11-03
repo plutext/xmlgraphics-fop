@@ -206,6 +206,16 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-03, evening. **A1 is BUILT on branch `CR-033-float-move-any-offset` (cut from `2.12-docx4j.1` at
+5ec0c21e4; `docs/developer/change-requests/CR-033-float-move-any-offset.md`): `PageBreakingAlgorithm.handleBox` arms
+CR-023's move for every side float, offset 0 included, so a page that cannot hold the float's foot below its anchor
+breaks before the anchor and both open the next page; placement at offset 0 unchanged; a float taller than a page
+still not moved (T). Measured: `low-plain` 1 page with rows lost to 2 pages whole; Word's `float-foot-crossing` case 4
+(no-offset picture) at Word's page 8 and lines, case 1's no-offset table moved whole (Word splits: T), the rest
+unchanged. Layout test `float_offset.xml` case 10 added. CI's command running; then commit, r59 to docx4j-12 against
+b321, registry entry `fop/CR-033` to docx4j-portfolio-10. Then T's one-day probe.** The paragraph that follows is B's
+state, kept.
+
 Last updated 2026-11-03, afternoon. **B is DONE: `fop/CR-032` (code 9b9f63f91,
 `docs/developer/change-requests/CR-032-table-below-float-top.md`) gated PASS by docx4j-12 (b321 on r58 against the
 fresh control b320: `float-top-crossing-table` 0.9006 to 1.0000 at Word's four pages, 0 corpus movers, events equal,

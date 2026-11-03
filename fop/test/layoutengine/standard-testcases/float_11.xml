@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.12: the right float does not fit below its anchor on page 1, so the anchor paragraph and the
+     float open page 2 together, as a float with fox:float-offset did since fop/CR-023 (fop/CR-033). Apache FOP
+     kept the anchor's first lines on page 1 beside the float, drawn above its anchor, and narrowed page 2's first
+     line as if the float were still beside it. -->
 <testcase>
   <info>
     <p>
@@ -51,11 +56,11 @@
       </fo:root>
   </fo>
   <checks>
-    <eval expected="252000" xpath="//pageViewport/page/regionViewport/regionBody/mainReference/span//@bpd"/>
+    <eval expected="228000" xpath="//pageViewport/page/regionViewport/regionBody/mainReference/span//@bpd"/>
     <eval expected="-78350" xpath="//pageViewport/page/regionViewport/regionBody/mainReference/span/flow/block[2]/block/block/block//@left-offset"/>
     <eval expected="2" xpath="count(//pageViewport)"/>
-    <eval expected="lacus efficitur ultrices. Etiam id" xpath="//pageViewport[2]/page/regionViewport/regionBody/mainReference/span/flow/block/block/block/block/lineArea"/>
-    <eval expected="162000" xpath="//pageViewport[2]/page/regionViewport/regionBody/mainReference/span/flow/block/block/block/block/lineArea//@ipd"/>
-    <eval expected="27520" xpath="//pageViewport[2]/page/regionViewport/regionBody/mainReference/span/flow/block/block/block/block/lineArea//@end-indent"/>
+    <eval expected="Etiam" xpath="//pageViewport[2]/page/regionViewport/regionBody/mainReference/span/flow/block/block/block/block/lineArea"/>
+    <eval expected="62000" xpath="//pageViewport[2]/page/regionViewport/regionBody/mainReference/span/flow/block/block/block/block/lineArea//@ipd"/>
+    <eval expected="36440" xpath="//pageViewport[2]/page/regionViewport/regionBody/mainReference/span/flow/block/block/block/block/lineArea//@end-indent"/>
   </checks>
 </testcase>

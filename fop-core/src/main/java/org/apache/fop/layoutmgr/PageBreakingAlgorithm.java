@@ -29,7 +29,8 @@
  * padding the block closes with (fop/CR-024 phase A); and a line that does not fit the room beside an obstacle ends
  * the band at a boundary the orphans keep (fop/CR-031 §10); and a table wider than the room beside a side float ends
  * the float before it, as beside an obstacle (fop/CR-031 §11); and a table that would reach an offset float's top
- * takes the start edge before it through a keep-with-next (fop/CR-032).
+ * takes the start edge before it through a keep-with-next (fop/CR-032); and a side float the page cannot hold below
+ * its anchor moves to the next page with the anchor whatever its offset, where only an offset float did (fop/CR-033).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -541,19 +542,24 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         }
         if (box instanceof KnuthBlockBox && ((KnuthBlockBox) box).hasFloatAnchors()) {
             int offset = floatOffsetOf((KnuthBlockBox) box);
-            if (offset > 0) {
-                // hook float-offset (fop/CR-023): the float's top is `offset` below the top of its anchor
-                // block including the block's own space-before, which is the box's position less that space,
-                // where the resolved gap before the box also holds the previous block's space-after (a word
-                // processor measures from the anchor's own spacing; the docx4j session's probes, 2026-10-08).
-                // The float's area is still placed at this break; its intrusion into the lines waits for the top.
-                int anchorTop = totalWidth - Math.min(glueBefore(box), anchorSpaceBefore((KnuthBlockBox) box));
-                floatAnchorListTop = anchorTop;
-                floatStartListTop = anchorTop + offset;
-                floatAnchorLineHeight = nextContentBoxWidth(box);
-                floatStartListBottom = anchorTop + floatBottomOf((KnuthBlockBox) box);
-                floatFitsAnEmptyPage = floatBottomOf((KnuthBlockBox) box) <= lineWidth;
-            }
+            // hook float-offset (fop/CR-023): the float's top is `offset` below the top of its anchor
+            // block including the block's own space-before, which is the box's position less that space,
+            // where the resolved gap before the box also holds the previous block's space-after (a word
+            // processor measures from the anchor's own spacing; the docx4j session's probes, 2026-10-08).
+            // The float's area is still placed at this break; its intrusion into the lines waits for the top.
+            // Armed for an offset of 0 as well since fop/CR-033: a side float the page cannot hold below its
+            // anchor goes to the next page with the anchor whatever its offset (computeDifference,
+            // createForcedNodes), where before only an offset float moved and a float with none was drawn past
+            // the page's foot and lost there, in Apache FOP's own layout too (Word's float-foot-crossing probe:
+            // a picture moves whole with its anchor; a floating table splits, which the fork cannot do yet, so
+            // it moves as well). The float's placement at offset 0 is unchanged: the target top is set for an
+            // offset above 0 only (PageBreaker.addAreasForFloats).
+            int anchorTop = totalWidth - Math.min(glueBefore(box), anchorSpaceBefore((KnuthBlockBox) box));
+            floatAnchorListTop = anchorTop;
+            floatStartListTop = anchorTop + offset;
+            floatAnchorLineHeight = nextContentBoxWidth(box);
+            floatStartListBottom = anchorTop + floatBottomOf((KnuthBlockBox) box);
+            floatFitsAnEmptyPage = floatBottomOf((KnuthBlockBox) box) <= lineWidth;
             handlingStartOfFloat = true;
         }
         if (floatHeight != 0 && totalWidth >= floatHeight) {

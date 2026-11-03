@@ -17,7 +17,8 @@
 -->
 <!-- $Id$ -->
 <!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
-     from Apache FOP 2.11: hook float-offset, fox:float-offset on fo:float (fop/CR-023). -->
+     from Apache FOP 2.11: hook float-offset, fox:float-offset on fo:float (fop/CR-023); the move to the next page with the
+     anchor for a float with no offset (fop/CR-033). -->
 <testcase>
   <info>
     <p>
@@ -163,10 +164,53 @@
 <fo:block><fo:float float="left" fox:float-offset="20pt"><fo:block-container width="300pt" height="40pt"><fo:block font-size="8pt" line-height="8pt">FLOATTOP</fo:block></fo:block-container></fo:float>Anchor</fo:block>
 <fo:block>h0 h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>j0</fo:block>
+<fo:block>j1</fo:block>
+<fo:block>j2</fo:block>
+<fo:block>j3</fo:block>
+<fo:block>j4</fo:block>
+<fo:block>j5</fo:block>
+<fo:block>j6</fo:block>
+<fo:block>j7</fo:block>
+<fo:block>j8</fo:block>
+<fo:block>j9</fo:block>
+<fo:block>j10</fo:block>
+<fo:block>j11</fo:block>
+<fo:block>j12</fo:block>
+<fo:block>j13</fo:block>
+<fo:block>j14</fo:block>
+<fo:block>j15</fo:block>
+<fo:block>j16</fo:block>
+<fo:block>j17</fo:block>
+<fo:block>j18</fo:block>
+<fo:block>j19</fo:block>
+<fo:block>j20</fo:block>
+<fo:block>j21</fo:block>
+<fo:block>j22</fo:block>
+<fo:block>j23</fo:block>
+<fo:block>j24</fo:block>
+<fo:block>j25</fo:block>
+<fo:block>j26</fo:block>
+<fo:block>j27</fo:block>
+<fo:block>j28</fo:block>
+<fo:block>j29</fo:block>
+<fo:block>j30</fo:block>
+<fo:block>j31</fo:block>
+<fo:block>j32</fo:block>
+<fo:block>j33</fo:block>
+<fo:block>j34</fo:block>
+<fo:block>j35</fo:block>
+<fo:block>j36</fo:block>
+<fo:block>j37</fo:block>
+<fo:block><fo:float float="left"><fo:block-container width="300pt" height="100pt"><fo:block font-size="8pt" line-height="8pt">FLOATTOP</fo:block></fo:block-container></fo:float>Anchor</fo:block>
+<fo:block>i0 i1 i2 i3 i4 i5 i6 i7 i8 i9 i10 i11 i12 i13 i14 i15 i16 i17 i18 i19</fo:block>
+<fo:block>i-after</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
-    <eval expected="9" xpath="count(//pageViewport)"/>
+    <eval expected="11" xpath="count(//pageViewport)"/>
     <!-- 1: the heading full width, the float 32pt down, three lines beside it -->
     <eval expected="451000" xpath="//word[.='Heading'][1]/ancestor::lineArea[1]/@ipd"/>
     <eval expected="32000" xpath="(//pageViewport)[1]//flow/block[@positioning='absolute']/@top-offset"/>
@@ -210,5 +254,12 @@
     <!-- 8: a float that fits stays with its anchor on the page -->
     <eval expected="20000" xpath="(//pageViewport)[9]//flow/block[@positioning='absolute']/@top-offset"/>
     <eval expected="151000" xpath="//word[.='h0']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 10: a float with no offset that does not fit below its anchor goes to the next page with the anchor too
+         (fop/CR-033): before, only an offset float moved and this one was drawn past the page's foot -->
+    <eval expected="38" xpath="count((//pageViewport)[10]//lineArea)"/>
+    <eval expected="0" xpath="count((//pageViewport)[10]//flow/block[@positioning='absolute'])"/>
+    <eval expected="151000" xpath="(//pageViewport)[11]//word[.='Anchor']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="1" xpath="count((//pageViewport)[11]//word[.='FLOATTOP'])"/>
+    <eval expected="151000" xpath="//word[.='i-after']/ancestor::lineArea[1]/@ipd"/>
   </checks>
 </testcase>
