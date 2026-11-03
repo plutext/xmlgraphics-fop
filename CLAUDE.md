@@ -206,6 +206,24 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-04, night. **Two follow-up fixes to `fop/CR-032` for 4083's page 2 under docx4j's step 2 are
+BUILT on branch `CR-032-4083-page2` (cut from `2.12-docx4j.1` at 35ed1943b), code e27cccea9, handed to docx4j-12 as
+r61 (`~/fop-renderers/r61-CR-032-e27cccea9/`, core sha256 41dd82f7...) for the gate against b326 (= b325, docx4j's
+step 2 committed at docx4j 4f7128174, Jason's decision); not merged.** CR-032 §7 (the corrected reading; my first
+reading blamed docx4j's writer and was wrong, docx4j-12 corrected it from the source) and §8 (the fixes): the
+space resolver's auxiliary box before a table's border hid the table from `nextBoxHasContent` and
+`nonRestartableLMOfNextBox`, so a keep-with-next heading with space-after before a table reaching an offset float's
+top was never the start edge (`isSpaceResolverBox` reads past it); and the flow's `LayoutContext` kept a
+keep-with-next pending across a float's edge or a forced break, making the first in-between break of the re-read
+list infinite (`FlowLayoutManager.getNextKnuthElements` clears the pending keeps on entry). 4083's page 2 is Word's
+with both (201 words to 201); its page 3 still differs by the anchor docx4j gives B.7's yes/no float (the "section C"
+paragraph with break-before, docx4j-12's to read). The other step 2 losers (8236, 9832, 10187, 14776) are overflow
+events of 1.7 to 3pt with the page as Word's; quieting them is Jason's call (it changes `.1` before release); 1616
+is upstream drift. Layout suite and Word tests 824/0, CI's command 4096/0, checkstyle 0, spotbugs 0; Word's three
+float probes unchanged. On the pass: fast-forward, release note's line stands, §6.6 item 8 a line. Scratch tools:
+`WordModeAT` (both-mode area tree of an FO, `scratchpad/s2/wm/`), the reduced-FO bisection recipe in memory. The
+paragraph that follows is the evening's state, kept.**
+
 Last updated 2026-11-04, evening. **T is DONE: `fop/CR-034` (code e0baa4cb7,
 `docs/developer/change-requests/CR-034-floating-table-split.md`) gated PASS by docx4j-12 (b324 on r60 against b323,
 CR-034 §5.1: `float-foot-crossing` 1.0000, `float-tall-beside` 0.9880, `float-three-pages` 0.9971, all at Word's
