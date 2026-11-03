@@ -3,7 +3,8 @@
 - **Status:** built 2026-11-03 on branch `CR-032-table-below-float-top`, cut from `2.12-docx4j.1` at f57728c3e, code
   at 9b9f63f91; full suite 4092/0 (5 skipped), checkstyle and spotbugs clean under CI's command. Handed to docx4j-12
   the same day as r58 (`~/fop-renderers/r58-CR-032-9b9f63f91/`, core sha256 98070af9...) for a gate against b314 on
-  r57; not merged.
+  r57. **Gated PASS 2026-11-03 (docx4j-12), §6, and MERGED to `2.12-docx4j.1` by fast-forward at 252b4e246;
+  unreleased until `2.12-docx4j.1` ships. b321 on r58 is the fork's baseline for later gates.**
 - **Serves:** Enterprise CR-001 §6.6 item 8, the second of the three renderer defects that blocked docx4j's step 2
   (floating wide tables) on r57 (gate b317, 2026-11-03). Ordered by Jason on 2026-11-03 ("please go ahead"), the first
   of three: this (B), then A1 (CR-023's move with the anchor for every side float that cannot split), then a probe for
@@ -138,7 +139,27 @@ Every case at Word's lines within 1pt, four pages as Word's; b319 had every tabl
   and is wider than the room moves below. Each such mover is to be read against Word.
 - The b319 FOs of 9832, 1616, 6705, 8236 and 3229 are docx4j's step 2 question, not this gate's.
 
-## 6. Open
+## 6. The gate (docx4j-12, 2026-11-03)
+
+Run against a fresh control rather than b314: the harness had taken on the three float probes of 2026-11-03, and
+b319 (r57 plus docx4j's 937 fix) was the current baseline.
+
+- **b320, the control:** cp-b319 (r57) with the harness's current classes. Equal to b319, 0 movers, events equal.
+- **b321, r58's core on cp-b319, against b320: PASS.** One mover, the probe `float-top-crossing-table`, +18 lines,
+  0.9006 to 1.0000, four pages as Word's, page parity 1.0000. 0 corpus movers. Events equal (line 8380, clip 1552,
+  bcov 1276, region 73, body 18, glyph 63). 29 hooks; docx4j-12 needs no separate name for step 2,
+  `wide-block-below-float` being the test it reads.
+- Unchanged, and the baselines for A1 and T: `float-tall-beside` 0.8743 (13 pages against Word's 16),
+  `float-foot-crossing` 0.9620.
+- 4083's date table arises only under step 2's FO, which this gate does not carry; docx4j-12 reads it when step 2 is
+  gated again.
+- Recorded in the Enterprise register (attempts.md and causes/floating-table-offset-and-sides.md, 315789f). Script
+  `~/fidelity-cr030/gate-b320-b321.sh`, classpath `~/fidelity-cr030/cp-b321.txt`.
+
+Merged to `2.12-docx4j.1` by fast-forward at 252b4e246 on the pass. **b321 on r58 is the fork's baseline for later
+gates.**
+
+## 7. Open
 
 - A table that fits the room and crosses the float's top: set beside the float from its first row, which is FOP's
   behaviour before this change; Word unmeasured (§1).

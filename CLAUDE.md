@@ -206,9 +206,13 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
-Last updated 2026-11-03, afternoon. **B is BUILT and out for its gate: `fop/CR-032`, branch
-`CR-032-table-below-float-top` at 9b9f63f91 (`docs/developer/change-requests/CR-032-table-below-float-top.md`), r58 at
-`~/fop-renderers/r58-CR-032-9b9f63f91/` handed to docx4j-12 against b314 on r57.** Two mechanisms, both modes: a
+Last updated 2026-11-03, afternoon. **B is DONE: `fop/CR-032` (code 9b9f63f91,
+`docs/developer/change-requests/CR-032-table-below-float-top.md`) gated PASS by docx4j-12 (b321 on r58 against the
+fresh control b320: `float-top-crossing-table` 0.9006 to 1.0000 at Word's four pages, 0 corpus movers, events equal,
+29 hooks) and MERGED to `2.12-docx4j.1` by fast-forward at 252b4e246; unreleased. b321 on r58 is the fork's baseline
+for later gates; `float-tall-beside` 0.8743 (13 pages to Word's 16) and `float-foot-crossing` 0.9620 are the baselines
+for A1 and T. Next: A1, on its own branch from `2.12-docx4j.1`.** r58 is at
+`~/fop-renderers/r58-CR-032-9b9f63f91/`. Two mechanisms, both modes: a
 keep-with-next (an infinite penalty of class `line`) before a table that would reach the pending float's top is a start
 edge (`PageBreakingAlgorithm.handlePenaltyAt`, `nonRestartableReaches`), and at the start edge a first box fixing a
 width greater than the room clears to the float's foot instead of narrowing (`PageBreaker.resolvePendingIntrusion`, the
