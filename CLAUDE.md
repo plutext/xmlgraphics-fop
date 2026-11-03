@@ -206,6 +206,17 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-04, evening. **T is DONE: `fop/CR-034` (code e0baa4cb7,
+`docs/developer/change-requests/CR-034-floating-table-split.md`) gated PASS by docx4j-12 (b324 on r60 against b323,
+CR-034 §5.1: `float-foot-crossing` 1.0000, `float-tall-beside` 0.9880, `float-three-pages` 0.9971, all at Word's
+pages; events equal; one corpus mover, 1616 -4, read as toward Word's rule; 6705 under step 2 keeps its rows, b325)
+and MERGED to `2.12-docx4j.1` by fast-forward at 9b0a91d59; unreleased. b324 on r60 is the fork's baseline for later
+gates. Enterprise §6.6 item 8 case (b) closed (0ff95d7); registry `fop/CR-034` done requested of docx4j-portfolio.
+With B, A1 and T done, nothing is ordered: `2.12-docx4j.1` (CR-030 to CR-034) is ready for Jason's push and release,
+which waited for T; docx4j 17.3.6 follows it; step 2 stays out of docx4j's tree for its other losses (the sliver
+item). The upstream question for CR-033 and CR-034 (Apache FOP 2.12 loses the same content) is still Jason's. The
+paragraph that follows is the afternoon's state, kept.**
+
 Last updated 2026-11-04, afternoon. **T is BUILT: `fop/CR-034` on branch `CR-034-floating-table-split` (cut from
 `2.12-docx4j.1` at 59f249323), code e0baa4cb7, handed to docx4j-12 as r60 (`~/fop-renderers/r60-CR-034-e0baa4cb7/`,
 core sha256 a55680cb...) for the gate against b322 on r59; not merged.** Jason's three decisions (CR-034 §6):
