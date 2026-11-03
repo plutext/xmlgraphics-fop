@@ -213,9 +213,15 @@ pages; events equal; one corpus mover, 1616 -4, read as toward Word's rule; 6705
 and MERGED to `2.12-docx4j.1` by fast-forward at 9b0a91d59; unreleased. b324 on r60 is the fork's baseline for later
 gates. Enterprise §6.6 item 8 case (b) closed (0ff95d7); registry `fop/CR-034` done requested of docx4j-portfolio.
 With B, A1 and T done, nothing is ordered: `2.12-docx4j.1` (CR-030 to CR-034) is ready for Jason's push and release,
-which waited for T; docx4j 17.3.6 follows it; step 2 stays out of docx4j's tree for its other losses (the sliver
-item). The upstream question for CR-033 and CR-034 (Apache FOP 2.12 loses the same content) is still Jason's. The
-paragraph that follows is the afternoon's state, kept.**
+which waited for T; docx4j 17.3.6 follows it. **Later that evening Jason decided step 2 goes into docx4j (via
+docx4j-12; docx4j 4f7128174, gate b326 equal to b325, b326 now the baseline), and its six losers were traced here
+against the b325 FOs: 4083 -8 is the writer's (the B.6 date table's float written at the group box's top, not in its
+anchor paragraph, so the offset is measured 48pt too high; CR-032 §7, commit a2697ad60); 8236, 9832, 10187 and 14776
+are overflow events of 1.7 to 3pt in slivers with the page rendered as Word's (10187's anchor overlaps the table's
+empty cell in Word too, so the "first word below the float" rule would move it away from Word); 1616 -3 is text
+boxes, not the float. Proposed to docx4j-12: quiet such events (an overflow beside a float under a space's width, or
+a line of white space only), no line moved; not ordered.** The upstream question for CR-033 and CR-034 (Apache FOP
+2.12 loses the same content) is still Jason's. The paragraph that follows is the afternoon's state, kept.**
 
 Last updated 2026-11-04, afternoon. **T is BUILT: `fop/CR-034` on branch `CR-034-floating-table-split` (cut from
 `2.12-docx4j.1` at 59f249323), code e0baa4cb7, handed to docx4j-12 as r60 (`~/fop-renderers/r60-CR-034-e0baa4cb7/`,
