@@ -206,8 +206,13 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
-Last updated 2026-11-03, evening. **A1 is BUILT on branch `CR-033-float-move-any-offset` (cut from `2.12-docx4j.1` at
-5ec0c21e4; `docs/developer/change-requests/CR-033-float-move-any-offset.md`): `PageBreakingAlgorithm.handleBox` arms
+Last updated 2026-11-03, evening. **A1 is DONE: `fop/CR-033` (code d972d78fe,
+`docs/developer/change-requests/CR-033-float-move-any-offset.md`) gated PASS by docx4j-12 (b322 on r59 against b321:
+`float-foot-crossing` 0.9620 to 0.9734 at Word's 13 pages, 0 corpus movers, events equal; inert on the four corpora,
+the probe the only measure) and MERGED to `2.12-docx4j.1` by fast-forward at 2e4f3b2a6; unreleased. b322 on r59 is
+the fork's baseline for later gates. Next: T's one-day probe (can a float's table add its areas by position range:
+page 1's rows, the rest as a side float on the next page with the anchor beside), then a size for Jason; docx4j-12
+gates T against b322.** What A1 is: `PageBreakingAlgorithm.handleBox` arms
 CR-023's move for every side float, offset 0 included, so a page that cannot hold the float's foot below its anchor
 breaks before the anchor and both open the next page; placement at offset 0 unchanged; a float taller than a page
 still not moved (T). Measured: `low-plain` 1 page with rows lost to 2 pages whole; Word's `float-foot-crossing` case 4

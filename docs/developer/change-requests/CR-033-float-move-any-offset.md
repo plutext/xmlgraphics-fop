@@ -3,7 +3,8 @@
 - **Status:** built 2026-11-03 on branch `CR-033-float-move-any-offset`, cut from `2.12-docx4j.1` at 5ec0c21e4, code
   at d972d78fe; full suite 4092/0 (5 skipped), checkstyle and spotbugs clean under CI's command. Handed to docx4j-12
   the same day as r59 (`~/fop-renderers/r59-CR-033-d972d78fe/`, core sha256 5c060dd6...) for a gate against b321 on
-  r58; not merged.
+  r58. **Gated PASS 2026-11-03 (docx4j-12), §6, and MERGED to `2.12-docx4j.1` by fast-forward at 2e4f3b2a6;
+  unreleased until `2.12-docx4j.1` ships. b322 on r59 is the fork's baseline for later gates.**
 - **Serves:** Enterprise CR-001 §6.6 item 8, the first of the three renderer defects that blocked docx4j's step 2 on
   r57 (gate b317, 2026-11-03), its case (a): a side float with no `fox:float-offset`, or 0, anchored too low for the
   page. Ordered by Jason on 2026-11-03 as A1, after B (fop/CR-032) and before the probe for T.
@@ -102,7 +103,21 @@ Case 4 is at Word's lines; cases 1 and 2 wait for T.
   Word's rule; a table that moves whole is the interim until T.
 - No document losing lines; events equal or falling.
 
-## 6. Open
+## 6. The gate (docx4j-12, 2026-11-03)
+
+**b322, r59's core on cp-b321, against b321: PASS.** One mover, the probe `float-foot-crossing`, +6 lines, 0.9620 to
+0.9734, 13 pages as Word's. `float-tall-beside` unchanged at 0.8743. 0 corpus movers; events equal (line 8380, clip
+1552, bcov 1276, region 73, body 18, glyph 63). None of the four corpora has a no-offset side float anchored too low
+for its page, so on the corpus the change is inert and the probe is the only measure; the defect still reaches
+shipped output in principle. The case readings of §4 (case 4 at Word's page 8 and line; case 1 moved whole, the
+interim) went into the register as given. Recorded in the Enterprise register (attempts.md and
+causes/floating-table-offset-and-sides.md, 6fb323b). Script `~/fidelity-cr030/gate-b321-b322.sh`, classpath
+`~/fidelity-cr030/cp-b322.txt`.
+
+Merged to `2.12-docx4j.1` by fast-forward at 2e4f3b2a6 on the pass. **b322 on r59 is the fork's baseline for later
+gates;** T is gated against it.
+
+## 7. Open
 
 - A floating table that crosses the page foot should split (Word's cases 1 and 2): item T, probed next.
 - A float taller than the page body less its offset (6705, `float-tall-beside`): item T's other half; the float is
