@@ -212,9 +212,12 @@ CR-023's move for every side float, offset 0 included, so a page that cannot hol
 breaks before the anchor and both open the next page; placement at offset 0 unchanged; a float taller than a page
 still not moved (T). Measured: `low-plain` 1 page with rows lost to 2 pages whole; Word's `float-foot-crossing` case 4
 (no-offset picture) at Word's page 8 and lines, case 1's no-offset table moved whole (Word splits: T), the rest
-unchanged. Layout test `float_offset.xml` case 10 added. CI's command running; then commit, r59 to docx4j-12 against
-b321, registry entry `fop/CR-033` to docx4j-portfolio-10. Then T's one-day probe.** The paragraph that follows is B's
-state, kept.
+unchanged. Layout test `float_offset.xml` case 10 added; Apache's `float_11.xml` expectation changed (it pinned the
+anchor's lines kept on page 1 beside a float drawn above its anchor). CI's command green (4092/0, checkstyle 0,
+spotbugs 0); code d972d78fe; r59 at `~/fop-renderers/r59-CR-033-d972d78fe/` handed to docx4j-12 for the gate against
+b321; registry `fop/CR-033` in_progress sent to docx4j-portfolio-10. On the pass: fast-forward, §6.6 item 8, registry
+to done. Then T's one-day probe (can a float's table add areas by position range), then a size for Jason.** The
+paragraph that follows is B's state, kept.
 
 Last updated 2026-11-03, afternoon. **B is DONE: `fop/CR-032` (code 9b9f63f91,
 `docs/developer/change-requests/CR-032-table-below-float-top.md`) gated PASS by docx4j-12 (b321 on r58 against the

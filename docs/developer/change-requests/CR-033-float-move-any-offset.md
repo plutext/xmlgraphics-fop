@@ -1,7 +1,9 @@
 # CR-033: a side float the page cannot hold moves to the next page with its anchor, whatever its offset
 
-- **Status:** built 2026-11-03 on branch `CR-033-float-move-any-offset`, cut from `2.12-docx4j.1` at 5ec0c21e4; not
-  gated; not merged.
+- **Status:** built 2026-11-03 on branch `CR-033-float-move-any-offset`, cut from `2.12-docx4j.1` at 5ec0c21e4, code
+  at d972d78fe; full suite 4092/0 (5 skipped), checkstyle and spotbugs clean under CI's command. Handed to docx4j-12
+  the same day as r59 (`~/fop-renderers/r59-CR-033-d972d78fe/`, core sha256 5c060dd6...) for a gate against b321 on
+  r58; not merged.
 - **Serves:** Enterprise CR-001 §6.6 item 8, the first of the three renderer defects that blocked docx4j's step 2 on
   r57 (gate b317, 2026-11-03), its case (a): a side float with no `fox:float-offset`, or 0, anchored too low for the
   page. Ordered by Jason on 2026-11-03 as A1, after B (fop/CR-032) and before the probe for T.
