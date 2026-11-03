@@ -206,15 +206,24 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
-Last updated 2026-11-04, morning. **T is ORDERED: `fop/CR-034`, in progress on branch `CR-034-floating-table-split`
-(cut from `2.12-docx4j.1`).** Jason's three decisions (CR-034 §6): `2.12-docx4j.1` waits for T; default on (every
-`fo:float` whose table crosses the page foot splits, both modes, no attribute; capability `float-table-split` only
-tells docx4j to lift its step 2 guard); in-row splits in version 1. Build per CR-034 §3 as amended by the
-`float-three-pages` golden: the split decided in `handleBox` per page from an advancing range start, each earlier
-part drawn with nothing beside, the anchor beside the last part; the `addChildArea` clamp fixed on the way. Gate by
-docx4j-12 against b322 on r59: `float-foot-crossing`, `float-tall-beside`, `float-three-pages` to Word's pages, 6705
-under step 2, 0 corpus movers away. Registry `fop/CR-034` in_progress through docx4j-portfolio. The paragraph that
-follows is the night's state, kept.
+Last updated 2026-11-04, afternoon. **T is BUILT: `fop/CR-034` on branch `CR-034-floating-table-split` (cut from
+`2.12-docx4j.1` at 59f249323), code e0baa4cb7, handed to docx4j-12 as r60 (`~/fop-renderers/r60-CR-034-e0baa4cb7/`,
+core sha256 a55680cb...) for the gate against b322 on r59; not merged.** Jason's three decisions (CR-034 §6):
+`2.12-docx4j.1` waits for T; default on (every `fo:float` whose table crosses the page foot splits, both modes, no
+attribute; capability `float-table-split`, the thirtieth, tells docx4j to lift its step 2 guard); in-row splits in
+version 1. As built (CR-034 §3.1), not the refusal of §3 but the float's START EDGE taken BEFORE the anchor (the last
+legal break, or the page's start when the anchor opens the page), the parts drawn page by page in
+`PageBreaker.drawSplitParts` (a new page per middle part), the anchor's block read again from its start on the page
+where the table ends; the `FloatContentLayoutManager` with the table's list, range start and state is kept on the
+`fo:float` FO across the re-read (`Float.setLayoutContinuation`), since a restart makes new layout managers.
+Measured (§3.2): Word's `float-three-pages` 21 pages, all four cases at Word's rows, the anchor at 74.9/323.3 to
+Word's 75.0/323.9; `float-tall-beside` 16 and `float-foot-crossing` 13, cases 1 and 2 split as Word's; the one
+difference is tall-beside case 3, the sliver (CR-031 §11's open item). Layout test `float_split.xml` (eight
+sequences), `TableBesideFloatTestCase` 8/8, `Docx4jHooksTestCase` 30. CI's command 4096/0, checkstyle 0, spotbugs 0.
+Pass criteria CR-034 §5. On the pass: fast-forward to `2.12-docx4j.1`, Enterprise §6.6 item 8 case (b) closed
+(`git status` first), registry to done via docx4j-portfolio, release note's "gate pending" closed; then `.1` is
+ready for Jason's push and release. Artefacts `~/fop-session-tools/2026-11-03-float-defects/t1-split/`. The
+paragraph that follows is the night's state, kept.
 
 Last updated 2026-11-03, night. **T's probe is DONE and T is SIZED, not ordered:
 `docs/developer/change-requests/CR-034-floating-table-split.md`.** A float's table adds its areas by position range
