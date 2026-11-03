@@ -206,6 +206,25 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-03. **Next, on Jason's word ("please go ahead"), in this order: B, A1, then a one-day probe for
+T.** docx4j's step 2 (floating wide tables, gate b317 on r57) was blocked by three renderer defects. They are traced
+here and recorded with Word's three probes in Enterprise CR-001 §6.6 item 8 (47f2aff, 377517c, bf44357; read it
+first).
+- **B:** a table that crosses an offset float's top goes wholly below the float, row 1 too, even across a
+  keep-with-next heading, which stays put (Word's `float-top-crossing-table`). Today it is set beside the float or
+  over it. §11's rule acts only in the end-edge search.
+- **A1:** CR-023's move of a float and its anchor to the next page is armed for every side float that cannot split
+  (pictures, text boxes, groups), offset 0 included. `PageBreakingAlgorithm.handleBox` arms it only for an offset
+  above 0, so a no-offset picture crossing the foot is drawn into the margin, and past the page edge it is lost.
+- **T:** Word splits a floating table that crosses the page foot, offset or not, and whether it fits a page or not
+  (6705). Nothing is set beside it on its first page, and the anchor begins beside the continuation on the next
+  page (`float-foot-crossing`, `float-tall-beside`). Until T exists, floating tables keep CR-023's move.
+  The probe asks whether a float's table can add its areas by position range. Then size T for Jason.
+
+Each item goes on its own branch from `2.12-docx4j.1`, gated by docx4j-12 against b314 on r57. The probes and tools
+are in `~/fop-session-tools/2026-11-03-float-defects/` (README). The paragraph that follows is the state of
+2026-11-02, kept as history.
+
 Last updated 2026-11-02, evening. **`fop/CR-031` (Word mode, docx4j CR-071 phase 1) is MERGED to `2.12-docx4j.1` by
 fast-forward at e5f0a7d12** (code 27ed437d3; `docs/developer/change-requests/CR-031-word-layout.md`). Jason accepted
 CR-071 ("D1 to D11 as recommended, except for D9 where we decide on (a)"), so the move ships in `2.12-docx4j.1`.
