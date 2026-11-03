@@ -1,10 +1,11 @@
 # CR-034: split a floating table that crosses the page foot (item T)
 
-- **Status:** BUILT 2026-11-04 on branch `CR-034-floating-table-split`, cut from `2.12-docx4j.1` at 59f249323 (§3.1
-  as built, §3.2 measured: Word's three probes at Word's rows and lines through docx4j's path); handed to docx4j-12
-  for the gate against b322 on r59 (§5). ORDERED 2026-11-04 (Jason, in the fork session: "`.1` waits for T. default
-  on. In-row splits in version 1."; §6). Before that: probe done and design 2026-11-03, after Jason's order of B
-  (fop/CR-032), A1 (fop/CR-033) and "a one-day probe for T" with a size.
+- **Status:** BUILT 2026-11-04 on branch `CR-034-floating-table-split`, cut from `2.12-docx4j.1` at 59f249323,
+  code e0baa4cb7 (§3.1 as built, §3.2 measured). **Gated PASS 2026-11-04 by docx4j-12 (b324 on r60 against b323,
+  §5.1) and MERGED to `2.12-docx4j.1` by fast-forward; unreleased until `2.12-docx4j.1` ships, which waits for this
+  (§6). b324 on r60 is the fork's baseline for later gates.** ORDERED 2026-11-04 (Jason, in the fork session: "`.1`
+  waits for T. default on. In-row splits in version 1."; §6). Before that: probe done and design 2026-11-03, after
+  Jason's order of B (fop/CR-032), A1 (fop/CR-033) and "a one-day probe for T" with a size.
 - **Serves:** Enterprise CR-001 §6.6 item 8, the first renderer defect of 2026-11-03 for floating tables: case (a),
   a table that fits a page but crosses the foot, which Word splits and the fork now moves whole with its anchor
   (CR-033's interim); and case (b), a table taller than the page body less its offset, which the fork cuts at the
@@ -221,6 +222,32 @@ the way).
   with the header row at the top of each continuation and the anchor's first line beside it.
 - 6705 under docx4j's step 2 (its first table about 661pt on a 628pt body) no longer losing 17 lines.
 - 0 corpus movers away from Word; events equal or falling.
+
+### 5.1 The gate (docx4j-12, 2026-11-04)
+
+**b324, r60's core (sha256 a55680cb...) on cp-b322, against the control b323 (cp-b322 unchanged, equal to b322 since
+`float-three-pages`' golden came after it): PASS.** Register Enterprise e802bfd; script
+`~/fidelity-cr030/gate-b323-b324.sh`, classpaths `cp-b323.txt`, `cp-b324.txt`.
+
+- The probes, at Word's pages: `float-foot-crossing` 0.9734 to 1.0000 (13 pages); `float-tall-beside` 0.8743 to
+  0.9880 (13 to 16); `float-three-pages` 0.8927 to 0.9971 (12 to 21).
+- Events equal: linebig 61, line 8380, clip 1552, bcov 1276, bcovi 516.
+- One corpus mover, 1616 (`12_en-US_num_tbl_1616`), -4 lines in real3 and real-c2, page parity up (0.9176 to 0.9214).
+  Its last floating table (seven rows, centred, tblpY 5.15pt, text-anchored) now splits at page 12's foot where r59
+  moved it whole. docx4j's anchor sits low on its page 12 because its page 11 holds 6 lines where Word's holds 23,
+  a difference upstream of the float and already in b323; Word's anchor opens its page 12 and the table fits there
+  whole. From docx4j's place r60 does what Word does in `float-foot-crossing` cases 1 and 2, and r59 matched Word's
+  page by accident. Read as not away from Word. FO and PDFs under `~/fidelity-real3/score/b323|b324/fop/`.
+
+**6705 under step 2 (b325 against b324, docx4j-12's step2-limits patch less its 937 hunk, with the guard against a
+table taller than a page lifted under `float-table-split`; overlay in `~/fidelity-cr030/step2-r60/`):** 6705 -1
+instead of b317's -2 and b313's -17, 9 pages to Word's 8, one line event: the rows past the foot are kept, the
+criterion met. Also up: 3229 +9 to Word's 11 pages; the probes `table-floating-wide-anchor-text` +15,
+`float-gap-tables` +25, `float-gap-words` +14, `float-tall-beside` +7 to 0.9964. Against: 4083 -8 and 1616 -3, and
+line events 8380 to 8485 (8236 19 to 59, 9832 8 to 16, 14776, 10187, 6705, 4083): the documents step 2 lost on at
+b310 and b317, tables or the anchor's words squeezed into the room beside a float, CR-031 §11's sliver item among
+them, not the split. Step 2 stays out of docx4j's tree for now, and its guard lift under `float-table-split` waits
+with it.
 
 ## 6. Decisions at the order (Jason, 2026-11-04)
 
