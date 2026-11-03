@@ -206,6 +206,19 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-03, afternoon. **B is BUILT and out for its gate: `fop/CR-032`, branch
+`CR-032-table-below-float-top` at 9b9f63f91 (`docs/developer/change-requests/CR-032-table-below-float-top.md`), r58 at
+`~/fop-renderers/r58-CR-032-9b9f63f91/` handed to docx4j-12 against b314 on r57.** Two mechanisms, both modes: a
+keep-with-next (an infinite penalty of class `line`) before a table that would reach the pending float's top is a start
+edge (`PageBreakingAlgorithm.handlePenaltyAt`, `nonRestartableReaches`), and at the start edge a first box fixing a
+width greater than the room clears to the float's foot instead of narrowing (`PageBreaker.resolvePendingIntrusion`, the
+obstacle rule of `continueBesideObstacles` for `fo:float`); `firstBoxAfterEdgeFixedIPD` skips the auxiliary box. Word's
+`float-top-crossing-table` at Word's lines within 1pt on all four cases through render.sh; p2 probes all at the
+float's foot; paragraph probes unchanged; 4083 as the gate renders it unchanged (its page-2 case exists only under
+docx4j's step 2 FO). No new capability. Full suite 4092/0, checkstyle and spotbugs clean. On the pass: fast-forward,
+§6.6 item 8 (Enterprise file, `git status` first), then A1 on its own branch. The paragraph that follows is the
+morning's order, kept.
+
 Last updated 2026-11-03. **Next, on Jason's word ("please go ahead"), in this order: B, A1, then a one-day probe for
 T.** docx4j's step 2 (floating wide tables, gate b317 on r57) was blocked by three renderer defects. They are traced
 here and recorded with Word's three probes in Enterprise CR-001 §6.6 item 8 (47f2aff, 377517c, bf44357; read it

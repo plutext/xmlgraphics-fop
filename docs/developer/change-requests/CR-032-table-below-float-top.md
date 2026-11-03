@@ -1,7 +1,9 @@
 # CR-032: a table that would cross a side float's top goes wholly below the float
 
-- **Status:** built 2026-11-03 on branch `CR-032-table-below-float-top`, cut from `2.12-docx4j.1` at f57728c3e; not
-  gated; not merged.
+- **Status:** built 2026-11-03 on branch `CR-032-table-below-float-top`, cut from `2.12-docx4j.1` at f57728c3e, code
+  at 9b9f63f91; full suite 4092/0 (5 skipped), checkstyle and spotbugs clean under CI's command. Handed to docx4j-12
+  the same day as r58 (`~/fop-renderers/r58-CR-032-9b9f63f91/`, core sha256 98070af9...) for a gate against b314 on
+  r57; not merged.
 - **Serves:** Enterprise CR-001 §6.6 item 8, the second of the three renderer defects that blocked docx4j's step 2
   (floating wide tables) on r57 (gate b317, 2026-11-03). Ordered by Jason on 2026-11-03 ("please go ahead"), the first
   of three: this (B), then A1 (CR-023's move with the anchor for every side float that cannot split), then a probe for
