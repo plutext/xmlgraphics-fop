@@ -168,4 +168,13 @@ gates.**
   `handlePenaltyAt` branch asks `handlingObstacle()`), not beside an `fo:float`, so such a table stays beside the
   float. Not in Word's probe; not measured.
 - CR-031 §11's open items stand: the anchor's first word in a sliver; a second floating table beside a first; a
-  float taller than the page (item T).
+  float taller than the page (item T, done by fop/CR-034).
+- **4083's page 2 under step 2, read 2026-11-04 (gate b325, the FO of docx4j's step 2):** not this change's case
+  after all. docx4j writes the B.6 date table's `fo:float` as the first child of the B.6 group box (a bordered
+  `fo:block` with 18pt space-before holding the heading and the option paragraphs), not in the option paragraph Word
+  anchors it to. The fork measures `fox:float-offset` 47.45pt from that box's top, as CR-023 defines it, and draws
+  the table at the first option's line (y 648) over the options, where Word has it 47pt below the first option
+  (y 703); B.7 is then set beside the misplaced table in the 65pt room and page 3 is left with one line. Traced
+  with the breaker's own numbers (anchor box top 550.9pt in the body, the float placed at 598.4, the first option
+  line at 649.4). The writer's shape, told to docx4j-12: the float belongs in its anchor paragraph, or the offset
+  must include what precedes that paragraph in the box.
