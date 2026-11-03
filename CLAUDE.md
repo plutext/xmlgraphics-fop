@@ -211,9 +211,10 @@ Last updated 2026-11-04, night. **Two follow-up fixes to `fop/CR-032` for 4083's
 docx4j-12 (b327 against b326: 4083 +4, page 2 Word's, no other mover; register Enterprise 3d61827) and MERGED to
 `2.12-docx4j.1` by fast-forward at f7498ef54; unreleased. docx4j's own anchor fix (e005410ff) gated b328: 4083 +5
 to 0.9055, above its score before step 2. b328 is the fork's baseline for later gates. Enterprise §6.6 item 8 has
-the reading. Nothing is ordered; `2.12-docx4j.1` (CR-030 to CR-034 and this) is ready for Jason's push and release;
-open for Jason: quieting the four sliver documents' overflow events, the upstream question (CR-033, CR-034, and the
-stale-keep fix of CR-032 §8).** CR-032 §7 (the corrected reading; my first
+the reading. Nothing is ordered. **`2.12-docx4j.1` was PUSHED to origin for the first time on 2026-11-04 at Jason's
+word ("push"), at 8e7ae66c8 (CR-030 to CR-034 and this follow-up, with `.9`'s two docs commits it carries); the
+release itself is still Jason's (`docs/developer/releasing.md`).** Open for Jason: quieting the four sliver
+documents' overflow events, the upstream question (CR-033, CR-034, and the stale-keep fix of CR-032 §8).** CR-032 §7 (the corrected reading; my first
 reading blamed docx4j's writer and was wrong, docx4j-12 corrected it from the source) and §8 (the fixes): the
 space resolver's auxiliary box before a table's border hid the table from `nextBoxHasContent` and
 `nonRestartableLMOfNextBox`, so a keep-with-next heading with space-after before a table reaching an offset float's
