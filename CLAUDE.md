@@ -206,6 +206,16 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-03, night. **T's probe is DONE and T is SIZED, not ordered:
+`docs/developer/change-requests/CR-034-floating-table-split.md`.** A float's table adds its areas by position range
+(a patched `FloatLayoutManager.processAreas` drew a 30-row float as rows 1 to 16 and 17 to 30, two `SideFloat`s, from
+two `KnuthPossPosIter` ranges of the float's own list; patch reverted, artefacts in
+`~/fop-session-tools/2026-11-03-float-defects/t-probe/`). Design: CR-033's refusal breaks the page before the anchor
+as today, the first range is drawn on page 1 at the anchor's top plus the offset with nothing beside, and the anchor's
+floats on page 2 process the remaining range with the anchor beside (CR-034 §3). Size five to eight days; capability
+`float-table-split`. **Waiting on Jason's word to build it; the gate baseline is b322 on r59.** The paragraph that
+follows is A1's state, kept.
+
 Last updated 2026-11-03, evening. **A1 is DONE: `fop/CR-033` (code d972d78fe,
 `docs/developer/change-requests/CR-033-float-move-any-offset.md`) gated PASS by docx4j-12 (b322 on r59 against b321:
 `float-foot-crossing` 0.9620 to 0.9734 at Word's 13 pages, 0 corpus movers, events equal; inert on the four corpora,
