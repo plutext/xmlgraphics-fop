@@ -206,6 +206,16 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-04, morning. **T is ORDERED: `fop/CR-034`, in progress on branch `CR-034-floating-table-split`
+(cut from `2.12-docx4j.1`).** Jason's three decisions (CR-034 §6): `2.12-docx4j.1` waits for T; default on (every
+`fo:float` whose table crosses the page foot splits, both modes, no attribute; capability `float-table-split` only
+tells docx4j to lift its step 2 guard); in-row splits in version 1. Build per CR-034 §3 as amended by the
+`float-three-pages` golden: the split decided in `handleBox` per page from an advancing range start, each earlier
+part drawn with nothing beside, the anchor beside the last part; the `addChildArea` clamp fixed on the way. Gate by
+docx4j-12 against b322 on r59: `float-foot-crossing`, `float-tall-beside`, `float-three-pages` to Word's pages, 6705
+under step 2, 0 corpus movers away. Registry `fop/CR-034` in_progress through docx4j-portfolio. The paragraph that
+follows is the night's state, kept.
+
 Last updated 2026-11-03, night. **T's probe is DONE and T is SIZED, not ordered:
 `docs/developer/change-requests/CR-034-floating-table-split.md`.** A float's table adds its areas by position range
 (a patched `FloatLayoutManager.processAreas` drew a 30-row float as rows 1 to 16 and 17 to 30, two `SideFloat`s, from

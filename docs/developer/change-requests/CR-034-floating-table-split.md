@@ -1,8 +1,9 @@
 # CR-034: split a floating table that crosses the page foot (item T)
 
-- **Status:** PROBE DONE and DESIGN, 2026-11-03; not ordered, not built. Jason's order of 2026-11-03 was B
-  (fop/CR-032), A1 (fop/CR-033), then "a one-day probe for T" and a size for him. This document is the probe's
-  result and the size.
+- **Status:** ORDERED 2026-11-04 (Jason, in the fork session: "`.1` waits for T. default on. In-row splits in version
+  1."), in progress on branch `CR-034-floating-table-split`, cut from `2.12-docx4j.1`. Before that: probe done and
+  design 2026-11-03, after Jason's order of B (fop/CR-032), A1 (fop/CR-033) and "a one-day probe for T" with a size.
+  §6 records the decisions.
 - **Serves:** Enterprise CR-001 §6.6 item 8, the first renderer defect of 2026-11-03 for floating tables: case (a),
   a table that fits a page but crosses the foot, which Word splits and the fork now moves whole with its anchor
   (CR-033's interim); and case (b), a table taller than the page body less its offset, which the fork cuts at the
@@ -136,3 +137,15 @@ the way).
   with the header row at the top of each continuation and the anchor's first line beside it.
 - 6705 under docx4j's step 2 (its first table about 661pt on a 628pt body) no longer losing 17 lines.
 - 0 corpus movers away from Word; events equal or falling.
+
+## 6. Decisions at the order (Jason, 2026-11-04)
+
+1. **`2.12-docx4j.1` waits for T.** The release carries CR-032, CR-033 and T together; docx4j 17.3.6 follows it.
+2. **Default on.** Every `fo:float` whose content is a table and whose foot crosses the page splits, in FOP's own
+   layout and in Word mode, as CR-033's move applies to every float; no attribute opts in. It fires only where today's
+   output is cut at the foot or moved whole. The capability `float-table-split` tells docx4j to lift its step 2 guard;
+   it switches nothing in the fork.
+3. **In-row splits in version 1.** A row that does not fit the room below the float's top on its page is split
+   inside itself as the stepper splits it in the flow, unless its FO forbids it (`keep-together`, docx4j's
+   `w:cantSplit`). No Word golden measures the in-row case; the between-rows cases of §1 are the measure, and the
+   in-row case is pinned by a layout test on the flow's own behaviour.
