@@ -21,7 +21,21 @@ From docx4j-12's two goldens (Enterprise item 8 at 377517c and bf44357):
 - `float-tall-beside`: a 60-row table (960pt) on A4 splits across pages and **keeps its offset** (row 1 12.4pt lower
   with tblpY 12.45 than with 0). Nothing beside it on page 1; the anchor and what follows start at the top of the
   next page beside the remaining rows, then full width below the table's end.
-- Unmeasured: a table running to a third page, and whether the anchor then goes to the second page or the last.
+- `float-three-pages` (cut by docx4j-12 at Jason's word on 2026-11-03 to close the question below, docx4j ad51efa67;
+  Word's 21 pages read by docx4j-12, Enterprise item 8 at 593b5b1): a floating table that splits more than once **sets
+  its anchor on the table's last page**, beside the last rows at the body top (x 323.9, the table's right edge plus
+  its 9pt distance), and **nothing is set beside the table on the first page or on any middle page**; the 200pt beside
+  stay empty. The rows split as in the flow, the full body each page (100 rows at tblpY 0: 1 to 33, 34 to 76, 77 to
+  100; 150 rows to a fourth page: 1 to 33, 34 to 76, 77 to 119, 120 to 150, the anchor on page 4). Every continuation
+  opens at the body top. The anchor and the text after it run beside the last rows; the first line whose top is at or
+  below the table's foot goes full width. **The offset is kept on page 1 only**: at tblpY 12pt row 1 is 12pt lower and
+  page 1 holds 32 rows, pages 2 and 3 open at the body top. **A `w:tblHeader` row is repeated at the top of each
+  continuation**, as in the flow, and the anchor's first line sits beside the repeated header. b322 (r59) scores the
+  probe 0.8927 at 12 pages to Word's 21, each float moved whole and cut at the foot (CR-033's interim); it is in the
+  share's probe set, so the gate reads it.
+- So the two earlier goldens showed one rule, not two: their "next page" was also the table's last. The rule is: the
+  table's parts fill whole pages with nothing beside them until the part that fits, and the anchor begins beside that
+  last part.
 
 ## 2. The probe: a float's table adds its areas by position range
 
@@ -43,9 +57,10 @@ README there). The table's list is a 12.5pt box (`NonLeafPosition`) and a 0 pena
 row, 59 elements. So the table layout managers accept a range of the float's own list, as they accept a page's range
 of the flow's list; the second area's placement in the probe is meaningless (the clamp of item 8's 1(b) pulled it up).
 
-Not probed: a header row repeated at the split (`TableHFPenaltyPosition` as the range's last position is the
-in-flow mechanism and should carry over), a row split inside itself (the stepper's row parts), and the borders the
-parts close with (the in-flow painter's first/last-part flags come from the iterator, so they should hold).
+Not probed in the fork: a header row repeated at the split (`TableHFPenaltyPosition` as the range's last position is
+the in-flow mechanism and should carry over; Word does repeat it, `float-three-pages` case 3, so the build must), a row
+split inside itself (the stepper's row parts), and the borders the parts close with (the in-flow painter's
+first/last-part flags come from the iterator, so they should hold).
 
 ## 3. Design
 
@@ -67,13 +82,17 @@ content adds areas by range (§2). T joins them.
    float's first range is drawn as a `SideFloat` at the flow's height plus the offset, with nothing beside it:
    `FloatLayoutManager.processAreas(context, 0, split)` with the target top. The part's content ends above it, so
    no intrusion is set for page 1.
-3. **Page 2: the continuation with the anchor beside.** The anchor box is handled again on the next page; its float
-   LMs now process the range `[split, end)`: the `SideFloat` at the page's top (offset 0 on the continuation page,
-   Word's reading), the anchor's lines beside it, the intrusion's height the continuation's
-   (`getFloatContentHeight` and `floatBottomOf` made range-aware). The rest is CR-023's and CR-020's end-edge path
-   as today.
-4. **A continuation taller than page 2.** Not in Word's goldens. Version 1 draws it as today (cut at the foot, an
-   event logged); a second split is the same mechanism applied again and is left for the measurement.
+3. **The next page: the same decision again, from the range's start.** The anchor box is handled again on the next
+   page with the float's range now `[split, end)` and no offset (Word keeps the offset on page 1 only). If the
+   remainder's foot lies past this page's foot too, §3.1 and §3.2 repeat: the page is refused at the float's start
+   edge, breaks before the anchor, and the next range is drawn from the body top with nothing beside it, a middle
+   page. The split state is a range start that advances, not a single index.
+4. **The last page: the remainder with the anchor beside.** When the remaining range fits below the page's top, the
+   float LMs process it: the `SideFloat` at the body top, the anchor's lines beside it, the intrusion's height the
+   remainder's (`getFloatContentHeight` and `floatBottomOf` made range-aware). The rest is CR-023's and CR-020's
+   end-edge path as today: the first line whose top is at or below the table's foot goes full width. This is Word's
+   rule from `float-three-pages`: the anchor begins on the table's last page, whatever the count (§1). A header row
+   repeats at each range's start by the in-flow mechanism (§2), which the layout test of §3.7 must show.
 5. **Several floats on one anchor** (CR-023): split only when the anchor carries one float; two floats keep the
    move.
 6. **Both modes**, as CR-032 and CR-033. **Capability `float-table-split`**, the thirtieth, read by docx4j to lift
@@ -89,16 +108,21 @@ Five to eight working days, call it one to one and a half weeks:
 
 | piece | days |
 |---|---|
-| the split decision and its state through the restart (§3.1, §3.2) | 1 to 2 |
-| the two ranges' areas, target tops and the continuation's intrusion height (§3.2, §3.3) | 1 to 2 |
+| the split decision and its state through the restart, repeated per page (§3.1 to §3.3) | 1 to 2 |
+| the ranges' areas, target tops and the last part's intrusion height (§3.2, §3.4) | 1 to 2 |
 | header repetition, in-row splits and borders at the split, with layout tests | 1 |
-| measurement against `float-foot-crossing` cases 1 and 2 and `float-tall-beside` on docx4j's path | 1 |
+| measurement against `float-foot-crossing` cases 1 and 2, `float-tall-beside` and `float-three-pages` on docx4j's path | 1 |
 | gates with docx4j-12 and the fixes they bring (6705 is the corpus case) | 1 to 2 |
 
+The three-page golden (read 2026-11-03) does not change the size: a middle page is the page-1 shape repeated with an
+advancing range start, and the anchor's page is the one where the decision of §3.1 first says the remainder fits.
+It removes the version-1 cut that §3.4 had planned.
+
 Risks: the breaker's restart path, which CR-033's refusal reuses and which mutates state the split must survive;
-the page-1 part added with a float area but no intrusion (new shape for `addAreasForFloats`); a short anchor
-paragraph beside a tall continuation (the end edge is CR-020's, so it should hold); and the clamp in
-`FloatContentLayoutManager.addChildArea`, which must not pull a continuation up (item 8's 1(b) is fixed on the way).
+a page whose part ends with a float area but no intrusion and no anchor (new shape for `addAreasForFloats`, once per
+middle page); a short anchor paragraph beside a tall last part (the end edge is CR-020's, so it should hold); and the
+clamp in `FloatContentLayoutManager.addChildArea`, which must not pull a continuation up (item 8's 1(b) is fixed on
+the way).
 
 ## 5. Pass criteria for the gate (docx4j-12, against b322 on r59)
 
@@ -106,5 +130,9 @@ paragraph beside a tall continuation (the end edge is CR-020's, so it should hol
   next page's top with the anchor beside it.
 - `float-tall-beside` from 0.8743 toward 1.0: rows 1 to 45 on page 1 with the offset kept, the rest at page 2's top
   with the anchor beside, then full width.
+- `float-three-pages` from 0.8927 (12 pages) to Word's 21 pages: rows 1 to 33, 34 to 76, 77 to 100 with nothing
+  beside the first two parts and the anchor at the third page's top beside row 77; the 150-row case to a fourth page
+  with the anchor there; the 12pt case with 32 rows on page 1 and the continuations at the body top; the header case
+  with the header row at the top of each continuation and the anchor's first line beside it.
 - 6705 under docx4j's step 2 (its first table about 661pt on a 628pt body) no longer losing 17 lines.
 - 0 corpus movers away from Word; events equal or falling.

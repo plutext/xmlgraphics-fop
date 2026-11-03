@@ -213,8 +213,13 @@ two `KnuthPossPosIter` ranges of the float's own list; patch reverted, artefacts
 `~/fop-session-tools/2026-11-03-float-defects/t-probe/`). Design: CR-033's refusal breaks the page before the anchor
 as today, the first range is drawn on page 1 at the anchor's top plus the offset with nothing beside, and the anchor's
 floats on page 2 process the remaining range with the anchor beside (CR-034 §3). Size five to eight days; capability
-`float-table-split`. **Waiting on Jason's word to build it; the gate baseline is b322 on r59.** The paragraph that
-follows is A1's state, kept.
+`float-table-split`. **Waiting on Jason's word to build it; the gate baseline is b322 on r59.** Later that night, at
+Jason's word, docx4j-12 cut and read Word's `float-three-pages` golden (docx4j ad51efa67, Enterprise item 8 at
+593b5b1): a floating table that splits more than once sets its anchor on its LAST page, nothing beside the table on
+the first or any middle page, the offset kept on page 1 only, a `w:tblHeader` row repeated at each continuation.
+CR-034 §1, §3.3, §3.4 and §5 carry it; the size holds (a middle page is page 1's shape with an advancing range
+start). b322 scores the probe 0.8927 at 12 pages to Word's 21: T's third baseline. The paragraph that follows is A1's
+state, kept.
 
 Last updated 2026-11-03, evening. **A1 is DONE: `fop/CR-033` (code d972d78fe,
 `docs/developer/change-requests/CR-033-float-move-any-offset.md`) gated PASS by docx4j-12 (b322 on r59 against b321:
