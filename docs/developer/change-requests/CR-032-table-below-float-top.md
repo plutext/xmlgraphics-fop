@@ -169,12 +169,36 @@ gates.**
   float. Not in Word's probe; not measured.
 - CR-031 §11's open items stand: the anchor's first word in a sliver; a second floating table beside a first; a
   float taller than the page (item T, done by fop/CR-034).
-- **4083's page 2 under step 2, read 2026-11-04 (gate b325, the FO of docx4j's step 2):** not this change's case
-  after all. docx4j writes the B.6 date table's `fo:float` as the first child of the B.6 group box (a bordered
-  `fo:block` with 18pt space-before holding the heading and the option paragraphs), not in the option paragraph Word
-  anchors it to. The fork measures `fox:float-offset` 47.45pt from that box's top, as CR-023 defines it, and draws
-  the table at the first option's line (y 648) over the options, where Word has it 47pt below the first option
-  (y 703); B.7 is then set beside the misplaced table in the 65pt room and page 3 is left with one line. Traced
-  with the breaker's own numbers (anchor box top 550.9pt in the body, the float placed at 598.4, the first option
-  line at 649.4). The writer's shape, told to docx4j-12: the float belongs in its anchor paragraph, or the offset
-  must include what precedes that paragraph in the box.
+- **4083's page 2 under step 2, read 2026-11-04 (gate b325/b326, docx4j's step 2 FO): two defects of the fork,
+  both fixed the same day (branch `CR-032-4083-page2`, see §8).** A first reading here took the float for the date
+  table and blamed docx4j's writer for anchoring it at the group box; docx4j-12 corrected it from the source: the
+  float is the B.6 options box itself (a one-row table, tblpY 47.45pt), anchored to the B.6 heading paragraph, and
+  the in-flow date table after the B.6 box runs over it. That is this change's case, and it did not fire, for two
+  reasons:
+  1. The B.6 heading has `keep-with-next` and 6pt space-after, so the break before the date table is the keep's
+     infinite penalty and the first box after it is the space resolver's auxiliary box before the table's border.
+     `nextBoxHasContent` and `nonRestartableLMOfNextBox` stopped at that box, saw no content and no table, and the
+     keep was never offered as the start edge (`handlePenaltyAt`); the table was set full width over the float.
+     Fixed: both read past the resolver's box (`isSpaceResolverBox`: auxiliary, no width, no manager's position),
+     as `firstBoxAfterEdgeFixedIPD` already did; a block's end marker, which carries its block's position, still
+     stops them (CR-024 §11.12).
+  2. With the edge taken, the date table went to page 3 with B.7's heading instead of staying on page 2 below the
+     float: the break between the table and B.7's box was infinite (class line). The flow's layout context, shared
+     by every list of the page-sequence, kept the `keep-with-next` pending that B.7's heading had left in the list
+     before the edge (nothing clears it where the next block starts with a forced break), and the first break
+     between blocks in the list read again after the edge took it. Fixed: `FlowLayoutManager.getNextKnuthElements`
+     clears the pending keeps on entry, the list before having ended at a decided break. A float edge or a forced
+     break after a kept block could do this in Apache FOP's own layout too.
+  With both, page 2 is Word's (201 words to 201; the date table at y 731 to Word's 725.5, the 6pt from the
+  pagination above). Page 3 still differs (16 words to Word's 67): B.7's yes/no table is a float whose anchor
+  docx4j writes on the "section C" paragraph that carries `break-before="page"`, so it opens page 4 with it, where
+  Word has it on page 3 under B.7's heading. Which paragraph Word anchors it to is docx4j-12's to read (the
+  paragraph after the table in the docx, possibly an empty one that docx4j's `anchorFloatingTable` skipped).
+
+## 8. 4083's page 2: the two fixes (2026-11-04)
+
+Branch `CR-032-4083-page2` from `2.12-docx4j.1`. Files: `PageBreakingAlgorithm.java` (`isSpaceResolverBox`,
+`nextBoxHasContent`, `nonRestartableLMOfNextBox`), `FlowLayoutManager.java` (`clearKeepsPending` on entry). No
+layout test changed expectation: the layout suite and the Word-mode tests 824/0, CI's command as the status says.
+Word's `float-top-crossing-table`, `float-foot-crossing` and `float-three-pages` through docx4j's path unchanged at
+Word's rows and anchors. Measured on 4083's b326 FO through RenderFo as §7 says. Gate: docx4j-12 against b326.

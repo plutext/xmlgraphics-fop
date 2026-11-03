@@ -32,7 +32,8 @@
  * takes the start edge before it through a keep-with-next (fop/CR-032); and a side float the page cannot hold below
  * its anchor moves to the next page with the anchor whatever its offset, where only an offset float did (fop/CR-033);
  * and hook float-table-split, a floating table the page cannot hold below its anchor split at the float's start edge
- * before the anchor, the edge the last legal break before it or the page's start (fop/CR-034).
+ * before the anchor, the edge the last legal break before it or the page's start (fop/CR-034); and the space
+ * resolver's auxiliary box read past when the box after a break is looked for (fop/CR-032, 4083's B.6).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -1276,11 +1277,25 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     private LayoutManager nonRestartableLMOfNextBox(int elementIdx) {
         for (int i = elementIdx; i < par.size(); i++) {
             KnuthElement e = getElement(i);
-            if (e.isBox()) {
+            if (e.isBox() && !isSpaceResolverBox(e)) {
                 return nonRestartableLM(e.getPosition());
             }
         }
         return null;
+    }
+
+    /**
+     * Whether a box is one the space resolver made, an auxiliary box of no width before a border or padding, with
+     * no position of a layout manager's own. The box before a table's border-before after a space is one: read as
+     * the next box, it hid the table from the tests that take a pending float's start edge before a table that
+     * reaches the float's top (nextBoxHasContent, nonRestartableLMOfNextBox), so a keep-with-next heading with
+     * space-after before such a table was never the edge and the table was set full width over the float (corpus
+     * 4083's B.6 under docx4j's step 2, fop/CR-032's case; read 2026-11-04). A block's end marker is auxiliary too
+     * but carries the block's position, and stays the box those tests stop at (CR-024 §11.12).
+     */
+    private static boolean isSpaceResolverBox(KnuthElement e) {
+        return e.isBox() && e.isAuxiliary() && e.getWidth() == 0
+                && (e.getPosition() == null || e.getPosition() instanceof SpaceResolver.SpaceHandlingPosition);
     }
 
     /**
@@ -2705,7 +2720,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     private boolean nextBoxHasContent(int elementIdx) {
         for (int i = elementIdx; i < par.size(); i++) {
             KnuthElement e = getElement(i);
-            if (e.isBox()) {
+            if (e.isBox() && !isSpaceResolverBox(e)) {
                 return e.getWidth() > 0;
             }
         }

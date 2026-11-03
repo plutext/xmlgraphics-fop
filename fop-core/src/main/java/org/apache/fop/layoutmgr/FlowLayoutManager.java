@@ -18,7 +18,8 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: a block read again after a side float's edge is told so, to keep its resolved space-before
  * (fop/CR-020). And a block read again after an edge
- * serves no break-before again (hook obstacles-in-the-line, fop/CR-024 §11.6). See README.md, "Changes from
+ * serves no break-before again (hook obstacles-in-the-line, fop/CR-024 §11.6); and the keeps left pending by the
+ * list before are cleared when the flow is read again (fop/CR-032, 4083's date table). See README.md, "Changes from
  * Apache FOP 2.11". */
 
 /* $Id$ */
@@ -92,6 +93,13 @@ public class FlowLayoutManager extends BlockStackingLayoutManager {
             Position restartPosition, LayoutManager restartLM) {
 
         List<ListElement> elements = new LinkedList<ListElement>();
+
+        // The keeps left pending on the context by the list before belong to the break that list ended at, which
+        // is decided: a keep-with-next left by the last block before a side float's edge, or before a forced break,
+        // made the first break between the blocks of the next list infinite, so a table read again after the edge
+        // could not be parted from the kept heading after it, and both went to the next page (corpus 4083's B.6
+        // date table and B.7, under docx4j's step 2; fop/CR-032, read 2026-11-04)
+        context.clearKeepsPending();
 
         boolean isRestart = (restartPosition != null);
         // always reset in case of restart (exception: see below)
