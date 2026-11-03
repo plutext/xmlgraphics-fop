@@ -16,8 +16,9 @@
  */
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
- * Apache FOP 2.11: hook float-offset, the float content's height before its areas are made (fop/CR-023). See
- * README.md, "Changes from Apache FOP 2.11". */
+ * Apache FOP 2.11: hook float-offset, the float content's height before its areas are made (fop/CR-023); and hook
+ * float-table-split, the content manager of a split table kept across a re-read of the anchor's block, and the
+ * areas of what is left of its list (fop/CR-034). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -29,8 +30,6 @@ import java.util.List;
 import org.apache.fop.fo.flow.Float;
 import org.apache.fop.layoutmgr.FloatContentLayoutManager;
 import org.apache.fop.layoutmgr.InlineKnuthSequence;
-import org.apache.fop.layoutmgr.KnuthElement;
-import org.apache.fop.layoutmgr.KnuthPossPosIter;
 import org.apache.fop.layoutmgr.KnuthSequence;
 import org.apache.fop.layoutmgr.LayoutContext;
 import org.apache.fop.layoutmgr.LayoutManager;
@@ -58,12 +57,21 @@ public class FloatLayoutManager extends InlineStackingLayoutManager {
 
     public LinkedList<KnuthSequence> getNextKnuthElements(LayoutContext context, int alignment) {
 
-        if (!floatContentAreaAdded && !floatContent.isDisabled()) {
+        Object continuation = floatContent.getLayoutContinuation();
+        if (continuation instanceof FloatContentLayoutManager) {
+            // hook float-table-split (fop/CR-034): the float's table was split and its first parts placed; the
+            // anchor's block is read again on the next page with new layout managers, and the content manager
+            // that holds the table's state and the rest of its list goes on from where it was
+            floatContentLM = (FloatContentLayoutManager) continuation;
+            floatContentLM.setParent(this);
+            floatContentKnuthElements = floatContentLM.getContentElements();
+        } else if (!floatContentAreaAdded && !floatContent.isDisabled()) {
             floatContentLM = new FloatContentLayoutManager(floatContent);
             floatContentLM.setParent(this);
             floatContentLM.initialize();
             floatContentKnuthElements = floatContentLM.getNextKnuthElements(context, alignment);
             SpaceResolver.resolveElementList(floatContentKnuthElements);
+            floatContentLM.setContentElements(floatContentKnuthElements);
         }
 
         // the only knuth element is a zero width and height knuth box
@@ -94,21 +102,13 @@ public class FloatLayoutManager extends InlineStackingLayoutManager {
      * @return the content's height in millipoints, 0 before the elements exist
      */
     public int getFloatContentHeight() {
-        int height = 0;
-        if (floatContentKnuthElements != null) {
-            for (ListElement e : floatContentKnuthElements) {
-                if (e instanceof KnuthElement && (e.isBox() || e.isGlue())) {
-                    height += ((KnuthElement) e).getWidth();
-                }
-            }
-        }
-        return height;
+        // the part still to be placed, where a table was split (hook float-table-split, fop/CR-034)
+        return floatContentLM == null ? 0 : floatContentLM.remainingContentHeight();
     }
 
     public void processAreas(LayoutContext context) {
-        PositionIterator contentPosIter = new KnuthPossPosIter(floatContentKnuthElements, 0,
-                floatContentKnuthElements.size());
-        floatContentLM.addAreas(contentPosIter, context);
+        // what is left of the content, the whole of it when nothing was split off (fop/CR-034)
+        floatContentLM.processRemainder(context);
         floatContentAreaAdded = true;
         anchor.setFloatContentLM(null);
     }

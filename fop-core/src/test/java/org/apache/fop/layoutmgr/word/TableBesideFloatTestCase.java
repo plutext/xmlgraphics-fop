@@ -104,7 +104,26 @@ public class TableBesideFloatTestCase {
             + SEQ + OFFSET_ANCHOR + tallTable("CROSS") + "<fo:block>after-cross</fo:block>" + END
             + SEQ + OFFSET_ANCHOR + "<fo:block keep-with-next=\"always\">kept-heading</fo:block>" + tallTable("KEPT")
             + "<fo:block>after-kept</fo:block>" + END
+            // a floating table taller than the page, anchored at the page's top: split as Word splits it, the rows
+            // that fit on the first page with nothing beside them, the anchor beside the rest on the next
+            // (Word's float-tall-beside and float-three-pages probes, fop/CR-034)
+            + SEQ + "<fo:block space-after=\"8pt\"><fo:float float=\"left\">" + splitTable(30)
+            + "</fo:float>split-anchor one two three four five six seven eight nine ten eleven twelve</fo:block>"
+            + "<fo:block>after-split</fo:block>" + END
             + "</fo:root>";
+
+    /** A 200pt table of that many 30pt rows, cells s1 to sN (fop/CR-034). */
+    private static String splitTable(int rows) {
+        StringBuilder b = new StringBuilder("<fo:block><fo:table table-layout=\"fixed\" width=\"200pt\" "
+                + "border-collapse=\"collapse\" border=\"0.48pt solid black\"><fo:table-column column-width=\"100pt\"/>"
+                + "<fo:table-column column-width=\"100pt\"/><fo:table-body>");
+        for (int i = 1; i <= rows; i++) {
+            b.append("<fo:table-row height=\"30pt\"><fo:table-cell><fo:block>s").append(i)
+                    .append("</fo:block></fo:table-cell><fo:table-cell><fo:block>x</fo:block></fo:table-cell>"
+                            + "</fo:table-row>");
+        }
+        return b.append("</fo:table-body></fo:table></fo:block>").toString();
+    }
 
     /** A 200pt table of two 30pt rows: wider than the 144pt beside the float, its second row across the float's top. */
     private static String tallTable(String name) {
@@ -220,6 +239,22 @@ public class TableBesideFloatTestCase {
      * and the table alone goes below the float (the probe's case 2; corpus 4083's date table, which the keep had left
      * full width over the float, no edge being offered before it). The clearance is 100pt, the heading's 16pt less.
      */
+    /**
+     * A 900pt floating table on a 698pt body, anchored at the page's top: rows 1 to 23 fill the first page with
+     * nothing beside them, the anchor and rows 24 to 30 open the next page, the anchor's lines beside the rows in
+     * the 251pt room, as is the paragraph after it, the rows being 210pt tall (fop/CR-034).
+     */
+    @Test
+    public void aFloatingTableTallerThanThePageIsSplitWithTheAnchorOnItsLastPage() throws Exception {
+        assertBoth("1", "count((//pageViewport)[9]//word[.='s23'])");
+        assertBoth("0", "count((//pageViewport)[9]//word[.='s24'])");
+        assertBoth("0", "count((//pageViewport)[9]//word[.='split-anchor'])");
+        assertBoth("1", "count((//pageViewport)[10]//word[.='s24'])");
+        assertBoth("1", "count((//pageViewport)[10]//word[.='s30'])");
+        assertBoth("251000", "(//pageViewport)[10]//word[.='split-anchor']/ancestor::lineArea[1]/@ipd");
+        assertBoth("251000", "(//pageViewport)[10]//word[.='after-split']/ancestor::lineArea[1]/@ipd");
+    }
+
     @Test
     public void aKeptTableCrossingAnOffsetFloatsTopGoesBelowTheFloatAlone() throws Exception {
         assertBoth("451000", "(//pageViewport)[8]//word[.='kept-heading']/ancestor::lineArea[1]/@ipd");

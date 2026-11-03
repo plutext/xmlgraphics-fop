@@ -30,7 +30,9 @@
  * the band at a boundary the orphans keep (fop/CR-031 §10); and a table wider than the room beside a side float ends
  * the float before it, as beside an obstacle (fop/CR-031 §11); and a table that would reach an offset float's top
  * takes the start edge before it through a keep-with-next (fop/CR-032); and a side float the page cannot hold below
- * its anchor moves to the next page with the anchor whatever its offset, where only an offset float did (fop/CR-033).
+ * its anchor moves to the next page with the anchor whatever its offset, where only an offset float did (fop/CR-033);
+ * and hook float-table-split, a floating table the page cannot hold below its anchor split at the float's start edge
+ * before the anchor, the edge the last legal break before it or the page's start (fop/CR-034).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -56,7 +58,6 @@ import org.apache.fop.fo.flow.table.Table;
 import org.apache.fop.layoutmgr.AbstractBreaker.FloatPosition;
 import org.apache.fop.layoutmgr.AbstractBreaker.PageBreakPosition;
 import org.apache.fop.layoutmgr.WhitespaceManagementPenalty.Variant;
-import org.apache.fop.layoutmgr.inline.FloatLayoutManager;
 import org.apache.fop.layoutmgr.inline.LineLayoutManager;
 import org.apache.fop.layoutmgr.list.ListItemLayoutManager;
 import org.apache.fop.traits.MinOptMax;
@@ -177,6 +178,22 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     private int listStartFlowY;
     /** The page start to read the elements again from, for an obstacle whose band begins above its box (fop/CR-024). */
     private KnuthNode rewindTo;
+    // hook float-table-split (fop/CR-034): a floating table the page cannot hold below its anchor is split, its
+    // first part on this page with nothing beside it and the anchor on the page where the table ends
+    /** The last legal break seen, and the content height there, for the edge before the anchor. */
+    private int lastLegalBreakIdx = -1;
+    private int lastLegalBreakWidth;
+    /** The float whose table may be split, armed at its anchor box; null for any other float. */
+    private FloatContentLayoutManager splitFloat;
+    /** The flow's child holding the anchor, read again from its start after the split edge. */
+    private LayoutManager splitAnchorLM;
+    /** The last legal break before the anchor box, and the content height there. */
+    private int preAnchorBreakIdx = -1;
+    private int preAnchorBreakWidth;
+    /** Whether the edge node is the split edge, before the anchor, not an edge after it. */
+    private boolean splitEdge;
+    /** The anchor block's top in the page, for the split edge's page. */
+    private int splitAnchorTopInPage;
     // hook obstacles-in-the-line (fop/CR-024 §11.5): an obstacle whose band, clearing the column, would push the
     // box that holds it past the page's foot: the page breaks before the box, and the obstacle is taken up on
     // the page the box lands on
@@ -541,6 +558,17 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             }
         }
         if (box instanceof KnuthBlockBox && ((KnuthBlockBox) box).hasFloatAnchors()) {
+            // hook float-table-split (fop/CR-034): a single floating table whose anchor's block can be read again
+            // from its start may be split across pages; a continuation keeps no offset, as a word processor opens
+            // the next page's part at the body's top (Word's float-three-pages probe)
+            int boxIdx = par.indexOf(box);
+            splitFloat = splittableFloatOf((KnuthBlockBox) box, boxIdx);
+            splitAnchorLM = splitFloat == null ? null : splitRestartLM(boxIdx);
+            if (splitAnchorLM == null) {
+                splitFloat = null;
+            }
+            preAnchorBreakIdx = lastLegalBreakIdx;
+            preAnchorBreakWidth = lastLegalBreakWidth;
             int offset = floatOffsetOf((KnuthBlockBox) box);
             // hook float-offset (fop/CR-023): the float's top is `offset` below the top of its anchor
             // block including the block's own space-before, which is the box's position less that space,
@@ -558,8 +586,12 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             floatAnchorListTop = anchorTop;
             floatStartListTop = anchorTop + offset;
             floatAnchorLineHeight = nextContentBoxWidth(box);
-            floatStartListBottom = anchorTop + floatBottomOf((KnuthBlockBox) box);
-            floatFitsAnEmptyPage = floatBottomOf((KnuthBlockBox) box) <= lineWidth;
+            int bottom = splitFloat != null ? offset + splitFloat.remainingContentHeight()
+                    : floatBottomOf((KnuthBlockBox) box);
+            floatStartListBottom = anchorTop + bottom;
+            // a table of which at least one row fits an empty page below its offset is split there (fop/CR-034)
+            floatFitsAnEmptyPage = bottom <= lineWidth
+                    || (splitFloat != null && splitFloat.splitIndexFor(lineWidth - offset) >= 0);
             handlingStartOfFloat = true;
         }
         if (floatHeight != 0 && totalWidth >= floatHeight) {
@@ -952,6 +984,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 bestFloatEdgeNode = createNode(edgeElementIdx, node.line + 1, fitnessClass, totalWidth + glue[0],
                         totalStretch + glue[1], totalShrink + glue[2], r, availableShrink, availableStretch,
                         difference, demerits, node);
+                splitEdge = false;
             }
             return;
         }
@@ -1154,6 +1187,11 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         }
         boolean edgeDeferred = false;
         edgeElementIdx = elementIdx;
+        if (!handlingFloat()) {
+            // the last legal break before a float's anchor is the split edge's place (fop/CR-034)
+            lastLegalBreakIdx = elementIdx;
+            lastLegalBreakWidth = totalWidth;
+        }
         if (takeDeferredObstacle(elementIdx)) {
             return;
         }
@@ -2373,6 +2411,22 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             // hook float-offset (fop/CR-023): a page that cannot hold the float below its anchor is no start for
             // it; the node is too long as usual, and with no edge the algorithm restarts from the last too-short
             // break, the one before the anchor, where the anchor is handled again on the next page
+            if (splitFloat != null && (bestFloatEdgeNode == null || splitEdge)
+                    && splitFloat.splitIndexFor(getLineWidth(node) - (floatStartListTop - node.totalWidth)) >= 0) {
+                // hook float-table-split (fop/CR-034): a table of which at least one row fits below its top on
+                // this page is split instead. The float's start edge is the last legal break before the anchor,
+                // or the page's start when the anchor opens the page: the part up to it is this page's content,
+                // the table's first part is drawn below it with nothing beside, and the anchor's block is read
+                // again on the page where the table ends (PageBreaker.addAreasForFloats, handleFloatLayout)
+                boolean breakBefore = preAnchorBreakIdx > node.position;
+                if (bestFloatEdgeNode == null || demerits <= bestFloatEdgeNode.totalDemerits) {
+                    bestFloatEdgeNode = createNode(breakBefore ? preAnchorBreakIdx : node.position, node.line + 1,
+                            fitnessClass, breakBefore ? preAnchorBreakWidth : node.totalWidth, 0, 0, 0, 0, 0, 0,
+                            demerits, node);
+                    splitEdge = true;
+                    splitAnchorTopInPage = Math.max(0, floatAnchorListTop - node.totalWidth);
+                }
+            }
             super.createForcedNodes(node, line, elementIdx, difference, r, demerits, fitnessClass, availableShrink,
                     availableStretch, newWidth, newStretch, newShrink);
             return;
@@ -2470,11 +2524,85 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     private static int floatBottomOf(KnuthBlockBox box) {
         int bottom = 0;
         for (FloatContentLayoutManager fclm : box.getFloatContentLMs()) {
-            int height = fclm.getParent() instanceof FloatLayoutManager
-                    ? ((FloatLayoutManager) fclm.getParent()).getFloatContentHeight() : 0;
-            bottom = Math.max(bottom, fclm.getFloatOffset() + height);
+            bottom = Math.max(bottom, fclm.getFloatOffset() + fclm.remainingContentHeight());
         }
         return bottom;
+    }
+
+    /**
+     * The float of an anchor box whose table may be split across pages (hook float-table-split, fop/CR-034): the
+     * box carries one float, its content a table with a break to take, and the anchor lies in no table itself.
+     * Two floats on one anchor, a picture, a text box, keep fop/CR-033's move.
+     */
+    private FloatContentLayoutManager splittableFloatOf(KnuthBlockBox box, int boxIdx) {
+        List<FloatContentLayoutManager> fclms = box.getFloatContentLMs();
+        if (fclms.size() != 1 || !fclms.get(0).contentSplittable() || boxIdx < 0
+                || insideNonRestartable(boxIdx)) {
+            return null;
+        }
+        return fclms.get(0);
+    }
+
+    /**
+     * The flow's child to read again from its start after a split edge (fop/CR-034): the one the anchor's first
+     * line lies in, provided no box with content before the anchor in this list belongs to it as well, since that
+     * content would be laid out twice. An anchor paragraph that is the flow's child itself, or the first content
+     * of one, qualifies; null otherwise, and the float moves whole.
+     */
+    private LayoutManager splitRestartLM(int anchorIdx) {
+        LayoutManager top = flowChildOf(positionOfNextContentBox(anchorIdx));
+        if (top == null) {
+            return null;
+        }
+        for (int i = anchorIdx - 1; i >= 0; i--) {
+            KnuthElement e = getElement(i);
+            if (e.isBox() && e.getWidth() > 0) {
+                return flowChildOf(e.getPosition()) == top ? null : top;
+            }
+        }
+        return top;
+    }
+
+    /**
+     * The manager under the flow that a position's chain passes through, or null (fop/CR-034): the chain is read
+     * from the flow's own wrapping down, and the deepest manager's parents up where the chain stops short.
+     */
+    private static LayoutManager flowChildOf(Position p) {
+        LayoutManager deepest = null;
+        for (Position q = p; q != null; q = nextInChain(q)) {
+            LayoutManager lm = q.getLM();
+            if (lm != null && lm.getParent() instanceof FlowLayoutManager) {
+                return lm;
+            }
+            if (lm != null) {
+                deepest = lm;
+            }
+        }
+        LayoutManager lm = deepest;
+        while (lm != null && lm.getParent() != null && !(lm.getParent() instanceof FlowLayoutManager)) {
+            lm = lm.getParent();
+        }
+        return lm != null && lm.getParent() instanceof FlowLayoutManager ? lm : null;
+    }
+
+    /** @return whether the edge node is a split edge before a floating table's anchor (fop/CR-034) */
+    protected boolean hasSplitEdge() {
+        return splitEdge && bestFloatEdgeNode != null;
+    }
+
+    /** @return the float whose table is split at the split edge (fop/CR-034) */
+    protected FloatContentLayoutManager getSplitFloat() {
+        return splitFloat;
+    }
+
+    /** @return the flow's child to read again from its start after the split edge (fop/CR-034) */
+    protected LayoutManager getSplitAnchorLM() {
+        return splitAnchorLM;
+    }
+
+    /** @return the anchor block's top in the page the split edge lies on (fop/CR-034) */
+    protected int getSplitAnchorTopInPage() {
+        return splitAnchorTopInPage;
     }
 
     /** The anchor block's own space-before (its optimum), for the floats anchored in a box (fop/CR-023). */

@@ -1,9 +1,10 @@
 # CR-034: split a floating table that crosses the page foot (item T)
 
-- **Status:** ORDERED 2026-11-04 (Jason, in the fork session: "`.1` waits for T. default on. In-row splits in version
-  1."), in progress on branch `CR-034-floating-table-split`, cut from `2.12-docx4j.1`. Before that: probe done and
-  design 2026-11-03, after Jason's order of B (fop/CR-032), A1 (fop/CR-033) and "a one-day probe for T" with a size.
-  §6 records the decisions.
+- **Status:** BUILT 2026-11-04 on branch `CR-034-floating-table-split`, cut from `2.12-docx4j.1` at 59f249323 (§3.1
+  as built, §3.2 measured: Word's three probes at Word's rows and lines through docx4j's path); handed to docx4j-12
+  for the gate against b322 on r59 (§5). ORDERED 2026-11-04 (Jason, in the fork session: "`.1` waits for T. default
+  on. In-row splits in version 1."; §6). Before that: probe done and design 2026-11-03, after Jason's order of B
+  (fop/CR-032), A1 (fop/CR-033) and "a one-day probe for T" with a size.
 - **Serves:** Enterprise CR-001 §6.6 item 8, the first renderer defect of 2026-11-03 for floating tables: case (a),
   a table that fits a page but crosses the foot, which Word splits and the fork now moves whole with its anchor
   (CR-033's interim); and case (b), a table taller than the page body less its offset, which the fork cuts at the
@@ -103,6 +104,89 @@ content adds areas by range (§2). T joins them.
    0 and at 12pt; one taller than the page; one with a repeating header; a row that splits inside itself), and
    `TableBesideFloatTestCase` for the anchor beside the continuation.
 
+### 3.1 As built (2026-11-04)
+
+Built in one day on branch `CR-034-floating-table-split`. The mechanism differs from §3's sketch in one respect: the
+page before the anchor is not made by the breaker's refusal and restart (§3.1, §3.2) but by taking the float's
+**start edge before the anchor**, which the edge machinery already knows how to commit and restart from, and the
+middle pages are made by the page breaker itself, not by the breaker handling the anchor again on each page. The
+refusal could not have made a page that holds nothing but a table part: when the anchor opens its page there is no
+break before it to restart from, and a middle page is exactly that shape.
+
+1. **Arming** (`PageBreakingAlgorithm.handleBox`). At an anchor box with one float whose content is a table with a
+   break to take (`FloatContentLayoutManager.contentSplittable`), and whose paragraph can be read again from its
+   start (`splitRestartLM`: the flow's child the anchor's first line lies in, with no content of that child before
+   the anchor in the list), the float is the split candidate. The foot is the anchor's top plus the offset plus the
+   content still to be placed (`remainingContentHeight`, from the range start); "fits an empty page" now also holds
+   when at least one row fits an empty page below the offset, so a table taller than a page is refused where before
+   it was drawn cut. The last legal break seen before the anchor is remembered (`considerLegalBreak`).
+2. **The edge** (`createForcedNodes`). Where CR-023's refusal fires for a page start, and a part of the table fits
+   below the float's top on that page (`splitIndexFor(room)`), the edge node is made at the last legal break before
+   the anchor, or at the page start itself when the anchor opens the page, and `splitEdge` is set; the node is still
+   too long, so every page start dies at this break and `handleFloat` commits the edge. No restart of the breaker's
+   own state is involved, which was the risk §4 named.
+3. **The parts** (`PageBreaker.handleFloatLayout`, `addAreasForFloats`, `drawSplitParts`). The parts up to the edge
+   are added. Then, on the edge's page, the table's first range is drawn as a `SideFloat` at the anchor's top plus
+   the offset (`FloatContentLayoutManager.processRange`, `setTargetTop`), the intrusion it set is cleared and the
+   page is marked non-empty; while what is left is taller than the next page's body, a new page is made
+   (`makeNewPage`) and the next range drawn at its top; the page where the rest fits is left open with the float
+   over (`handleEndOfFloat(0)`, offset 0) and the page provider told the next list starts there. The next list is
+   the anchor's block read again from its start (`getNextBlockList` with the flow's child as the restart manager),
+   on that page: the anchor box is handled again, the remaining range fits, and CR-023's path places it with the
+   anchor's lines beside, the offset now 0 (`getFloatOffset` returns 0 once a range was placed).
+4. **The state across the re-read.** A restart of the anchor's block makes new layout managers, the float's
+   included, which would lay the table out afresh and duplicate it. The `FloatContentLayoutManager` that holds the
+   table's element list, its range start and the table's own state (the header to repeat, the row painter) is kept
+   on the `fo:float` FO (`Float.setLayoutContinuation`) and the new `FloatLayoutManager` adopts it
+   (`getNextKnuthElements`); the last `processAreas` clears it.
+5. **The split index** (`splitIndexFor`): from the range start, the last legal break (a penalty below INFINITE and
+   not forced, or a glue after a box) up to which the boxes and glues, plus the penalty's own width (a repeated
+   header and footer), fit the room, with at least one box of content before it. A row with `keep-together` has
+   infinite penalties inside and moves whole; a row without them splits between its lines as the stepper laid it.
+   A part ends with its break penalty included and the next begins at the first box after it, as the flow's parts
+   do, which is what makes the table content manager repeat the header and close the borders.
+6. **Not split, as before:** two floats on one anchor; a float whose content is no table (a picture, a text box;
+   CR-033's move, or cut at the foot when taller than a page); an anchor inside a table or whose paragraph is not
+   the first content of its flow child; a row taller than the page on its own (the rest is placed whole and cut).
+   Multi-column bodies take the same path with pages for columns, unmeasured.
+
+Files: `PageBreakingAlgorithm.java`, `PageBreaker.java`, `FloatContentLayoutManager.java`,
+`inline/FloatLayoutManager.java`, `fo/flow/Float.java`, `docx4j/Docx4jFop.java`; layout test `float_split.xml`
+(eight sequences: offset 0, offset 12pt, a header row, the anchor opening the flow, 100 rows over five pages, a row
+split inside itself, a kept row, a float that is no table); `TableBesideFloatTestCase` (a 900pt table on A4 in both
+modes); `Docx4jHooksTestCase` (30 capabilities).
+
+### 3.2 Measured (2026-11-04)
+
+**Minimal FOs** (`~/fop-session-tools/2026-11-03-float-defects/p1/`, FOP's command line, 300pt body, 12.5pt rows):
+
+| case | before | now |
+|---|---|---|
+| `plain`: 30 rows anchored after two lines | 1 page, rows 27 to 30 lost | 2 pages: rows 1 to 22 from the anchor's top (row 1 at 75.6pt, the anchor's top at 74), nothing beside; rows 23 to 30 at page 2's top with "anchor text" beside at x 300 |
+| `low-plain`: 15 rows after 18 lines | 2 pages, moved whole (CR-033) | rows 1 to 6 below the 18 lines, rows 7 to 15 at page 2's top with the anchor beside |
+| 100 rows after two lines | | 5 pages, 22/24/24/24/6, the anchor beside row 95 on page 5 |
+| 100 rows with a header row | | HEAD at the top of every page, 21/23/23/23/10 |
+| 100 rows at offset 12pt | | 21 rows on page 1 (row 1 12pt lower), 24 on each middle page, the continuations at the top |
+| 100 rows, the anchor the flow's first block | | 24/24/24/24/4, the edge at the list's start |
+
+**Word's probes through docx4j's path** (`RenderDocx` on cp-b319 with the changed classes first, the gate's own
+method, against the goldens with `t1/cmp.py`):
+
+| probe | pages, fork / Word | rows per page | anchor, fork / Word |
+|---|---|---|---|
+| `float-three-pages` case 1 (100 rows) | 21 / 21 | 1 to 33, 34 to 76, 77 to 100, both | page 3 at y 74.9, x 323.3 / 75.0, 323.9 |
+| case 2 (tblpY 12pt) | | 1 to 32, 33 to 75, 76 to 100, both; row 1 at 255.0 / 255.2 | 74.9, 323.3 / 75.0, 323.9 |
+| case 3 (header row) | | header + 1 to 33, header + 34 to 75, header + 76 to 100, both | 74.9 / 75.0 |
+| case 4 (150 rows) | | 33, 43, 43, 31, both | page 4, 74.9 / 75.0 |
+| `float-tall-beside` cases 1, 2, 4 | 16 / 16 | 40/20, 39/21, 40/20, both | 74.9, 323.3 / 74.7, 323.9 |
+| `float-tall-beside` case 3 (a wide table, 44pt beside) | | 39/21, both | Word sets the anchor's words in the 44pt sliver beside the last rows (8 lines at x 479); the fork sets the paragraph below the table at y 410.9: CR-031 §11's open sliver item, not this change's |
+| `float-foot-crossing` cases 1, 2 | 13 / 13 | 1 to 12 on the anchor's page, 13 to 15 at the next page's top, both | 74.9, 323.3 / 74.7, 323.9 |
+| `float-foot-crossing` cases 3 to 6 | | unchanged | unchanged |
+
+Nothing is set beside the table on any first or middle page in either. Every row position agrees with Word's
+within 0.5pt. Tests: the layout suite 785/0 before the new file, `float_split.xml` added, `TableBesideFloatTestCase`
+8/8; CI's command as recorded in the status line.
+
 ## 4. Size
 
 Five to eight working days, call it one to one and a half weeks:
@@ -149,3 +233,18 @@ the way).
    inside itself as the stepper splits it in the flow, unless its FO forbids it (`keep-together`, docx4j's
    `w:cantSplit`). No Word golden measures the in-row case; the between-rows cases of §1 are the measure, and the
    in-row case is pinned by a layout test on the flow's own behaviour.
+
+## 7. Open
+
+- A wide floating table leaving a sliver beside it: Word sets the anchor's words in the sliver beside the last
+  rows, the fork sets the paragraph below the table (`float-tall-beside` case 3). CR-031 §11's open item, now
+  reached on the table's last page where before the table was cut.
+- An anchor inside a table cell, or a paragraph that is not the first content of its flow child, keeps CR-033's
+  move: the block cannot be read again from its start. Two floats on one anchor likewise. Not met in the probes or
+  the corpus so far.
+- A single row taller than the page is placed whole and cut at the foot, as the whole table was. The clamp in
+  `FloatContentLayoutManager.addChildArea` (item 8's 1(b)) still pulls such a float up by its offset; untouched,
+  since every split part fits its page by construction.
+- A floating table in a multi-column body: the parts take pages, not columns. Unmeasured.
+- A continuation's anchor block keeps the space-before the list before resolved (`FLOAT_RESTART`, fop/CR-020); on
+  Word's probes the anchor's line is at Word's y, so nothing to correct yet.

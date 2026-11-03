@@ -68,7 +68,7 @@ public class Docx4jHooksTestCase {
         assertTrue(Docx4jFop.has(Docx4jFop.SVG_EMBEDDED_RESOURCES_ONLY));
         assertTrue(Docx4jFop.has(Docx4jFop.WORD_LAYOUT));
         assertTrue(Docx4jFop.has(Docx4jFop.WIDE_BLOCK_BELOW_FLOAT));
-        assertEquals(29, Docx4jFop.capabilities().size());
+        assertEquals(30, Docx4jFop.capabilities().size());
     }
 
     @Test

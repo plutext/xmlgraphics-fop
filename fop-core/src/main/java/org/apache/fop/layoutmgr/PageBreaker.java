@@ -24,7 +24,9 @@
  * obstacle taken up at its start edge as a float whose area is already drawn (fop/CR-024 phase A); and the content
  * after an edge read from the block after a Word line's leading, not from the block the leading closes (fop/CR-031);
  * and a float's intrusion ended at a forced page break (fop/CR-031 §11); and a table wider than the room beside an
- * offset float, at the float's start edge, set below the float with nothing beside it (fop/CR-032).
+ * offset float, at the float's start edge, set below the float with nothing beside it (fop/CR-032); and hook
+ * float-table-split, a floating table too tall for the page below its anchor drawn in parts page by page with
+ * nothing beside them, the anchor's block read again on the page where the table ends (fop/CR-034).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -1075,6 +1077,57 @@ public class PageBreaker extends AbstractBreaker {
     }
 
     /**
+     * Hook float-table-split (fop/CR-034): the breaking algorithm took the float's start edge before a floating
+     * table's anchor, the table being too tall for the page below its top. Its first part is drawn on this page at
+     * the anchor's top plus the offset with nothing beside it; while what is left is taller than a page, a new page
+     * is begun and the next part drawn at its top; and the page where the rest fits is left open with the float
+     * over, so that the anchor's block, read again from its start, opens it with the rest of the table beside its
+     * lines. That is a word processor's rule (Word's float-three-pages probe, 2026-11-03): the anchor on the table's
+     * last page, nothing beside the earlier parts, the offset kept on the first page only.
+     */
+    private void drawSplitParts(PageBreakingAlgorithm alg, LayoutContext childLC) {
+        FloatContentLayoutManager fclm = alg.getSplitFloat();
+        int top = alg.getSplitAnchorTopInPage() + fclm.getFloatOffset();
+        int pagesMade = 0;
+        while (true) {
+            int room = pslm.getCurrentPV().getBodyRegion().getRemainingBPD() - top;
+            if (fclm.remainingContentHeight() <= room) {
+                break;
+            }
+            int to = fclm.splitIndexFor(room);
+            if (to < 0) {
+                // no row fits the page: the rest is placed whole by the anchor and cut at the foot, as before
+                break;
+            }
+            fclm.setTargetTop(top);
+            fclm.processRange(childLC, to);
+            // nothing is set beside the part: the page ends with it
+            pslm.setStartIntrusionAdjustment(0);
+            pslm.setEndIntrusionAdjustment(0);
+            pslm.getCurrentPV().getPage().fakeNonEmpty();
+            if (fclm.getRangeStart() >= fclm.getContentElements().size()) {
+                break;
+            }
+            checkPagePositionOnly();
+            pslm.makeNewPage(false);
+            pagesMade++;
+            top = 0;
+        }
+        intrusionPending = false;
+        pendingFloatClearance = 0;
+        floatYOffset = 0;
+        floatYShift = 0;
+        floatTopY = 0;
+        handleEndOfFloat(0);
+        if (pagesMade > 0) {
+            // the next list opens on the page left open, not the page this list began on
+            pageObstacles.clear();
+            pageProvider.setStartOfNextElementList(pslm.getCurrentPageNum(),
+                    pslm.getCurrentPV().getCurrentSpan().getCurrentFlowIndex(), spanAllActive);
+        }
+    }
+
+    /**
      * The flow's child after the one a layout manager lies in, or that child itself when it is the last
      * (fop/CR-024 §11.12).
      */
@@ -1331,6 +1384,17 @@ public class PageBreaker extends AbstractBreaker {
         int floatPosition = floatNode.position;
         KnuthElement floatElem = alg.getElement(floatPosition);
         Position positionAtBreak = floatElem.getPosition();
+        if (alg.hasSplitEdge()) {
+            // hook float-table-split (fop/CR-034): the edge lies before a floating table's anchor; the parts up to
+            // it are added, the table's first parts drawn page by page (addAreasForFloats), and the anchor's block
+            // is read again from its start on the page where the table ends
+            addAreas(alg, optimalPageCount, blockList, blockList);
+            noteCommittedTo(floatPosition);
+            blockLists.clear();
+            blockListIndex = -1;
+            LayoutManager anchorLM = alg.getSplitAnchorLM();
+            return getNextBlockList(childLC, Constants.EN_COLUMN, new Position(anchorLM), anchorLM, firstElements);
+        }
         if (!(positionAtBreak instanceof SpaceResolver.SpaceHandlingBreakPosition)) {
             throw new UnsupportedOperationException("Don't know how to restart at position" + positionAtBreak);
         }
@@ -1515,7 +1579,11 @@ public class PageBreaker extends AbstractBreaker {
             }
             // add areas for the float, if applicable
             boolean placed = false;
-            if (alg.handlingStartOfFloat()) {
+            if (alg.hasSplitEdge()) {
+                // hook float-table-split (fop/CR-034): the edge before a floating table's anchor
+                drawSplitParts(alg, childLC);
+                placed = true;
+            } else if (alg.handlingStartOfFloat()) {
                 for (int k = startElementIndex; k < endElementIndex + 1; k++) {
                     ListElement le = effectiveList.getElement(k);
                     if (le instanceof KnuthBlockBox) {
@@ -1570,6 +1638,10 @@ public class PageBreaker extends AbstractBreaker {
                 PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
                 alg.relayFootnotes(pslm);
             }
+        } else if (alg.hasSplitEdge()) {
+            // the edge is the page's start, the anchor opening the page: the table's first part is drawn on this
+            // page with nothing beside it (hook float-table-split, fop/CR-034)
+            drawSplitParts(alg, childLC);
         } else if (alg.handlingStartOfFloat() && alg.hasObstacleEdge()) {
             // the edge is the page's start, whose band an obstacle covers: the new page is begun with nothing on
             // it, and the next list fills it with its lines narrowed (hook obstacles-in-the-line, fop/CR-024)

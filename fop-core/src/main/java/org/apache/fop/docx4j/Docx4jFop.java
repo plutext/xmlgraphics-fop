@@ -281,6 +281,16 @@ public final class Docx4jFop {
      */
     public static final String WIDE_BLOCK_BELOW_FLOAT = "wide-block-below-float";
 
+    /**
+     * A side float whose content is a table, and which the page cannot hold below its anchor, is split across pages
+     * as Word splits a floating table: the rows that fit are drawn on the anchor's page from the float's top with
+     * nothing beside them, further pages take whole parts, and the anchor's paragraph opens the page where the
+     * table ends, beside its last rows. A header row repeats on every part, the offset holds on the first page
+     * only. Before, such a float moved whole with its anchor (fop/CR-033), or, taller than a page, was cut at the
+     * page's foot (fop/CR-034; Enterprise CR-001 item 8).
+     */
+    public static final String FLOAT_TABLE_SPLIT = "float-table-split";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -314,6 +324,7 @@ public final class Docx4jFop {
         caps.add(SVG_EMBEDDED_RESOURCES_ONLY);
         caps.add(WORD_LAYOUT);
         caps.add(WIDE_BLOCK_BELOW_FLOAT);
+        caps.add(FLOAT_TABLE_SPLIT);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

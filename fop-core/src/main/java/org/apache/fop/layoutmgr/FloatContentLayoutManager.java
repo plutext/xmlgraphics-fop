@@ -18,8 +18,9 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook float-offset, the float placed at its target top below the flow's height, and never in the
  * flow (fop/CR-023); and a float goes in the flow only when its content is as wide as the width available to it
- * (FOP-3353, a regression of FOP-3331 on Apache main). See
- * README.md, "Changes from Apache FOP 2.11". */
+ * (FOP-3353, a regression of FOP-3331 on Apache main); and hook float-table-split: a float's table is placed by
+ * ranges of its element list, one per page, as a word processor splits a floating table across pages (fop/CR-034).
+ * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -53,6 +54,10 @@ public class FloatContentLayoutManager extends SpacedBorderedPaddedBlockLayoutMa
     private final boolean floatOffsetGiven; // fop/CR-023: fox:float-offset written, even as 0
     private int targetTop = -1; // fop/CR-023: the float's top in the page, set by the page breaker before the areas
     private int yShift; // fop/CR-023: how far below the flow's height the float was placed
+    /** fop/CR-034: the float content's element list, space-resolved, owned here so that it survives a restart. */
+    private List<ListElement> contentElements;
+    /** fop/CR-034: the index in the content's list where the part still to be placed begins. */
+    private int rangeStart;
 
     /**
      * {Add info}
@@ -278,9 +283,12 @@ public class FloatContentLayoutManager extends SpacedBorderedPaddedBlockLayoutMa
         return yOffset;
     }
 
-    /** @return fox:float-offset, how far below the top of its anchor block the float begins (fop/CR-023) */
+    /**
+     * @return fox:float-offset, how far below the top of its anchor block the float begins (fop/CR-023); 0 for the
+     * continuation of a split table, which opens its page at the body's top (fop/CR-034)
+     */
     public int getFloatOffset() {
-        return floatOffset;
+        return rangeStart > 0 ? 0 : floatOffset;
     }
 
     /** @param top the float's top in the page, from the page breaker, before the areas are made (fop/CR-023) */
@@ -291,6 +299,155 @@ public class FloatContentLayoutManager extends SpacedBorderedPaddedBlockLayoutMa
     /** @return how far below the flow's height at its insertion the float was placed (fop/CR-023) */
     public int getFloatYShift() {
         return yShift;
+    }
+
+    // hook float-table-split (fop/CR-034): a float's table placed by ranges of its element list, one per page
+
+    /** @param elements the float content's element list, space-resolved, which this manager then owns */
+    public void setContentElements(List<ListElement> elements) {
+        contentElements = elements;
+    }
+
+    /** @return the float content's element list */
+    public List<ListElement> getContentElements() {
+        return contentElements;
+    }
+
+    /** @return the index in the content's list where the part still to be placed begins; 0 before any split */
+    public int getRangeStart() {
+        return rangeStart;
+    }
+
+    /**
+     * Whether the float's content can be split across pages: it is a table, which breaks between its rows, or
+     * within a row where the row allows it, as it would in the flow. Any other content (a picture, a text box) is
+     * one area and moves whole with its anchor (fop/CR-033).
+     * @return true when the content is a table with a break the page breaking may take
+     */
+    public boolean contentSplittable() {
+        if (contentElements == null || tableOf(childLMs) == null) {
+            return false;
+        }
+        for (ListElement e : contentElements) {
+            if (e instanceof KnuthPenalty && ((KnuthPenalty) e).getPenalty() < KnuthElement.INFINITE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static TableLayoutManager tableOf(List<LayoutManager> lms) {
+        if (lms == null) {
+            return null;
+        }
+        for (LayoutManager lm : lms) {
+            if (lm instanceof TableLayoutManager) {
+                return (TableLayoutManager) lm;
+            } else if (lm instanceof BlockStackingLayoutManager) {
+                // the table inside the block the float wraps it in, before any area exists
+                TableLayoutManager t = tableOf(lm.getChildLMs());
+                if (t != null) {
+                    return t;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The height of the content still to be placed, from the range start to the list's end: the boxes and glues,
+     * as the whole content's height was read before any split (fop/CR-023).
+     * @return the height in millipoints, 0 before the elements exist
+     */
+    public int remainingContentHeight() {
+        int height = 0;
+        if (contentElements != null) {
+            for (int i = rangeStart; i < contentElements.size(); i++) {
+                ListElement e = contentElements.get(i);
+                if (e instanceof KnuthElement && (e.isBox() || e.isGlue())) {
+                    height += ((KnuthElement) e).getWidth();
+                }
+            }
+        }
+        return height;
+    }
+
+    /**
+     * Where the part placed on a page with this much room below the float's top ends: the last legal break in the
+     * content's list, from the range start, up to which the boxes and glues, and the break penalty's own width
+     * (a repeated table header and footer), fit the room, with at least one box of content before it. A break at
+     * a penalty is included in the part, as the page breaker includes it; a break at a glue excludes the glue.
+     * @param room the height available below the float's top on the page, in millipoints
+     * @return the index after the part's last element, or -1 when no row fits
+     */
+    public int splitIndexFor(int room) {
+        if (contentElements == null) {
+            return -1;
+        }
+        int height = 0;
+        int best = -1;
+        boolean contentSeen = false;
+        boolean previousIsBox = false;
+        for (int i = rangeStart; i < contentElements.size(); i++) {
+            ListElement le = contentElements.get(i);
+            if (!(le instanceof KnuthElement)) {
+                continue;
+            }
+            KnuthElement e = (KnuthElement) le;
+            if (e.isBox()) {
+                height += e.getWidth();
+                contentSeen |= e.getWidth() > 0;
+                previousIsBox = true;
+            } else if (e.isGlue()) {
+                if (previousIsBox && contentSeen && height <= room) {
+                    best = i;
+                }
+                height += e.getWidth();
+                previousIsBox = false;
+            } else {
+                KnuthPenalty p = (KnuthPenalty) e;
+                if (p.getPenalty() < KnuthElement.INFINITE && !p.isForcedBreak() && contentSeen
+                        && height + p.getWidth() <= room) {
+                    best = i + 1;
+                }
+                previousIsBox = false;
+            }
+            if (height > room) {
+                break;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Places the part of the content from the range start up to the given index as a side float area at the
+     * target top, and keeps the rest for the next page: the content's layout managers add the areas of a range of
+     * their own list as they add a page's range of the flow's, a repeated header, a split row and the borders the
+     * parts close with included. The float's FO keeps this manager, since the anchor's block is read again on the
+     * next page with new layout managers.
+     * @param layoutContext the layout context
+     * @param to the index after the part's last element, from {@link #splitIndexFor(int)}
+     */
+    public void processRange(LayoutContext layoutContext, int to) {
+        addAreas(new KnuthPossPosIter(contentElements, rangeStart, to), layoutContext);
+        int next = to;
+        while (next < contentElements.size() && !(contentElements.get(next) instanceof KnuthElement
+                && ((KnuthElement) contentElements.get(next)).isBox())) {
+            next++;
+        }
+        rangeStart = next;
+        ((Float) fobj).setLayoutContinuation(this);
+    }
+
+    /**
+     * Places what is left of the content, the whole of it when nothing was split off, as a side float area, and
+     * clears the state kept on the FO.
+     * @param layoutContext the layout context
+     */
+    public void processRemainder(LayoutContext layoutContext) {
+        addAreas(new KnuthPossPosIter(contentElements, rangeStart, contentElements.size()), layoutContext);
+        rangeStart = contentElements.size();
+        ((Float) fobj).setLayoutContinuation(null);
     }
 
     private int getStartIndent() {

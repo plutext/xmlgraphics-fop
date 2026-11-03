@@ -17,7 +17,9 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook float-offset, the fox:float-offset property (fop/CR-023), and whether it was written
- * (fop/CR-027). See README.md, "Changes from Apache FOP 2.11". */
+ * (fop/CR-027); and the layout state of a float whose table is split across pages, kept on the FO so that the
+ * anchor's paragraph, read again on the next page, continues the same table (fop/CR-034). See README.md, "Changes
+ * from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -47,6 +49,11 @@ public class Float extends FObj {
     private Length floatOffset; // fop/CR-023
     private boolean floatOffsetGiven; // fop/CR-027
     private boolean disabled;
+    /**
+     * fop/CR-034: the float content layout manager of a split table whose later rows are still to be placed, kept
+     * here because a restart of the anchor's block makes new layout managers; null when nothing is pending.
+     */
+    private Object layoutContinuation;
 
     /**
      * Base constructor
@@ -124,6 +131,19 @@ public class Float extends FObj {
 
     public void setInWhiteSpace(boolean iws) {
         inWhiteSpace = iws;
+    }
+
+    /**
+     * @return the layout state of this float's table split across pages, set by the layout managers; null when
+     * none is pending (fop/CR-034)
+     */
+    public Object getLayoutContinuation() {
+        return layoutContinuation;
+    }
+
+    /** @param continuation the layout state of a split table, or null when its last part is placed (fop/CR-034) */
+    public void setLayoutContinuation(Object continuation) {
+        layoutContinuation = continuation;
     }
 
     public boolean getInWhiteSpace() {
