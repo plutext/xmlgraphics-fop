@@ -206,6 +206,19 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-05, later. **`fop/CR-036` (Enterprise §6.6 item 55: beside a side float, a line crossing the page's foot stayed
+on the page) is BUILT, not gated, not merged, ordered by Jason here ("fix Item 55, the foot defect in .1"): branch
+`CR-036-line-across-foot-beside-float` (cut from `2.12-docx4j.1` at 5c63b6ade), code cc06737cd, drop r67 at
+`~/fop-renderers/r67-CR-036-cc06737cd/` (sha256 9a8f2893...), handed to docx4j-67 against b347 on r66.** A list beside a float
+measures from the float's edge, so the page's foot was known only as the cap on the float's foot, which a box beginning above it
+never reached. The edge is now taken before such a box (`nextBoxCrossesPageFoot`); at a float's start edge, where a list has no
+break before its first box, nothing is set beside the float (`firstBoxAfterEdgeCrossesPageFoot`); and such an edge is a page break,
+so the block keeps no space-before (`edgeAtPageFoot`). `float-foot-empties` 19 of 19 at Word's through RenderFo with the jar (13 on
+r66), 4083 and 6293 0 lines from b347; layout test `float_page-foot.xml`; CI's command 4102/0, checkstyle 0, spotbugs 0. Pass:
+CR-036 §5. On the pass: fast-forward to `2.12-docx4j.1`, release note's gate line closed, §6.6 item 55 given the mechanism and
+closed (mechanism needs docx4j-67's agreement), registry `fop/CR-036` done with the merge hash. Tools
+`~/fop-session-tools/2026-11-05-cr036-foot/`. The paragraph that follows is the state before it, kept.
+
 Last updated 2026-11-05. **Item 54 is DONE: `fop/CR-023` §10 and §11 gated PASS (b347 on r66 against b344 on r62, docx4j-67) and
 MERGED to `2.12-docx4j.1` by fast-forward at 506deb24e; unreleased, local: `.1` is 14 commits past origin's 4fe468d68, and the
 push is Jason's. b347 on r66 is the fork's baseline for later gates (`~/fop-renderers/r66-CR-023-8e870178d/`, sha256 f6d39545...;
@@ -217,10 +230,8 @@ flow; a list beside a float now starts its height at that space (`getListStartAt
 by a block keeping a space. r63 failed b339 (4083's B.6). r64 failed b340 on 6293; I read that as an unmeasured Word rule for
 empty paragraphs and narrowed the fix to r65, which passed b343; both readings were wrong (docx4j wrote 14pt Word drops, r62's
 under-count hid it, and with docx4j's fix r64's form beat r65's), and r65 is undone. Lesson: when a right fix loses a document,
-check that document's input against Word before narrowing the fix. Open for Jason: the push and release of `.1`; whether
-Enterprise §6.6 item 55 goes in `.1` (a line beside a float crossing the page's foot by a few points stays on the page; on r62 to
-r66 alike, symptom only, untraced, `float-foot-empties` S, V and K at +1 and +4 under
-`~/fidelity-real2/score/fidelity-probes-b345/fop/`), raised here, my recommendation after `.1`; and the earlier questions below.
+check that document's input against Word before narrowing the fix. Open for Jason: the push and release of `.1`, and the earlier
+questions below.
 Tools: `~/fop-session-tools/2026-11-05-item54-gate/`. The paragraph that follows is the state before the gates, kept.
 
 Last updated 2026-11-04, after the forced reboot. **`fop/CR-023` §10 (Enterprise §6.6 item 54: a bordered anchor's

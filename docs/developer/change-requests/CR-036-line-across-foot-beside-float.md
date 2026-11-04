@@ -1,7 +1,7 @@
 # CR-036: a line beside a side float that crosses the page's foot
 
-- **Status:** BUILT 2026-11-05 on branch `CR-036-line-across-foot-beside-float`, cut from `2.12-docx4j.1` at 5c63b6ade. Not gated,
-  not merged. Ordered 2026-11-05 by Jason ("fix Item 55, the foot defect in .1").
+- **Status:** BUILT 2026-11-05 on branch `CR-036-line-across-foot-beside-float`, cut from `2.12-docx4j.1` at 5c63b6ade, code
+  cc06737cd, drop r67. Not gated, not merged. Ordered 2026-11-05 by Jason ("fix Item 55, the foot defect in .1").
 - **Serves:** Enterprise CR-001 §6.6 item 55: beside a side float, a line that crosses the page's foot by a few points stays on
   the page, drawn past the body's foot, where Word moves it.
 - **Capability:** none. A fix, not a hook.
