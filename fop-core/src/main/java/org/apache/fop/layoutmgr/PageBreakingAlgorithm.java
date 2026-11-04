@@ -33,7 +33,8 @@
  * its anchor moves to the next page with the anchor whatever its offset, where only an offset float did (fop/CR-033);
  * and hook float-table-split, a floating table the page cannot hold below its anchor split at the float's start edge
  * before the anchor, the edge the last legal break before it or the page's start (fop/CR-034); and the space
- * resolver's auxiliary box read past when the box after a break is looked for (fop/CR-032, 4083's B.6).
+ * resolver's auxiliary box read past when the box after a break is looked for (fop/CR-032, 4083's B.6), and when
+ * the gap before an offset float's anchor is read, so that a bordered anchor's space-before counts (fop/CR-023 §10).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -56,6 +57,7 @@ import org.apache.fop.fo.flow.Block;
 import org.apache.fop.fo.flow.BlockContainer;
 import org.apache.fop.fo.flow.ListBlock;
 import org.apache.fop.fo.flow.table.Table;
+import org.apache.fop.fo.properties.CommonBorderPaddingBackground;
 import org.apache.fop.layoutmgr.AbstractBreaker.FloatPosition;
 import org.apache.fop.layoutmgr.AbstractBreaker.PageBreakPosition;
 import org.apache.fop.layoutmgr.WhitespaceManagementPenalty.Variant;
@@ -583,7 +585,16 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             // a picture moves whole with its anchor; a floating table splits, which the fork cannot do yet, so
             // it moves as well). The float's placement at offset 0 is unchanged: the target top is set for an
             // offset above 0 only (PageBreaker.addAreasForFloats).
-            int anchorTop = totalWidth - Math.min(glueBefore(box), anchorSpaceBefore((KnuthBlockBox) box));
+            // The gap before the box is read past the space resolver's auxiliary box: where the anchor block
+            // has a border or padding before, the resolver writes the space, its auxiliary box, and then the
+            // border and padding as the glue the block keeps at a page top; the block's top is above that glue,
+            // and the offset counted the space out, 18pt low for a bordered heading (Enterprise CR-001 item 54,
+            // corpus 4083; fop/CR-023 §10). Only the anchor block's own border and padding count: that glue also
+            // holds an enclosing block's, which lie above the anchor's top.
+            int gapBefore = glueBefore(box);
+            int ownBefore = Math.min(glueAfterResolverBox(box), anchorBorderPaddingBefore((KnuthBlockBox) box));
+            int anchorTop = totalWidth - ownBefore
+                    - Math.min(gapBefore - ownBefore, anchorSpaceBefore((KnuthBlockBox) box));
             floatAnchorListTop = anchorTop;
             floatStartListTop = anchorTop + offset;
             floatAnchorLineHeight = nextContentBoxWidth(box);
@@ -2620,30 +2631,71 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
         return splitAnchorTopInPage;
     }
 
-    /** The anchor block's own space-before (its optimum), for the floats anchored in a box (fop/CR-023). */
-    private static int anchorSpaceBefore(KnuthBlockBox box) {
+    /** The block the floats in a box are anchored in: the nearest fo:block above the first (fop/CR-023). */
+    private static Block anchorBlock(KnuthBlockBox box) {
         for (FloatContentLayoutManager fclm : box.getFloatContentLMs()) {
             for (FONode node = fclm.getFObj(); node != null; node = node.getParent()) {
                 if (node instanceof Block) {
-                    return ((Block) node).getCommonMarginBlock().spaceBefore.getOptimum(null).getLength().getValue();
+                    return (Block) node;
                 }
             }
         }
-        return 0;
+        return null;
     }
 
-    /** The glue immediately before a box in the list: the resolved space before its block (fop/CR-023). */
+    /** The anchor block's own space-before (its optimum), for the floats anchored in a box (fop/CR-023). */
+    private static int anchorSpaceBefore(KnuthBlockBox box) {
+        Block block = anchorBlock(box);
+        return block == null ? 0 : block.getCommonMarginBlock().spaceBefore.getOptimum(null).getLength().getValue();
+    }
+
+    /** The anchor block's own border and padding before, for the floats anchored in a box (fop/CR-023 §10). */
+    private static int anchorBorderPaddingBefore(KnuthBlockBox box) {
+        Block block = anchorBlock(box);
+        if (block == null) {
+            return 0;
+        }
+        CommonBorderPaddingBackground borders = block.getCommonBorderPaddingBackground();
+        return borders.getBorderBeforeWidth(false) + borders.getPaddingBefore(false, box.getLayoutManager());
+    }
+
+    /**
+     * The glue immediately before a box in the list: the resolved space before its block (fop/CR-023), read past
+     * the space resolver's auxiliary box, which separates the space from the border and padding the block keeps
+     * at a page top (§10).
+     */
     private int glueBefore(KnuthBox box) {
         int glue = 0;
         for (int i = par.indexOf(box) - 1; i >= 0; i--) {
             KnuthElement e = getElement(i);
             if (e.isBox()) {
+                if (isSpaceResolverBox(e)) {
+                    continue;
+                }
                 break;
             } else if (e.isGlue()) {
                 glue += e.getWidth();
             }
         }
         return glue;
+    }
+
+    /**
+     * The glue between the space resolver's auxiliary box and the box after it: the border and padding before
+     * the block and any block enclosing it, and any space retained at a page top; 0 where no such box precedes
+     * the box (fop/CR-023 §10).
+     */
+    private int glueAfterResolverBox(KnuthBox box) {
+        int glue = 0;
+        for (int i = par.indexOf(box) - 1; i >= 0; i--) {
+            KnuthElement e = getElement(i);
+            if (e.isBox()) {
+                return isSpaceResolverBox(e) ? glue : 0;
+            } else if (e.isGlue()) {
+                glue += e.getWidth();
+            }
+        }
+        return 0;
     }
 
     /**

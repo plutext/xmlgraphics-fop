@@ -38,7 +38,9 @@
       Seventh: after 38 lines, an anchor whose 60pt offset float 60pt tall would end past the page's foot (608 + 120 >
       698): the page breaks before the anchor, and anchor and float start the next page together, the float 60pt down
       with the anchor's lines full width above it. Eighth: the same anchor with a float that fits (20pt offset, 40pt
-      tall, foot at 668): the page does not break, the float at 628pt.
+      tall, foot at 668): the page does not break, the float at 628pt. Eleventh (the twelfth page): the third case's
+      anchor with a top border and padding; the float's top is the same 48pt (fop/CR-023 §10). Twelfth (the thirteenth
+      page): the anchor unbordered inside a bordered block; the offset counts from the anchor's top, below that border.
     </p>
   </info>
   <fo>
@@ -207,10 +209,20 @@
 <fo:block>i0 i1 i2 i3 i4 i5 i6 i7 i8 i9 i10 i11 i12 i13 i14 i15 i16 i17 i18 i19</fo:block>
 <fo:block>i-after</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>k-before</fo:block>
+<fo:block space-before="24pt" space-after="10pt" border-top-style="solid" border-top-width="0.5pt" padding-top="1pt"><fo:float float="left" fox:float-offset="32pt"><fo:block-container width="300pt" height="40pt"><fo:block font-size="8pt" line-height="8pt">FLOATTOP</fo:block></fo:block-container></fo:float>Heading</fo:block>
+<fo:block>k0 k1 k2 k3 k4 k5 k6 k7 k8 k9 k10 k11 k12 k13 k14 k15 k16 k17 k18 k19 k20 k21 k22 k23 k24 k25 k26 k27 k28 k29 k30 k31 k32 k33 k34 k35 k36 k37 k38 k39</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>m-before</fo:block>
+<fo:block border-top-style="solid" border-top-width="0.5pt" padding-top="1pt"><fo:block space-before="24pt" space-after="10pt"><fo:float float="left" fox:float-offset="32pt"><fo:block-container width="300pt" height="40pt"><fo:block font-size="8pt" line-height="8pt">FLOATTOP</fo:block></fo:block-container></fo:float>Heading</fo:block></fo:block>
+<fo:block>m0 m1 m2 m3 m4 m5 m6 m7 m8 m9 m10 m11 m12 m13 m14 m15 m16 m17 m18 m19 m20 m21 m22 m23 m24 m25 m26 m27 m28 m29 m30 m31 m32 m33 m34 m35 m36 m37 m38 m39</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
-    <eval expected="11" xpath="count(//pageViewport)"/>
+    <eval expected="13" xpath="count(//pageViewport)"/>
     <!-- 1: the heading full width, the float 32pt down, three lines beside it -->
     <eval expected="451000" xpath="//word[.='Heading'][1]/ancestor::lineArea[1]/@ipd"/>
     <eval expected="32000" xpath="(//pageViewport)[1]//flow/block[@positioning='absolute']/@top-offset"/>
@@ -261,5 +273,21 @@
     <eval expected="151000" xpath="(//pageViewport)[11]//word[.='Anchor']/ancestor::lineArea[1]/@ipd"/>
     <eval expected="1" xpath="count((//pageViewport)[11]//word[.='FLOATTOP'])"/>
     <eval expected="151000" xpath="//word[.='i-after']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 11: the anchor of case 3 with a 0.5pt top border and 1pt padding: the offset still counts from the top of
+         the anchor's space-before, so the float is at 48pt as in case 3 and the heading beside it; its top-offset
+         is 6.5pt, not case 3's 8, because it is measured from the anchor's content area, which the border and
+         padding set 1.5pt lower. Before, the space resolver's auxiliary box hid the space-before and the float was
+         24pt lower (fop/CR-023 §10, Enterprise CR-001 item 54) -->
+    <eval expected="6500" xpath="(//pageViewport)[12]//flow/block[@positioning='absolute']/@top-offset"/>
+    <eval expected="451000" xpath="//word[.='k-before']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="151000" xpath="(//pageViewport)[12]//word[.='Heading']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="3" xpath="count((//pageViewport)[12]//lineArea[@ipd='151000'])"/>
+    <eval expected="451000" xpath="//word[.='k16']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 12: the same offset and space-before on an unbordered anchor inside a block with that border and padding:
+         they lie above the anchor's top and are not its own, so the top-offset is case 3's 8pt. Counting the
+         enclosing block's border and padding as the anchor's would give 6.5pt (fop/CR-023 §10) -->
+    <eval expected="8000" xpath="(//pageViewport)[13]//flow/block[@positioning='absolute']/@top-offset"/>
+    <eval expected="451000" xpath="//word[.='m-before']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="151000" xpath="(//pageViewport)[13]//word[.='Heading']/ancestor::lineArea[1]/@ipd"/>
   </checks>
 </testcase>

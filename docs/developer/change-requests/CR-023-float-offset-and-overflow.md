@@ -3,7 +3,9 @@
 Status: DONE 2026-10-08, gated PASS by the docx4j session (§9: b196 to b202 on r19 to r21) and merged to `2.11-docx4j.6`
 by fast-forward; released in 2.11-docx4j.6 (2026-10-09). The code is 989280390; full `fop-core` suite 3870 tests, 0 failures, 4 skipped, checkstyle
 clean. Both halves built and measured (§4.1 and §4.2 as built); `float-overflow-below` measured inert on docx4j's tables
-and kept for pictures (§9).
+and kept for pictures (§9). **Follow-up 2026-11-04 (§10): a bordered anchor's space-before counts in the offset's
+reference, as the contract says; branch `CR-023-offset-bordered-anchor`, gate pending (the docx4j session; Enterprise
+§6.6 item 54).**
 Registry key `fop/CR-023`. Two hooks for docx4j CR-032 (floating tables as Word lays them), §4.2 of that CR as
 revised after its phase 0 Word probes (2026-10-08, commit cae13d3d1 and after), decided by Jason as D2 there and
 confirmed in this session on 2026-10-08. Enterprise CR-001 §6.6 item 8 (no floating tables), and item 10 for the
@@ -278,3 +280,68 @@ against Word's 50.5); nothing else moved. b200 (anchored pictures and framePr fl
 Word's pages, 2189 +2. That closes the round: the fork's baseline is b202 on r21, the released `.5`'s b194. docx4j
 carries the work in three commits behind the `float-offset` capability (single floats, pairs, text-box bands, anchored
 pictures, framePr floats), and the 2.11-docx4j.6 release is Jason's call.
+
+## 10. A bordered anchor's space-before counts (2026-11-04; Enterprise CR-001 §6.6 item 54)
+
+Found by docx4j-12 on 4083 at b335 to b337 and asked for the same day, then resent by docx4j-37 after the reboot and
+ordered here by Jason ("go ahead and finish the item 54 fix now"): a defect in the hook against its own contract,
+§4.1: "the top of the anchor block including its own space-before". Where the
+anchor block has a border or padding before, the space resolver writes the gap as the space glue, its zero-width
+auxiliary box, an infinite penalty and then the border and padding as the glue the block keeps at a page top
+(`SpaceResolver.generate`), and `PageBreakingAlgorithm.glueBefore` stopped at that box, so the reference was the
+border's top and the float was drawn the space-before too low: docx4j-12's `floatoff3.fo` (offset 50pt, space-before
+18pt), the float's first line 61.1pt below the line above for an unbordered anchor and 79.1 for one with a 0.5pt
+top border and 1pt padding, or for a bordered container holding the paragraph's block, as docx4j writes a borders
+container. Corpus: 4083's question headings (style 2Question, a top border) anchor floating tables at `tblpY`
+51.55pt and 47.45pt, drawn 17pt below Word's; at b337 B.2's options table overlapped B.3's first line.
+
+Built on branch `CR-023-offset-bordered-anchor` from `2.12-docx4j.1` at 4fe468d68: `glueBefore` reads past the
+resolver's auxiliary box (`isSpaceResolverBox`, CR-032 §8), and the reference is the box's position less the anchor
+block's own border and padding before (`anchorBorderPaddingBefore`, capped at the glue after that box,
+`glueAfterResolverBox`), less the smaller of the rest of the gap and the block's own space-before optimum, as before.
+Only the anchor's own border and padding count: the glue after the auxiliary box also holds an enclosing block's,
+which lie above the anchor's top. The first version, cut off uncommitted by the forced reboot of 2026-11-04, took all
+of that glue as the anchor's and drew the float 19.5pt too high for an anchor with its own space-before inside a
+bordered block (C3d below). It never left the tree; rebuilding the reproducer found it.
+
+Measured on that rebuilt reproducer, the reboot having wiped docx4j-12's (`~/fop-session-tools/2026-11-04-item54/`,
+`floatoff3.fo` and `baselines.py`, from docx4j-37's description; C3c is the variant that reproduces its C3 and C4).
+Through `org.apache.fop.cli.Main`, offset 50pt, space-before 18pt, a 0.5pt border and 1pt padding, the float's first
+baseline less the baseline of the line before the anchor, in Helvetica 12pt on a 14pt line, where item 54's 63.0 reads
+64.0:
+
+| Case | r62 | Fixed |
+|---|---|---|
+| C1: no border, the space on the anchor | 64.0 | 64.0 |
+| C2: the border on the anchor | 82.0 | 64.0 |
+| C3c: a bordered block carrying the space, the float its first child | 82.0 | 64.0 |
+| C4c: the same block with no border | 64.0 | 64.0 |
+| C3a: a bordered block carrying the space, the float in the block inside | 83.5 | 83.5 |
+| C3b: a bordered block, the space on the block inside | 65.5 | 65.5 |
+| C3d: a bordered block, the space on both | 83.5 | 83.5 |
+| C4a, C4b, C4d: C3a, C3b and C3d with no border | 82.0, 64.0, 64.0 | 82.0, 64.0, 64.0 |
+
+Only C2 and C3c move, each to C1's reading. In C3a, C3b and C3d the anchor is the inner block: the outer border and
+padding lie above it and the outer space is not its own, so those readings stand. No offset float in the 26 FOs under
+`~/fidelity-cr030/step2-fo` has an enclosing block with a border or a space: of 33, 20 anchors are plain, 7 have a
+space-before, and 6 a border with a space-before, C2's shape.
+
+On the gate's own FO, b337's 4083 through `RenderFo` on `cp-b337.txt`, r62 with and without the fix (Word's reading in
+brackets): page 2 alone differs, and the events are equal. B.2's options 214.7 to 196.7 (197.7); B.3's first line x
+279.7 to 42.5 (42.5) at y 242.4 (242.6); its note 268.4 to 255.4 (255.5); B.4 422.3 to 409.3 (409.7). Two X marks on
+that page, at 190.4 and 273.8 (196.4, 279.9), do not move with this fix and are unread.
+
+The reproducer's two further cases, the float in a zero-height block (font-size and line-height 0) before the
+paragraph's block inside a block with the space-before, are not a defect: the float's text inherits the zero font size
+and draws nothing, which is why docx4j-12 saw no offset. With the font restored the float is 18pt lower than C1 (82.0;
+83.5 with the border), because the anchor block, the zero-height block that holds the float, has no space-before of
+its own; the outer 18pt is the outer block's, which the contract excludes. docx4j does not write that shape.
+
+Layout test `float_offset.xml` case 11 (a bordered anchor with 24pt space-before: the float at case 3's absolute
+position, measured in the PDF at the same y on both pages, its `top-offset` 6.5pt against case 3's 8 because it is
+taken from the anchor's content area, which the border and padding set 1.5pt lower; the heading's first line that
+much lower) and case 12 (an unbordered anchor inside a bordered block, `top-offset` 8pt: the first version's error
+would read 6.5). No new capability: the contract stands, the code now meets it.
+Gate: docx4j's session names the baseline when the drop is ready (its own is b335 on r61; the two changes behind b337
+are uncommitted, and the JDK upgrade may need a fresh control first). Pass: 4083's B.2 options table at Word's y within
+1pt and B.3's first line at x 42.5; no loser; events equal.
