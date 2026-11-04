@@ -206,33 +206,23 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
-Last updated 2026-11-05. **r65 GATED PASS (b343 against b341 on r62; docx4j-67): nothing but 4083's page 2 moved, 31 of its 34
-lines closer to Word, events equal, 6293 at r62's lines. NOT MERGED, HELD. docx4j-67's goldens (CR-023 §11's end): 6293's fail on
-r64 was docx4j's 14pt of space-before, which Word drops after a floating table; there is no rule for empty paragraphs. With
-docx4j's fix (`AutoSpacingAfterFloatingTable`, uncommitted): b345 on r64 beats b346 on r65, whose short heights leave 6293's
-page 2 text past the foot. r64's form is agreed as the fix; WHICH FORM SHIPS IS JASON'S, docx4j-67 tells this session when he has
-ruled. If r64's: revert 796a7f04f's code on this branch, CI's command, a new drop, gated against b344 (docx4j with the fix on
-r62), same pass plus 6293's page 2 at 64.2; §11 drops r65's reasoning; it ships with docx4j's fix. r64's form: 694bd8a19, drop
-`~/fop-renderers/r64-CR-023-694bd8a19/`. NEW, not traced, not in §6.6 yet, on r62, r64 and r65 alike: beside a float, a line
-crossing the page's foot by up to at least 4pt stays on the page, where Word moves it (`float-foot-empties` S+1, S+4, V+1, V+4,
-K+1, K+4 wrong, S+10 and N right; `~/fidelity-real2/score/fidelity-probes-b345/fop/`; readers
-`~/fidelity-cr030/2026-11-05-r63/probe2/`). Not blocking unless Jason says. On his word: fast-forward to `2.12-docx4j.1`, §6.6 item 54
-closed (its text is current to the pass, Enterprise; only the merge line and the Open tally remain), the merge hash and the
-corrected release title to docx4j-portfolio for `fop/CR-023.1` done and its notes (they name f785f3f7c and r63). Baseline
-after the merge b343 on r65; until then b341 on r62.** Item 54 ships in `.1` (Jason); the second fix took three forms. r63 FAILED gate b339: §10's items held, but 4083 lost 2 lines, B.6's table 19pt high over
-its heading. Cause, CR-023 §11: a block read again after a float's edge keeps its space-before (CR-020), counted at an end
-edge and not at a start edge, so later heights on the page lay that far above the flow; older than r63, in r62 too, no
-border needed (`~/fop-session-tools/2026-11-05-item54-gate/two-floats.fo`, stock managers), and on r62 it cancelled item 54's
-defect exactly. r64 (694bd8a19) corrected the lists' heights, reaching every side float; Jason: "let's include this wider
-fix in .1". r64 FAILED gate b340: 4083 fixed, but 6293 moved 323 lines from Word (0.14pt to 14.84pt), the last of twelve
-empty paragraphs beside its float leaving page 1. On r62 that paragraph is drawn past the body's foot, showing nothing, and
-Word keeps it on page 1; why is unmeasured. r65 (796a7f04f, `~/fop-renderers/r65-CR-023-796a7f04f/`, sha256 8559afc5...) counts
-the space in the next offset float's top only (`getKeptSpaceOnPage`, `noteFloatTargetTop`), the lists' heights r62's: through
-RenderFo, 6293 line for line the baseline's, 4083 line for line r64's, the plain FO 22 and 22. CI's command 4099/0,
-checkstyle 0, spotbugs 0. Open: the
-lists' heights still run short after a start edge (a Word probe of empty paragraphs beside a float at a page's foot would
-settle it, not ordered); `splitAnchorTopInPage` is not corrected, no case shown. The paragraph that follows is the state
-before the gate, kept.
+Last updated 2026-11-05. **Item 54 ships in `.1` in r64's form (Jason's ruling, relayed by docx4j-67, which is enough for a fork
+fix): r66 at `~/fop-renderers/r66-CR-023-8e870178d/` (sha256 f6d39545...), code 8e870178d on `CR-023-offset-bordered-anchor`, handed
+to docx4j-67 against b344 on r62 (docx4j b267f24ce, its fix for auto spacing after a floating table), to equal b345 line for line.
+Gate pending, not merged; no merge before its reading.** CR-023 §11 has the whole route. A block read again after a float's edge
+keeps its space-before (CR-020), counted at an end edge and not at a start edge, so later heights on the page lay that far above
+the flow; older than r63, no border needed (`~/fop-session-tools/2026-11-05-item54-gate/two-floats.fo`). r63 failed b339 (4083's
+B.6). r64 (694bd8a19), a list beside a float starting at the kept space, failed b340 on 6293. I read that as an unmeasured Word
+rule for empty paragraphs and narrowed it: r65 (796a7f04f) passed b343. Both readings were wrong: docx4j wrote 14pt Word drops
+after a floating table, r62's under-count hid it, and with docx4j's fix r64's form beat r65's (b345, b346). It ships with that fix.
+Jason accepted 10244's `lineParity` -3. CI's command 4099/0, checkstyle 0, spotbugs 0. Pass: 4083's B.2 options within 1pt of 204.5,
+B.3 x 42.5, B.6 heading x 42.5, B.6 options within about 1pt of 649.4; 6293's page 2 at 64.2 with "EDP370" on it; `float-foot-empties`
+K-4 and K-1 next page at 64.2; no loser but 10244; events equal. On the pass: fast-forward to `2.12-docx4j.1`; release note's gate
+lines closed; §6.6 item 54 rewritten to r64's form and closed, Open tally; the merge hash and a corrected release title (it names
+only CR-030 and CR-031) to docx4j-portfolio for `fop/CR-023.1` done, notes naming r66 not f785f3f7c and r63. The fork's baseline
+then is that gate's. Enterprise §6.6 item 55 (96fdcb2): beside a float a line crossing the page's foot by a few points stays on the
+page, r62 to r65 alike, symptom only, untraced; whether it goes in `.1` waits on Jason, raised here. The paragraph that follows
+is the state before the gates, kept.
 
 Last updated 2026-11-04, after the forced reboot. **`fop/CR-023` §10 (Enterprise §6.6 item 54: a bordered anchor's
 space-before left out of `fox:float-offset`'s reference) is BUILT, not gated, not merged: branch

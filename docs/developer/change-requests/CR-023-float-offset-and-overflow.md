@@ -400,7 +400,7 @@ all closer to Word, 4083 31 of its 34 closer, 10244 275 of 276 closer; b346 on r
 "EDP370" drawn past the foot at y 548.8. The foot probe: r64 13 of 19, r62 and r65 11. Jason ruled for r64's form
 (2026-11-05, through docx4j-67) and accepted 10244's `lineParity` -3 (no line's text changed: the subsequence's order).
 
-Rebuilt on this branch's head with 694bd8a19's code restored, 796a7f04f's undone. It holds only with docx4j's fix, so the two
+Rebuilt on this branch's head with 694bd8a19's code restored, 796a7f04f's undone: 8e870178d, drop r66. It holds only with docx4j's fix, so the two
 ship together. Measured through `RenderFo` on b339's FO for 4083, against r63 (Word's in brackets), page 2 alone differing:
 B.6's heading whole at x 42.5, y 615.4 (42.5, 616.0); its options 630.3 to 648.3 (649.4), the rest of the table within
 1.1pt of Word's; the float less the heading 32.9 (33.4), r62's reading exactly, the two errors having cancelled there; the
