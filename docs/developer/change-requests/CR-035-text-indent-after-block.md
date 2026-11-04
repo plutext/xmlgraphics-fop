@@ -1,7 +1,8 @@
 # CR-035: text-indent on a block's first line after a block-level child
 
-- **Status:** BUILT 2026-11-04 on branch `CR-035-text-indent-after-block`, cut from `2.12-docx4j.1` at e096fb41f;
-  gate pending (docx4j-12, against b329). Ordered 2026-11-04 by Jason through docx4j-12 ("please fix CR-001 §6.6
+- **Status:** BUILT 2026-11-04 on branch `CR-035-text-indent-after-block`, cut from `2.12-docx4j.1` at e096fb41f,
+  code ad739af01. **Gated PASS 2026-11-04 by docx4j-12 (b333 on r62 against b330, §5.1) and MERGED to
+  `2.12-docx4j.1` by fast-forward; unreleased.** Ordered 2026-11-04 by Jason through docx4j-12 ("please fix CR-001 §6.6
   item 53 in the fork"), the same day docx4j-12 recorded the item and its own workaround.
 - **Serves:** Enterprise CR-001 §6.6 item 53: a block's first line loses its `text-indent` where a block-level
   child precedes its inline content. Corpus: 4083's question headings (style 2Question, `w:ind` left 426 hanging
@@ -76,6 +77,28 @@ where it matters.
 docx4j-12 gates the renderer drop against b329 with the two workarounds out, keyed on the capability. Pass: 4083's
 B.2 to B.7 headings at Word's x 42.5 and 14236 at Word's 2 pages without the workarounds, as b329 had them with;
 no corpus loser; events equal.
+
+### 5.1 Gate result (docx4j-12, 2026-11-04): PASS
+
+The baseline had moved to b330 (b329 plus docx4j 8260e843b, a text-box positioning fix, no mover) before r62
+arrived; r62 (ad739af01, sha256 verified) is r61 plus this change.
+
+- **b331:** r62 with docx4j's two workarounds keyed off (docx4j c559809dc, `FopCapabilities.FIRST_LINE_INDENT_AFTER_BLOCK`).
+  No mover, but four new events, all from the inheritance §4 names: the leader workaround used to remove a
+  paragraph's positive `text-indent`, and with the paragraph keeping it the anchored content's blocks inherited it.
+  4083: a floating table anchored in a paragraph indented 36pt, its blank cell's line over by 25.2pt (+2 line
+  events); 6625: a zero-width picture container's line over by 1.7pt (+1). Text boxes were fine (docx4j's
+  `resetTextBox` already sets `text-indent="0pt"` on the box).
+- **docx4j's fix** (in c559809dc): a new writer pass, `anchoredContentTakesNoTextIndent`, gives a paragraph's
+  `fo:block-container` and `fo:float` children `text-indent="0pt"` wherever the paragraph keeps a non-zero indent.
+  Nothing in the writer had relied on the nested block to shield the box.
+- **b332:** r61 with that pass alone: no mover, events equal (a hanging indent had been inherited the same way,
+  unseen), so the pass is neutral on its own.
+- **b333:** r62, workarounds off, with the pass: no mover, events equal to b330; 4083's B.2 to B.7 at Word's x 42.5
+  and 14236 on Word's 2 pages, from the renderer alone. **PASS.** b333 on r62 is the fork's baseline for later gates.
+
+Enterprise item 53 corrected by docx4j-12 at 92f3fe7 (the letter of §7.16.11 as §2 reads it); the register records
+the attempt under `hanging-indent-after-leading-block`.
 
 ## 6. Upstream
 
