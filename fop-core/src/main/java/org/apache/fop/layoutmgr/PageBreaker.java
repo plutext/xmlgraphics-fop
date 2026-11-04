@@ -257,7 +257,7 @@ public class PageBreaker extends AbstractBreaker {
         // a list read again from a block after a side float's edge: that block keeps the space-before the
         // list before resolved, since the edge is no break in the flow (fop/CR-020)
         // an edge the next box goes to a new page from is a break in the flow after all: the block's space-before
-        // is discarded at the page's top, as at any page break (fop/CR-036)
+        // is discarded at the page's top, as FOP does at any page break (fop/CR-036 §3; not measured against Word)
         boolean floatRestart = handlingFloat() && positionAtIPDChange != null && !edgeAtPageFoot;
         edgeAtPageFoot = false;
         keptSpaceBefore = 0;
@@ -1069,7 +1069,8 @@ public class PageBreaker extends AbstractBreaker {
         int edgeY = pslm.getCurrentPV().getCurrentFlow().getBPD();
         int fixed = alg.firstBoxAfterEdgeFixedIPD();
         // a first box that would cross the page's foot takes the same way: nothing is beside the float, and the
-        // box goes to the next page, as a word processor moves a line that crosses the foot (fop/CR-036)
+        // box goes to the next page, as it does after an end edge; Word's probe does not reach this shape, so that
+        // is FOP's rule here, not a measured one of Word's (fop/CR-036 §3)
         edgeAtPageFoot = alg.firstBoxAfterEdgeCrossesPageFoot(floatYOffset);
         if (edgeAtPageFoot
                 || fixed >= 0 && fixed > pslm.getCurrentColumnWidth() - savedStartIntrusion - savedEndIntrusion) {

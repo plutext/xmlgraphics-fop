@@ -1,7 +1,8 @@
 # CR-036: a line beside a side float that crosses the page's foot
 
 - **Status:** BUILT 2026-11-05 on branch `CR-036-line-across-foot-beside-float`, cut from `2.12-docx4j.1` at 5c63b6ade, code
-  cc06737cd, drop r67. Not gated, not merged. Ordered 2026-11-05 by Jason ("fix Item 55, the foot defect in .1").
+  cc06737cd, drop r67. **Gated PASS 2026-11-05 by docx4j-67 (b349 on r67 against b347 on r66, §5) and MERGED to `2.12-docx4j.1` by
+  fast-forward; unreleased.** Ordered 2026-11-05 by Jason ("fix Item 55, the foot defect in .1").
 - **Serves:** Enterprise CR-001 §6.6 item 55: beside a side float, a line that crosses the page's foot by a few points stays on
   the page, drawn past the body's foot, where Word moves it.
 - **Capability:** none. A fix, not a hook.
@@ -42,6 +43,11 @@ beside the float, so the crossing line does not arise there. Apache has the cap;
 
 Not covered: a break inside a table, which is not restartable and takes no edge (CR-020).
 
+Only the first of these is Word's measured rule. The second and third rest on FOP's own behaviour: Word's `float-foot-empties` does
+not reach them and no corpus document does, so `float_page-foot.xml` pins what FOP now does there, not what Word was seen to do.
+They are the consistent reading of the first, and may well be right, but they are unmeasured. docx4j-67 offered to add the two
+shapes to a probe; not ordered.
+
 ## 4. Measured
 
 Through `RenderFo` on b347's FOs and `cp-b347.txt`, this change as a javac overlay: `float-foot-empties` 19 of 19 at Word's AFTER line
@@ -53,6 +59,12 @@ CI's command 4102/0, checkstyle 0, spotbugs 0.
 
 ## 5. Gate
 
-Against b347 on r66. Reach: any box beside a float that crossed the page's foot, so expect movers beyond the probe, each a line now on
-the next page; a page count may rise. Pass: `float-foot-empties` 19 of 19 at Word's; 4083 and 6293 unchanged from b347; no loser;
-events equal or falling.
+Against b347 on r66. Reach: any box beside a float that crossed the page's foot. Pass: `float-foot-empties` 19 of 19 at Word's; 4083
+and 6293 unchanged from b347; no loser; events equal or falling.
+
+Gate b349 on r67 (cc06737cd) against b347 on r66, docx4j-67, docx4j b267f24ce: PASS on every item, no mover, events equal. Of 863
+PDFs only the probe and 11875's clock differ: no corpus document moved and no page count rose, where this session had expected
+movers. `float-foot-empties` 19 of 19 at Word's AFTER line (13 on r66), its 6 moved lines all closer, mean distance from Word
+15.30pt to 0.10pt. 4083 and 6293 no line from b347. docx4j-67 agreed the first part's mechanism, the 9.2pt threshold included,
+and has not checked the internals independently. The code merged differs from r67 in two comments only (§3's caveat written into
+them; CI's command 4102/0, checkstyle 0, spotbugs 0 again), so r67 stands. b349 on r67 is the fork's baseline for later gates.
