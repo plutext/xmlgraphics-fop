@@ -27,7 +27,8 @@
  * offset float, at the float's start edge, set below the float with nothing beside it (fop/CR-032); and hook
  * float-table-split, a floating table too tall for the page below its anchor drawn in parts page by page with
  * nothing beside them, the anchor's block read again on the page where the table ends (fop/CR-034); and the
- * space-before a block keeps at a float's start edge counted in the list beside the float (fop/CR-023 §11).
+ * space-before a block keeps at a float's start edge counted in the list beside the float (fop/CR-023 §11); and an
+ * edge before a box that would cross the page's foot taken as a break in the flow (fop/CR-036).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -86,6 +87,8 @@ public class PageBreaker extends AbstractBreaker {
     private int pendingFloatClearance; // fop/CR-022
     /** The space-before the block read again after an edge keeps, held by no element of its list (fop/CR-023 §11). */
     private int keptSpaceBefore;
+    /** Whether the content after the edge just taken goes to the next page, the edge being a page break (CR-036). */
+    private boolean edgeAtPageFoot;
     /** Whether the height the list beside a float starts at holds the glue after its edge: an end edge's does. */
     private boolean edgeHeightHoldsSpace;
     /**
@@ -253,7 +256,10 @@ public class PageBreaker extends AbstractBreaker {
         }
         // a list read again from a block after a side float's edge: that block keeps the space-before the
         // list before resolved, since the edge is no break in the flow (fop/CR-020)
-        boolean floatRestart = handlingFloat() && positionAtIPDChange != null;
+        // an edge the next box goes to a new page from is a break in the flow after all: the block's space-before
+        // is discarded at the page's top, as at any page break (fop/CR-036)
+        boolean floatRestart = handlingFloat() && positionAtIPDChange != null && !edgeAtPageFoot;
+        edgeAtPageFoot = false;
         keptSpaceBefore = 0;
         if (floatRestart) {
             childLC.setFlags(LayoutContext.FLOAT_RESTART, true);
@@ -1062,7 +1068,11 @@ public class PageBreaker extends AbstractBreaker {
         // space between the blocks at this break was given to
         int edgeY = pslm.getCurrentPV().getCurrentFlow().getBPD();
         int fixed = alg.firstBoxAfterEdgeFixedIPD();
-        if (fixed >= 0 && fixed > pslm.getCurrentColumnWidth() - savedStartIntrusion - savedEndIntrusion) {
+        // a first box that would cross the page's foot takes the same way: nothing is beside the float, and the
+        // box goes to the next page, as a word processor moves a line that crosses the foot (fop/CR-036)
+        edgeAtPageFoot = alg.firstBoxAfterEdgeCrossesPageFoot(floatYOffset);
+        if (edgeAtPageFoot
+                || fixed >= 0 && fixed > pslm.getCurrentColumnWidth() - savedStartIntrusion - savedEndIntrusion) {
             // the first box after the edge asks for more width than the room beside the float: a table of fixed
             // width that would reach the float's top, which a word processor sets wholly below the float, its
             // first row included, and leaves nothing beside the float (Word's float-top-crossing-table probe;
@@ -1652,6 +1662,7 @@ public class PageBreaker extends AbstractBreaker {
                 PageSequenceLayoutManager pslm = (PageSequenceLayoutManager) getTopLevelLM();
                 pslm.setEndIntrusionAdjustment(0);
                 pslm.setStartIntrusionAdjustment(0);
+                edgeAtPageFoot = alg.firstBoxAfterEdgeCrossesPageFoot(floatYOffset);
                 int effectiveFloatHeight = alg.getFloatHeight();
                 // an edge forced by clear lies above the foot: the next part starts below it (fop/CR-022)
                 pendingFloatClearance = alg.getFloatClearance();

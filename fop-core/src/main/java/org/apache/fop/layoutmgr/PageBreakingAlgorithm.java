@@ -35,7 +35,8 @@
  * before the anchor, the edge the last legal break before it or the page's start (fop/CR-034); and the space
  * resolver's auxiliary box read past when the box after a break is looked for (fop/CR-032, 4083's B.6), and when
  * the gap before an offset float's anchor is read, so that a bordered anchor's space-before counts (fop/CR-023 §10);
- * and a list beside a float started at the space its first block keeps (fop/CR-023 §11).
+ * and a list beside a float started at the space its first block keeps (fop/CR-023 §11); and the edge taken before a
+ * box beside a float that would cross the page's foot (fop/CR-036).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -1253,7 +1254,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             boolean reachesEvent = nextBoxHasContent(elementIdx) && (floatEndsAtTop
                     ? nextLineCrosses(elementIdx, floatHeight) : edgeWidth + textOffset >= floatHeight);
             if (!handlingEndOfFloat && edgeRestartable(elementIdx) && (reachesEvent || clearsFloatAtNextBox(elementIdx)
-                    || overflowsBesideFloatAtNextBox(elementIdx)
+                    || overflowsBesideFloatAtNextBox(elementIdx) || nextBoxCrossesPageFoot(elementIdx, edgeWidth)
                     || startsNonRestartableThePageCannotHold(elementIdx, edgeWidth))) {
                 handlingEndOfFloat = true;
             }
@@ -1362,6 +1363,30 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             return false;
         }
         return edgeWidth + nonRestartableExtent(elementIdx, starting) > lineWidth;
+    }
+
+    /**
+     * Whether the next box with content would cross the page's foot (fop/CR-036). The heights of a list beside a
+     * float start at the float's edge, so the page's fit never reads them against the page: the page's foot is
+     * known here only as the cap on the float's foot, which a box lying wholly below it reaches. A box beginning
+     * above that foot and crossing it stayed beside the float, drawn past the body's foot, where a word processor
+     * moves it, as it does with no float (Enterprise CR-001 item 55, Word's float-foot-empties). The edge is taken
+     * before it, and the content after the edge goes to the next page.
+     */
+    private boolean nextBoxCrossesPageFoot(int elementIdx, int edgeWidth) {
+        KnuthNode pageStart = currentPageStart();
+        if (pageStart == null) {
+            return false;
+        }
+        for (int i = elementIdx; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox() && !isSpaceResolverBox(e)) {
+                return e.getWidth() > 0 && edgeWidth + e.getWidth() > getLineWidth(pageStart) - listStartFlowY;
+            } else if (e.isForcedBreak() && i != elementIdx) {
+                return false;
+            }
+        }
+        return false;
     }
 
     /** The height of the elements of a non-restartable layout manager starting after this break (CR-022, CR-023). */
@@ -1498,6 +1523,30 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             }
         }
         return -1;
+    }
+
+    /**
+     * Whether the first box after the float's start edge would cross the page's foot (fop/CR-036): a list has no
+     * break before its first box, so {@link #nextBoxCrossesPageFoot} cannot take the edge before that box.
+     *
+     * @param listTopInPage where this list starts in the page
+     */
+    boolean firstBoxAfterEdgeCrossesPageFoot(int listTopInPage) {
+        if (bestFloatEdgeNode == null) {
+            return false;
+        }
+        int bottom = listTopInPage + bestFloatEdgeNode.totalWidth;
+        for (int i = bestFloatEdgeNode.position; i < par.size(); i++) {
+            KnuthElement e = getElement(i);
+            if (e.isBox() && e.getWidth() > 0 && !e.isAuxiliary()) {
+                return bottom + e.getWidth() > getLineWidth(bestFloatEdgeNode);
+            } else if (e.isGlue()) {
+                bottom += e.getWidth();
+            } else if (e.isForcedBreak() && i != bestFloatEdgeNode.position) {
+                return false;
+            }
+        }
+        return false;
     }
 
     private static int clearOf(FObj fo) {

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.12: a box beside a side float that would cross the page's foot goes to the next page
+     (fop/CR-036). -->
+<testcase>
+  <info>
+    <p>
+      A line beside a side float that would cross the page's foot goes to the next page, as it does with no float.
+      The body is 300pt tall, the float's foot within it, seven 9pt lines beside it with 6pt between. First sequence:
+      the last line ends at 299pt and stays. Second: it would end at 303pt and opens the next page. Third: the same
+      with no float. Fourth: the lines carry space-before, and the moved line's is discarded at the page's top, as at
+      any page break. Fifth: the line would cross the foot straight after the float's start edge, where its list has
+      no break before it, and it goes to the next page with nothing beside the float.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+<fo:layout-master-set><fo:simple-page-master master-name="p" page-width="400pt" page-height="300pt" margin="0pt"><fo:region-body/></fo:simple-page-master></fo:layout-master-set>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left" fox:float-offset="200pt"><fo:block-container width="100pt" height="95pt"><fo:block>FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block line-height="186pt">spacer</fo:block>
+<fo:block space-after="6pt">a1</fo:block>
+<fo:block space-after="6pt">a2</fo:block>
+<fo:block space-after="6pt">a3</fo:block>
+<fo:block space-after="6pt">a4</fo:block>
+<fo:block space-after="6pt">a5</fo:block>
+<fo:block space-after="6pt">a6</fo:block>
+<fo:block space-after="6pt">a7</fo:block>
+<fo:block>a-after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left" fox:float-offset="204pt"><fo:block-container width="100pt" height="95pt"><fo:block>FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block line-height="190pt">spacer</fo:block>
+<fo:block space-after="6pt">b1</fo:block>
+<fo:block space-after="6pt">b2</fo:block>
+<fo:block space-after="6pt">b3</fo:block>
+<fo:block space-after="6pt">b4</fo:block>
+<fo:block space-after="6pt">b5</fo:block>
+<fo:block space-after="6pt">b6</fo:block>
+<fo:block space-after="6pt">b7</fo:block>
+<fo:block>b-after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt">anchor</fo:block>
+<fo:block line-height="190pt">spacer</fo:block>
+<fo:block space-after="6pt">c1</fo:block>
+<fo:block space-after="6pt">c2</fo:block>
+<fo:block space-after="6pt">c3</fo:block>
+<fo:block space-after="6pt">c4</fo:block>
+<fo:block space-after="6pt">c5</fo:block>
+<fo:block space-after="6pt">c6</fo:block>
+<fo:block space-after="6pt">c7</fo:block>
+<fo:block>c-after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left" fox:float-offset="204pt"><fo:block-container width="100pt" height="95pt"><fo:block>FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block line-height="190pt">spacer</fo:block>
+<fo:block space-before="6pt">d1</fo:block>
+<fo:block space-before="6pt">d2</fo:block>
+<fo:block space-before="6pt">d3</fo:block>
+<fo:block space-before="6pt">d4</fo:block>
+<fo:block space-before="6pt">d5</fo:block>
+<fo:block space-before="6pt">d6</fo:block>
+<fo:block space-before="6pt">d7</fo:block>
+<fo:block space-before="6pt">d-after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left" fox:float-offset="290pt"><fo:block-container width="100pt" height="6pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block line-height="280pt">spacer</fo:block>
+<fo:block>e-first</fo:block>
+<fo:block>e-after</fo:block>
+</fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <eval expected="10" xpath="count(//pageViewport)"/>
+    <!-- 1: the last line ends at 299pt, within the body: it stays beside the float -->
+    <eval expected="1" xpath="count((//pageViewport)[1]//word[.='a7'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[2]//word[.='a-after'])"/>
+    <!-- 2: it would end at 303pt: it opens the next page, at the full width. Before, it stayed, past the body's foot -->
+    <eval expected="1" xpath="count((//pageViewport)[3]//word[.='b6'])"/>
+    <eval expected="0" xpath="count((//pageViewport)[3]//word[.='b7'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[4]//word[.='b7'])"/>
+    <eval expected="400000" xpath="//word[.='b7']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 3: the same with no float -->
+    <eval expected="1" xpath="count((//pageViewport)[5]//word[.='c6'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[6]//word[.='c7'])"/>
+    <!-- 4: the moved line's space-before is discarded at the page's top: this edge is a page break -->
+    <eval expected="1" xpath="count((//pageViewport)[8]//word[.='d7'])"/>
+    <eval expected="0" xpath="count(//word[.='d7']/ancestor::block[1]/@space-before)"/>
+    <!-- 5: the first line after the start edge goes too, and nothing is beside the float -->
+    <eval expected="0" xpath="count((//pageViewport)[9]//word[.='e-first'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[10]//word[.='e-first'])"/>
+    <eval expected="400000" xpath="//word[.='e-first']/ancestor::lineArea[1]/@ipd"/>
+  </checks>
+</testcase>
