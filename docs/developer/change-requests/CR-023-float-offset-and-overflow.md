@@ -418,3 +418,11 @@ Gate: against b344 on r62 (docx4j b267f24ce), to equal b345 line for line. Pass:
 204.5, B.3's first line at x 42.5, B.6's heading at x 42.5, its options within about 1pt of 649.4; 6293's page 2 opening at
 64.2 (64.1) with "EDP370" on page 2; `float-foot-empties` K-4 and K-1 on the next page at 64.2; no loser but the accepted
 10244; events equal.
+
+Gate b347 on r66 against b344 on r62, docx4j-67, docx4j b267f24ce: PASS on every item, events equal, §10 with it. Against b345
+line for line equal, of 863 PDFs only 11875's clock differing. 4083: B.2's options 203.6 (204.5), B.3's first line x 42.5, B.6's
+heading x 42.5 at 615.4 (616.0), its options 648.3 (649.4). 6293: page 2 opens at 64.2 (64.1), "EDP370" once, on page 2.
+`float-foot-empties`: K-4 and K-1 on the next page at 64.2, its page count right at 38. Against b344, 6293 +1, back to 0.9946.
+Against the old baseline b341: 10244 -3 (accepted), 9775 +5 (one space character); paired with Word, 6293 15 of 15 lines closer,
+13.90pt to 0.10pt, 4083 31 of 34, 11.48pt to 1.45pt, 10244 275 of 276, 74.69pt to 30.68pt. docx4j-67 agreed the mechanism as r66
+stands. b347 on r66 is the fork's baseline for later gates.
