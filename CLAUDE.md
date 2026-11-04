@@ -206,6 +206,23 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-04, after the forced reboot. **`fop/CR-023` §10 (Enterprise §6.6 item 54: a bordered anchor's
+space-before left out of `fox:float-offset`'s reference) is BUILT, not gated, not merged: branch
+`CR-023-offset-bordered-anchor` (cut from `2.12-docx4j.1` at 4fe468d68), code f785f3f7c, resent by docx4j-37 and ordered
+here by Jason ("go ahead and finish the item 54 fix now"). Drop r63 at `~/fop-renderers/r63-CR-023-f785f3f7c/` (sha256
+d8cfc9f0...), handed to docx4j-37, which names the baseline: docx4j's own is b335 on r61, not b333 on r62, b337's two
+changes are uncommitted there, and the JDK upgrade may need a fresh control. CI's command 4099/0, checkstyle 0, spotbugs
+0. The reference is the box less the anchor block's own border and padding, less its own space-before; the version cut
+off by the reboot took an enclosing block's too (19.5pt high, caught on the rebuilt reproducer, layout case 12 pins it).
+On b337's FO for 4083 through RenderFo, page 2 alone differs, B.2's options, B.3 and its note at Word's within 1pt.
+Enterprise's Fork line is in (item 54). Open: C5 and C6, the zero-height case, read in §10 as no defect, to agree with
+docx4j-37 before item 54 says so; whether the fix goes in `.1`, Jason's (its release note entry is on this branch and
+comes out if not); `fop/CR-023.1` and the `fop/release-2.12-docx4j.1` dependency list, proposed to docx4j-portfolio-cd
+and held for Jason. On the pass: fast-forward to `2.12-docx4j.1`, close the release note's gate line and §10, item 54
+closed. `.1` IS PUSHED: origin was at 4fe468d68 on 2026-11-04, so the paragraphs below that leave that push to Jason are
+history. Tools: `~/fop-session-tools/2026-11-04-item54/` (`floatoff3.fo`, `baselines.py`, the `4083/` renders). The
+paragraph that follows is the state before the reboot, kept.**
+
 Last updated 2026-11-04, late. **`fop/CR-035` (Enterprise §6.6 item 53: a block's first line loses its `text-indent`
 where a block-level child precedes its inline content) is DONE: built on branch `CR-035-text-indent-after-block` (cut
 from `2.12-docx4j.1` at e096fb41f; code ad739af01), ordered by Jason the same day through docx4j-12 (the relay is his
