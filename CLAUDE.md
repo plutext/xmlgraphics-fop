@@ -210,8 +210,8 @@ Last updated 2026-11-05. **Item 54 is DONE: `fop/CR-023` §10 and §11 gated PAS
 MERGED to `2.12-docx4j.1` by fast-forward at 506deb24e; unreleased, local: `.1` is 14 commits past origin's 4fe468d68, and the
 push is Jason's. b347 on r66 is the fork's baseline for later gates (`~/fop-renderers/r66-CR-023-8e870178d/`, sha256 f6d39545...;
 506deb24e's code is 8e870178d's, docs after it). It ships with docx4j b267f24ce, unpushed there, its fix for auto spacing after a
-floating table. Enterprise item 54 closed (see the Enterprise log), registry `fop/CR-023.1` done requested of
-docx4j-portfolio-53 with the release's corrected title.** CR-023 §11 has the route. A block read again after a float's edge keeps
+floating table. Enterprise item 54 closed (b291810), registry `fop/CR-023.1` done with the release's corrected title (portfolio
+7de241a, local there); `fop/release-2.12-docx4j.1` lists as ready.** CR-023 §11 has the route. A block read again after a float's edge keeps
 its space-before (CR-020), counted at an end edge and not at a start edge, so later heights on the page lay that far above the
 flow; a list beside a float now starts its height at that space (`getListStartAtFloatEdge`). It reaches every side float followed
 by a block keeping a space. r63 failed b339 (4083's B.6). r64 failed b340 on 6293; I read that as an unmeasured Word rule for
