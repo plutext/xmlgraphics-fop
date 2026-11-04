@@ -423,3 +423,13 @@ the two further are X marks that move with their content (465.6 to 452.6, Word's
 before and 7pt high now, docx4j-67's question. docx4j-67 agreed this section's mechanism, the lists' heights staying short
 included; the list and area figures above and 6293's 498.6 are this session's, not checked independently. Baseline after
 a merge: b343 on r65; until then b341 on r62.
+
+WITHDRAWN the same day, on docx4j-67's goldens: "Why Word's fit is not measured", the Word-probe open item, and the reading
+of r64's fail. There is no rule for empty paragraphs: Word's fit at a foot is ordinary, the same beside a float or with none
+(`float-foot-empties`, 19 cases). 6293 failed r64 because docx4j wrote 14pt of space-before that Word drops: a paragraph
+straight after a floating table gets no `w:beforeAutospacing` (`spacing-autospacing-after-table`, 17 cases). With docx4j's
+fix (`AutoSpacingAfterFloatingTable`, uncommitted), all against b341, events equal: b345 on r64 has 6293's 15 moved lines all
+closer to Word, 4083 as b343, 10244 275 of 276 closer; b346 on r65 the same but 6293 -1, 187 lines further, its short heights
+leaving "EDP370" past the foot at y 548.8. The foot probe: r64 13 of 19, r62 and r65 11. So r65's form trades on the under-count
+its own reasoning above calls open, and r64's form is the better fix, agreed with docx4j-67. Which ships is Jason's; r64's
+form needs a rebuild on this branch's head and its own gate, and it holds only with docx4j's fix, so the two ship together.

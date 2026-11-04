@@ -207,15 +207,16 @@ hunks alone through a temporary index from HEAD, never the shared index.
 ## Start here
 
 Last updated 2026-11-05. **r65 GATED PASS (b343 against b341 on r62; docx4j-67): nothing but 4083's page 2 moved, 31 of its 34
-lines closer to Word, events equal, 6293 at r62's lines. NOT MERGED, AND HELD AT docx4j-67's REQUEST: 6293's fail on r64 may
-be docx4j's error, not a Word rule. Its text above the float is 13.9pt low, docx4j writing 14pt space-before on a block whose
-w:beforeAutospacing Word does not apply; with that 14pt out of the FO, r62, r64 and r65 all open page 2 at 64.2 (one document's
-edit, not a gate; `~/fidelity-cr030/2026-11-05-r63/h0/`). Jason asked it for the proper fix. Its plan: a Word probe of auto
-space-before after a table and a sweep of empty paragraphs at a page's foot beside a float, the docx4j fix, then r64's form
-and r65 gated against that. No fork work meanwhile. Keep r64's form: 694bd8a19, under 796a7f04f on this branch, drop r64 at
-`~/fop-renderers/r64-CR-023-694bd8a19/`; going back to it is a revert of 796a7f04f's code. Reword §11's "Why Word's fit is not
-measured" and its open item, and item 54's, only when the goldens are in. Which form ships is Jason's, after those gates;
-`.1` waits. On his word: fast-forward to `2.12-docx4j.1`, §6.6 item 54
+lines closer to Word, events equal, 6293 at r62's lines. NOT MERGED, HELD. docx4j-67's goldens (CR-023 §11's end): 6293's fail on
+r64 was docx4j's 14pt of space-before, which Word drops after a floating table; there is no rule for empty paragraphs. With
+docx4j's fix (`AutoSpacingAfterFloatingTable`, uncommitted): b345 on r64 beats b346 on r65, whose short heights leave 6293's
+page 2 text past the foot. r64's form is agreed as the fix; WHICH FORM SHIPS IS JASON'S, docx4j-67 tells this session when he has
+ruled. If r64's: revert 796a7f04f's code on this branch, CI's command, a new drop, gated against b344 (docx4j with the fix on
+r62), same pass plus 6293's page 2 at 64.2; §11 drops r65's reasoning; it ships with docx4j's fix. r64's form: 694bd8a19, drop
+`~/fop-renderers/r64-CR-023-694bd8a19/`. NEW, not traced, not in §6.6 yet, on r62, r64 and r65 alike: beside a float, a line
+crossing the page's foot by up to at least 4pt stays on the page, where Word moves it (`float-foot-empties` S+1, S+4, V+1, V+4,
+K+1, K+4 wrong, S+10 and N right; `~/fidelity-real2/score/fidelity-probes-b345/fop/`; readers
+`~/fidelity-cr030/2026-11-05-r63/probe2/`). Not blocking unless Jason says. On his word: fast-forward to `2.12-docx4j.1`, §6.6 item 54
 closed (its text is current to the pass, Enterprise; only the merge line and the Open tally remain), the merge hash and the
 corrected release title to docx4j-portfolio for `fop/CR-023.1` done and its notes (they name f785f3f7c and r63). Baseline
 after the merge b343 on r65; until then b341 on r62.** Item 54 ships in `.1` (Jason); the second fix took three forms. r63 FAILED gate b339: §10's items held, but 4083 lost 2 lines, B.6's table 19pt high over
