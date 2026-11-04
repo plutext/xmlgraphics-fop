@@ -219,7 +219,8 @@ checkstyle 0, spotbugs 0. Read honestly, XSL 1.1 §7.16.11's letter ("the first 
 provided L is a line-area") supports Apache's old behaviour, so this is Word's rule beyond the letter, as item 48's
 (CR-035 §2); the JIRA draft `docs/upstream/text-indent-after-block.txt` is an Improvement, not filed, and docx4j-12
 was asked to reword item 53's XSL sentence (my Fork line is in, Enterprise 0d20510). Upstream branch
-`FOP-text-indent-after-block` in `../fop-upstream-wt` on main 1301bcf74, uncommitted until its suite finishes.
+`FOP-text-indent-after-block` in `../fop-upstream-wt` on main 1301bcf74, one commit 297234f16 (3732/0, checkstyle
+clean), local, not pushed.
 Registry `fop/CR-035` in_progress requested of docx4j-portfolio-10. On the pass: fast-forward to `2.12-docx4j.1`,
 release note's "gate pending" closed, item 53's Fork line to merged, registry done.** The paragraph that follows is
 the night's state, kept.**

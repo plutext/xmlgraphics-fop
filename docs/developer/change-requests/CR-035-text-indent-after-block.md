@@ -81,5 +81,7 @@ no corpus loser; events equal.
 
 JIRA text drafted, `docs/upstream/text-indent-after-block.txt`, for Jason to decide whether to file: the draft
 states the letter of §7.16.11 and offers the change as the CSS meaning the clause amends, with the layout test.
-The fix is cut on `FOP-text-indent-after-block` in `../fop-upstream-wt` against Apache `main` (1301bcf74). Apache
-may decline it as conformant; the fork carries it either way.
+The fix is cut on `FOP-text-indent-after-block` in `../fop-upstream-wt` against Apache `main` (1301bcf74), one
+commit, 297234f16 (Apache's form: no change notice; the fop-core suite 3732 tests, 0 failures, checkstyle clean;
+the reproducer gives H2 93.3 and P2 75.0 on `main`'s own build before it). Apache may decline it as conformant; the
+fork carries it either way.

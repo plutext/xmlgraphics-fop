@@ -2,7 +2,7 @@ JIRA, NOT FILED: drafted 2026-11-04 by the fork session, to be posted only on Ja
 "Summary" on in JIRA markup, one line per paragraph. Pull request text in ../fop-upstream-prs/FOP-text-indent-after-block.md
 (to write once filed). fop/CR-035 (docs/developer/change-requests/CR-035-text-indent-after-block.md); Enterprise
 CR-001 §6.6 item 53. Branch FOP-text-indent-after-block in ../fop-upstream-wt, one commit on Apache main 1301bcf74
-(the commit hash goes here once made). Rename the branch and the commit's subject to FOP-NNNN once filed. Component
+(297234f16; the fop-core suite gives 3732 tests and 0 failures, and checkstyle is clean). Rename the branch and the commit's subject to FOP-NNNN once filed. Component
 layout/unqualified, Affects 2.12 and main, Improvement (not Bug: the Recommendation's letter supports FOP's present
 behaviour, see the second paragraph of the description, and Apache may decline on that ground), Minor. FO
 reproducer: docs/upstream/repro/FOP-text-indent-after-block.fo (base-14 fonts, no configuration).
