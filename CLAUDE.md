@@ -207,12 +207,16 @@ hunks alone through a temporary index from HEAD, never the shared index.
 ## Start here
 
 Last updated 2026-11-04, late. **`fop/CR-035` (Enterprise §6.6 item 53: a block's first line loses its `text-indent`
-where a block-level child precedes its inline content) is BUILT on branch `CR-035-text-indent-after-block` (cut from
-`2.12-docx4j.1` at e096fb41f; code ad739af01), ordered by Jason the same day through docx4j-12 (the relay is his order
-for a fork fix; the JIRA post and the pull request still need his word here). Drop r62
-(`~/fop-renderers/r62-CR-035-ad739af01/`, sha256 1cedf99f...) handed to docx4j-12 to gate against b329 with docx4j's
-two writer workarounds out, keyed on the new capability `first-line-indent-after-block`, the thirty-first; pass
-criteria CR-035 §5 (4083's headings at Word's x 42.5, 14236 at Word's 2 pages, no loser, events equal). As built:
+where a block-level child precedes its inline content) is DONE: built on branch `CR-035-text-indent-after-block` (cut
+from `2.12-docx4j.1` at e096fb41f; code ad739af01), ordered by Jason the same day through docx4j-12 (the relay is his
+order for a fork fix; the JIRA post and the pull request still need his word here), gated PASS by docx4j-12 (b333 on
+r62 against b330, CR-035 §5.1: docx4j's two writer workarounds keyed off on the new capability
+`first-line-indent-after-block`, the thirty-first, plus its `anchoredContentTakesNoTextIndent` pass, docx4j c559809dc;
+no mover, events equal; 4083's headings at Word's x 42.5 and 14236 at Word's 2 pages from the renderer alone) and
+MERGED to `2.12-docx4j.1` by fast-forward at 4c46120a4; unreleased, local: `.1` on origin is still at e096fb41f, so the
+push of this merge is Jason's. b333 on r62 is the fork's baseline for later gates. Item 53 closed (Enterprise
+657bca0 on docx4j-12's 92f3fe7); registry done requested of docx4j-portfolio-10. Drop r62 is at
+`~/fop-renderers/r62-CR-035-ad739af01/` (sha256 1cedf99f...). As built:
 `LineLayoutManager.initialize` sets `isFirstInBlock` when no earlier child manager of the block is a line manager
 (Apache tested "first child"); layout test `block_text-indent_after-block.xml`, six cases; CI's command 4099/0,
 checkstyle 0, spotbugs 0. Read honestly, XSL 1.1 §7.16.11's letter ("the first child L of the first block-area ...
@@ -221,9 +225,8 @@ provided L is a line-area") supports Apache's old behaviour, so this is Word's r
 was asked to reword item 53's XSL sentence (my Fork line is in, Enterprise 0d20510). Upstream branch
 `FOP-text-indent-after-block` in `../fop-upstream-wt` on main 1301bcf74, one commit 297234f16 (3732/0, checkstyle
 clean), local, not pushed.
-Registry `fop/CR-035` in_progress requested of docx4j-portfolio-10. On the pass: fast-forward to `2.12-docx4j.1`,
-release note's "gate pending" closed, item 53's Fork line to merged, registry done.** The paragraph that follows is
-the night's state, kept.**
+Nothing is ordered after CR-035; open for Jason: the push of `.1`'s new head, its release, the CR-035 JIRA and
+pull request, and the earlier questions below.** The paragraph that follows is the night's state, kept.**
 
 Last updated 2026-11-04, night. **Two follow-up fixes to `fop/CR-032` for 4083's page 2 under docx4j's step 2
 (branch `CR-032-4083-page2`, code e27cccea9, r61 at `~/fop-renderers/r61-CR-032-e27cccea9/`) are GATED PASS by
