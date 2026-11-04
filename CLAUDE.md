@@ -210,11 +210,13 @@ Last updated 2026-11-04, after the forced reboot. **`fop/CR-023` §10 (Enterpris
 space-before left out of `fox:float-offset`'s reference) is BUILT, not gated, not merged: branch
 `CR-023-offset-bordered-anchor` (cut from `2.12-docx4j.1` at 4fe468d68), code f785f3f7c, resent by docx4j-37 and ordered
 here by Jason ("go ahead and finish the item 54 fix now"). Drop r63 at `~/fop-renderers/r63-CR-023-f785f3f7c/` (sha256
-d8cfc9f0...), handed to docx4j-37, which names the baseline: docx4j's own is b335 on r61, not b333 on r62, b337's two
-changes are uncommitted there, and the JDK upgrade may need a fresh control. CI's command 4099/0, checkstyle 0, spotbugs
-0. The reference is the box less the anchor block's own border and padding, less its own space-before; the version cut
+d8cfc9f0...), received by docx4j-37 with the sha256 matching. It names the baseline and runs its control on r62, so that
+only item 54 shows: docx4j's own is b335 on r61, not b333 on r62, b337's two changes are uncommitted there, and the JDK
+upgrade may need a fresh control. No reply is owed and nothing is held open for it; it reports when the gate is ready. CI's
+command 4099/0, checkstyle 0, spotbugs 0. The reference is the box less the anchor block's own border and padding, less its own space-before; the version cut
 off by the reboot took an enclosing block's too (19.5pt high, caught on the rebuilt reproducer, layout case 12 pins it).
-On b337's FO for 4083 through RenderFo, page 2 alone differs, B.2's options, B.3 and its note at Word's within 1pt.
+On b337's FO for 4083 through RenderFo, page 2 alone differs, B.2's options, B.3 and its note at Word's within 1pt; two X
+marks there (190.4 and 273.8, Word's 196.4 and 279.9) do not move with this fix and are docx4j-37's to read.
 Enterprise's Fork line is in (item 54), with its zero-height claim withdrawn as agreed with docx4j-37. Open: docx4j-37's
 baseline, which waits on its two uncommitted changes (Jason's go-ahead there) and a fresh control after the JDK upgrade;
 whether the fix goes in `.1`, Jason's (its release note entry is on this branch and comes out if not); `fop/CR-023.1` and the `fop/release-2.12-docx4j.1` dependency list, proposed to docx4j-portfolio-cd
