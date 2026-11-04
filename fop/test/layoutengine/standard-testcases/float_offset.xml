@@ -219,10 +219,18 @@
 <fo:block border-top-style="solid" border-top-width="0.5pt" padding-top="1pt"><fo:block space-before="24pt" space-after="10pt"><fo:float float="left" fox:float-offset="32pt"><fo:block-container width="300pt" height="40pt"><fo:block font-size="8pt" line-height="8pt">FLOATTOP</fo:block></fo:block-container></fo:float>Heading</fo:block></fo:block>
 <fo:block>m0 m1 m2 m3 m4 m5 m6 m7 m8 m9 m10 m11 m12 m13 m14 m15 m16 m17 m18 m19 m20 m21 m22 m23 m24 m25 m26 m27 m28 m29 m30 m31 m32 m33 m34 m35 m36 m37 m38 m39</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="A4"><fo:flow flow-name="xsl-region-body" font-size="12pt" line-height="16pt">
+<fo:block>n-before</fo:block>
+<fo:block space-before="18pt"><fo:float float="left" fox:float-offset="40pt"><fo:block-container width="100pt" height="16pt"><fo:block font-size="8pt" line-height="8pt">FIRST</fo:block></fo:block-container></fo:float>Anchor one</fo:block>
+<fo:block space-before="18pt">n-edge</fo:block>
+<fo:block space-before="60pt">n-filler</fo:block>
+<fo:block space-before="18pt"><fo:float float="left" fox:float-offset="40pt"><fo:block-container width="100pt" height="16pt"><fo:block font-size="8pt" line-height="8pt">SECOND</fo:block></fo:block-container></fo:float>Anchor two</fo:block>
+<fo:block space-before="18pt">n-edge-two</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
-    <eval expected="13" xpath="count(//pageViewport)"/>
+    <eval expected="14" xpath="count(//pageViewport)"/>
     <!-- 1: the heading full width, the float 32pt down, three lines beside it -->
     <eval expected="451000" xpath="//word[.='Heading'][1]/ancestor::lineArea[1]/@ipd"/>
     <eval expected="32000" xpath="(//pageViewport)[1]//flow/block[@positioning='absolute']/@top-offset"/>
@@ -289,5 +297,12 @@
     <eval expected="8000" xpath="(//pageViewport)[13]//flow/block[@positioning='absolute']/@top-offset"/>
     <eval expected="451000" xpath="//word[.='m-before']/ancestor::lineArea[1]/@ipd"/>
     <eval expected="151000" xpath="(//pageViewport)[13]//word[.='Heading']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 13: two like anchors on one page, the first float's start edge before a block with space-before: that block
+         keeps the space, which its list holds no element for, so both floats lie the same 22pt below the flow's
+         height at their anchors (40 less the 18 of space-before). Before, every height after the first edge lay 18pt
+         above the flow and the second float's top-offset was 4pt (corpus 4083's B.6 table; fop/CR-023 §11) -->
+    <eval expected="2" xpath="count((//pageViewport)[14]//flow/block[@positioning='absolute'])"/>
+    <eval expected="22000" xpath="((//pageViewport)[14]//flow/block[@positioning='absolute'])[1]/@top-offset"/>
+    <eval expected="22000" xpath="((//pageViewport)[14]//flow/block[@positioning='absolute'])[2]/@top-offset"/>
   </checks>
 </testcase>

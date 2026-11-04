@@ -34,7 +34,8 @@
  * and hook float-table-split, a floating table the page cannot hold below its anchor split at the float's start edge
  * before the anchor, the edge the last legal break before it or the page's start (fop/CR-034); and the space
  * resolver's auxiliary box read past when the box after a break is looked for (fop/CR-032, 4083's B.6), and when
- * the gap before an offset float's anchor is read, so that a bordered anchor's space-before counts (fop/CR-023 §10).
+ * the gap before an offset float's anchor is read, so that a bordered anchor's space-before counts (fop/CR-023 §10);
+ * and a list beside a float started at the space its first block keeps (fop/CR-023 §11).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -364,6 +365,9 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 pslm.retrieveFootnotes(this);
             }
             if (pslm.handlingStartOfFloat()) {
+                // the first block's kept space-before lies between the edge and this list's first box, and no
+                // element here holds it (fop/CR-023 §11)
+                totalWidth += pslm.getListStartAtFloatEdge();
                 if (pslm.intrusionPending()) {
                     // hook float-offset (fop/CR-023): the float's area is placed, its top the shift below this
                     // list's start; the lines keep the full width until one would cross it, where the

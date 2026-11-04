@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: a block read again after a side float's edge keeps its resolved space-before
- * (fop/CR-020); and in Word mode its lines are WordLineLayoutManager's (fop/CR-031). See README.md, "Changes from
+ * (fop/CR-020), and says how much to the page breaker, which no element of the list read again holds (fop/CR-023
+ * §11); and in Word mode its lines are WordLineLayoutManager's (fop/CR-031). See README.md, "Changes from
  * Apache FOP 2.11". */
 
 /* $Id$ */
@@ -117,6 +118,10 @@ public class BlockLayoutManager extends SpacedBorderedPaddedBlockLayoutManager
             Position restartPosition, LayoutManager restartAtLM) {
         // read again after a side float's edge: the space-before resolved in the list before is kept (fop/CR-020)
         MinOptMax keptSpaceBefore = context.isFloatRestart() ? effSpaceBefore : null;
+        if (keptSpaceBefore != null) {
+            // drawn, but in no element of the list read here: the page breaker counts it (fop/CR-023 §11)
+            getPSLM().setKeptSpaceBefore(keptSpaceBefore.getOpt());
+        }
         resetSpaces();
         effSpaceBefore = keptSpaceBefore;
         return super.getNextKnuthElements(

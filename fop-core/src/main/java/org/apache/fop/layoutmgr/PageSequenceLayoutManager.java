@@ -19,7 +19,8 @@
  * Apache FOP 2.11: hook page-number-restart, a following page-sequence continues from the number the last page
  * prints (fop/CR-017.2); and hook measured-region-extents, a master's header and footer measured from the
  * page-sequence's static content (fop/CR-018); and hook obstacles-in-the-line, the page-sequence's obstacle
- * registry and the geometry of a part's column in its page (fop/CR-024 phase A).
+ * registry and the geometry of a part's column in its page (fop/CR-024 phase A); and the space-before a block keeps
+ * at a float's start edge passed to the page breaker (fop/CR-023 §11).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -462,6 +463,19 @@ public class PageSequenceLayoutManager extends AbstractPageSequenceLayoutManager
 
     public int getOffsetDueToFloat() {
         return pageBreaker.getOffsetDueToFloat();
+    }
+
+    /**
+     * Tells the page breaker the space-before a block read again after a float's edge keeps (fop/CR-023 §11).
+     * @param space the space, drawn with the block and held by no element of the list read again
+     */
+    public void setKeptSpaceBefore(int space) {
+        pageBreaker.setKeptSpaceBefore(space);
+    }
+
+    /** @return the height a list beside a float starts at, its first block's kept space (fop/CR-023 §11) */
+    public int getListStartAtFloatEdge() {
+        return pageBreaker.getListStartAtFloatEdge();
     }
 
     public void recordStartOfFloat(int fHeight, int fYOffset) {
