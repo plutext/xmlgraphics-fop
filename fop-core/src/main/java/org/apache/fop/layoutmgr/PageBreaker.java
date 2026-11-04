@@ -27,7 +27,7 @@
  * offset float, at the float's start edge, set below the float with nothing beside it (fop/CR-032); and hook
  * float-table-split, a floating table too tall for the page below its anchor drawn in parts page by page with
  * nothing beside them, the anchor's block read again on the page where the table ends (fop/CR-034); and the
- * space-before a block keeps at a float's start edge noted for the next offset float's top (fop/CR-023 §11).
+ * space-before a block keeps at a float's start edge counted in the list beside the float (fop/CR-023 §11).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -88,8 +88,6 @@ public class PageBreaker extends AbstractBreaker {
     private int keptSpaceBefore;
     /** Whether the height the list beside a float starts at holds the glue after its edge: an end edge's does. */
     private boolean edgeHeightHoldsSpace;
-    /** The space kept at this page's float start edges, which no list height holds (fop/CR-023 §11). */
-    private int keptSpaceOnPage;
     /**
      * hook obstacles-in-the-line (fop/CR-024 §11.8): the obstacles taken up on the page being filled, in its flow
      * coordinates: top, foot, start intrusion, end intrusion, whether it clears the column (1 or 0). The lines at
@@ -268,9 +266,6 @@ public class PageBreaker extends AbstractBreaker {
             if (floatRestart) {
                 childLC.setFlags(LayoutContext.FLOAT_RESTART, false);
             }
-        }
-        if (floatRestart && handlingStartOfFloat && !edgeHeightHoldsSpace) {
-            keptSpaceOnPage += keptSpaceBefore;
         }
         ownPagesOfNewList();
         return next;
@@ -778,7 +773,6 @@ public class PageBreaker extends AbstractBreaker {
                 // fop/CR-024 §11.7); and the page's obstacles are the page's (§11.8)
                 pendingFloatClearance = 0;
                 pageObstacles.clear();
-                keptSpaceOnPage = 0;
             }
             pageProvider.setStartOfNextElementList(pslm.getCurrentPageNum(),
                     pslm.getCurrentPV().getCurrentSpan().getCurrentFlowIndex(),
@@ -1396,18 +1390,16 @@ public class PageBreaker extends AbstractBreaker {
     }
 
     /**
-     * The space kept at this page's float start edges. A block read again after a start edge draws its space-before
-     * (fop/CR-020), but the list read again holds no element for it and the list before ended above it, so every
-     * height in the lists after it lies that far above the flow, and an offset float placed from such a height was
-     * drawn that far too high (corpus 4083's B.6 table; fop/CR-023 §11). Only the float's top counts it: the lists'
-     * heights stay as they are, since counting it in them moved a line off the page that Word keeps there (corpus
-     * 6293's empty paragraphs beside a float at the page's foot, gate b340). An end edge's height holds the glue
-     * after it already (fop/CR-020), so an obstacle taken up there adds nothing.
+     * The height at which the list beside a float starts, its first block's kept space-before, measured from the
+     * edge. The block draws that space (fop/CR-020), but the list read again holds no element for it, and the list
+     * before ended at the edge, above it: uncounted, every height from this list on lay that far above the flow,
+     * and the next offset float on the page was drawn that far too high (corpus 4083's B.6 table; fop/CR-023 §11).
+     * An end edge's height holds the glue after it already (fop/CR-020), so an obstacle taken up there adds nothing.
      *
-     * @return the space, 0 where no block kept any on this page
+     * @return the height, 0 where the block keeps no space
      */
-    public int getKeptSpaceOnPage() {
-        return keptSpaceOnPage;
+    public int getListStartAtFloatEdge() {
+        return edgeHeightHoldsSpace ? 0 : keptSpaceBefore;
     }
 
     protected int handleFloatLayout(PageBreakingAlgorithm alg, int optimalPageCount, BlockSequence blockList,

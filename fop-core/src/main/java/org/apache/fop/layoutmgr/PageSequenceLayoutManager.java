@@ -473,9 +473,9 @@ public class PageSequenceLayoutManager extends AbstractPageSequenceLayoutManager
         pageBreaker.setKeptSpaceBefore(space);
     }
 
-    /** @return the space kept at this page's float start edges, which no list height holds (fop/CR-023 §11) */
-    public int getKeptSpaceOnPage() {
-        return pageBreaker.getKeptSpaceOnPage();
+    /** @return the height a list beside a float starts at, its first block's kept space (fop/CR-023 §11) */
+    public int getListStartAtFloatEdge() {
+        return pageBreaker.getListStartAtFloatEdge();
     }
 
     public void recordStartOfFloat(int fHeight, int fYOffset) {

@@ -298,10 +298,9 @@
     <eval expected="451000" xpath="//word[.='m-before']/ancestor::lineArea[1]/@ipd"/>
     <eval expected="151000" xpath="(//pageViewport)[13]//word[.='Heading']/ancestor::lineArea[1]/@ipd"/>
     <!-- 13: two like anchors on one page, the first float's start edge before a block with space-before: that block
-         keeps the space, which its list holds no element for, and the second float's top counts it, so both floats
-         lie the same 22pt below the flow's height at their anchors (40 less the 18 of space-before). Before, the
-         second float was placed from a height 18pt above the flow and its top-offset was 4pt (corpus 4083's B.6
-         table; fop/CR-023 §11) -->
+         keeps the space, which its list holds no element for, so both floats lie the same 22pt below the flow's
+         height at their anchors (40 less the 18 of space-before). Before, every height after the first edge lay 18pt
+         above the flow and the second float's top-offset was 4pt (corpus 4083's B.6 table; fop/CR-023 §11) -->
     <eval expected="2" xpath="count((//pageViewport)[14]//flow/block[@positioning='absolute'])"/>
     <eval expected="22000" xpath="((//pageViewport)[14]//flow/block[@positioning='absolute'])[1]/@top-offset"/>
     <eval expected="22000" xpath="((//pageViewport)[14]//flow/block[@positioning='absolute'])[2]/@top-offset"/>

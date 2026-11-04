@@ -374,62 +374,47 @@ It reproduces on a plain FO through `org.apache.fop.cli.Main`, stock managers, n
 start edge before a block with 18pt space-before. On r62 and r63 alike the first float lies 22pt below its anchor's
 line and the second 4pt. docx4j-67's two repros could not show it because no spaced block followed the first edge.
 
-First fix, r64 (694bd8a19), WITHDRAWN: a list beside a float started its height at the block's kept space, so the list
-measured its lines where they are drawn. It reached every side float followed by a block keeping a space, and Jason
-decided 2026-11-05 that this wider fix ship in `2.12-docx4j.1`, subject to the gate. Gate b340 on r64 against b338 FAILED
-on "no loser": every 4083 item held and events were equal, but 6293 moved 323 lines, none closer to Word, the mean
-distance from Word's y from 0.14pt to 14.84pt. Of 859 PDFs only 4083 and 6293 moved.
+Fix: `BlockLayoutManager` tells the page breaker the space it keeps at a float restart
+(`PageSequenceLayoutManager.setKeptSpaceBefore`), and a list beside a float starts its height there
+(`PageBreakingAlgorithm.initialize`, `PageBreaker.getListStartAtFloatEdge`). It reads the block's own resolved space,
+not the glue after the edge, because the resolver may give that space to the block before as its space-after, which is
+in the flow's height already. An end edge's height holds the glue after it (CR-020), so an obstacle taken up at an end
+edge adds nothing (`edgeHeightHoldsSpace`), or the space would count twice.
 
-Traced on b340's FO through `RenderFo`. 6293 has one float, and twelve empty paragraphs after the text above it, 14pt
-of space, then 13.8, 14.6 and ten of 9.2 with 6pt after. The list beside the float now counted the 14pt the first
-keeps, the last of the twelve no longer fitted the 481.9pt body, and it opened page 2: 9.2 + 6 = 15.2pt, the shift
-measured. On r62 the flow on page 1 really runs to 498.6, 16.7pt past the body's foot, so that paragraph's line is drawn
-past the foot, where it shows nothing. r62 matched Word here through the same under-count: Word keeps all twelve on page
-1, its page 2 opening with the first text at 64.1. Why Word's fit is not measured: empty paragraphs draw no glyphs, so
-their height beside a float at a page's foot cannot be read from Word's PDF, and no probe has cut it.
+This reaches every side float, offset or not, whose start edge is followed by a block that keeps a space: a list beside
+a float measures its lines where they are drawn, so a float's foot and the page's fit are read against the real height.
 
-Fix as built: only the float's top counts the space. `BlockLayoutManager` tells the page breaker the space it keeps at a
-float restart (`PageSequenceLayoutManager.setKeptSpaceBefore`), `PageBreaker.getNextBlockList` adds it up for the page
-(`getKeptSpaceOnPage`, cleared when a part opens a new page), and `PageBreakingAlgorithm.noteFloatTargetTop` adds it to
-the anchor's top in a list after a float's foot, on that list's first page. The lists' heights are r62's. It reads the
-block's own resolved space, not the glue after the edge, because the resolver may give that space to the block before
-as its space-after, which is in the flow's height already. An end edge's height holds the glue after it (CR-020), so an
-obstacle taken up at an end edge adds nothing (`edgeHeightHoldsSpace`), or the space would count twice.
+How it got here, since the route was wrong twice. r64 (694bd8a19) was this fix. Gate b340 on it against b338 FAILED on "no
+loser": every 4083 item held, events equal, but 6293 moved 323 lines, none closer to Word, the mean distance from Word's
+y from 0.14pt to 14.84pt, the last of twelve empty paragraphs beside its float having left page 1 (9.2 + 6 = 15.2pt, the
+shift measured). On r62 that page's flow really ran to 498.6, 16.7pt past the 481.9pt body, and Word keeps all twelve on
+page 1. This session read that as a Word rule for empty paragraphs it could not measure, and narrowed the fix: r65
+(796a7f04f) counted the space in the next offset float's top only, leaving the lists' heights short. r65 passed gate b343
+against b341 (nothing but 4083's page 2 moved). Both readings were WRONG. docx4j-67 found 6293's text above the float
+13.9pt low: docx4j wrote 14pt of space-before that Word drops. Its goldens: a paragraph straight after a floating table
+gets no `w:beforeAutospacing` (`spacing-autospacing-after-table`, 17 cases), and there is no rule for empty paragraphs,
+Word's fit at a foot being ordinary, beside a float or with none (`float-foot-empties`, 19 cases). r62's under-count had
+been hiding docx4j's 13.9pt, and r65 passed only by keeping that under-count. With docx4j's fix
+(`AutoSpacingAfterFloatingTable`, docx4j b267f24ce), all against b341, events equal: b345 on r64 has 6293's 15 moved lines
+all closer to Word, 4083 31 of its 34 closer, 10244 275 of 276 closer; b346 on r65 the same but 6293 -1, 187 lines further,
+"EDP370" drawn past the foot at y 548.8. The foot probe: r64 13 of 19, r62 and r65 11. Jason ruled for r64's form
+(2026-11-05, through docx4j-67) and accepted 10244's `lineParity` -3 (no line's text changed: the subsequence's order).
 
-So it can move only an offset float placed after such a start edge on the same page. Measured through `RenderFo`: 6293 on
-b340's FO, 0 lines differing from b338; 4083 on b339's FO, 0 lines differing from r64, so r64's whole gain stands, page
-2 alone differing from r63 (Word's in brackets): B.6's heading whole at x 42.5, y 615.4 (42.5, 616.0); its options 630.3
-to 648.3 (649.4), the rest of the table within 1.1pt of Word's; the float less the heading 32.9 (33.4), r62's reading
-exactly, the two errors having cancelled there; the date row below 728.4 (729.6), where r63 had 729.4. B.2 and B.3
-unchanged. The X mark beside the first option moves with its table, x 517.6 to 73.1 (73.0) at y 642.3 (649.1): its y is
-the X-mark question of §10, docx4j-67's. The plain FO: both floats 22pt below their anchors' lines.
+Rebuilt on this branch's head with 694bd8a19's code restored, 796a7f04f's undone. It holds only with docx4j's fix, so the two
+ship together. Measured through `RenderFo` on b339's FO for 4083, against r63 (Word's in brackets), page 2 alone differing:
+B.6's heading whole at x 42.5, y 615.4 (42.5, 616.0); its options 630.3 to 648.3 (649.4), the rest of the table within
+1.1pt of Word's; the float less the heading 32.9 (33.4), r62's reading exactly, the two errors having cancelled there; the
+date row below 728.4 (729.6), where r63 had 729.4. B.2 and B.3 unchanged. The X mark beside the first option moves with its
+table, x 517.6 to 73.1 (73.0) at y 642.3 (649.1): its y is the X-mark question of §10, docx4j-67's. The list and area figures
+in this section and 6293's 498.6 are this session's traces, not checked independently.
 
-Left open, as on r62 and before: after a start edge the lists' heights still lie the kept space above the flow, so a
-float's foot and the page's fit are read that far low, and a page can really run past its foot, as 6293's does. Correcting
-that needs Word's rule for empty paragraphs beside a float at a page's foot first: a Word probe, not ordered.
-`splitAnchorTopInPage` (CR-034) reads the same heights and is not corrected: no document or probe has shown that case.
+Not corrected: `splitAnchorTopInPage` (CR-034) is unchanged, no document or probe having shown that case. A separate defect
+the foot probe showed, a line beside a float crossing the page's foot by a few points staying on the page, is Enterprise
+§6.6 item 55, on r62, r64 and r65 alike.
 
 Layout test `float_offset.xml` case 13 (both floats' `top-offset` 22pt; the second was 4pt). CI's command 4099/0,
 checkstyle 0, spotbugs 0.
-Gate: against b341 on r62, which docx4j-67 reports equal to b338 line for line. Pass: §10's items, B.6's heading at x 42.5
-and its options within about 1pt of Word's y, 6293's page 2 opening at Word's 64.1, no loser, events equal.
-Whether this form replaces the wider one in `2.12-docx4j.1` is Jason's, since he chose the wider one before it failed.
-
-Gate b343 on r65 (796a7f04f) against b341 on r62, docx4j-67, docx4j 760f28c63: PASS on every item. Of 860 PDFs lines moved
-only in 4083 (both copies, page 2 only) and 11875 (its clock); events equal; 6293 0 lines from r62, page 2 opening at 64.2
-(Word's 64.1). B.2's options 203.6 (204.5), B.3 x 42.5 at 249.6 (249.9), B.6's heading x 42.5 at 615.4 (616.0), its options
-648.3 (649.4). 4083's 34 moved lines paired with Word: 31 closer, 1 the same, 2 further, mean distance 11.48pt to 1.45pt;
-the two further are X marks that move with their content (465.6 to 452.6, Word's 459.3; 655.3 to 642.3, 649.1), 6pt low
-before and 7pt high now, docx4j-67's question. docx4j-67 agreed this section's mechanism, the lists' heights staying short
-included; the list and area figures above and 6293's 498.6 are this session's, not checked independently. Baseline after
-a merge: b343 on r65; until then b341 on r62.
-
-WITHDRAWN the same day, on docx4j-67's goldens: "Why Word's fit is not measured", the Word-probe open item, and the reading
-of r64's fail. There is no rule for empty paragraphs: Word's fit at a foot is ordinary, the same beside a float or with none
-(`float-foot-empties`, 19 cases). 6293 failed r64 because docx4j wrote 14pt of space-before that Word drops: a paragraph
-straight after a floating table gets no `w:beforeAutospacing` (`spacing-autospacing-after-table`, 17 cases). With docx4j's
-fix (`AutoSpacingAfterFloatingTable`, uncommitted), all against b341, events equal: b345 on r64 has 6293's 15 moved lines all
-closer to Word, 4083 as b343, 10244 275 of 276 closer; b346 on r65 the same but 6293 -1, 187 lines further, its short heights
-leaving "EDP370" past the foot at y 548.8. The foot probe: r64 13 of 19, r62 and r65 11. So r65's form trades on the under-count
-its own reasoning above calls open, and r64's form is the better fix, agreed with docx4j-67. Which ships is Jason's; r64's
-form needs a rebuild on this branch's head and its own gate, and it holds only with docx4j's fix, so the two ship together.
+Gate: against b344 on r62 (docx4j b267f24ce), to equal b345 line for line. Pass: 4083's B.2 options within 1pt of Word's
+204.5, B.3's first line at x 42.5, B.6's heading at x 42.5, its options within about 1pt of 649.4; 6293's page 2 opening at
+64.2 (64.1) with "EDP370" on page 2; `float-foot-empties` K-4 and K-1 on the next page at 64.2; no loser but the accepted
+10244; events equal.
