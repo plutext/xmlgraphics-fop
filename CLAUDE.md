@@ -206,8 +206,12 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
-Last updated 2026-11-05. **Item 54 ships in `.1` (Jason); its second fix is on its third form, r65, gate pending, and
-which form ships needs his word.** r63 FAILED gate b339: §10's items held, but 4083 lost 2 lines, B.6's table 19pt high over
+Last updated 2026-11-05. **r65 GATED PASS (b343 against b341 on r62; docx4j-67): nothing but 4083's page 2 moved, 31 of its 34
+lines closer to Word, events equal, 6293 at r62's lines. NOT MERGED: waiting on Jason's word that r65's form replaces the
+wider one he chose before it failed; docx4j-67 is asking him too. On his word: fast-forward to `2.12-docx4j.1`, §6.6 item 54
+closed (its text is current to the pass, Enterprise; only the merge line and the Open tally remain), the merge hash and the
+corrected release title to docx4j-portfolio for `fop/CR-023.1` done and its notes (they name f785f3f7c and r63). Baseline
+after the merge b343 on r65; until then b341 on r62.** Item 54 ships in `.1` (Jason); the second fix took three forms. r63 FAILED gate b339: §10's items held, but 4083 lost 2 lines, B.6's table 19pt high over
 its heading. Cause, CR-023 §11: a block read again after a float's edge keeps its space-before (CR-020), counted at an end
 edge and not at a start edge, so later heights on the page lay that far above the flow; older than r63, in r62 too, no
 border needed (`~/fop-session-tools/2026-11-05-item54-gate/two-floats.fo`, stock managers), and on r62 it cancelled item 54's
@@ -217,13 +221,10 @@ empty paragraphs beside its float leaving page 1. On r62 that paragraph is drawn
 Word keeps it on page 1; why is unmeasured. r65 (796a7f04f, `~/fop-renderers/r65-CR-023-796a7f04f/`, sha256 8559afc5...) counts
 the space in the next offset float's top only (`getKeptSpaceOnPage`, `noteFloatTargetTop`), the lists' heights r62's: through
 RenderFo, 6293 line for line the baseline's, 4083 line for line r64's, the plain FO 22 and 22. CI's command 4099/0,
-checkstyle 0, spotbugs 0. Handed to docx4j-67 against b341 on r62 (equal to b338 line for line). Pass: §10's items, B.6's
-heading at x 42.5, its options within about 1pt of Word's y, 6293's page 2 opening at Word's 64.1, no loser, events equal.
-**On a pass, do not merge without Jason's word that r65's form replaces the wider one he chose before it failed.** Open: the
+checkstyle 0, spotbugs 0. Open: the
 lists' heights still run short after a start edge (a Word probe of empty paragraphs beside a float at a page's foot would
-settle it, not ordered); `splitAnchorTopInPage` is not corrected, no case shown. Not done until the gate reads: §6.6 item
-54's text (docx4j-67 agreed the B.6 mechanism but held the wording for r65), the registry's `fop/CR-023.1` notes, which
-still name f785f3f7c and r63. The paragraph that follows is the state before the gate, kept.**
+settle it, not ordered); `splitAnchorTopInPage` is not corrected, no case shown. The paragraph that follows is the state
+before the gate, kept.
 
 Last updated 2026-11-04, after the forced reboot. **`fop/CR-023` §10 (Enterprise §6.6 item 54: a bordered anchor's
 space-before left out of `fox:float-offset`'s reference) is BUILT, not gated, not merged: branch

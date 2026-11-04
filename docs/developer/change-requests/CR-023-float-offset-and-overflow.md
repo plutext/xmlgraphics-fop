@@ -414,3 +414,12 @@ checkstyle 0, spotbugs 0.
 Gate: against b341 on r62, which docx4j-67 reports equal to b338 line for line. Pass: §10's items, B.6's heading at x 42.5
 and its options within about 1pt of Word's y, 6293's page 2 opening at Word's 64.1, no loser, events equal.
 Whether this form replaces the wider one in `2.12-docx4j.1` is Jason's, since he chose the wider one before it failed.
+
+Gate b343 on r65 (796a7f04f) against b341 on r62, docx4j-67, docx4j 760f28c63: PASS on every item. Of 860 PDFs lines moved
+only in 4083 (both copies, page 2 only) and 11875 (its clock); events equal; 6293 0 lines from r62, page 2 opening at 64.2
+(Word's 64.1). B.2's options 203.6 (204.5), B.3 x 42.5 at 249.6 (249.9), B.6's heading x 42.5 at 615.4 (616.0), its options
+648.3 (649.4). 4083's 34 moved lines paired with Word: 31 closer, 1 the same, 2 further, mean distance 11.48pt to 1.45pt;
+the two further are X marks that move with their content (465.6 to 452.6, Word's 459.3; 655.3 to 642.3, 649.1), 6pt low
+before and 7pt high now, docx4j-67's question. docx4j-67 agreed this section's mechanism, the lists' heights staying short
+included; the list and area figures above and 6293's 498.6 are this session's, not checked independently. Baseline after
+a merge: b343 on r65; until then b341 on r62.
