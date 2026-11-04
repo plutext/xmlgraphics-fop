@@ -206,20 +206,24 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
-Last updated 2026-11-05. **Item 54 ships in `.1` with a wider fix, Jason's word both times; gate pending on r64.** r63 FAILED
-gate b339 against b338 on r62 (docx4j-67; docx4j 7f8f47543, JDK 21.0.12.1; b338 is the baseline): §10's items held, but
-4083 lost 2 lines, B.6's table 19pt high over its heading. Cause, CR-023 §11: a block read again after a float's edge keeps
-its space-before (CR-020), counted at an end edge and not at a start edge, so every later height on the page lay that far
-above the flow; older than r63, in r62 too, no border needed (`~/fop-session-tools/2026-11-05-item54-gate/two-floats.fo`,
-stock managers), and on r62 it cancelled item 54's defect exactly. Fix 694bd8a19 on `CR-023-offset-bordered-anchor`: a list
-beside a float starts its height at the block's kept space, read from the block (`getListStartAtFloatEdge`); an end edge's
-height holds it already (`edgeHeightHoldsSpace`). It reaches every side float followed by a block keeping a space, offset
-or not, so expect movers beyond 4083. Jason on that width: "let's include this wider fix in .1". Drop r64 at
-`~/fop-renderers/r64-CR-023-694bd8a19/` (sha256 4bbd549e...), handed to docx4j-67 against b338 on r62. CI's command 4099/0,
-checkstyle 0, spotbugs 0. Pass: §10's items, B.6's heading at x 42.5, its options within about 1pt of Word's y, no loser,
-events equal. Not done until that gate reads: §6.6 item 54's text (the mechanism needs docx4j-67's agreement first; it left
-the item to this session), the registry's `fop/CR-023.1` notes, which still name f785f3f7c and r63. The paragraph that
-follows is the state before the gate, kept.**
+Last updated 2026-11-05. **Item 54 ships in `.1` (Jason); its second fix is on its third form, r65, gate pending, and
+which form ships needs his word.** r63 FAILED gate b339: §10's items held, but 4083 lost 2 lines, B.6's table 19pt high over
+its heading. Cause, CR-023 §11: a block read again after a float's edge keeps its space-before (CR-020), counted at an end
+edge and not at a start edge, so later heights on the page lay that far above the flow; older than r63, in r62 too, no
+border needed (`~/fop-session-tools/2026-11-05-item54-gate/two-floats.fo`, stock managers), and on r62 it cancelled item 54's
+defect exactly. r64 (694bd8a19) corrected the lists' heights, reaching every side float; Jason: "let's include this wider
+fix in .1". r64 FAILED gate b340: 4083 fixed, but 6293 moved 323 lines from Word (0.14pt to 14.84pt), the last of twelve
+empty paragraphs beside its float leaving page 1. On r62 that paragraph is drawn past the body's foot, showing nothing, and
+Word keeps it on page 1; why is unmeasured. r65 (796a7f04f, `~/fop-renderers/r65-CR-023-796a7f04f/`, sha256 8559afc5...) counts
+the space in the next offset float's top only (`getKeptSpaceOnPage`, `noteFloatTargetTop`), the lists' heights r62's: through
+RenderFo, 6293 line for line the baseline's, 4083 line for line r64's, the plain FO 22 and 22. CI's command 4099/0,
+checkstyle 0, spotbugs 0. Handed to docx4j-67 against b341 on r62 (equal to b338 line for line). Pass: §10's items, B.6's
+heading at x 42.5, its options within about 1pt of Word's y, 6293's page 2 opening at Word's 64.1, no loser, events equal.
+**On a pass, do not merge without Jason's word that r65's form replaces the wider one he chose before it failed.** Open: the
+lists' heights still run short after a start edge (a Word probe of empty paragraphs beside a float at a page's foot would
+settle it, not ordered); `splitAnchorTopInPage` is not corrected, no case shown. Not done until the gate reads: §6.6 item
+54's text (docx4j-67 agreed the B.6 mechanism but held the wording for r65), the registry's `fop/CR-023.1` notes, which
+still name f785f3f7c and r63. The paragraph that follows is the state before the gate, kept.**
 
 Last updated 2026-11-04, after the forced reboot. **`fop/CR-023` §10 (Enterprise §6.6 item 54: a bordered anchor's
 space-before left out of `fox:float-offset`'s reference) is BUILT, not gated, not merged: branch
