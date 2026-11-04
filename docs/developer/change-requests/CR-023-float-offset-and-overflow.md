@@ -395,3 +395,5 @@ Layout test `float_offset.xml` case 13 (both floats' `top-offset` 22pt; the seco
 checkstyle 0, spotbugs 0.
 Gate: against b338 on r62, the baseline docx4j-67 named. Pass: §10's items, B.6's heading at x 42.5 and its options
 within about 1pt of Word's y, no loser, events equal.
+Code 694bd8a19, drop r64. Jason decided 2026-11-05 that this wider fix ships in `2.12-docx4j.1` with §10, subject to the
+gate.

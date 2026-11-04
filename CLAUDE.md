@@ -206,6 +206,21 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-05. **Item 54 ships in `.1` with a wider fix, Jason's word both times; gate pending on r64.** r63 FAILED
+gate b339 against b338 on r62 (docx4j-67; docx4j 7f8f47543, JDK 21.0.12.1; b338 is the baseline): §10's items held, but
+4083 lost 2 lines, B.6's table 19pt high over its heading. Cause, CR-023 §11: a block read again after a float's edge keeps
+its space-before (CR-020), counted at an end edge and not at a start edge, so every later height on the page lay that far
+above the flow; older than r63, in r62 too, no border needed (`~/fop-session-tools/2026-11-05-item54-gate/two-floats.fo`,
+stock managers), and on r62 it cancelled item 54's defect exactly. Fix 694bd8a19 on `CR-023-offset-bordered-anchor`: a list
+beside a float starts its height at the block's kept space, read from the block (`getListStartAtFloatEdge`); an end edge's
+height holds it already (`edgeHeightHoldsSpace`). It reaches every side float followed by a block keeping a space, offset
+or not, so expect movers beyond 4083. Jason on that width: "let's include this wider fix in .1". Drop r64 at
+`~/fop-renderers/r64-CR-023-694bd8a19/` (sha256 4bbd549e...), handed to docx4j-67 against b338 on r62. CI's command 4099/0,
+checkstyle 0, spotbugs 0. Pass: §10's items, B.6's heading at x 42.5, its options within about 1pt of Word's y, no loser,
+events equal. Not done until that gate reads: §6.6 item 54's text (the mechanism needs docx4j-67's agreement first; it left
+the item to this session), the registry's `fop/CR-023.1` notes, which still name f785f3f7c and r63. The paragraph that
+follows is the state before the gate, kept.**
+
 Last updated 2026-11-04, after the forced reboot. **`fop/CR-023` §10 (Enterprise §6.6 item 54: a bordered anchor's
 space-before left out of `fox:float-offset`'s reference) is BUILT, not gated, not merged: branch
 `CR-023-offset-bordered-anchor` (cut from `2.12-docx4j.1` at 4fe468d68), code f785f3f7c, resent by docx4j-37 and ordered
@@ -219,9 +234,8 @@ On b337's FO for 4083 through RenderFo, page 2 alone differs, B.2's options, B.3
 marks there (190.4 and 273.8, Word's 196.4 and 279.9) do not move with this fix and are docx4j-37's to read.
 Enterprise's Fork line is in (item 54), with its zero-height claim withdrawn as agreed with docx4j-37. Open: docx4j-37's
 baseline, which waits on its two uncommitted changes (Jason's go-ahead there) and a fresh control after the JDK upgrade;
-whether the fix goes in `.1`, Jason's (its release note entry is on this branch and comes out if not); `fop/CR-023.1` and the `fop/release-2.12-docx4j.1` dependency list, proposed to docx4j-portfolio-cd
-and held for Jason. On the pass: fast-forward to `2.12-docx4j.1`, close the release note's gate line and §10, item 54
-closed. `.1` IS PUSHED: origin was at 4fe468d68 on 2026-11-04, so the paragraphs below that leave that push to Jason are
+the registry is done (portfolio d18c8ce, 2026-11-05: `fop/CR-023.1` in_progress, `fop/release-2.12-docx4j.1` blocked on it; its title still names only CR-030 and CR-031, and a change to CR-023's Status paragraph needs a re-baseline request). **Jason decided 2026-11-05, here: item 54 ships in `.1`, so its release note entry stays and the gate now holds the release.** docx4j-37 and docx4j-portfolio-cd have left `ListAgents`. docx4j-67 holds r63's gate (its word, 2026-11-05, started on Jason's word there): it commits its two changes, runs a fresh control on r62 on JDK 21.0.12.1, gates r63 against that and names the baseline when cut, not b335 or b333; the two X marks are its own, a separate docx4j item. No fast-forward before its reading. On the pass: fast-forward to `2.12-docx4j.1`, close the release note's gate line and §10, item 54
+closed, the merge hash to docx4j-portfolio for `fop/CR-023.1` done. `.1` IS PUSHED: origin was at 4fe468d68 on 2026-11-04, so the paragraphs below that leave that push to Jason are
 history. Tools: `~/fop-session-tools/2026-11-04-item54/` (`floatoff3.fo`, `baselines.py`, the `4083/` renders). The
 paragraph that follows is the state before the reboot, kept.**
 
