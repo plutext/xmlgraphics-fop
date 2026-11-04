@@ -291,6 +291,17 @@ public final class Docx4jFop {
      */
     public static final String FLOAT_TABLE_SPLIT = "float-table-split";
 
+    /**
+     * A block's text-indent is applied to its first line whatever block-level children precede the inline content:
+     * an anchored text box's or picture's zero-height block-container, or an empty block. Apache FOP indents only
+     * when the inline content is the block's first child; XSL 1.1 §7.16.11's letter (the first child of the block's
+     * area, provided it is a line-area) reads the same way, so this is Word's rule, beyond the letter, as a
+     * hanging indent's author means it. docx4j's two writer workarounds (a nested block for a hanging indent, a
+     * leader for a positive one) are unnecessary on a renderer with this capability (fop/CR-035; Enterprise CR-001
+     * item 53).
+     */
+    public static final String FIRST_LINE_INDENT_AFTER_BLOCK = "first-line-indent-after-block";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -325,6 +336,7 @@ public final class Docx4jFop {
         caps.add(WORD_LAYOUT);
         caps.add(WIDE_BLOCK_BELOW_FLOAT);
         caps.add(FLOAT_TABLE_SPLIT);
+        caps.add(FIRST_LINE_INDENT_AFTER_BLOCK);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

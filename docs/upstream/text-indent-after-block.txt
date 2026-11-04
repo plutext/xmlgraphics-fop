@@ -1,0 +1,22 @@
+JIRA, NOT FILED: drafted 2026-11-04 by the fork session, to be posted only on Jason's OK here; the text from
+"Summary" on in JIRA markup, one line per paragraph. Pull request text in ../fop-upstream-prs/FOP-text-indent-after-block.md
+(to write once filed). fop/CR-035 (docs/developer/change-requests/CR-035-text-indent-after-block.md); Enterprise
+CR-001 §6.6 item 53. Branch FOP-text-indent-after-block in ../fop-upstream-wt, one commit on Apache main 1301bcf74
+(the commit hash goes here once made). Rename the branch and the commit's subject to FOP-NNNN once filed. Component
+layout/unqualified, Affects 2.12 and main, Improvement (not Bug: the Recommendation's letter supports FOP's present
+behaviour, see the second paragraph of the description, and Apache may decline on that ground), Minor. FO
+reproducer: docs/upstream/repro/FOP-text-indent-after-block.fo (base-14 fonts, no configuration).
+
+Summary
+-------
+text-indent is not applied to a block's first line when a block-level child precedes the inline content
+
+Description
+-----------
+A block whose first child is block-level (an fo:block-container, an empty fo:block) and whose inline content follows it gets no text-indent on its first line. LineLayoutManager.initialize sets isFirstInBlock = (this == getParent().getChildLMs().get(0)), and both the indent element at the paragraph's start (Paragraph.startSequence) and the first line's start-indent (LineBreakingAlgorithm.updateData2) depend on it; any block-level child before the inline content makes the line manager not the first child, so the indent is dropped. The shape is common in FO written from word-processor documents, where a text box or picture anchored at a paragraph's start is written as a zero-height fo:block-container (holding the absolutely positioned object) at the start of the paragraph's fo:block: a hanging-indent heading with a check box at its start is drawn at its start-indent, 21pt right of where its author set it, and a first-line indent after an anchored logo is lost.
+
+To be plain about the specification: XSL 1.1 7.16.11 reads "The text-indent property specifies an adjustment to the start-indent of the first child L of the first block-area generated and returned by the formatting object, provided L is a line-area." The zero-height block-container's area is that first child and is not a line-area, so by that letter FOP's present output conforms. The CSS 2 definition the clause amends says what an author means by the property, "the indentation of the first box that flows into the block's first line box", and XSL's own gloss is that a negative value "specifies a hanging indent (outdent) on the first line". Nobody who writes a hanging indent means it to vanish because a zero-height container, or an empty block, stands before the first word. This request proposes the CSS meaning: the indent goes to the block's first line-area, whatever block-areas precede it.
+
+FO attached (base-14 fonts, no configuration): four blocks, page margin 72pt, Helvetica 10pt. H1, start-indent 21.3pt and text-indent -21.3pt with text only, puts its first line at x 72.0 and the second at 93.3. H2, the same block led by a zero-height fo:block-container holding an absolutely positioned one, puts its first line at 93.3. P1, start-indent 3pt and text-indent 18pt, first line at 93.0; P2, the same led by an empty fo:block, at 75.0. Measured on main at 1301bcf74 and on 2.12.
+
+The change: LineLayoutManager.initialize sets isFirstInBlock when no earlier child manager of the block is a LineLayoutManager, in place of the test that it is the block's first child. A nested fo:block after inline content still takes no indent from the enclosing block (the existing block_text-indent.xml, third case, is unchanged), and a nested block's own first line keeps the inherited indent as before. With it H2 is at 72.0 and P2 at 93.0; H1 and P1 unchanged. Layout test block_text-indent_after-block.xml added, six cases: the two controls, the block-container, the empty block, a nested block with content first (its first line and the enclosing block's first line both indented), and inline content, a nested block, inline content (the second run unindented). The fop-core suite and checkstyle pass on main.

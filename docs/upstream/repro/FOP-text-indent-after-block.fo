@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- text-indent lost where a block-level child precedes the block's inline content. Base-14 fonts, no configuration.
+     Expected first-line x (page margin 72pt): H1 72.0, H2 72.0, P1 93.0, P2 93.0. FOP gives H2 93.3 and P2 75.0. -->
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+  <fo:layout-master-set>
+    <fo:simple-page-master master-name="A4" page-width="595.3pt" page-height="841.9pt" margin="72pt">
+      <fo:region-body/>
+    </fo:simple-page-master>
+  </fo:layout-master-set>
+  <fo:page-sequence master-reference="A4">
+    <fo:flow flow-name="xsl-region-body" font-family="Helvetica" font-size="10pt">
+      <!-- H1: control, hanging indent, no leading block: first line at 72pt -->
+      <fo:block start-indent="21.3pt" text-indent="-21.3pt" space-after="12pt">H1 control: hanging first line, then enough text to wrap onto a second line at the start-indent of the block here.</fo:block>
+      <!-- H2: the same led by a zero-height block-container (an anchored box's wrapper): first line expected at 72pt -->
+      <fo:block start-indent="21.3pt" text-indent="-21.3pt" space-after="12pt"><fo:block-container height="0pt" start-indent="0pt"><fo:block-container absolute-position="absolute" top="0pt" left="400pt" width="30pt" height="12pt"><fo:block text-indent="0pt">X</fo:block></fo:block-container></fo:block-container>H2 led: hanging first line, then enough text to wrap onto a second line at the start-indent of the block here.</fo:block>
+      <!-- P1: control, first-line indent 18pt: first line at 93pt -->
+      <fo:block start-indent="3pt" text-indent="18pt" space-after="12pt">P1 control: first-line indent, then enough text to wrap onto a second line at the start-indent of the block here.</fo:block>
+      <!-- P2: the same led by an empty fo:block: first line expected at 93pt -->
+      <fo:block start-indent="3pt" text-indent="18pt" space-after="12pt"><fo:block/>P2 led: first-line indent, then enough text to wrap onto a second line at the start-indent of the block here.</fo:block>
+    </fo:flow>
+  </fo:page-sequence>
+</fo:root>

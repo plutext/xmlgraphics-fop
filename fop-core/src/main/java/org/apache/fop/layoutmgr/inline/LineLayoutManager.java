@@ -23,8 +23,9 @@
  * of infinite penalty at the line boundaries orphans and widows keep, where an obstacle's edge may lie
  * (fop/CR-024 §11.4). And Word mode (fop/CR-031): the seams WordLineLayoutManager overrides, the Word lines' leading
  * glue and widows across soft returns in postProcessLineBreaks, and the manager's state package-private for that
- * subclass; a line CR-023 marks reports its overflow only when it is laid out unmoved (fop/CR-031 §10). See
- * README.md, "Changes from Apache FOP 2.11". */
+ * subclass; a line CR-023 marks reports its overflow only when it is laid out unmoved (fop/CR-031 §10). And
+ * first-line-indent-after-block: text-indent on the block's first line whatever block-level children precede the
+ * inline content (fop/CR-035). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -792,7 +793,27 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         whiteSpaceTreament = fobj.getWhitespaceTreatment();
         //
         effectiveAlignment = getEffectiveAlignment(textAlignment, textAlignmentLast);
-        isFirstInBlock = (this == getParent().getChildLMs().get(0));
+        isFirstInBlock = noLineManagerBefore();
+    }
+
+    /**
+     * Whether this manager lays out the block's first line-area: text-indent applies to the first line-area child
+     * of the block's area (XSL 1.1 §7.16.11), and a block-level child before the inline content, an anchored box's
+     * zero-height block-container or an empty block, makes a block-area, not a line-area, so it does not change
+     * which line that is. Apache FOP indented only when this manager was the block's first child
+     * (fop/CR-035; Enterprise CR-001 item 53).
+     * @return true when no earlier child manager of the block is a line manager
+     */
+    private boolean noLineManagerBefore() {
+        for (LayoutManager lm : getParent().getChildLMs()) {
+            if (lm == this) {
+                return true;
+            }
+            if (lm instanceof LineLayoutManager) {
+                return false;
+            }
+        }
+        return false;
     }
 
     /**
