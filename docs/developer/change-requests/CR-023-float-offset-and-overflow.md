@@ -374,26 +374,43 @@ It reproduces on a plain FO through `org.apache.fop.cli.Main`, stock managers, n
 start edge before a block with 18pt space-before. On r62 and r63 alike the first float lies 22pt below its anchor's
 line and the second 4pt. docx4j-67's two repros could not show it because no spaced block followed the first edge.
 
-Fix: `BlockLayoutManager` tells the page breaker the space it keeps at a float restart
-(`PageSequenceLayoutManager.setKeptSpaceBefore`), and a list beside a float starts its height there
-(`PageBreakingAlgorithm.initialize`, `PageBreaker.getListStartAtFloatEdge`). It reads the block's own resolved space,
-not the glue after the edge, because the resolver may give that space to the block before as its space-after, which is
-in the flow's height already. An end edge's height holds the glue after it (CR-020), so an obstacle taken up at an end
-edge adds nothing (`edgeHeightHoldsSpace`), or the space would count twice.
+First fix, r64 (694bd8a19), WITHDRAWN: a list beside a float started its height at the block's kept space, so the list
+measured its lines where they are drawn. It reached every side float followed by a block keeping a space, and Jason
+decided 2026-11-05 that this wider fix ship in `2.12-docx4j.1`, subject to the gate. Gate b340 on r64 against b338 FAILED
+on "no loser": every 4083 item held and events were equal, but 6293 moved 323 lines, none closer to Word, the mean
+distance from Word's y from 0.14pt to 14.84pt. Of 859 PDFs only 4083 and 6293 moved.
 
-This reaches every side float, offset or not, whose start edge is followed by a block that keeps a space: a list beside
-a float now measures its lines where they are drawn, so a float's foot is read against the real height, up to the kept
-space earlier than before. That is wider than item 54, and only the gate can say what it moves.
+Traced on b340's FO through `RenderFo`. 6293 has one float, and twelve empty paragraphs after the text above it, 14pt
+of space, then 13.8, 14.6 and ten of 9.2 with 6pt after. The list beside the float now counted the 14pt the first
+keeps, the last of the twelve no longer fitted the 481.9pt body, and it opened page 2: 9.2 + 6 = 15.2pt, the shift
+measured. On r62 the flow on page 1 really runs to 498.6, 16.7pt past the body's foot, so that paragraph's line is drawn
+past the foot, where it shows nothing. r62 matched Word here through the same under-count: Word keeps all twelve on page
+1, its page 2 opening with the first text at 64.1. Why Word's fit is not measured: empty paragraphs draw no glyphs, so
+their height beside a float at a page's foot cannot be read from Word's PDF, and no probe has cut it.
 
-On b339's FO through `RenderFo`, r63 against this change, page 2 alone differs (Word's in brackets): B.6's heading whole
-at x 42.5, y 615.4 (42.5, 616.0); its options 630.3 to 648.3 (649.4), the rest of the table within 1.1pt of Word's; the
-float less the heading 32.9 (33.4), r62's reading exactly, the two errors having cancelled there; the date row below
-728.4 (729.6), where r63 had 729.4. B.2 and B.3 unchanged. The X mark beside the first option moves with its table,
-x 517.6 to 73.1 (73.0) at y 642.3 (649.1): its y is the X-mark question of §10, docx4j-67's.
+Fix as built: only the float's top counts the space. `BlockLayoutManager` tells the page breaker the space it keeps at a
+float restart (`PageSequenceLayoutManager.setKeptSpaceBefore`), `PageBreaker.getNextBlockList` adds it up for the page
+(`getKeptSpaceOnPage`, cleared when a part opens a new page), and `PageBreakingAlgorithm.noteFloatTargetTop` adds it to
+the anchor's top in a list after a float's foot, on that list's first page. The lists' heights are r62's. It reads the
+block's own resolved space, not the glue after the edge, because the resolver may give that space to the block before
+as its space-after, which is in the flow's height already. An end edge's height holds the glue after it (CR-020), so an
+obstacle taken up at an end edge adds nothing (`edgeHeightHoldsSpace`), or the space would count twice.
+
+So it can move only an offset float placed after such a start edge on the same page. Measured through `RenderFo`: 6293 on
+b340's FO, 0 lines differing from b338; 4083 on b339's FO, 0 lines differing from r64, so r64's whole gain stands, page
+2 alone differing from r63 (Word's in brackets): B.6's heading whole at x 42.5, y 615.4 (42.5, 616.0); its options 630.3
+to 648.3 (649.4), the rest of the table within 1.1pt of Word's; the float less the heading 32.9 (33.4), r62's reading
+exactly, the two errors having cancelled there; the date row below 728.4 (729.6), where r63 had 729.4. B.2 and B.3
+unchanged. The X mark beside the first option moves with its table, x 517.6 to 73.1 (73.0) at y 642.3 (649.1): its y is
+the X-mark question of §10, docx4j-67's. The plain FO: both floats 22pt below their anchors' lines.
+
+Left open, as on r62 and before: after a start edge the lists' heights still lie the kept space above the flow, so a
+float's foot and the page's fit are read that far low, and a page can really run past its foot, as 6293's does. Correcting
+that needs Word's rule for empty paragraphs beside a float at a page's foot first: a Word probe, not ordered.
+`splitAnchorTopInPage` (CR-034) reads the same heights and is not corrected: no document or probe has shown that case.
 
 Layout test `float_offset.xml` case 13 (both floats' `top-offset` 22pt; the second was 4pt). CI's command 4099/0,
 checkstyle 0, spotbugs 0.
-Gate: against b338 on r62, the baseline docx4j-67 named. Pass: §10's items, B.6's heading at x 42.5 and its options
-within about 1pt of Word's y, no loser, events equal.
-Code 694bd8a19, drop r64. Jason decided 2026-11-05 that this wider fix ships in `2.12-docx4j.1` with §10, subject to the
-gate.
+Gate: against b341 on r62, which docx4j-67 reports equal to b338 line for line. Pass: §10's items, B.6's heading at x 42.5
+and its options within about 1pt of Word's y, 6293's page 2 opening at Word's 64.1, no loser, events equal.
+Whether this form replaces the wider one in `2.12-docx4j.1` is Jason's, since he chose the wider one before it failed.
