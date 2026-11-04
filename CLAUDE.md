@@ -206,18 +206,19 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
-Last updated 2026-11-05, later. **`fop/CR-036` (Enterprise §6.6 item 55: beside a side float, a line crossing the page's foot stayed
-on the page) is BUILT, not gated, not merged, ordered by Jason here ("fix Item 55, the foot defect in .1"): branch
-`CR-036-line-across-foot-beside-float` (cut from `2.12-docx4j.1` at 5c63b6ade), code cc06737cd, drop r67 at
-`~/fop-renderers/r67-CR-036-cc06737cd/` (sha256 9a8f2893...), handed to docx4j-67 against b347 on r66.** A list beside a float
-measures from the float's edge, so the page's foot was known only as the cap on the float's foot, which a box beginning above it
-never reached. The edge is now taken before such a box (`nextBoxCrossesPageFoot`); at a float's start edge, where a list has no
-break before its first box, nothing is set beside the float (`firstBoxAfterEdgeCrossesPageFoot`); and such an edge is a page break,
-so the block keeps no space-before (`edgeAtPageFoot`). `float-foot-empties` 19 of 19 at Word's through RenderFo with the jar (13 on
-r66), 4083 and 6293 0 lines from b347; layout test `float_page-foot.xml`; CI's command 4102/0, checkstyle 0, spotbugs 0. Pass:
-CR-036 §5. On the pass: fast-forward to `2.12-docx4j.1`, release note's gate line closed, §6.6 item 55 given the mechanism and
-closed (mechanism needs docx4j-67's agreement), registry `fop/CR-036` done with the merge hash. Tools
-`~/fop-session-tools/2026-11-05-cr036-foot/`. The paragraph that follows is the state before it, kept.
+Last updated 2026-11-05, evening. **`fop/CR-036` (Enterprise §6.6 item 55) is DONE: gated PASS (b349 on r67 against b347 on r66,
+docx4j-67) and MERGED to `2.12-docx4j.1` by fast-forward at 4d7e190cc, ordered by Jason here ("fix Item 55, the foot defect in .1");
+unreleased, local: `.1` is 19 commits past origin's 4fe468d68 and more with this one, and the push is Jason's. b349 on r67 is the
+fork's baseline for later gates (`~/fop-renderers/r67-CR-036-cc06737cd/`, sha256 9a8f2893...; the merged code differs from r67 in two
+comments only). Item 55 closed (Enterprise 5097e03); registry `fop/CR-036` done requested of docx4j-portfolio-53.** Nothing is
+ordered: `.1` (CR-030 to CR-036, CR-023.1) waits only on Jason's push and release, with docx4j b267f24ce shipping alongside. A list
+beside a float measures from the float's edge, so the page's foot was known only as the cap on the float's foot, which a box
+beginning above it never reached. The edge is taken before such a box (`nextBoxCrossesPageFoot`), Word's measured rule
+(`float-foot-empties` 19 of 19, 13 on r66; no corpus document moved). UNMEASURED against Word, FOP's own: a line crossing the foot
+straight after a start edge (`firstBoxAfterEdgeCrossesPageFoot`) and no space-before kept at such an edge (`edgeAtPageFoot`); the
+layout test `float_page-foot.xml` pins FOP's behaviour there, and docx4j-67 offers to add both shapes to a probe, not ordered. Not sent
+upstream: Apache `main` has the cap but lays the plain FO differently. Tools `~/fop-session-tools/2026-11-05-cr036-foot/`. The
+paragraph that follows is the state before it, kept.
 
 Last updated 2026-11-05. **Item 54 is DONE: `fop/CR-023` §10 and §11 gated PASS (b347 on r66 against b344 on r62, docx4j-67) and
 MERGED to `2.12-docx4j.1` by fast-forward at 506deb24e; unreleased, local: `.1` is 14 commits past origin's 4fe468d68, and the
