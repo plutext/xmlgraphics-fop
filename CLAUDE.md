@@ -215,9 +215,9 @@ changes are uncommitted there, and the JDK upgrade may need a fresh control. CI'
 0. The reference is the box less the anchor block's own border and padding, less its own space-before; the version cut
 off by the reboot took an enclosing block's too (19.5pt high, caught on the rebuilt reproducer, layout case 12 pins it).
 On b337's FO for 4083 through RenderFo, page 2 alone differs, B.2's options, B.3 and its note at Word's within 1pt.
-Enterprise's Fork line is in (item 54). Open: C5 and C6, the zero-height case, read in §10 as no defect, to agree with
-docx4j-37 before item 54 says so; whether the fix goes in `.1`, Jason's (its release note entry is on this branch and
-comes out if not); `fop/CR-023.1` and the `fop/release-2.12-docx4j.1` dependency list, proposed to docx4j-portfolio-cd
+Enterprise's Fork line is in (item 54), with its zero-height claim withdrawn as agreed with docx4j-37. Open: docx4j-37's
+baseline, which waits on its two uncommitted changes (Jason's go-ahead there) and a fresh control after the JDK upgrade;
+whether the fix goes in `.1`, Jason's (its release note entry is on this branch and comes out if not); `fop/CR-023.1` and the `fop/release-2.12-docx4j.1` dependency list, proposed to docx4j-portfolio-cd
 and held for Jason. On the pass: fast-forward to `2.12-docx4j.1`, close the release note's gate line and §10, item 54
 closed. `.1` IS PUSHED: origin was at 4fe468d68 on 2026-11-04, so the paragraphs below that leave that push to Jason are
 history. Tools: `~/fop-session-tools/2026-11-04-item54/` (`floatoff3.fo`, `baselines.py`, the `4083/` renders). The

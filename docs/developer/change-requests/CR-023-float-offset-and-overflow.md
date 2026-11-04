@@ -305,7 +305,8 @@ of that glue as the anchor's and drew the float 19.5pt too high for an anchor wi
 bordered block (C3d below). It never left the tree; rebuilding the reproducer found it.
 
 Measured on that rebuilt reproducer, the reboot having wiped docx4j-12's (`~/fop-session-tools/2026-11-04-item54/`,
-`floatoff3.fo` and `baselines.py`, from docx4j-37's description; C3c is the variant that reproduces its C3 and C4).
+`floatoff3.fo` and `baselines.py`, from docx4j-37's description; C3c is its C3, confirmed from the first session's
+generator, and its flow was Helvetica 10pt on 13pt).
 Through `org.apache.fop.cli.Main`, offset 50pt, space-before 18pt, a 0.5pt border and 1pt padding, the float's first
 baseline less the baseline of the line before the anchor, in Helvetica 12pt on a 14pt line, where item 54's 63.0 reads
 64.0:
@@ -332,8 +333,10 @@ brackets): page 2 alone differs, and the events are equal. B.2's options 214.7 t
 that page, at 190.4 and 273.8 (196.4, 279.9), do not move with this fix and are unread.
 
 The reproducer's two further cases, the float in a zero-height block (font-size and line-height 0) before the
-paragraph's block inside a block with the space-before, are not a defect: the float's text inherits the zero font size
-and draws nothing, which is why docx4j-12 saw no offset. With the font restored the float is 18pt lower than C1 (82.0;
+paragraph's block inside a block with the space-before, are not a defect, as docx4j-37 agreed: the float's text
+inherits the zero font size and draws nothing, and the reading of "no offset" (32.5 and 31.0) was the anchor's own
+line, which that script took for the float's because its text has the word "float". Item 54's sentence is withdrawn
+there. With the font restored the float is 18pt lower than C1 (82.0;
 83.5 with the border), because the anchor block, the zero-height block that holds the float, has no space-before of
 its own; the outer 18pt is the outer block's, which the contract excludes. docx4j does not write that shape.
 
