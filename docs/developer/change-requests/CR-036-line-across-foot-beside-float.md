@@ -3,8 +3,9 @@
 - **Status:** BUILT 2026-11-05 on branch `CR-036-line-across-foot-beside-float`, cut from `2.12-docx4j.1` at 5c63b6ade, code
   cc06737cd, drop r67. **Gated PASS 2026-11-05 by docx4j-67 (b349 on r67 against b347 on r66, §5) and MERGED to `2.12-docx4j.1` by
   fast-forward; unreleased.** Ordered 2026-11-05 by Jason ("fix Item 55, the foot defect in .1"). **A defect in `firstBoxAfterEdgeCrossesPageFoot`
-  was found after the merge: §6. Its fix is BUILT on branch `CR-036-edge-space-once`, code 792823785, drop r68, ordered by Jason through
-  docx4j-67 ("Order the fork's fix"); not gated, not merged: §8. All three parts are now Word's measured behaviour: §7.**
+  was found after the merge: §6. Its fix, ordered by Jason through docx4j-67 ("Order the fork's fix"), code 792823785, drop r68, gated PASS
+  (b360 on r68 against b359 on r67, §8) and MERGED to `2.12-docx4j.1` by fast-forward; unreleased. All three parts are now Word's measured
+  behaviour: §7.**
 - **Serves:** Enterprise CR-001 §6.6 item 55: beside a side float, a line that crosses the page's foot by a few points stays on
   the page, drawn past the body's foot, where Word moves it.
 - **Capability:** none. A fix, not a hook.
@@ -138,6 +139,14 @@ same line for line as §6's candidate in both modes, `float-foot-empties` 19 of 
 
 Pass, docx4j-67's: F-1 and R-1 beside the float at Word's y; X-5, X-3, X-1 with E10 at Word's y within 1pt; every other case unchanged
 from r67; `float-foot-empties` 19 of 19; no loser; events equal. X's x (item 57) and the doubled B (item 56) are not in it.
+
+Gate b360 on r68 (sha256 checked) against control b359 on r67, docx4j-67, the same docx4j code, both modes: PASS. Corpora 0 movers,
+events equal, all four means unchanged; of 870 PDFs only the two probes and 11875's clock differ. `float-foot-edges`: exactly F-1, R-1,
+X-5, X-3 and X-1 changed, the other 42 cases line for line the same; F-1 and R-1 beside the float at y 535.9, Word's 536.1; X's E10 at
+531.9, 533.9, 535.9, Word's 532.1, 534.0, 536.1. Right on page, x and y: 41 of 47 (39 on r67), the six left being series B and X's x,
+outside this pass. `float-foot-empties` 19 of 19, largest difference 0.1pt. That docx4j code was its 6049e9c00 with its below-mode-15
+float uncommitted in the tree, not the committed state named in the pass; the control is at the same state, so the gate shows only this
+change. b360 on r68 is the fork's baseline for later gates once that code is committed.
 
 Not in this fix, a gap older than this CR: `nextBoxCrossesPageFoot` reads `widthUpToNextBox`, which stops at an auxiliary box, so partway
 through a list a line crossing the foot only by its block's top border stays on the page (plain FO: 1pt and 2pt past with a 3pt border,

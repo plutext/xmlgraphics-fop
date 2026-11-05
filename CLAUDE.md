@@ -206,11 +206,13 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
-Last updated 2026-11-05, late night. **The fix for the defect below is BUILT, not gated, not merged: branch `CR-036-edge-space-once`
-(cut from `2.12-docx4j.1` at 57a3f3b21), code 792823785, drop r68 at `~/fop-renderers/r68-CR-036-792823785/` (sha256 85333f7d...),
-ordered by Jason through docx4j-67 ("Order the fork's fix"), handed to docx4j-67 for the gate; CR-036 §8 has the pass. On a pass:
-fast-forward to `2.12-docx4j.1`, Enterprise item 55 closed again, the merge hash to docx4j-portfolio. `.1` stays unreleased until then.
-Still Jason's: tracing item 56 (the doubled `w:br` paragraph) and a probe for item 57.**
+Last updated 2026-11-05, late night. **The fix for the defect below is DONE: gated PASS (b360 on r68 against control b359 on r67,
+docx4j-67; 0 corpus movers, events equal, `float-foot-edges` exactly the five cases, CR-036 §8) and MERGED to `2.12-docx4j.1` by
+fast-forward from `CR-036-edge-space-once`, code 792823785, ordered by Jason through docx4j-67 ("Order the fork's fix"); unreleased,
+local, the push Jason's. Drop `~/fop-renderers/r68-CR-036-792823785/` (sha256 85333f7d...). b360 on r68 is the fork's baseline once
+docx4j-67 commits the code it ran on (6049e9c00 plus its below-15 float, uncommitted at the gate). Enterprise item 55 closed again.
+Still Jason's: the push and release of `.1`, tracing item 56 (the doubled `w:br` paragraph), a probe for item 57, and the
+bordered-line gap (CR-036 §8).**
 
 Last updated 2026-11-05, night. **A DEFECT IN `.1`, UNFIXED: CR-036 §6. `firstBoxAfterEdgeCrossesPageFoot` counts the glue after the
 edge twice, so a line that fits within its space of the foot is taken for crossing it: after a start edge it moves to the next page,
