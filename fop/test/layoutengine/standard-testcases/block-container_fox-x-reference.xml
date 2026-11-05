@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.12: fox:x-reference, hook box-x-from-column (fop/CR-038). -->
+<testcase>
+  <info>
+    <p>
+      fox:x-reference="column" on an absolutely positioned block-container measures its left from the column, so a side
+      float beside the block holding it does not move it. a: the line beside a left float, the attribute written: the
+      float's intrusion is taken back. b: not written, the box moves with its block. c: a float on the right moves
+      nothing. d: the block below the float: nothing to take back.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+<fo:layout-master-set>
+<fo:simple-page-master master-name="p" page-width="400pt" page-height="300pt" margin="0pt"><fo:region-body/></fo:simple-page-master>
+</fo:layout-master-set>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left"><fo:block-container width="100pt" height="20pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="3pt" width="30pt" height="10pt" fox:x-reference="column"><fo:block>box</fo:block></fo:block-container></fo:block-container>a beside</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left"><fo:block-container width="100pt" height="20pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="3pt" width="30pt" height="10pt"><fo:block>box</fo:block></fo:block-container></fo:block-container>b beside</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="right"><fo:block-container width="100pt" height="20pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="3pt" width="30pt" height="10pt" fox:x-reference="column"><fo:block>box</fo:block></fo:block-container></fo:block-container>c beside</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left"><fo:block-container width="100pt" height="20pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block space-before="10pt"><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="3pt" width="30pt" height="10pt" fox:x-reference="column"><fo:block>box</fo:block></fo:block-container></fo:block-container>d below</fo:block>
+</fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <!-- the first absolute block on each page is the float's -->
+    <eval expected="100000" xpath="(//pageViewport)[1]//flow/block[4]/@left-offset"/>
+    <eval expected="-95000" xpath="(//pageViewport)[1]//flow/block[4]//block[@positioning='absolute']/@left-position"/>
+    <eval expected="100000" xpath="(//pageViewport)[2]//flow/block[4]/@left-offset"/>
+    <eval expected="5000" xpath="(//pageViewport)[2]//flow/block[4]//block[@positioning='absolute']/@left-position"/>
+    <eval expected="5000" xpath="(//pageViewport)[3]//flow/block[4]//block[@positioning='absolute']/@left-position"/>
+    <eval expected="0" xpath="count((//pageViewport)[4]//flow/block[4]/@left-offset)"/>
+    <eval expected="5000" xpath="(//pageViewport)[4]//flow/block[4]//block[@positioning='absolute']/@left-position"/>
+  </checks>
+</testcase>

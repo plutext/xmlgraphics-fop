@@ -19,7 +19,8 @@
  * Apache FOP 2.11: hook gsub-features, the PR_X_GSUB_FEATURES property id.; and PR_X_CONTINUATION_DISPLAY_ALIGN
  * (hook continuation-display-align, fop/CR-013); and PR_X_FLOAT_OFFSET (hook float-offset, fop/CR-023); and
  * PR_X_COLUMN_WIDTHS and PR_X_COLUMN_GAPS (hook column-widths, fop/CR-026); and PR_X_WRAP, PR_X_WRAP_SIDES and
- * PR_X_WRAP_DISTANCES (hook obstacles-in-the-line, fop/CR-024). See
+ * PR_X_WRAP_DISTANCES (hook obstacles-in-the-line, fop/CR-024); and PR_X_X_REFERENCE and PR_X_TOP_SPACE (hooks
+ * box-x-from-column and box-top-space, fop/CR-038). See
  * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -862,9 +863,19 @@ public interface Constants {
     /** The distances the lines keep from such a container, before after start end (hook obstacles-in-the-line,
      *  fop/CR-024) */
     int PR_X_WRAP_DISTANCES = 303;
+    /**
+     * Property constant - FOP proprietary: where an absolutely positioned block-container's left is measured from
+     * (hook box-x-from-column, fop/CR-038)
+     */
+    int PR_X_X_REFERENCE = 304;
+    /**
+     * Property constant - FOP proprietary: how much of an absolutely positioned block-container's top stands for
+     * its anchor's space-before (hook box-top-space, fop/CR-038)
+     */
+    int PR_X_TOP_SPACE = 305;
 
     /** Number of property constants defined */
-    int PROPERTY_COUNT = 303;
+    int PROPERTY_COUNT = 305;
 
     // compound property constants
 

@@ -302,6 +302,29 @@ public final class Docx4jFop {
      */
     public static final String FIRST_LINE_INDENT_AFTER_BLOCK = "first-line-indent-after-block";
 
+    /**
+     * {@code fox:x-reference="column"} on an absolutely positioned {@code fo:block-container}: its left is measured
+     * from the column, so a side float beside the block holding it does not move it. Without it the container moves
+     * with that block. Word keeps a box measured from the margin or the page where it is beside a float, at any
+     * compatibility mode, and one measured from the text from mode 15 (probe {@code vml-box-float-edge}; fop/CR-038).
+     */
+    public static final String BOX_X_FROM_COLUMN = "box-x-from-column";
+
+    /**
+     * {@code fox:top-space} on an absolutely positioned {@code fo:block-container}: the part of its {@code top} that
+     * stands for its anchor's space-before. Where the block opens the column, what the page dropped of that space is
+     * given back, so the box hangs from the paragraph's top as Word's does (probe {@code vml-box-page-top};
+     * fop/CR-038). Further down it does nothing.
+     */
+    public static final String BOX_TOP_SPACE = "box-top-space";
+
+    /**
+     * {@code docx4j:tab-past-cell="true"} on {@code fo:root}: in a table cell, a tab that reaches a custom left stop
+     * past the cell's edge is honoured, where Word mode otherwise breaks the line. Word's rule below compatibility
+     * mode 15 (probe {@code tab-trailing-narrow-cell}; fop/CR-038).
+     */
+    public static final String TAB_PAST_CELL = "tab-past-cell";
+
     private static final Set<String> CAPABILITIES;
 
     static {
@@ -337,6 +360,9 @@ public final class Docx4jFop {
         caps.add(WIDE_BLOCK_BELOW_FLOAT);
         caps.add(FLOAT_TABLE_SPLIT);
         caps.add(FIRST_LINE_INDENT_AFTER_BLOCK);
+        caps.add(BOX_X_FROM_COLUMN);
+        caps.add(BOX_TOP_SPACE);
+        caps.add(TAB_PAST_CELL);
         CAPABILITIES = Collections.unmodifiableSet(caps);
     }
 

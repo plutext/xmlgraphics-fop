@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.12: fox:top-space, hook box-top-space (fop/CR-038). -->
+<testcase>
+  <info>
+    <p>
+      fox:top-space on an absolutely positioned block-container names the part of its top that stands for its anchor's
+      space-before; where the block opens the column, what the page dropped of that space is given back. top is -15pt
+      throughout, 3pt below the paragraph's top less 18pt of space. a: the block opens a page and the space is dropped:
+      18pt back. b: the space retained: nothing. c: mid-page: nothing. d: 8pt of 18pt retained: 10pt back. e: the space
+      on an enclosing block: 18pt back. f: a second paragraph of a container, opening a page: 18pt back. g: the same on
+      the page of the first paragraph: nothing. h: mid-page, the space-after above the larger, so the block records no
+      space of its own: nothing, which is why the rule looks only at a block that opens the column.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+<fo:layout-master-set>
+<fo:simple-page-master master-name="p" page-width="400pt" page-height="300pt" margin="0pt"><fo:region-body/></fo:simple-page-master>
+</fo:layout-master-set>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block>before</fo:block>
+<fo:block break-before="page" space-before="18pt"><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="-15pt" width="30pt" height="10pt" fox:top-space="18pt"><fo:block>box</fo:block></fo:block-container></fo:block-container>a</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block space-before="18pt" space-before.conditionality="retain"><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="-15pt" width="30pt" height="10pt" fox:top-space="18pt"><fo:block>box</fo:block></fo:block-container></fo:block-container>b</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block>before</fo:block>
+<fo:block space-before="18pt"><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="-15pt" width="30pt" height="10pt" fox:top-space="18pt"><fo:block>box</fo:block></fo:block-container></fo:block-container>c</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block space-before="8pt" space-before.conditionality="retain"><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="-15pt" width="30pt" height="10pt" fox:top-space="18pt"><fo:block>box</fo:block></fo:block-container></fo:block-container>d</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block space-before="18pt"><fo:block><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="-15pt" width="30pt" height="10pt" fox:top-space="18pt"><fo:block>box</fo:block></fo:block-container></fo:block-container>e</fo:block></fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block><fo:block>before</fo:block><fo:block break-before="page" space-before="18pt"><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="-15pt" width="30pt" height="10pt" fox:top-space="18pt"><fo:block>box</fo:block></fo:block-container></fo:block-container>f</fo:block></fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block><fo:block>before</fo:block><fo:block space-before="18pt"><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="-15pt" width="30pt" height="10pt" fox:top-space="18pt"><fo:block>box</fo:block></fo:block-container></fo:block-container>g</fo:block></fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block space-after="30pt">before</fo:block>
+<fo:block space-before="18pt"><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="-15pt" width="30pt" height="10pt" fox:top-space="18pt"><fo:block>box</fo:block></fo:block-container></fo:block-container>h</fo:block>
+</fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <eval expected="3000" xpath="(//pageViewport)[2]//block[@positioning='absolute']/@top-position"/>
+    <eval expected="-15000" xpath="(//pageViewport)[3]//block[@positioning='absolute']/@top-position"/>
+    <eval expected="-15000" xpath="(//pageViewport)[4]//block[@positioning='absolute']/@top-position"/>
+    <eval expected="-5000" xpath="(//pageViewport)[5]//block[@positioning='absolute']/@top-position"/>
+    <eval expected="3000" xpath="(//pageViewport)[6]//block[@positioning='absolute']/@top-position"/>
+    <eval expected="3000" xpath="(//pageViewport)[8]//block[@positioning='absolute']/@top-position"/>
+    <eval expected="-15000" xpath="(//pageViewport)[9]//block[@positioning='absolute']/@top-position"/>
+    <eval expected="-15000" xpath="(//pageViewport)[10]//block[@positioning='absolute']/@top-position"/>
+  </checks>
+</testcase>

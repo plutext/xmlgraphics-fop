@@ -19,7 +19,7 @@
  * Apache FOP 2.11: hook gsub-features, the fox:gsub-features property, inherited; and initial-page-number's maker,
  * which keeps 0 where the user agent allows it (fop/CR-012).; fox:continuation-display-align (fop/CR-013),
  * and fox:float-offset (fop/CR-023), fox:column-widths and fox:column-gaps (fop/CR-026), fox:wrap, fox:wrap-sides
- * and fox:wrap-distances (fop/CR-024). See
+ * and fox:wrap-distances (fop/CR-024), fox:x-reference and fox:top-space (fop/CR-038). See
  * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -2747,6 +2747,21 @@ public final class FOPropertyMapping implements Constants {
         m.setInherited(false);
         m.setDefault("none");
         addPropertyMaker("fox:wrap-distances", m);
+
+        // fox:x-reference on an absolutely positioned fo:block-container: "column" measures its left from the column,
+        // whatever a side float does to the block holding it (hook box-x-from-column, fop/CR-038)
+        m = new StringProperty.Maker(PR_X_X_REFERENCE);
+        m.setInherited(false);
+        m.setDefault("auto");
+        addPropertyMaker("fox:x-reference", m);
+
+        // fox:top-space on an absolutely positioned fo:block-container: how much of its top stands for its anchor's
+        // space-before, given back where the block opens the column and that space is dropped (hook box-top-space,
+        // fop/CR-038)
+        l = new LengthProperty.Maker(PR_X_TOP_SPACE);
+        l.setInherited(false);
+        l.setDefault("0pt");
+        addPropertyMaker("fox:top-space", l);
 
         // fox:auto-toggle, used only in fo:multi-switch
         m = new EnumProperty.Maker(PR_X_AUTO_TOGGLE);

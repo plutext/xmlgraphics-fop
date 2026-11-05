@@ -19,7 +19,8 @@
  * Apache FOP 2.11: the clear property is read on this block-level FO, so that a side float ends before it and its
  * content starts at the float's foot (fop/CR-022); and fox:wrap, fox:wrap-sides and fox:wrap-distances, read on an
  * absolutely positioned container so that the lines of its page wrap around it (hook obstacles-in-the-line,
- * fop/CR-024). See README.md, "Changes from Apache FOP 2.11". */
+ * fop/CR-024); and fox:x-reference and fox:top-space, read on one to say what its left and top are measured from
+ * (hooks box-x-from-column and box-top-space, fop/CR-038). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -28,6 +29,7 @@ package org.apache.fop.fo.flow;
 import org.xml.sax.Locator;
 
 import org.apache.fop.apps.FOPException;
+import org.apache.fop.datatypes.Length;
 import org.apache.fop.datatypes.Numeric;
 import org.apache.fop.fo.FONode;
 import org.apache.fop.fo.FObj;
@@ -70,6 +72,8 @@ public class BlockContainer extends FObj implements BreakPropertySet, WritingMod
     private int wrap; // fop/CR-024
     private int wrapSides;
     private String wrapDistances;
+    private String xReference; // fop/CR-038
+    private Length topSpace;
     private WritingModeTraits writingModeTraits;
     // Unused but valid items, commented out for performance:
     //     private int intrusionDisplace;
@@ -115,6 +119,8 @@ public class BlockContainer extends FObj implements BreakPropertySet, WritingMod
         wrap = pList.get(PR_X_WRAP).getEnum(); // fop/CR-024
         wrapSides = pList.get(PR_X_WRAP_SIDES).getEnum();
         wrapDistances = pList.get(PR_X_WRAP_DISTANCES).getString();
+        xReference = pList.get(PR_X_X_REFERENCE).getString(); // fop/CR-038
+        topSpace = pList.get(PR_X_TOP_SPACE).getLength();
         if (wrap != EN_NONE && (commonAbsolutePosition.absolutePosition == EN_ABSOLUTE
                 || commonAbsolutePosition.absolutePosition == EN_FIXED)) {
             // the page-sequence's line managers then emit the break elements an obstacle's edge may need
@@ -245,6 +251,24 @@ public class BlockContainer extends FObj implements BreakPropertySet, WritingMod
      */
     public String getWrapDistances() {
         return wrapDistances;
+    }
+
+    /**
+     * Hook box-x-from-column (fop/CR-038): whether an absolutely positioned container's left is measured from the
+     * column, so that a side float beside the block holding it does not move it.
+     * @return true for fox:x-reference="column"
+     */
+    public boolean isXFromColumn() {
+        return "column".equals(xReference);
+    }
+
+    /**
+     * Hook box-top-space (fop/CR-038): how much of an absolutely positioned container's top stands for its anchor's
+     * space-before.
+     * @return the fox:top-space length, 0pt by default
+     */
+    public Length getTopSpace() {
+        return topSpace;
     }
 
     /** @return the "keep-with-next" FO trait.  */

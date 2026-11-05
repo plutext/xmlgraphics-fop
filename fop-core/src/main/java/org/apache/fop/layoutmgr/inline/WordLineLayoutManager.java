@@ -623,6 +623,14 @@ public class WordLineLayoutManager extends LineLayoutManager {
             if (stopLeader != WordLeaders.LEADER_NONE) {
                 return false;
             }
+            // nor, below compatibility mode 15, a custom stop past a cell's edge: Word honours it and does not
+            // break the line, where a stop of the default grid past it still breaks. Measured on the
+            // tab-trailing-narrow-cell probe: a "0<tab>" cell against a left stop at 720 twips, 13pt and 24pt
+            // past its edge, one line at mode 12 and two at mode 15; on the default grid two at both. Only in
+            // cells: tab-clamp-right, the body's case, is mode 15 (fop/CR-038)
+            if (tabPastCell && stopIsCustom) {
+                return false;
+            }
             // A tab with nothing after it: in a header, Word gives it no line - measured
             // on a corpus header whose paragraph is an image and seven tabs, the last two
             // of which reach nothing (the grid past the last custom stop is 14.5pt past
@@ -1179,6 +1187,8 @@ public class WordLineLayoutManager extends LineLayoutManager {
         int def = twipsToMpt(foreignAttribute(block, WordLayoutElementMapping.TAB_DEFAULT));
         tabDefaultMpt = def > 0 ? def : 720 * 50;
         noTabHangInd = "true".equals(rootAttribute(block, WordLayoutElementMapping.NO_TAB_HANG_IND));
+        tabPastCell = "true".equals(rootAttribute(block, WordLayoutElementMapping.TAB_PAST_CELL))
+                && inCell;
         justifySoftReturn = foreignAttribute(block, WordLayoutElementMapping.JUSTIFY_SOFT_RETURN) != null;
         String ind = foreignAttribute(block, WordLayoutElementMapping.TAB_IND);
         String[] indParts = ind == null ? new String[0] : ind.split(":", -1);
@@ -1396,6 +1406,8 @@ public class WordLineLayoutManager extends LineLayoutManager {
     private final boolean tabHanging;
     /** w:compat/w:noTabHangInd: a hanging indent makes no implicit tab stop.  @since 17.1.0 */
     private final boolean noTabHangInd;
+    /** docx4j:tab-past-cell on fo:root, and this block in a table cell (fop/CR-038) */
+    private final boolean tabPastCell;
     /** the paragraph's line that ends at a soft return is justified (&#xa7;4.2;
      *  w:compat/w:doNotExpandShiftReturn is not set).  @since 17.1.0 */
     private final boolean justifySoftReturn;
@@ -1422,6 +1434,9 @@ public class WordLineLayoutManager extends LineLayoutManager {
      *  leader that stop draws (WordLeaders.LEADER_NONE/-DOTS/-RULE) */
     private int stopAlignment;
     private int stopLeader;
+    /** set by {@link #nextTabStop}: whether the stop it found is one of the paragraph's own, not the default grid's
+     *  or a hanging indent's (fop/CR-038) */
+    private boolean stopIsCustom;
 
     /**
      * The first tab stop after x (millipoints from the left margin), as Word finds
@@ -1435,6 +1450,7 @@ public class WordLineLayoutManager extends LineLayoutManager {
         int best = Integer.MAX_VALUE;
         stopAlignment = TAB_LEFT;
         stopLeader = WordLeaders.LEADER_NONE;
+        stopIsCustom = false;
         for (int i = 0; i < tabStops.length; i++) {
             if (tabStopAlign[i] == TAB_CLEAR) {
                 continue;
@@ -1443,12 +1459,14 @@ public class WordLineLayoutManager extends LineLayoutManager {
                 best = tabStops[i];
                 stopAlignment = tabStopAlign[i];
                 stopLeader = tabStopLeader[i];
+                stopIsCustom = true;
             }
         }
         if (tabHanging && !noTabHangInd && tabLeftMpt > x && tabLeftMpt < best) {
             best = tabLeftMpt;
             stopAlignment = TAB_LEFT;
             stopLeader = WordLeaders.LEADER_NONE;
+            stopIsCustom = false;
         }
         if (best < Integer.MAX_VALUE) {
             return best;

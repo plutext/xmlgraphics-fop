@@ -95,6 +95,9 @@ public class WordLayoutElementMapping extends ElementMapping {
      *  implicit tab stop at the paragraph's left indent.  Off in every compatibility
      *  mode, so it is written only for a document which states the flag. */
     public static final String NO_TAB_HANG_IND = "no-tab-hang-ind";
+    /** on fo:root: "true" where, in a table cell, a tab reaching a custom left stop past the cell's edge is honoured
+     *  and does not break the line: Word's rule below compatibility mode 15 (fop/CR-038). */
+    public static final String TAB_PAST_CELL = "tab-past-cell";
     /** on a justified paragraph's fo:block: the line that ends at each of its soft returns
      *  is justified, as Word justifies it unless w:compat/w:doNotExpandShiftReturn is set.
      * */

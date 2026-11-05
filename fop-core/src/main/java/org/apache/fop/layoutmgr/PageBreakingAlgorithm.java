@@ -36,7 +36,8 @@
  * resolver's auxiliary box read past when the box after a break is looked for (fop/CR-032, 4083's B.6), and when
  * the gap before an offset float's anchor is read, so that a bordered anchor's space-before counts (fop/CR-023 §10);
  * and a list beside a float started at the space its first block keeps (fop/CR-023 §11); and the edge taken before a
- * box beside a float that would cross the page's foot (fop/CR-036).
+ * box beside a float that would cross the page's foot (fop/CR-036); and a side float's end edge taken at a keep of
+ * class line, and before an anchored box's empty holder, which goes with what follows it (fop/CR-038).
  * See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -1074,7 +1075,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 // float-top-crossing-table probe, case 2; fop/CR-032). Without this the table was set full width
                 // over the float, no edge being offered inside it (corpus 4083's date table)
                 considerLegalBreak(penalty, position);
-            } else if (breakClass == Constants.EN_LINE && floatHeight != 0 && handlingObstacle()
+            } else if (breakClass == Constants.EN_LINE && floatHeight != 0
                     && nextBoxHasContent(position) && edgeRestartable(position)
                     && (handlingEndOfFloat || (floatEndsAtTop ? nextLineCrosses(position, floatHeight)
                             : widthUpToNextBox(position) + lineBoxTopOffsetOfNextBox(position) >= floatHeight)
@@ -1085,7 +1086,9 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
                 // the box across it, or by the test considerLegalBreak makes at a legal break); and before a line
                 // that does not fit the room beside the band, which a word processor sets below the object with
                 // the rest of its paragraph whatever the orphans (CR-023 §4.2's mark; Word's float-gap-words
-                // case 3, fop/CR-031 §10)
+                // case 3, fop/CR-031 §10). So too at a side float's foot, and between blocks: a keep-with-next is
+                // an infinite penalty of class line, so a paragraph kept with the one above and wholly below the
+                // foot was set beside the float, no edge being offered before it (fop/CR-038)
                 considerLegalBreak(penalty, position);
             }
         }
@@ -2826,15 +2829,32 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
     }
 
 
-    /** Whether the first box after this break has content (a width), not a block's end marker (CR-024 §11.12). */
+    /**
+     * Whether the first box after this break has content (a width), not a block's end marker (CR-024 §11.12). An
+     * empty block-container's box is read past: that is an anchored object's zero-height holder, which goes with what
+     * follows it, so the break before it is the edge. Stopped at, the edge fell between it and its block's first line,
+     * and the holder took the float's intrusion where the line did not (corpus 4083's B.3, fop/CR-038).
+     */
     private boolean nextBoxHasContent(int elementIdx) {
         for (int i = elementIdx; i < par.size(); i++) {
             KnuthElement e = getElement(i);
-            if (e.isBox() && !isSpaceResolverBox(e)) {
+            if (e.isBox() && !isSpaceResolverBox(e) && !isEmptyContainerBox(e)) {
                 return e.getWidth() > 0;
             }
         }
         return false;
+    }
+
+    /** Whether a box is a block-container's of no height: it holds nothing the flow makes room for (fop/CR-038). */
+    private static boolean isEmptyContainerBox(KnuthElement e) {
+        if (e.getWidth() != 0 || e.isAuxiliary()) {
+            return false;
+        }
+        Position leaf = null;
+        for (Position p = e.getPosition(); p != null; p = nextInChain(p)) {
+            leaf = p;
+        }
+        return leaf != null && leaf.getLM() instanceof BlockContainerLayoutManager;
     }
 
     /**
@@ -2902,12 +2922,6 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             }
         }
         return 0;
-    }
-
-    /** @return whether the float being handled is an obstacle's band (fop/CR-024 §11.19) */
-    private boolean handlingObstacle() {
-        return topLevelLM instanceof PageSequenceLayoutManager
-                && ((PageSequenceLayoutManager) topLevelLM).handlingObstacle();
     }
 
     /** The intrusion of an offset float starts at this break (fop/CR-023). */

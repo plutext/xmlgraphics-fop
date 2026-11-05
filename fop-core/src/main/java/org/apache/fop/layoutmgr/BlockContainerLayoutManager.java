@@ -17,7 +17,8 @@
 
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook obstacles-in-the-line, an absolutely positioned container with fox:wrap registered as an
- * obstacle the lines of its page wrap around (fop/CR-024 phase A). See README.md, "Changes from Apache FOP 2.11". */
+ * obstacle the lines of its page wrap around (fop/CR-024 phase A); hooks box-x-from-column and box-top-space, what
+ * such a container's left and top are measured from (fop/CR-038). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -34,8 +35,10 @@ import org.apache.commons.logging.LogFactory;
 
 import org.apache.fop.area.Area;
 import org.apache.fop.area.Block;
+import org.apache.fop.area.BlockParent;
 import org.apache.fop.area.BlockViewport;
 import org.apache.fop.area.CTM;
+import org.apache.fop.area.SideFloat;
 import org.apache.fop.area.Trait;
 import org.apache.fop.datatypes.FODimension;
 import org.apache.fop.datatypes.Length;
@@ -947,8 +950,8 @@ public class BlockContainerLayoutManager extends SpacedBorderedPaddedBlockLayout
             if (abProps.absolutePosition == EN_ABSOLUTE
                     || abProps.absolutePosition == EN_FIXED) {
                 Point offset = getAbsOffset();
-                viewportBlockArea.setXOffset(offset.x);
-                viewportBlockArea.setYOffset(offset.y);
+                viewportBlockArea.setXOffset(offset.x - intrusionLeftOut());
+                viewportBlockArea.setYOffset(offset.y + topSpaceGivenBack());
             } else {
                 //nop
             }
@@ -976,6 +979,69 @@ public class BlockContainerLayoutManager extends SpacedBorderedPaddedBlockLayout
             setCurrentArea(viewportBlockArea); // ??? for generic operations
         }
         return referenceArea;
+    }
+
+    /**
+     * Hook box-x-from-column (fop/CR-038): the flow moves a block set beside a side float by the float's start
+     * intrusion, and a container positioned inside it with the block. Where its left is measured from the column
+     * that move is taken back. A word processor keeps a box measured from the margin or the page where it is, beside
+     * a float, and from compatibility mode 15 one measured from the text too (Word's vml-box-float-edge).
+     *
+     * @return what the block holding this container is moved by, 0 where its left follows the block
+     */
+    private int intrusionLeftOut() {
+        return abProps.absolutePosition == EN_ABSOLUTE && getBlockContainerFO().isXFromColumn() && handlingFloat()
+                ? getPSLM().getStartIntrusionAdjustment() : 0;
+    }
+
+    /**
+     * Hook box-top-space (fop/CR-038): a word processor hangs a text-relative box from its paragraph's top, above
+     * the paragraph's space-before, and that holds where the space is dropped because the paragraph opens a page.
+     * The writer steps back over the space statically in top; the part the page dropped is given back here. Only in
+     * a block that opens the column: further down, the space above a block may be another block's, the block
+     * recording none of it, and nothing is dropped.
+     *
+     * @return the length to add to top, 0 where the space stands or none is named
+     */
+    private int topSpaceGivenBack() {
+        if (abProps.absolutePosition != EN_ABSOLUTE) {
+            return 0;
+        }
+        int named = getBlockContainerFO().getTopSpace().getValue(this);
+        if (named <= 0) {
+            return 0;
+        }
+        int kept = 0;
+        for (LayoutManager lm = getParent(); lm != null; lm = lm.getParent()) {
+            if (lm instanceof FlowLayoutManager) {
+                return holdsContent(getCurrentPV().getCurrentFlow()) ? 0 : named - Math.min(named, kept);
+            }
+            if (lm instanceof BlockContainerLayoutManager) {
+                if (((BlockContainerLayoutManager) lm).abProps.absolutePosition != EN_AUTO) {
+                    return 0;
+                }
+            } else if (!(lm instanceof BlockLayoutManager)) {
+                return 0;
+            }
+            if (holdsContent(lm.getParentArea(null))) {
+                return 0;
+            }
+            MinOptMax space = ((SpacedBorderedPaddedBlockLayoutManager) lm).effSpaceBefore;
+            kept += space == null ? 0 : space.getOpt();
+        }
+        return 0;
+    }
+
+    /** Whether an area has a child with height so far, a side float, which lies beside the flow, apart. */
+    private static boolean holdsContent(Area area) {
+        if (area instanceof BlockParent && ((BlockParent) area).getChildAreas() != null) {
+            for (Object child : ((BlockParent) area).getChildAreas()) {
+                if (!(child instanceof SideFloat) && ((Area) child).getAllocBPD() > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

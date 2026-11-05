@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- $Id$ -->
+<!-- Added by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived
+     from Apache FOP 2.12: a side float's end edge at a keep and before an anchored box's holder (fop/CR-038). -->
+<testcase>
+  <info>
+    <p>
+      A side float ends at the first break after which the content lies below its foot. a: that break is a
+      keep-with-next, an infinite penalty of class line, which was not offered as the edge, so the paragraph below the
+      foot was set beside the float. b: the next box is a zero-height block-container holding an anchored box, which
+      was taken for a box without content, so the edge fell after it, inside the block: the holder took the float's
+      intrusion and the block's first line did not. c: both, the shape of corpus 4083's B.3. d: the block lies beside
+      the float: the holder and its line stay together beside it. e: an empty block's holder is read past only to a box
+      with content.
+    </p>
+  </info>
+  <fo>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:fox="http://xmlgraphics.apache.org/fop/extensions">
+<fo:layout-master-set>
+<fo:simple-page-master master-name="p" page-width="400pt" page-height="300pt" margin="0pt"><fo:region-body/></fo:simple-page-master>
+</fo:layout-master-set>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left"><fo:block-container width="100pt" height="20pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block keep-with-next="always">kept</fo:block>
+<fo:block space-before="10pt">a below</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left"><fo:block-container width="100pt" height="20pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block space-before="10pt"><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="3pt" width="30pt" height="10pt"><fo:block>box</fo:block></fo:block-container></fo:block-container>b line</fo:block>
+<fo:block>b after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left"><fo:block-container width="100pt" height="20pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block keep-with-next="always">kept</fo:block>
+<fo:block space-before="10pt"><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="3pt" width="30pt" height="10pt"><fo:block>box</fo:block></fo:block-container></fo:block-container>c line</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left"><fo:block-container width="100pt" height="20pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block><fo:block-container height="0pt"><fo:block-container absolute-position="absolute" left="5pt" top="3pt" width="30pt" height="10pt"><fo:block>box</fo:block></fo:block-container></fo:block-container>d beside</fo:block>
+<fo:block>d after</fo:block>
+</fo:flow></fo:page-sequence>
+</fo:root>
+  </fo>
+  <checks>
+    <!-- a -->
+    <eval expected="100000" xpath="(//pageViewport)[1]//flow/block[4]/@left-offset"/>
+    <eval expected="300000" xpath="(//pageViewport)[1]//flow/block[4]/@ipd"/>
+    <eval expected="400000" xpath="(//pageViewport)[1]//flow/block[5]/@ipd"/>
+    <eval expected="0" xpath="count((//pageViewport)[1]//flow/block[5]/@left-offset)"/>
+    <eval expected="10000" xpath="(//pageViewport)[1]//flow/block[5]/@space-before"/>
+    <!-- b: the block is one area, below the float, its box in it -->
+    <eval expected="5" xpath="count((//pageViewport)[2]//flow/block)"/>
+    <eval expected="400000" xpath="(//pageViewport)[2]//flow/block[4]/@ipd"/>
+    <eval expected="0" xpath="count((//pageViewport)[2]//flow/block[4]/@left-offset)"/>
+    <eval expected="10000" xpath="(//pageViewport)[2]//flow/block[4]/@space-before"/>
+    <eval expected="1" xpath="count((//pageViewport)[2]//flow/block[4]//block[@positioning='absolute'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[2]//flow/block[4]/lineArea)"/>
+    <!-- c -->
+    <eval expected="100000" xpath="(//pageViewport)[3]//flow/block[4]/@left-offset"/>
+    <eval expected="400000" xpath="(//pageViewport)[3]//flow/block[5]/@ipd"/>
+    <eval expected="0" xpath="count((//pageViewport)[3]//flow/block[5]/@left-offset)"/>
+    <eval expected="1" xpath="count((//pageViewport)[3]//flow/block[5]//block[@positioning='absolute'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[3]//flow/block[5]/lineArea)"/>
+    <!-- d -->
+    <eval expected="100000" xpath="(//pageViewport)[4]//flow/block[4]/@left-offset"/>
+    <eval expected="1" xpath="count((//pageViewport)[4]//flow/block[4]//block[@positioning='absolute'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[4]//flow/block[4]/lineArea)"/>
+    <eval expected="400000" xpath="(//pageViewport)[4]//flow/block[5]/@ipd"/>
+  </checks>
+</testcase>

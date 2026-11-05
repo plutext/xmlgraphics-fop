@@ -18,7 +18,7 @@
 /* Modified by Plutext Pty Ltd for the docx4j FO renderer (docx4j-fo-renderer), a modified distribution derived from
  * Apache FOP 2.11: hook gsub-features, registering the attribute.; and continuation-display-align (fop/CR-013),
  * float-offset (fop/CR-023), column-widths and column-gaps (fop/CR-026), wrap, wrap-sides and wrap-distances
- * (fop/CR-024). See
+ * (fop/CR-024), x-reference and top-space (fop/CR-038). See
  * README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
@@ -68,6 +68,8 @@ public class ExtensionElementMapping extends ElementMapping {
         PROPERTY_ATTRIBUTES.add("wrap"); // hook obstacles-in-the-line (fop/CR-024)
         PROPERTY_ATTRIBUTES.add("wrap-sides");
         PROPERTY_ATTRIBUTES.add("wrap-distances");
+        PROPERTY_ATTRIBUTES.add("x-reference"); // hook box-x-from-column (fop/CR-038)
+        PROPERTY_ATTRIBUTES.add("top-space"); // hook box-top-space (fop/CR-038)
         //fox:border-*-radius-*
         PROPERTY_ATTRIBUTES.add("border-before-radius-start");
         PROPERTY_ATTRIBUTES.add("border-before-radius-end");
