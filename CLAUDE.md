@@ -206,15 +206,16 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
-Last updated 2026-11-05, late night. **`fop/CR-038` (corpus 4083's marks and rows, under Jason's "do 4083's remaining X marks and row heights",
-through docx4j-67) is GATED PASS, not merged (b368 control, 4083 +1, no other corpus mover; b369 with the attributes, 4083 +3 to 0.9870, 63 of 63 moved lines closer):
-branch `CR-038-box-and-tab`, cut from `2.12-docx4j.1` at 561571f14, code 45594ce31, drop r70 at `~/fop-renderers/r70-CR-038-45594ce31/` (sha256
-20232efb...). Enterprise §6.6 items 58 to 62. A float's end edge taken at a class-line keep and before a box's empty holder
-(a fix); `box-x-from-column`, `box-top-space`, `tab-past-cell` (capabilities 32 to 34). `2.12-docx4j.1` itself is unchanged at 561571f14, and whether
-CR-038 goes in `.1` or after it is Jason's to rule; do not fast-forward before he does. The working tree stays on this branch until the merge,
-since the registry's check reads the CR from it (tell docx4j-portfolio before switching). Open: T3's `1` drawn over the next cell, kept as a
-known limit (CR-038 §6); item 57's second shape; item 62. Tools `~/fop-session-tools/2026-11-05-box-float-edge/`. The paragraph that follows is
-the state before it, kept.**
+Last updated 2026-11-05, latest. **`fop/CR-038` (corpus 4083's marks and rows, Enterprise §6.6 items 58 to 61) is DONE: gated PASS (b368 on r70, 4083 +1,
+no other corpus mover; b369 on r70, 4083 +3 to 0.9870, 63 of 63 moved lines closer; suites pass, docx4j-67) and MERGED to `2.12-docx4j.1` by fast-forward
+from `CR-038-box-and-tab`, code 45594ce31, for `.1`, ordered by Jason through docx4j-67 ("r70 (CR-038) goes into 2.12-docx4j.1; commit; Accept 3229 -2
+and 12147 -1; accept the known limit (but document it)"); unreleased, local, the push Jason's. **b369 on r70 is the fork's baseline for later gates**
+(`~/fop-renderers/r70-CR-038-45594ce31/`, sha256 20232efb...; `cp-b369.txt`). A float's end edge taken at a class-line keep and before a box's empty
+holder (a fix); `box-x-from-column`, `box-top-space`, `tab-past-cell` (capabilities 32 to 34). KNOWN LIMIT, accepted and documented: text after a tab
+past a cell's edge is drawn over the next cell (CR-038 §6). Open for Jason: the push and release of `.1` (CR-030 to CR-038, CR-023.1), with the
+docx4j commit to name; the upstream questions; item 57 and its bordered reading; item 62, boxes drawn past the page's edge (1616's `PRO HART`, 12147's
+captions unread, what Word does with a really low anchor unmeasured). Tools `~/fop-session-tools/2026-11-05-box-float-edge/`. The paragraph that
+follows is the state before it, kept.**
 
 Last updated 2026-11-05, end of the night. **`fop/CR-037` (Enterprise §6.6 item 56, the doubled `w:br` paragraph) is DONE: gated PASS (b362 on
 r69 against b360 on r68, docx4j-67, docx4j 7f6162ea2; 0 corpus movers, events equal; `float-foot-edges` exactly B-1, B+1, B+3) and MERGED to

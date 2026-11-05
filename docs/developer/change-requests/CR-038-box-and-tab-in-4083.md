@@ -1,9 +1,10 @@
 # CR-038: an anchored box beside a float and at a page's top; a tab past a cell's edge
 
 - **Status:** BUILT 2026-11-05 on branch `CR-038-box-and-tab`, cut from `2.12-docx4j.1` at 561571f14, code 45594ce31, drop r70
-  (`~/fop-renderers/r70-CR-038-45594ce31/`, sha256 20232efb...). **Gated PASS 2026-11-05 by docx4j-67 (§8). Not merged: its release is Jason's to
-  rule, and docx4j's side is uncommitted.**
-  Ordered through docx4j-67, under Jason's "do 4083's remaining X marks and row heights". Which release it goes in is Jason's to rule.
+  (`~/fop-renderers/r70-CR-038-45594ce31/`, sha256 20232efb...). **Gated PASS 2026-11-05 by docx4j-67 (§8) and MERGED to `2.12-docx4j.1` by fast-forward, for `.1`, on
+  Jason's ruling through docx4j-67 ("r70 (CR-038) goes into 2.12-docx4j.1"); unreleased, the push his. b369 on r70 is the fork's baseline for later
+  gates.**
+  Ordered through docx4j-67, under Jason's "do 4083's remaining X marks and row heights".
 - **Serves:** corpus 4083's marks and row heights. Enterprise CR-001 §6.6 items 58 to 61; item 57 gains a second shape (§6); item 62 came of the gate.
 - **Capabilities:** `box-x-from-column`, `box-top-space`, `tab-past-cell`, the thirty-second to thirty-fourth. The float's end edge (§2) is
   a fix, not a hook.
@@ -91,9 +92,11 @@ grid and a hanging indent's implicit stop. Cells only, by the existing `inCell`:
 
 ## 6. Left
 
-- **T3's text is drawn.** Word draws nothing past the edge; the fork honours the stop and draws the `1` at x 108, over the `T3 row` text of
-  the next cell at 95.8. The row is right and the glyph is not. docx4j-67 advised against building the hiding. Limiting the rule to a tab with
-  nothing after it would keep today's two lines instead: one condition.
+- **KNOWN LIMIT, accepted by Jason ("accept the known limit (but document it)"): text after a tab past a cell's edge is drawn over the next
+  cell.** Below mode 15, with `docx4j:tab-past-cell`, the row is Word's height, but where text follows the tab Word draws none of it past the edge
+  and the fork draws it: T3's `1` at x 108, over the `T3 row` text of the next cell at 95.8. Hiding that text is not built. Limiting the rule to a
+  tab with nothing after it was the alternative, one condition, keeping today's two lines; not taken. No corpus document has a custom stop past a
+  cell, so nothing in the corpora shows it.
 - **E1 is item 57.** Word sets E1's line beside the float, its foot inside the line's own space-before, at both modes; the fork sets it at the
   margin. At mode 12 the box now follows that line, to 101.7, against Word's 305.6: right on r69 by accident, its line wrong all the same.
   This is item 57's second shape, after `float-foot-edges` X. 4083's B.3 stands against a simple reading: docx4j-67 reads B.2's foot inside
