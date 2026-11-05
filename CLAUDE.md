@@ -212,8 +212,8 @@ from `CR-038-box-and-tab`, code 45594ce31, for `.1`, ordered by Jason through do
 and 12147 -1; accept the known limit (but document it)"); unreleased, local, the push Jason's. **b369 on r70 is the fork's baseline for later gates**
 (`~/fop-renderers/r70-CR-038-45594ce31/`, sha256 20232efb...; `cp-b369.txt`). A float's end edge taken at a class-line keep and before a box's empty
 holder (a fix); `box-x-from-column`, `box-top-space`, `tab-past-cell` (capabilities 32 to 34). KNOWN LIMIT, accepted and documented: text after a tab
-past a cell's edge is drawn over the next cell (CR-038 §6). Open for Jason: the push and release of `.1` (CR-030 to CR-038, CR-023.1), with the
-docx4j commit to name; the upstream questions; item 57 and its bordered reading; item 62, boxes drawn past the page's edge (1616's `PRO HART`, 12147's
+past a cell's edge is drawn over the next cell (CR-038 §6). Open for Jason: the push and release of `.1` (CR-030 to CR-038, CR-023.1), which ships with
+docx4j 9e3100351 on VERSION_17_3_6 or later (holding b267f24ce, writing CR-038's attributes; unpushed there); the upstream questions; item 57 and its bordered reading; item 62, boxes drawn past the page's edge (1616's `PRO HART`, 12147's
 captions unread, what Word does with a really low anchor unmeasured). Tools `~/fop-session-tools/2026-11-05-box-float-edge/`. The paragraph that
 follows is the state before it, kept.**
 
