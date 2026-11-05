@@ -206,6 +206,14 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-05, end of the night. **`fop/CR-037` (Enterprise §6.6 item 56, the doubled `w:br` paragraph) is BUILT, not gated, not
+merged: branch `CR-037-restart-at-soft-return` (cut from `2.12-docx4j.1` at 69b8b2993), code a260b3bd3, drop r69 at
+`~/fop-renderers/r69-CR-037-a260b3bd3/` (sha256 5a0447ee...), ordered by Jason through docx4j-67 ("take the doubled w:br paragraph (item 56)"),
+with docx4j-67 for the gate against b360 on r68. It is wider than item 56 and Apache's too: any restart between two sequences of a
+paragraph, lines repeated at float edges and obstacles, a line LOST at a change of page width, and on Apache `main` an NPE as well (CR-037 §1;
+tools `~/fop-session-tools/2026-11-05-cr037-restart/`). On a pass: fast-forward, item 56 closed, the merge hash to docx4j-portfolio; the
+upstream question is Jason's. Left: CR-037 §4.**
+
 Last updated 2026-11-05, late night. **The fix for the defect below is DONE: gated PASS (b360 on r68 against control b359 on r67,
 docx4j-67; 0 corpus movers, events equal, `float-foot-edges` exactly the five cases, CR-036 §8) and MERGED to `2.12-docx4j.1` by
 fast-forward from `CR-036-edge-space-once`, code 792823785, ordered by Jason through docx4j-67 ("Order the fork's fix"); unreleased,
