@@ -2806,7 +2806,7 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             for (Position q = next; q != null; q = nextInChain(q)) {
                 if (q.getLM() == a) {
                     // the chain's manager below it reads the content again; the break's own manager reads
-                    // itself again where its box is the chain's leaf (a nested block in a line manager)
+                    // itself again where its box is the chain's leaf
                     return nextInChain(q) != null || a == surrounding;
                 }
             }

@@ -25,7 +25,8 @@
  * glue and widows across soft returns in postProcessLineBreaks, and the manager's state package-private for that
  * subclass; a line CR-023 marks reports its overflow only when it is laid out unmoved (fop/CR-031 §10). And
  * first-line-indent-after-block: text-indent on the block's first line whatever block-level children precede the
- * inline content (fop/CR-035). See README.md, "Changes from Apache FOP 2.11". */
+ * inline content (fop/CR-035). And a break between two sequences of a paragraph reads on from there at a restart
+ * (fop/CR-037). See README.md, "Changes from Apache FOP 2.11". */
 
 /* $Id$ */
 
@@ -921,7 +922,8 @@ public class LineLayoutManager extends InlineStackingLayoutManager
         while (iter.hasNext() && !iter.next().isBox()) {
             iter.remove();
         }
-        if (!iter.hasNext()) {
+        // the loop above reads past the first box: a nested block's sequence of one box is left whole, not emptied
+        if (!iter.hasNext() && (paragraph.isInlineSequence() || paragraph.isEmpty())) {
             knuthParagraphs.remove(parIndex);
         }
 
@@ -1193,6 +1195,16 @@ public class LineLayoutManager extends InlineStackingLayoutManager
     }
 
     /**
+     * The position of the break before sequence p of this paragraph: its start, which a restart at this break reads
+     * on from (fop/CR-037). A bare Position is no LeafPosition, so the block handed this manager no restart and it
+     * read from its first sequence again: the lines before the break were drawn twice, or at a change of width one
+     * was lost. Under legacy-invalid-break-position a break here stays what that setting pins.
+     */
+    private Position positionBetweenSequences(int p) {
+        return fobj.getUserAgent().isLegacyInvalidBreakPosition() ? new Position(this) : new LeafPosition(this, p, 0);
+    }
+
+    /**
      * The position inside this manager's own wrapping, where an earlier pass left one. The
      * elements of a nested block-level sequence are kept in knuthParagraphs and are wrapped in
      * place, here and by the ancestor managers. When line breaking runs again over the same
@@ -1236,10 +1248,11 @@ public class LineLayoutManager extends InlineStackingLayoutManager
             if (p > 0 && linesBefore != null && !breakAllowedBefore(linesBefore[p], linesBefore)) {
                 // within the widows or orphans counted across the soft returns
                 if (pageSequenceHasObstacles()) {
-                    returnList.add(new BreakElement(new Position(this), KnuthElement.INFINITE, Constants.EN_LINE,
-                            context));
+                    returnList.add(new BreakElement(positionBetweenSequences(p), KnuthElement.INFINITE,
+                            Constants.EN_LINE, context));
                 } else {
-                    returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, new Position(this), false));
+                    returnList.add(new KnuthPenalty(0, KnuthElement.INFINITE, false, positionBetweenSequences(p),
+                            false));
                 }
                 if (pendingLeading > 0) {
                     returnList.add(new LeadingGlue(pendingLeading));
@@ -1248,7 +1261,7 @@ public class LineLayoutManager extends InlineStackingLayoutManager
             } else if (p > 0) {
                 Keep keep = getKeepTogether();
                 returnList.add(new BreakElement(
-                            new Position(this),
+                            positionBetweenSequences(p),
                             keep.getPenalty(),
                             keep.getContext(),
                             context));

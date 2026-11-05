@@ -1480,8 +1480,9 @@ public class PageBreaker extends AbstractBreaker {
                             if (q.getPosition() != null && q.getPosition() != q) {
                                 found = q;
                             } else if (a == surroundingLM) {
-                                // the break's own manager holds the next box as its leaf (a nested block in a
-                                // line manager): it reads itself again from the break
+                                // the break's own manager holds the next box as its leaf: it reads itself again
+                                // from the break (a line manager's breaks between sequences no longer come here,
+                                // fop/CR-037)
                                 self = true;
                             }
                             break;
