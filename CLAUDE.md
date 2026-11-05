@@ -206,6 +206,12 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-05, late night. **The fix for the defect below is BUILT, not gated, not merged: branch `CR-036-edge-space-once`
+(cut from `2.12-docx4j.1` at 57a3f3b21), code 792823785, drop r68 at `~/fop-renderers/r68-CR-036-792823785/` (sha256 85333f7d...),
+ordered by Jason through docx4j-67 ("Order the fork's fix"), handed to docx4j-67 for the gate; CR-036 §8 has the pass. On a pass:
+fast-forward to `2.12-docx4j.1`, Enterprise item 55 closed again, the merge hash to docx4j-portfolio. `.1` stays unreleased until then.
+Still Jason's: tracing item 56 (the doubled `w:br` paragraph) and a probe for item 57.**
+
 Last updated 2026-11-05, night. **A DEFECT IN `.1`, UNFIXED: CR-036 §6. `firstBoxAfterEdgeCrossesPageFoot` counts the glue after the
 edge twice, so a line that fits within its space of the foot is taken for crossing it: after a start edge it moves to the next page,
 after an end edge it stays 6pt high, a regression from r66. Confirmed through docx4j's writer, both modes, a space-after as well; no
