@@ -1,7 +1,8 @@
 # CR-037: a paragraph of several sequences read again from a break between them
 
 - **Status:** BUILT 2026-11-05 on branch `CR-037-restart-at-soft-return`, cut from `2.12-docx4j.1` at 69b8b2993, code a260b3bd3, drop r69.
-  Not gated, not merged. Ordered 2026-11-05 by Jason through docx4j-67 ("take the doubled w:br paragraph (item 56)").
+  **Gated PASS 2026-11-05 by docx4j-67 (b362 on r69 against b360 on r68, §6) and MERGED to `2.12-docx4j.1` by fast-forward; unreleased.**
+  Ordered 2026-11-05 by Jason through docx4j-67 ("take the doubled w:br paragraph (item 56)").
 - **Serves:** Enterprise CR-001 §6.6 item 56: a paragraph with `w:br` line breaks is drawn twice where a float's edge falls inside it.
 - **Capability:** none. A fix, not a hook.
 
@@ -68,3 +69,14 @@ line once.
 Against b360 on r68, docx4j 7f6162ea2. Reach: any restart at a break between two sequences of a paragraph. Pass: B-1, B+1, B+3 each line
 once in both modes; no line of the real-block FO lost or repeated; mode 12's B right on page and y; every other `float-foot-edges` case
 unchanged from r68; `float-foot-empties` 19 of 19; no loser; events equal.
+
+Gate b362 on r69 (sha256 checked) against b360 on r68, docx4j 7f6162ea2 in both, docx4j-67: PASS on every item. Corpora 0 movers, events
+equal, all four means unchanged; of 870 PDFs only the two probes and 11875's clock differ. `float-foot-edges`: exactly B-1, B+1 and B+3
+changed in both modes, the other 44 cases line for line the same, M1 to M4 once in all six, all 8 moved lines a mode closer to Word. Wrong
+on page and y: none at mode 12, B-1 alone at mode 15 (§4). Right on page, x and y: 44 of 47 at mode 12, 43 of 47 at mode 15 (41 each on
+r68). `float-foot-empties` 19 of 19, largest difference 0.10pt. `c56t/real.fo` every line once. Same output as docx4j-67's overlay b361 on
+every document but 11875's clock, so this CR's two additions do not move docx4j.
+
+No corpus document changed, so none reaches the restart this repairs on the forms swept, though the shape is present: of 450 distinct
+documents 140 have a `w:br`, 36 a `w:br` and a width change between sections, 2 of those unequal columns. That says nothing of lines lost
+some other way. b362 on r69 is the fork's baseline for later gates.
