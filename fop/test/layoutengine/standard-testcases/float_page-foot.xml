@@ -27,7 +27,11 @@
       the last line ends at 299pt and stays. Second: it would end at 303pt and opens the next page. Third: the same
       with no float. Fourth: the lines carry space-before, and the moved line's is discarded at the page's top, as at
       any page break. Fifth: the line would cross the foot straight after the float's start edge, where its list has
-      no break before it, and it goes to the next page with nothing beside the float.
+      no break before it, and it goes to the next page with nothing beside the float. Sixth and seventh: a line after
+      a start edge that fits by 1pt below a space, its own space-before and the space-after above, stays beside the
+      float. Eighth: a line after an end edge that fits by 1pt keeps its space-before and stays. Ninth: a line after a
+      start edge that crosses the foot only by its block's border goes to the next page. Fop/CR-036 §6: the space at
+      the edge was counted twice in the sixth to eighth.
     </p>
   </info>
   <fo>
@@ -87,10 +91,39 @@
 <fo:block>e-first</fo:block>
 <fo:block>e-after</fo:block>
 </fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left" fox:float-offset="286pt"><fo:block-container width="100pt" height="10pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block line-height="270pt">spacer</fo:block>
+<fo:block space-before="6pt">f-first</fo:block>
+<fo:block>f-after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left" fox:float-offset="287pt"><fo:block-container width="100pt" height="9pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block line-height="272pt" space-after="4pt">spacer</fo:block>
+<fo:block>g-first</fo:block>
+<fo:block>g-after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left" fox:float-offset="209pt"><fo:block-container width="100pt" height="79pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block line-height="195pt">spacer</fo:block>
+<fo:block space-before="6pt">h1</fo:block>
+<fo:block space-before="6pt">h2</fo:block>
+<fo:block space-before="6pt">h3</fo:block>
+<fo:block space-before="6pt">h4</fo:block>
+<fo:block space-before="6pt">h5</fo:block>
+<fo:block space-before="6pt">h6</fo:block>
+<fo:block>h-after</fo:block>
+</fo:flow></fo:page-sequence>
+<fo:page-sequence master-reference="p"><fo:flow flow-name="xsl-region-body" font-size="8pt" line-height="9pt">
+<fo:block line-height="14pt"><fo:float float="left" fox:float-offset="290pt"><fo:block-container width="100pt" height="6pt"><fo:block font-size="4pt" line-height="4pt">FLOAT</fo:block></fo:block-container></fo:float>anchor</fo:block>
+<fo:block line-height="275pt">spacer</fo:block>
+<fo:block border-before-style="solid" border-before-width="3pt">i-first</fo:block>
+<fo:block>i-after</fo:block>
+</fo:flow></fo:page-sequence>
 </fo:root>
   </fo>
   <checks>
-    <eval expected="10" xpath="count(//pageViewport)"/>
+    <eval expected="18" xpath="count(//pageViewport)"/>
     <!-- 1: the last line ends at 299pt, within the body: it stays beside the float -->
     <eval expected="1" xpath="count((//pageViewport)[1]//word[.='a7'])"/>
     <eval expected="1" xpath="count((//pageViewport)[2]//word[.='a-after'])"/>
@@ -109,5 +142,18 @@
     <eval expected="0" xpath="count((//pageViewport)[9]//word[.='e-first'])"/>
     <eval expected="1" xpath="count((//pageViewport)[10]//word[.='e-first'])"/>
     <eval expected="400000" xpath="//word[.='e-first']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 6: fits below its own 6pt space-before: it stays beside the float -->
+    <eval expected="1" xpath="count((//pageViewport)[11]//word[.='f-first'])"/>
+    <eval expected="300000" xpath="//word[.='f-first']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 7: fits below the space-after above it: the same -->
+    <eval expected="1" xpath="count((//pageViewport)[13]//word[.='g-first'])"/>
+    <eval expected="300000" xpath="//word[.='g-first']/ancestor::lineArea[1]/@ipd"/>
+    <!-- 8: fits after an end edge: it stays, at the full width, and keeps its space-before -->
+    <eval expected="1" xpath="count((//pageViewport)[15]//word[.='h6'])"/>
+    <eval expected="400000" xpath="//word[.='h6']/ancestor::lineArea[1]/@ipd"/>
+    <eval expected="6000" xpath="//word[.='h6']/ancestor::block[1]/@space-before"/>
+    <!-- 9: crosses the foot only by its border: the border's glue lies past the auxiliary box -->
+    <eval expected="0" xpath="count((//pageViewport)[17]//word[.='i-first'])"/>
+    <eval expected="1" xpath="count((//pageViewport)[18]//word[.='i-first'])"/>
   </checks>
 </testcase>

@@ -1527,7 +1527,9 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
 
     /**
      * Whether the first box after the float's start edge would cross the page's foot (fop/CR-036): a list has no
-     * break before its first box, so {@link #nextBoxCrossesPageFoot} cannot take the edge before that box.
+     * break before its first box, so {@link #nextBoxCrossesPageFoot} cannot take the edge before that box. The
+     * edge node's total already holds the glue after the break up to the next box, an auxiliary one included, so
+     * only glue past such a box, a border's or padding's, is added here (fop/CR-036 §6).
      *
      * @param listTopInPage where this list starts in the page
      */
@@ -1536,11 +1538,14 @@ class PageBreakingAlgorithm extends BreakingAlgorithm {
             return false;
         }
         int bottom = listTopInPage + bestFloatEdgeNode.totalWidth;
+        boolean pastAuxiliaryBox = false;
         for (int i = bestFloatEdgeNode.position; i < par.size(); i++) {
             KnuthElement e = getElement(i);
             if (e.isBox() && e.getWidth() > 0 && !e.isAuxiliary()) {
                 return bottom + e.getWidth() > getLineWidth(bestFloatEdgeNode);
-            } else if (e.isGlue()) {
+            } else if (e.isBox()) {
+                pastAuxiliaryBox = true;
+            } else if (e.isGlue() && pastAuxiliaryBox) {
                 bottom += e.getWidth();
             } else if (e.isForcedBreak() && i != bestFloatEdgeNode.position) {
                 return false;
