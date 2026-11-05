@@ -1,9 +1,10 @@
 # CR-038: an anchored box beside a float and at a page's top; a tab past a cell's edge
 
 - **Status:** BUILT 2026-11-05 on branch `CR-038-box-and-tab`, cut from `2.12-docx4j.1` at 561571f14, code 45594ce31, drop r70
-  (`~/fop-renderers/r70-CR-038-45594ce31/`, sha256 20232efb...). Not gated, not merged.
+  (`~/fop-renderers/r70-CR-038-45594ce31/`, sha256 20232efb...). **Gated PASS 2026-11-05 by docx4j-67 (§8). Not merged: its release is Jason's to
+  rule, and docx4j's side is uncommitted.**
   Ordered through docx4j-67, under Jason's "do 4083's remaining X marks and row heights". Which release it goes in is Jason's to rule.
-- **Serves:** corpus 4083's marks and row heights. Enterprise CR-001 §6.6: no item yet; item 57 gains a second shape (§6).
+- **Serves:** corpus 4083's marks and row heights. Enterprise CR-001 §6.6 items 58 to 61; item 57 gains a second shape (§6); item 62 came of the gate.
 - **Capabilities:** `box-x-from-column`, `box-top-space`, `tab-past-cell`, the thirty-second to thirty-fourth. The float's end edge (§2) is
   a fix, not a hook.
 
@@ -129,6 +130,20 @@ checkstyle 0, spotbugs 0, no existing layout expectation changed.
 
 ## 8. Gate
 
-Not run. A pass: with docx4j writing nothing, only the end edge can move a line, and each mover read with `pair.py`, since the keep's rule
-reaches any paragraph kept with one above and below a float's foot, not only a box's. With docx4j writing the three attributes: the
-probes as §7, 4083's B.3 and page 1 row at Word's, no other mover.
+PASS 2026-11-05, docx4j-67, docx4j on 7f6162ea2, its side uncommitted in the second run.
+
+**Control, b368 on r70 against b367 on r69, docx4j writing nothing new:** 4 movers, all expected. 4083 +1 (0.9739 to 0.9772), its one moved line
+closer, B.3's X. `vml-box-float-edge` mode 12 -1, E1's box (§6); mode 15 +1. So the wider end edge moved no other corpus document. Events equal
+but `bcovi` 652 to 656, read here: 4083 alone, 286 to 288 in each of its two corpus copies, one warning more a pass, at the same FO position as
+one already counted, B.3's box being laid out again when its block is read again.
+
+**With the three attributes, b369 against b368:** 6 movers, all up, 4083 the only corpus one: +3, 0.9772 to 0.9870, 63 of 63 moved lines closer,
+mean |dy| 9.13 to 0.91, in both copies. `vml-box-float-edge` mode 12 0.9412 to 0.9804, mode 15 0.9231 to 1.0000; `vml-box-page-top` mode 12 0.9774 to
+0.9962, mode 15 0.9737 to 1.0000; `tab-trailing-narrow-cell` mode 12 36 of 36 paired closer. Events equal but `line` 8496 to 8497, read here: that
+probe alone, 0 to 1, the tab past the edge overrunning its line. All 18 of 4083's X marks within 1.2pt of Word's but page 5's at 1.9pt.
+
+T3's overprint: docx4j-67 keeps it, no corpus document having the shape, and puts it to Jason as a known limit.
+
+**A correction of the gate's side note.** docx4j-67 reported an absolute box lost at a page's foot where its paragraph has no text (1616's caption,
+561's three lines), cured by the keep it now writes on every holder. Traced here: nothing is lost. The box is drawn past the page's edge, and the
+reader shows only what is on the page. Enterprise §6.6 item 62, partial.
