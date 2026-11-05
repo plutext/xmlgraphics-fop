@@ -3,7 +3,7 @@
 - **Status:** BUILT 2026-11-05 on branch `CR-036-line-across-foot-beside-float`, cut from `2.12-docx4j.1` at 5c63b6ade, code
   cc06737cd, drop r67. **Gated PASS 2026-11-05 by docx4j-67 (b349 on r67 against b347 on r66, §5) and MERGED to `2.12-docx4j.1` by
   fast-forward; unreleased.** Ordered 2026-11-05 by Jason ("fix Item 55, the foot defect in .1"). **A defect in `firstBoxAfterEdgeCrossesPageFoot`
-  was found after the merge and is NOT fixed: §6.**
+  was found after the merge and is NOT fixed: §6. All three parts are now Word's measured behaviour: §7.**
 - **Serves:** Enterprise CR-001 §6.6 item 55: beside a side float, a line that crosses the page's foot by a few points stays on
   the page, drawn past the body's foot, where Word moves it.
 - **Capability:** none. A fix, not a hook.
@@ -44,7 +44,7 @@ beside the float, so the crossing line does not arise there. Apache has the cap;
 
 Not covered: a break inside a table, which is not restartable and takes no edge (CR-020).
 
-Only the first of these is Word's measured rule. The second and third rest on FOP's own behaviour: Word's `float-foot-empties` does
+As first written (§7 has since measured the other two): only the first of these is Word's measured rule. The second and third rest on FOP's own behaviour: Word's `float-foot-empties` does
 not reach them and no corpus document does, so `float_page-foot.xml` pins what FOP now does there, not what Word was seen to do.
 They are the consistent reading of the first, and may well be right, but they are unmeasured. docx4j-67 offered to add the two
 shapes to a probe; ordered by Jason 2026-11-05 ("do the Probe for the two unmeasured shapes"), §6.
@@ -103,4 +103,22 @@ a text-anchored floating table, and no line of 9 characters or more repeated bey
 does not say the shape is absent. No fix is ordered.
 
 Word's probe `float-foot-edges` (47 cases a mode, modes 15 and 12) was recut once for this session's geometry and re-traced clean: every
-case reaches its branch under docx4j's writer. It waits on Jason's golden run. Tools and traces: `~/fop-session-tools/2026-11-05-cr036-probe/`.
+case reaches its branch under docx4j's writer. Tools and traces: `~/fop-session-tools/2026-11-05-cr036-probe/`.
+
+## 7. Word's reading
+
+Jason's goldens of `float-foot-edges`, read by docx4j-67 (`tools/edgecmp.py`) and again here. At mode 15, every line right on page, x and
+y: r67 39 of 47, the candidate of §6 41 of 47.
+
+- **§3's second and third parts are Word's.** F, G, H, W and R at +1 and +3 open the next page at the margin at y 64.1, no space kept,
+  the float left on its page; P equals Q on page and y at every d. They are no longer FOP's own, and the comments in `PageBreaker` and
+  `float_page-foot.xml`'s purpose go with the next code change here.
+- **§6's defect is against Word too.** F-1 and R-1: Word keeps L beside the float, y 536.1; the candidate 535.9, r67 on the next page.
+  X-5, X-3, X-1: Word's E10 532.1, 534.1, 536.1; the candidate 531.9, 533.9, 535.9; r67 525.9, 527.9, 529.9.
+- **A new difference, Enterprise §6.6 item 57.** In X-5 to X-1 Word keeps E10 beside the float, x 475.6, though the float's foot is 2pt
+  above its text top; r66, r67 and the candidate set it at the margin. The foot lies in E10's own space-before. Item 44 (CR-020) measured
+  the reverse with the paragraph above's space-after and a text box, so a change to `reachesEvent` must keep that. One shape; not varied.
+- **Series B**: Word draws each line once, as BN at mode 15. At mode 12 B-1 keeps M3 beside the float and moves only M4. Enterprise §6.6
+  item 56.
+- Mode 12's page and y match mode 15's reading. Its strip is 5.1pt right throughout (Word 469.8, docx4j 474.9): docx4j-67 reads that as
+  its own, Word's re-save dropping `tblpX="0"`.

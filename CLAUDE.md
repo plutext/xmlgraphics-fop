@@ -212,9 +212,10 @@ after an end edge it stays 6pt high, a regression from r66. Confirmed through do
 corpus document has the shape (b349). A candidate is in `~/fop-session-tools/2026-11-05-cr036-probe/overlay-src/`, not in this tree;
 the fix waits on Jason's word, then a drop and a gate, and `.1` should not go out before he rules. Also, older than CR-036 and unfixed:
 a `w:br` paragraph meeting a float's edge is drawn twice (r66 and r67, CR-036 §6; no corpus document has hit it, cause untraced); Jason
-to rule. Word's probe of the two unmeasured shapes, ordered by Jason ("do the Probe for the two unmeasured shapes"), is STAGED:
-`float-foot-edges`, modes 15 and 12, cut by docx4j-67, re-traced clean here; it waits on Jason's golden run, then its reading closes or
-corrects CR-036 §3.** The paragraph that
+to rule. Word's probe of the two unmeasured shapes, ordered by Jason ("do the Probe for the two unmeasured shapes"), is READ: CR-036
+§7, `float-foot-edges`, modes 15 and 12. Both shapes are Word's; at mode 15 r67 39 of 47, the candidate 41 of 47. Enterprise item 55
+reopened, 56 (the doubled paragraph) and 57 (a line's own space-before at a float's foot, one shape, against item 44's rule) added.**
+The paragraph that
 follows is the state before it, kept.
 
 Last updated 2026-11-05, evening. **`fop/CR-036` (Enterprise §6.6 item 55) is DONE: gated PASS (b349 on r67 against b347 on r66,
