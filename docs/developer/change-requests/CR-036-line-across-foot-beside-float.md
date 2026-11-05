@@ -86,11 +86,21 @@ Two effects, both shown against the same FO with no float, body 481.9pt, lines o
   that was not broken.
 
 `float_page-foot.xml` and `float-foot-empties` do not reach it, and neither did b349's corpus (no mover). This session's check of "a
-nearby shape" in §3 tried a space-before only on a line that did cross. Measured on plain FOs through `org.apache.fop.cli.Main` only,
-not yet through docx4j's writer.
+nearby shape" in §3 tried a space-before only on a line that did cross. Measured first on plain FOs through
+`org.apache.fop.cli.Main`, then on docx4j's FO of Word's probe `float-foot-edges` through `RenderFo`, r67, modes 15 and 12, where it
+holds and reaches a space-after as well (F-1, the spacer's 4pt after).
 
 A candidate, in a scratch overlay and not in this tree (`~/fop-session-tools/2026-11-05-cr036-probe/overlay-src/`), adds only glue lying
 past an auxiliary box, which the node's total stops short of: R-1 and X-5 to X-1 then equal the no-float case, X+1 and X+3 stay at
-r67's, and of the 31 first cases only R-1 changes. The fix is not ordered; it needs Jason's word, a drop and a gate. The probe's R and X
-series measure both shapes against Word. Separately, on plain FOs, a `linefeed-treatment="preserve"` paragraph read again beside an
-offset float is drawn twice, on r66 and r67 alike, so it is older than this CR; unread, and not yet seen through docx4j's writer.
+r67's, and of the 31 first cases only R-1 changes. On docx4j's FO it changes five of the probe's 47 cases in each mode: F-1, R-1, X-5,
+X-3, X-1. The fix is not ordered; it needs Jason's word, a drop and a gate. The probe's F, R and X series measure both shapes against
+Word.
+
+Separately, and older than this CR: a paragraph with `w:br` line breaks whose third line meets a float's edge is drawn twice. Series B
+through docx4j's writer has M1 and M2 on page 1, then M1 to M4 on page 2, on r67 and on r66; a `linefeed-treatment="preserve"` paragraph
+does the same on a plain FO. Its cause is not traced. docx4j-67 finds 8 corpus documents with a `w:br` paragraph within six blocks after
+a text-anchored floating table, and no line of 9 characters or more repeated beyond Word's in b358: no corpus document has hit it, which
+does not say the shape is absent. No fix is ordered.
+
+Word's probe `float-foot-edges` (47 cases a mode, modes 15 and 12) was recut once for this session's geometry and re-traced clean: every
+case reaches its branch under docx4j's writer. It waits on Jason's golden run. Tools and traces: `~/fop-session-tools/2026-11-05-cr036-probe/`.
