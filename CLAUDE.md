@@ -206,11 +206,20 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-05, night. **A DEFECT IN `.1`, UNFIXED: CR-036 §6. `firstBoxAfterEdgeCrossesPageFoot` counts the glue after the
+edge twice, so a line that fits within its space of the foot is taken for crossing it: after a start edge it moves to the next page,
+after an end edge it stays 6pt high, a regression from r66. Plain FOs only so far; no corpus document has the shape (b349). A candidate
+is in `~/fop-session-tools/2026-11-05-cr036-probe/overlay-src/`, not in this tree; the fix waits on Jason's word, then a drop and a
+gate, and `.1` should not go out before he rules. Word's probe of the two unmeasured shapes is ORDERED by Jason ("do the Probe for the
+two unmeasured shapes"): the case list went to docx4j-67 (`float-foot-edges`, modes 15 and 12), which cuts and stages it; this session
+then traces each case on docx4j's FO, Jason runs Word's goldens, and the reading closes or corrects CR-036 §3.** The paragraph that
+follows is the state before it, kept.
+
 Last updated 2026-11-05, evening. **`fop/CR-036` (Enterprise §6.6 item 55) is DONE: gated PASS (b349 on r67 against b347 on r66,
 docx4j-67) and MERGED to `2.12-docx4j.1` by fast-forward at 4d7e190cc, ordered by Jason here ("fix Item 55, the foot defect in .1");
 unreleased, local: `.1` is 19 commits past origin's 4fe468d68 and more with this one, and the push is Jason's. b349 on r67 is the
 fork's baseline for later gates (`~/fop-renderers/r67-CR-036-cc06737cd/`, sha256 9a8f2893...; the merged code differs from r67 in two
-comments only). Item 55 closed (Enterprise 5097e03); registry `fop/CR-036` done requested of docx4j-portfolio-53.** Nothing is
+comments only). Item 55 closed (Enterprise 5097e03); registry `fop/CR-036` done (portfolio b61e8d4, local there; `fop/release-2.12-docx4j.1` lists as ready).** Nothing is
 ordered: `.1` (CR-030 to CR-036, CR-023.1) waits only on Jason's push and release, with docx4j b267f24ce shipping alongside. A list
 beside a float measures from the float's edge, so the page's foot was known only as the cap on the float's foot, which a box
 beginning above it never reached. The edge is taken before such a box (`nextBoxCrossesPageFoot`), Word's measured rule

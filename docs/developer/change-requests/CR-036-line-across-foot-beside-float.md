@@ -2,7 +2,8 @@
 
 - **Status:** BUILT 2026-11-05 on branch `CR-036-line-across-foot-beside-float`, cut from `2.12-docx4j.1` at 5c63b6ade, code
   cc06737cd, drop r67. **Gated PASS 2026-11-05 by docx4j-67 (b349 on r67 against b347 on r66, §5) and MERGED to `2.12-docx4j.1` by
-  fast-forward; unreleased.** Ordered 2026-11-05 by Jason ("fix Item 55, the foot defect in .1").
+  fast-forward; unreleased.** Ordered 2026-11-05 by Jason ("fix Item 55, the foot defect in .1"). **A defect in `firstBoxAfterEdgeCrossesPageFoot`
+  was found after the merge and is NOT fixed: §6.**
 - **Serves:** Enterprise CR-001 §6.6 item 55: beside a side float, a line that crosses the page's foot by a few points stays on
   the page, drawn past the body's foot, where Word moves it.
 - **Capability:** none. A fix, not a hook.
@@ -46,7 +47,7 @@ Not covered: a break inside a table, which is not restartable and takes no edge 
 Only the first of these is Word's measured rule. The second and third rest on FOP's own behaviour: Word's `float-foot-empties` does
 not reach them and no corpus document does, so `float_page-foot.xml` pins what FOP now does there, not what Word was seen to do.
 They are the consistent reading of the first, and may well be right, but they are unmeasured. docx4j-67 offered to add the two
-shapes to a probe; not ordered.
+shapes to a probe; ordered by Jason 2026-11-05 ("do the Probe for the two unmeasured shapes"), §6.
 
 ## 4. Measured
 
@@ -68,3 +69,28 @@ movers. `float-foot-empties` 19 of 19 at Word's AFTER line (13 on r66), its 6 mo
 15.30pt to 0.10pt. 4083 and 6293 no line from b347. docx4j-67 agreed the first part's mechanism, the 9.2pt threshold included,
 and has not checked the internals independently. The code merged differs from r67 in two comments only (§3's caveat written into
 them; CI's command 4102/0, checkstyle 0, spotbugs 0 again), so r67 stands. b349 on r67 is the fork's baseline for later gates.
+
+## 6. Counted twice: a defect found after the merge
+
+Found 2026-11-05 checking on plain FOs, before asking for Word's probe of §3's two shapes, that each proposed case reached its branch.
+`firstBoxAfterEdgeCrossesPageFoot` starts from the edge node's `totalWidth`, which already holds the glue after the break
+(`BreakingAlgorithm` adds it when it makes the node), and adds that glue again. So a box with a space before it is read as lower than
+it is by that space, and one that fits within the space of the foot is taken for crossing it. `nextBoxCrossesPageFoot`, the part
+Word's probe measured, is not affected: it reads `widthUpToNextBox`.
+
+Two effects, both shown against the same FO with no float, body 481.9pt, lines of 9.2pt, 6pt before:
+
+- At a start edge, the line moves. Case R-1, a line that fits by 1pt: r67 opens the next page with it, and with no float it stays.
+- At an end edge, the line stays and loses its space. Cases X-1, X-3 and X-5: r67 draws it at y 529.0, 527.0 and 525.0, and r66 and
+  the no-float case at 535.0, 533.0 and 531.0. **This is a regression from r66**: `edgeAtPageFoot` drops the kept space on a page
+  that was not broken.
+
+`float_page-foot.xml` and `float-foot-empties` do not reach it, and neither did b349's corpus (no mover). This session's check of "a
+nearby shape" in §3 tried a space-before only on a line that did cross. Measured on plain FOs through `org.apache.fop.cli.Main` only,
+not yet through docx4j's writer.
+
+A candidate, in a scratch overlay and not in this tree (`~/fop-session-tools/2026-11-05-cr036-probe/overlay-src/`), adds only glue lying
+past an auxiliary box, which the node's total stops short of: R-1 and X-5 to X-1 then equal the no-float case, X+1 and X+3 stay at
+r67's, and of the 31 first cases only R-1 changes. The fix is not ordered; it needs Jason's word, a drop and a gate. The probe's R and X
+series measure both shapes against Word. Separately, on plain FOs, a `linefeed-treatment="preserve"` paragraph read again beside an
+offset float is drawn twice, on r66 and r67 alike, so it is older than this CR; unread, and not yet seen through docx4j's writer.
