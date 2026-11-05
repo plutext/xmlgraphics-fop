@@ -3,7 +3,8 @@
 - **Status:** BUILT 2026-11-05 on branch `CR-036-line-across-foot-beside-float`, cut from `2.12-docx4j.1` at 5c63b6ade, code
   cc06737cd, drop r67. **Gated PASS 2026-11-05 by docx4j-67 (b349 on r67 against b347 on r66, §5) and MERGED to `2.12-docx4j.1` by
   fast-forward; unreleased.** Ordered 2026-11-05 by Jason ("fix Item 55, the foot defect in .1"). **A defect in `firstBoxAfterEdgeCrossesPageFoot`
-  was found after the merge and is NOT fixed: §6. All three parts are now Word's measured behaviour: §7.**
+  was found after the merge: §6. Its fix is BUILT on branch `CR-036-edge-space-once`, code 792823785, drop r68, ordered by Jason through
+  docx4j-67 ("Order the fork's fix"); not gated, not merged: §8. All three parts are now Word's measured behaviour: §7.**
 - **Serves:** Enterprise CR-001 §6.6 item 55: beside a side float, a line that crosses the page's foot by a few points stays on
   the page, drawn past the body's foot, where Word moves it.
 - **Capability:** none. A fix, not a hook.
@@ -122,3 +123,22 @@ y: r67 39 of 47, the candidate of §6 41 of 47.
   item 56.
 - Mode 12's page and y match mode 15's reading. Its strip is 5.1pt right throughout (Word 469.8, docx4j 474.9): docx4j-67 reads that as
   its own, Word's re-save dropping `tblpX="0"`.
+
+## 8. The fix
+
+`firstBoxAfterEdgeCrossesPageFoot` adds only glue lying past an auxiliary box, a border's or padding's, which the node's total stops
+short of. Code 792823785 on branch `CR-036-edge-space-once`, cut from `2.12-docx4j.1` at 57a3f3b21; the two comments that called the
+start edge and the discarded space unmeasured now cite §7. `float_page-foot.xml` gains four sequences: a line that fits by 1pt below its
+own space-before and below the space-after above, after a start edge; the same after an end edge, keeping its space; and one crossing
+the foot only by its border. The first three fail on r67's loop, and the fourth without the glue past the auxiliary box. CI's command
+4102/0, checkstyle 0, spotbugs 0.
+
+Drop r68 at `~/fop-renderers/r68-CR-036-792823785/` (core sha256 85333f7d...). Through `RenderFo` on cp-b350: `float-foot-edges` the
+same line for line as §6's candidate in both modes, `float-foot-empties` 19 of 19 at Word's AFTER line.
+
+Pass, docx4j-67's: F-1 and R-1 beside the float at Word's y; X-5, X-3, X-1 with E10 at Word's y within 1pt; every other case unchanged
+from r67; `float-foot-empties` 19 of 19; no loser; events equal. X's x (item 57) and the doubled B (item 56) are not in it.
+
+Not in this fix, a gap older than this CR: `nextBoxCrossesPageFoot` reads `widthUpToNextBox`, which stops at an auxiliary box, so partway
+through a list a line crossing the foot only by its block's top border stays on the page (plain FO: 1pt and 2pt past with a 3pt border,
+the no-float case moves it; `~/fop-session-tools/2026-11-05-cr036-probe/`). Not measured against Word; not ordered.
