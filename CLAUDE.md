@@ -206,6 +206,14 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-05, late night. **`fop/CR-038` (corpus 4083's marks and rows, under Jason's "do 4083's remaining X marks and row heights",
+through docx4j-67) is BUILT, not gated, not merged: branch `CR-038-box-and-tab`, cut from `2.12-docx4j.1` at 561571f14, code 45594ce31, drop r70
+at `~/fop-renderers/r70-CR-038-45594ce31/` (sha256 20232efb...). A float's end edge taken at a class-line keep and before a box's empty holder
+(a fix); `box-x-from-column`, `box-top-space`, `tab-past-cell` (capabilities 32 to 34). `2.12-docx4j.1` itself is unchanged at 561571f14, and whether
+CR-038 goes in `.1` or after it is Jason's to rule; do not fast-forward before he does, whatever the gate says. Open: docx4j-67's gate; T3's `1`
+drawn over the next cell (CR-038 §6); item 57's second shape. Tools `~/fop-session-tools/2026-11-05-box-float-edge/`. The paragraph that follows is
+the state before it, kept.**
+
 Last updated 2026-11-05, end of the night. **`fop/CR-037` (Enterprise §6.6 item 56, the doubled `w:br` paragraph) is DONE: gated PASS (b362 on
 r69 against b360 on r68, docx4j-67, docx4j 7f6162ea2; 0 corpus movers, events equal; `float-foot-edges` exactly B-1, B+1, B+3) and MERGED to
 `2.12-docx4j.1` by fast-forward from `CR-037-restart-at-soft-return`, code a260b3bd3, ordered by Jason through docx4j-67 ("take the doubled
