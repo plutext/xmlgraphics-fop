@@ -206,6 +206,15 @@ hunks alone through a temporary index from HEAD, never the shared index.
 
 ## Start here
 
+Last updated 2026-11-07. **`2.12-docx4j.1` (CR-030 to CR-038, CR-023.1) is PUSHED and in release: Jason's word "push" (2026-11-05) took origin to
+dd756f0d2, CI green on Java 8, 11, 17, 21 and 25 (run 41997950698); then "make the version commit and tag; follow docs/developer/releasing.md up to my
+deploy" (2026-11-07). The version commit is the next commit after this one; the deploy is Jason's, and the tag comes after Central serves the artifacts
+(`docs/developer/releasing.md`, Tagging). docx4j-67 (2026-11-07) wants nothing changed in `.1`. The note keeps docx4j 9e3100351, which is on origin now
+(VERSION_17_3_6 at f960df59e), so "unpushed there" below is stale. **b372 on r70 is the baseline** (`cp-b372.txt`; b370 to b372 0 movers on the same
+jars), replacing b369. After the deploy docx4j-67 needs the core, util and events jars on Central, a statement of any code change since 45594ce31 beyond
+the version commit, and the core sha256 beside r70's (20232efb...); it gates against b372 on Jason's word, then moves `fo.renderer.version`. Then the
+next branch, with the release note closed there. The paragraph that follows is the state before it, kept.**
+
 Last updated 2026-11-05, latest. **`fop/CR-038` (corpus 4083's marks and rows, Enterprise §6.6 items 58 to 61) is DONE: gated PASS (b368 on r70, 4083 +1,
 no other corpus mover; b369 on r70, 4083 +3 to 0.9870, 63 of 63 moved lines closer; suites pass, docx4j-67) and MERGED to `2.12-docx4j.1` by fast-forward
 from `CR-038-box-and-tab`, code 45594ce31, for `.1`, ordered by Jason through docx4j-67 ("r70 (CR-038) goes into 2.12-docx4j.1; commit; Accept 3229 -2
