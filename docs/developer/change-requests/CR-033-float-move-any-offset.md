@@ -4,7 +4,7 @@
   at d972d78fe; full suite 4092/0 (5 skipped), checkstyle and spotbugs clean under CI's command. Handed to docx4j-12
   the same day as r59 (`~/fop-renderers/r59-CR-033-d972d78fe/`, core sha256 5c060dd6...) for a gate against b321 on
   r58. **Gated PASS 2026-11-03 (docx4j-12), §6, and MERGED to `2.12-docx4j.1` by fast-forward at 2e4f3b2a6;
-  unreleased until `2.12-docx4j.1` ships. b322 on r59 is the fork's baseline for later gates.**
+  RELEASED in `2.12-docx4j.1` (Maven Central 2026-11-07, version commit c69e89ffb). b322 on r59 is the fork's baseline for later gates.**
 - **Serves:** Enterprise CR-001 §6.6 item 8, the first of the three renderer defects that blocked docx4j's step 2 on
   r57 (gate b317, 2026-11-03), its case (a): a side float with no `fox:float-offset`, or 0, anchored too low for the
   page. Ordered by Jason on 2026-11-03 as A1, after B (fop/CR-032) and before the probe for T.

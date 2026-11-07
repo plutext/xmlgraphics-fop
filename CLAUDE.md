@@ -56,8 +56,8 @@ session routed an edit to the wrong peer on that inference, is why.
 
 ## Branches and remotes
 
-- **`2.12-docx4j.1` is the fork's branch. Work on it; release from it.** It carries the
-  `revision` property that sets the version (`2.12-docx4j.1-SNAPSHOT`), so a release changes one
+- **`2.12-docx4j.2` is the fork's branch. Work on it; release from it.** It carries the
+  `revision` property that sets the version (`2.12-docx4j.2-SNAPSHOT`), so a release changes one
   line there; see `docs/developer/releasing.md`. Do not count it against `trunk`, which tracks
   Apache's `main` and so diverges from the fork's base.
 - **One branch per release line, named for the version it will ship** (Jason, 2026-10-03, replacing
@@ -66,7 +66,9 @@ session routed an edit to the wrong peer on that inference, is why.
   `.github/workflows/maven.yml`. The branch is not the tag: the release is `v<line>-docx4j.N`. A new Apache
   release starts a new line at `.1` (`fop/CR-030`: `Docx4jFop.APACHE_FOP_LINE` moves with it, and docx4j's
   `FopCapabilities.BUILT_FOR_LINE` must follow).
-- `2.12-docx4j.1` was cut 2026-11-01 from `2.11-docx4j.9` (cc98fa4c0), Apache 2.12 merged into it by `fop/CR-030`
+- `2.12-docx4j.2` was cut 2026-11-07 from the release commit c69e89ffb.
+- `2.12-docx4j.1` is the previous released branch: the release was tagged `v2.12-docx4j.1` on it at c69e89ffb
+  (2026-11-07). Leave it alone. It was cut 2026-11-01 from `2.11-docx4j.9` (cc98fa4c0), Apache 2.12 merged into it by `fop/CR-030`
   (263be37e7). `2.11-docx4j.9` (cut from b7f6ad8bf on 2026-10-30, pushed, docs only) never ships, like `.3`. Leave it
   alone.
 - `2.11-docx4j.8` is the previous released branch: the release was tagged `v2.11-docx4j.8` on it at b7f6ad8bf
@@ -89,7 +91,7 @@ session routed an edit to the wrong peer on that inference, is why.
   release: that shipped from `2f5030172` on it, tagged `v2.11-docx4j.1`.
 - `.github/workflows/maven.yml` names the branches twice and must gain each new one. A stale list there fails silently: no runs at all looks exactly like no
   failures. It was missed in the 2026-09-26 rename for that reason. To read the runs, name the
-  repository: `gh run list -R plutext/xmlgraphics-fop --branch 2.12-docx4j.1`; a bare `gh run list`
+  repository: `gh run list -R plutext/xmlgraphics-fop --branch 2.12-docx4j.2`; a bare `gh run list`
   here resolves to Apache's repository through the `upstream` remote and shows Apache's runs.
 - `trunk` tracks Apache's `main`. Remotes: `origin` = plutext/xmlgraphics-fop,
   `upstream` = apache/xmlgraphics-fop, `metanorma` and `chunlin` = the two forks whose
@@ -106,9 +108,9 @@ session routed an edit to the wrong peer on that inference, is why.
   `main` the import order differs from 2.11's (static imports directly under the others, no blank
   line) and no file carries the fork's change notice.
 - An upstream-bound fix is done twice: on its own `FOP-####` branch against `trunk`
-  for the PR, and on `2.12-docx4j.1` for the fork. A docx4j-only hook goes on
-  `2.12-docx4j.1` only.
-- Merge `upstream/main` into `2.12-docx4j.1` at least at every Apache release and
+  for the PR, and on `2.12-docx4j.2` for the fork. A docx4j-only hook goes on
+  `2.12-docx4j.2` only.
+- Merge `upstream/main` into `2.12-docx4j.2` at least at every Apache release and
   whenever a fix sent from here lands upstream.
 
 ## Build and test commands
@@ -117,7 +119,7 @@ Apache FOP's own Maven build, Java 8 and later (Java 11 or 21 here):
 
 ```bash
 mvn -B package checkstyle:check spotbugs:check     # what CI runs on every push (.github/workflows/maven.yml)
-mvn install -DskipTests                            # the snapshot docx4j consumes (2.12-docx4j.1-SNAPSHOT)
+mvn install -DskipTests                            # the snapshot docx4j consumes (2.12-docx4j.2-SNAPSHOT)
 mvn -pl fop-core -am test -Dtest=SomeTestCase       # one test class; -am is needed, see below
 mvn -pl fop-core test -Dtest=LayoutEngineTestSuite  # FOP's layout tests (fop/test/layoutengine/standard-testcases) - slow;
                                                     # one file: -Dfop.layoutengine.single=name.xml
@@ -158,7 +160,7 @@ helped. So one round trip per item:
 3. Message it: branch, commit, what changed in one paragraph, the §6.6 item or JIRA it
    serves, and what a pass would look like. It runs the gate and replies pass or fail with
    the measurement; a fail comes back with the scoreboard reading, not a guess.
-4. On a pass, merge to `2.12-docx4j.1`; it records the item in CR-020 §8. Where the change
+4. On a pass, merge to `2.12-docx4j.2`; it records the item in CR-020 §8. Where the change
    closes or narrows a §6.6 item, update that item here too, with the fork commit and the
    mechanism, and tell the Enterprise session. On a fail, the change stays on its branch,
    and if the fail taught something about FOP, that goes in §6.6 as well.
@@ -205,6 +207,13 @@ hunks alone through a temporary index from HEAD, never the shared index.
   modified Apache file; this is an Apache-2.0 derivative, not a Plutext original).
 
 ## Start here
+
+Last updated 2026-11-07, later. **`2.12-docx4j.1` is RELEASED: on Maven Central since 2026-11-07, Jason's deploy from the pushed branch at the version
+commit c69e89ffb, verified from Central (68 files, 17 signatures by C641C2A9AFA87A3B, 34 capabilities; core sha256 979ce48e...; the published classes
+byte for byte r70's, the gated jar), tagged `v2.12-docx4j.1` there (made here, pushed by name by Jason). Registry `fop/release-2.12-docx4j.1` done
+(portfolio 1e1e629). Work is now on `2.12-docx4j.2` (snapshot `2.12-docx4j.2-SNAPSHOT`), cut from c69e89ffb on Jason's go-ahead and added to CI's branch
+list. Nothing is ordered for `.2`. Waiting on Jason: docx4j's read of the Central jars against b372 on r70 and its move of `fo.renderer.version`; the
+upstream questions; item 57 and its bordered reading; item 62. The paragraph that follows is the state before it, kept.**
 
 Last updated 2026-11-07. **`2.12-docx4j.1` (CR-030 to CR-038, CR-023.1) is PUSHED and in release: Jason's word "push" (2026-11-05) took origin to
 dd756f0d2, CI green on Java 8, 11, 17, 21 and 25 (run 41997950698); then "make the version commit and tag; follow docs/developer/releasing.md up to my

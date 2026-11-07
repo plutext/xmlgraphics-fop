@@ -1,7 +1,7 @@
 # CR-030: Apache FOP 2.12, and the `2.12-docx4j` line
 
 Status: BUILT 2026-11-01 on Jason's word ("start 2.12-docx4j.1"), gated PASS the same day (b298 on r50, §6),
-unreleased, local until Jason pushes. Since 2026-11-02 the release also carries `fop/CR-031`, which moves docx4j's
+RELEASED in `2.12-docx4j.1` (Maven Central 2026-11-07, version commit c69e89ffb). Since 2026-11-02 the release also carries `fop/CR-031`, which moves docx4j's
 Word layout into the fork (docx4j CR-071 D9(a)); it gated PASS (b303 and b304 on r51 against b302) and is merged to
 `2.12-docx4j.1` by fast-forward at e5f0a7d12, and its phase 3 (b306 on r53) at c4ba99965 on Jason's word, the move
 alone tagged `CR-031-phase1`; so the release waits only on Jason. Branch `2.12-docx4j.1`, cut from `2.11-docx4j.9` at cc98fa4c0; the merge of Apache's `fop-2_12` at 69e912b39

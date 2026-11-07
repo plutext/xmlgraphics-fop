@@ -275,6 +275,29 @@ numbered staging repositories like `orgdocx4j-1095`.
 - The release note was closed on the next branch, as before. The next development version is
   `2.11-docx4j.9-SNAPSHOT`, on branch `2.11-docx4j.9`, cut from the release commit and added to CI's branch list.
 
+## Proven by the eighth release, 2.12-docx4j.1 on 2026-11-07
+
+- **The first release on Apache FOP 2.12's base** (`fop/CR-030`), released by Jason from the pushed branch at the
+  version commit `c69e89ffb` (the `revision` and the `<scm>` lines, nothing else). The branch's commits since the last
+  push were pushed first and CI was green on their tip `dd756f0d2` (run 41997950698), then on the version commit (run
+  42315395137). The manifest's `Build-Jdk` is 21.0.13.
+- **The release build was run unsigned before the version commit was pushed**: `mvn -B -Prelease clean verify
+  -DskipTests -Dgpg.skip=true` on JDK 21, by the fork session. Javadoc and the sources jars are built under `-Prelease`
+  only, so CI does not reach them, and a failure after the push means replacing the pushed branch, as for `.7`. It needs
+  no passphrase. Its core jar was r70's but for the manifest and the two `maven/` pom files.
+- **The published classes are the gated ones again.** The published core's 2707 entries are byte for byte those of
+  r70, the jar the docx4j session gated as b368 and b369; only `MANIFEST.MF` and the two `maven/` pom files differ. From
+  the unsigned build at the version commit, on JDK 21.0.12.1, only `MANIFEST.MF` differs.
+- **Tagged after the deployment was confirmed**: `v2.12-docx4j.1`, annotated, at `c69e89ffb`, made by the fork session
+  once the files below were verified, pushed by name by Jason.
+- **Verified from Central after publication**: 68 files, every one answering 200; every md5 and sha1 as stated; all 17
+  signatures good, by `C641C2A9AFA87A3B` as for `.6`, `.7` and `.8` (see Signing); the core manifest's
+  `Implementation-Version` is `2.12-docx4j.1`; no published pom carries `${revision}` or a parent;
+  `Docx4jFop.version()` is `2.12-docx4j.1` and `capabilities()` names 34.
+  Core jar sha256 `979ce48e537fadff134e43cd918a44ca1c8127678f1dff1ecec93201dff89726`.
+- The release note was closed on the next branch, as before. The next development version is
+  `2.12-docx4j.2-SNAPSHOT`, on branch `2.12-docx4j.2`, cut from the release commit and added to CI's branch list.
+
 ## Two things that look wrong and are not
 
 **The published pom lists fewer dependencies than the module's own pom.** For the core

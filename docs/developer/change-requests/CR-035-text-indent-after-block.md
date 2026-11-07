@@ -2,7 +2,7 @@
 
 - **Status:** BUILT 2026-11-04 on branch `CR-035-text-indent-after-block`, cut from `2.12-docx4j.1` at e096fb41f,
   code ad739af01. **Gated PASS 2026-11-04 by docx4j-12 (b333 on r62 against b330, §5.1) and MERGED to
-  `2.12-docx4j.1` by fast-forward; unreleased.** Ordered 2026-11-04 by Jason through docx4j-12 ("please fix CR-001 §6.6
+  `2.12-docx4j.1` by fast-forward; RELEASED in `2.12-docx4j.1` (Maven Central 2026-11-07, version commit c69e89ffb).** Ordered 2026-11-04 by Jason through docx4j-12 ("please fix CR-001 §6.6
   item 53 in the fork"), the same day docx4j-12 recorded the item and its own workaround.
 - **Serves:** Enterprise CR-001 §6.6 item 53: a block's first line loses its `text-indent` where a block-level
   child precedes its inline content. Corpus: 4083's question headings (style 2Question, `w:ind` left 426 hanging

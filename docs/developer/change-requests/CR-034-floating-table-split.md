@@ -2,7 +2,7 @@
 
 - **Status:** BUILT 2026-11-04 on branch `CR-034-floating-table-split`, cut from `2.12-docx4j.1` at 59f249323,
   code e0baa4cb7 (§3.1 as built, §3.2 measured). **Gated PASS 2026-11-04 by docx4j-12 (b324 on r60 against b323,
-  §5.1) and MERGED to `2.12-docx4j.1` by fast-forward; unreleased until `2.12-docx4j.1` ships, which waits for this
+  §5.1) and MERGED to `2.12-docx4j.1` by fast-forward; RELEASED in `2.12-docx4j.1` (Maven Central 2026-11-07, version commit c69e89ffb), which waited for this
   (§6). b324 on r60 is the fork's baseline for later gates.** ORDERED 2026-11-04 (Jason, in the fork session: "`.1`
   waits for T. default on. In-row splits in version 1."; §6). Before that: probe done and design 2026-11-03, after
   Jason's order of B (fop/CR-032), A1 (fop/CR-033) and "a one-day probe for T" with a size.

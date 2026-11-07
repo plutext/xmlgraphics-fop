@@ -1,7 +1,7 @@
 # CR-031: Word layout in the fork's layout managers (docx4j CR-071 phase 1)
 
 Status: DONE 2026-11-02 for phase 1: built at 27ed437d3, gated PASS, merged to `2.12-docx4j.1` by fast-forward
-(e5f0a7d12), unreleased, local until Jason pushes. CI's command on JDK 21: 4077 tests, 0 failures, 5 skipped;
+(e5f0a7d12), RELEASED in `2.12-docx4j.1` (Maven Central 2026-11-07, version commit c69e89ffb). CI's command on JDK 21: 4077 tests, 0 failures, 5 skipped;
 checkstyle 0; spotbugs 0. r51 (`~/fop-renderers/r51-CR-031-27ed437d3/`, core sha256 98eb2a20...) passed CR-071
 phase 2's gate (§5.1). Phase 3 (§6) is DONE too: gated PASS (b306 on r53) and merged to `2.12-docx4j.1` by fast-forward at c4ba99965 on
 Jason's word (2026-11-02: "it is enough to make a git tag for move alone with no change in output"); the move alone

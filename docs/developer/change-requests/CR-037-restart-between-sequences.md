@@ -1,7 +1,7 @@
 # CR-037: a paragraph of several sequences read again from a break between them
 
 - **Status:** BUILT 2026-11-05 on branch `CR-037-restart-at-soft-return`, cut from `2.12-docx4j.1` at 69b8b2993, code a260b3bd3, drop r69.
-  **Gated PASS 2026-11-05 by docx4j-67 (b362 on r69 against b360 on r68, §6) and MERGED to `2.12-docx4j.1` by fast-forward; unreleased.**
+  **Gated PASS 2026-11-05 by docx4j-67 (b362 on r69 against b360 on r68, §6) and MERGED to `2.12-docx4j.1` by fast-forward; RELEASED in `2.12-docx4j.1` (Maven Central 2026-11-07, version commit c69e89ffb).**
   Ordered 2026-11-05 by Jason through docx4j-67 ("take the doubled w:br paragraph (item 56)").
 - **Serves:** Enterprise CR-001 §6.6 item 56: a paragraph with `w:br` line breaks is drawn twice where a float's edge falls inside it.
 - **Capability:** none. A fix, not a hook.

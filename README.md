@@ -5,7 +5,7 @@
 > Software Foundation release. Apache FOP is a trademark of the Apache Software
 > Foundation.
 
-This branch (`2.12-docx4j.1`) is an upstream-tracking fork of
+This branch (`2.12-docx4j.2`) is an upstream-tracking fork of
 [Apache FOP](https://xmlgraphics.apache.org/fop/), the XSL-FO formatter
 [docx4j](https://www.docx4java.org/) uses for docx to PDF. It exists so that
 docx4j's Word-layout-fidelity work can change FOP where reflection or
@@ -41,12 +41,12 @@ and so on), for the same reason the packages are. `fop-sandbox`, `fop-servlet`
 and the transcoders are in the tree but not built.
 
 Released: `2.11-docx4j.1` (2026-09-25), `2.11-docx4j.2` (2026-10-02), `2.11-docx4j.4` (2026-10-04),
-`2.11-docx4j.5` (2026-10-07), `2.11-docx4j.6` (2026-10-09), `2.11-docx4j.7` (2026-10-16) and `2.11-docx4j.8`
-(2026-10-30), all on Maven Central, tagged `v2.11-docx4j.N` here; `docs/release-notes/` says what each contains. There
+`2.11-docx4j.5` (2026-10-07), `2.11-docx4j.6` (2026-10-09), `2.11-docx4j.7` (2026-10-16), `2.11-docx4j.8`
+(2026-10-30) and `2.12-docx4j.1` (2026-11-07), all on Maven Central, tagged `v<line>-docx4j.N` here; `docs/release-notes/` says what each contains. There
 is no `2.11-docx4j.3`: its branch, 2.11 plus `fop/CR-008`, was never released, and its content shipped in
 `.4`. Nor a `2.11-docx4j.9`: its branch was cut after `.8` and gave way to `2.12-docx4j.1` before anything was
 ordered for it. Between releases the fork is consumed as a locally installed snapshot (`mvn install -DskipTests`
-here, then `-Pfo-renderer-fork` in docx4j), currently `2.12-docx4j.1-SNAPSHOT`. docx4j 17.3.1 (2026-10-07) depends on
+here, then `-Pfo-renderer-fork` in docx4j), currently `2.12-docx4j.2-SNAPSHOT`. docx4j 17.3.1 (2026-10-07) depends on
 `2.11-docx4j.5`; docx4j 17.3.3 (in preparation, its `VERSION_17_3_3` branch at 0dd167d8e) on `2.11-docx4j.7`;
 docx4j 17.3.5 (in preparation, its `VERSION_17_3_5` branch at 9d6952973) on `2.11-docx4j.8`; 17.3.0 depended on
 `2.11-docx4j.2`.

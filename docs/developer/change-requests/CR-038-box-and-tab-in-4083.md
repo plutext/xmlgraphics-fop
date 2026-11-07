@@ -2,8 +2,8 @@
 
 - **Status:** BUILT 2026-11-05 on branch `CR-038-box-and-tab`, cut from `2.12-docx4j.1` at 561571f14, code 45594ce31, drop r70
   (`~/fop-renderers/r70-CR-038-45594ce31/`, sha256 20232efb...). **Gated PASS 2026-11-05 by docx4j-67 (§8) and MERGED to `2.12-docx4j.1` by fast-forward, for `.1`, on
-  Jason's ruling through docx4j-67 ("r70 (CR-038) goes into 2.12-docx4j.1"); unreleased, the push his. b369 on r70 is the fork's baseline for later
-  gates.**
+  Jason's ruling through docx4j-67 ("r70 (CR-038) goes into 2.12-docx4j.1"); RELEASED in `2.12-docx4j.1` (Maven Central 2026-11-07, version commit c69e89ffb). b369 on r70 was the fork's baseline for later
+  gates until b372 on the same jars.**
   Ordered through docx4j-67, under Jason's "do 4083's remaining X marks and row heights".
 - **Serves:** corpus 4083's marks and row heights. Enterprise CR-001 §6.6 items 58 to 61; item 57 gains a second shape (§6); item 62 came of the gate.
 - **Capabilities:** `box-x-from-column`, `box-top-space`, `tab-past-cell`, the thirty-second to thirty-fourth. The float's end edge (§2) is

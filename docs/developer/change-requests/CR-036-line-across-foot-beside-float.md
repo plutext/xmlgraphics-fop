@@ -2,9 +2,9 @@
 
 - **Status:** BUILT 2026-11-05 on branch `CR-036-line-across-foot-beside-float`, cut from `2.12-docx4j.1` at 5c63b6ade, code
   cc06737cd, drop r67. **Gated PASS 2026-11-05 by docx4j-67 (b349 on r67 against b347 on r66, §5) and MERGED to `2.12-docx4j.1` by
-  fast-forward; unreleased.** Ordered 2026-11-05 by Jason ("fix Item 55, the foot defect in .1"). **A defect in `firstBoxAfterEdgeCrossesPageFoot`
+  fast-forward; RELEASED in `2.12-docx4j.1` (Maven Central 2026-11-07, version commit c69e89ffb).** Ordered 2026-11-05 by Jason ("fix Item 55, the foot defect in .1"). **A defect in `firstBoxAfterEdgeCrossesPageFoot`
   was found after the merge: §6. Its fix, ordered by Jason through docx4j-67 ("Order the fork's fix"), code 792823785, drop r68, gated PASS
-  (b360 on r68 against b359 on r67, §8) and MERGED to `2.12-docx4j.1` by fast-forward; unreleased. All three parts are now Word's measured
+  (b360 on r68 against b359 on r67, §8) and MERGED to `2.12-docx4j.1` by fast-forward; RELEASED in `2.12-docx4j.1` (Maven Central 2026-11-07, version commit c69e89ffb). All three parts are now Word's measured
   behaviour: §7.**
 - **Serves:** Enterprise CR-001 §6.6 item 55: beside a side float, a line that crosses the page's foot by a few points stays on
   the page, drawn past the body's foot, where Word moves it.
